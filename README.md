@@ -1,4 +1,5 @@
 # para
+
 A new version of the Pediatric Risk Assessment (PARA) app in React and React Native
 
 # Installation
@@ -11,9 +12,9 @@ After cloning the repo, run `npm install` from the project directory to install 
 
 To run:
 
- ```bash
-   npx expo start
-   ```
+```bash
+  npx expo start
+```
 
 In the output, you'll find options to open the app in a
 
@@ -23,4 +24,3 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 After launching, you can open the app on another platform simultaneously by pressing **a** (android) **i** (ios) or **w** (web) in the console.
-
