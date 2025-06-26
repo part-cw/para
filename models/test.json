@@ -1,0 +1,30 @@
+{
+  "modelName": "TEST Model",
+  "version": "1.0",
+  "rawScoreOffset": -1.75,
+  "inputs": [
+    {
+      "name": "muac_mm",
+      "displayName": "MUAC",
+      "definition": "Mid-upper arm circumference in mm",
+      "type": "float",
+      "units": "mm",
+      "precision": 0.1,
+      "constraints": {
+        "min": 50,
+        "max": 200
+      },
+      "coefficient": -0.12,
+      "required": true
+    },
+    {
+      "name": "waz",
+      "displayName": "WAZ",
+      "definition": "weight-for-age z-score",
+      "type": "integer",
+      "coefficient": -0.32265,
+      "required": true
+    }
+  ],
+  "highRiskThreshold": 0.5
+}
