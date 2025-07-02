@@ -1,7 +1,8 @@
 {
   "modelName": "TEST Model",
+  "modelDescription": "This is a simple test model with only 2 variables",
   "version": "1.0",
-  "rawScoreOffset": -1.75,
+  "rawScoreOffset": -2.93582,
   "inputs": [
     {
       "name": "muac_mm",
@@ -26,5 +27,9 @@
       "required": true
     }
   ],
-  "highRiskThreshold": 0.5
+  "riskCategoryThresholds": {
+    "moderate": "0",
+    "high": "5",
+    "veryHigh": "10"
+  }
 }
