@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "para",
+    "name": "PAediatric Risk Assessment App (PARA)",
     "slug": "para",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/smart-discharges-logo_script.png",
+    "backgroundColor": "#ffffff",
     "scheme": "para",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,22 +14,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon_sd-logo_noscript.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.para"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "assets/images/smart-discharges-logo_script.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
