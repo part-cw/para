@@ -7,6 +7,11 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
+import { Provider as PaperProvider } from "react-native-paper";
+import { AppTheme } from "../assets/theme";
+
+
+// TODO figure out which font variant to use exactly -- importing 700Bold and 400Regular for now
 
 // Keep splash screen visible while loading fonts
 export default function RootLayout() {
@@ -33,9 +38,12 @@ export default function RootLayout() {
     return null;
   }
 
+  // TODO add custom theme and pass it as prop in PaperProvider
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <Stack />
+      <PaperProvider theme={AppTheme}>
+        <Stack screenOptions={{headerShown: false,}}/>
+      </PaperProvider>
     </View>
   );
 }
