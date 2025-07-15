@@ -8,7 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
-import { AppTheme } from "../assets/theme";
+import { AppTheme } from "../themes/theme";
 
 
 // TODO figure out which font variant to use exactly -- importing 700Bold and 400Regular for now
