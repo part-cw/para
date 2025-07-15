@@ -42,7 +42,7 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <PaperProvider theme={AppTheme}>
-        <Stack />
+        <Stack screenOptions={{headerShown: false,}}/>
       </PaperProvider>
     </View>
   );

@@ -6,7 +6,7 @@ export default function Index() {
   return (
     <>
      <AppBar/>
-      <Text>TODO Edit app/index.tsx to edit this screen.</Text>
+      <Text>TODO Edit app/index.tsx to edit home screen.</Text>
     </>
   );
 }
