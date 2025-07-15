@@ -17,7 +17,7 @@ export const AppTheme = {
     surfaceVariant: '#49454F', // Dark gray (used for dark button backgrounds) #49454F //TODO - remove?
     onSurface: '#000000',     // Text on white surfaces #000000 // TODO - remove?
     outline: '#D0D0D0',       // For borders if needed  #D0D0D0
-    background: '#EFF6FF',    // #EFF6FF
+    background: '#FFFFFF',    // #FFFFFF
     error: '#B00020',          // #B00020. #757575.  #0D6CF0 
   },
   roundness: 8, // for 'square' buttons, cards, and headers 

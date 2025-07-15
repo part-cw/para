@@ -1,3 +1,4 @@
+import AppBar from "@/components/AppBar";
 import {
   Inter_400Regular,
   Inter_700Bold,
@@ -42,6 +43,7 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <PaperProvider theme={AppTheme}>
+        <AppBar/>
         <Stack screenOptions={{headerShown: false,}}/>
       </PaperProvider>
     </View>
