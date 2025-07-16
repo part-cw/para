@@ -66,6 +66,6 @@ export default function AppBar() {
                     </Button>
                 )}
       </View>
-      </Appbar.Header>
+    </Appbar.Header>
   );
 }

@@ -3,13 +3,6 @@ import { withLayoutContext } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-// const Drawer = createDrawerNavigator({
-//     screens: {
-//         PatientInformation: patientInformation,
-//         AdmissionClinicalData: admissionClinicalData
-//     }
-// });
-
 const { Navigator } = createDrawerNavigator();
 const Drawer = withLayoutContext(Navigator);
 
