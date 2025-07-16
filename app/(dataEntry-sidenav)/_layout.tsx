@@ -15,6 +15,8 @@ export default function DrawerLayout() {
             <Drawer.Screen name="patientInformation" options={{title: 'Patient Information'}}/>
             <Drawer.Screen name="admissionClinicalData" options={{title: 'Admission Clinical Data'}}/>
             <Drawer.Screen name="medicalConditions" options={{title: 'Medical Conditions'}}/>
+            <Drawer.Screen name="vhtReferral" options={{title: 'VHT Referral'}}/>
+            <Drawer.Screen name="caregiverContact" options={{title: 'Caregiver Contact Information'}}/>
           </Drawer>
         </GestureHandlerRootView>
       </SafeAreaProvider>
