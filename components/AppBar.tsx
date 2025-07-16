@@ -26,10 +26,8 @@ export default function AppBar() {
           <Appbar.Action
             icon="chevron-down"
             color="white"
-            onPress={() => setMenuVisible(true)}
-          />
-        }
-      >
+            onPress={() => setMenuVisible(true)}/>
+        }>
         <Menu.Item title="Username + last sync.." />
         <Menu.Item onPress={() => {}} leadingIcon = "account-circle" title="Profile" />
         <Menu.Item onPress={() => {}} leadingIcon= "translate" title="Language" />

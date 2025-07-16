@@ -5,16 +5,17 @@ import { useTheme } from 'react-native-paper';
 
 interface Props {
   title: string;
-  onMenuPress?: () => void;
 }
 
-export default function AddChildHeader({ title, onMenuPress }: Props) {
+export default function AddChildHeader({ title }: Props) {
     const {colors, fonts} = useTheme();
 
     return (
         <View style={[styles.wrapper]}>
             <View style={[styles.container, { backgroundColor: colors.primaryContainer }]}>
-                <Pressable onPress={onMenuPress}>
+                <Pressable onPress={() => {
+                    console.log('burger menu pressed')
+                    }}>
                     <MaterialIcons name="menu" size={28} color={colors.tertiary} />
                 </Pressable>
                 <Text style={[styles.title, fonts.titleLarge, { color: colors.onPrimaryContainer }]}>
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    zIndex: 99,
+    // zIndex: 99, // TODO = remove?
   },
   container: {
     flexDirection: 'row',
@@ -45,10 +46,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
     flex: 1,
     textAlign: 'center',
-    marginLeft: -28, // Offsets menu icon width for proper centering
   },
 });
