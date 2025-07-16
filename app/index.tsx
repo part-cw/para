@@ -8,7 +8,7 @@ export default function Index() {
   return (
     <>
       <Text>TODO Edit app/index.tsx to edit home screen.</Text>
-      <Button style={{ width: 110}}
+      <Button style={{ width: '40%'}}
               buttonColor={colors.primary} 
               textColor={colors.onPrimary} 
               icon= 'plus'
