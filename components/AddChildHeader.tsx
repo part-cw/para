@@ -3,6 +3,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
+
 interface Props {
   title: string;
 }
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    // zIndex: 99, // TODO = remove?
+    // zIndex: 99, // TODO: delete?
   },
   container: {
     flexDirection: 'row',
