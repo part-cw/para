@@ -11,7 +11,7 @@ export default function AppBar() {
   const pathname = usePathname();
 
   const isHome = pathname === '/';
-  console.log(isHome, 'isHome')
+  console.log(isHome, 'isHome') // TODO - delete
 
   return (
     <Appbar.Header 
@@ -26,10 +26,8 @@ export default function AppBar() {
           <Appbar.Action
             icon="chevron-down"
             color="white"
-            onPress={() => setMenuVisible(true)}
-          />
-        }
-      >
+            onPress={() => setMenuVisible(true)}/>
+        }>
         <Menu.Item title="Username + last sync.." />
         <Menu.Item onPress={() => {}} leadingIcon = "account-circle" title="Profile" />
         <Menu.Item onPress={() => {}} leadingIcon= "translate" title="Language" />
@@ -68,6 +66,6 @@ export default function AppBar() {
                     </Button>
                 )}
       </View>
-      </Appbar.Header>
+    </Appbar.Header>
   );
 }

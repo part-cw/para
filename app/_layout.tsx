@@ -1,3 +1,4 @@
+import AppBar from "@/components/AppBar";
 import {
   Inter_400Regular,
   Inter_700Bold,
@@ -8,7 +9,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
-import { AppTheme } from "../assets/theme";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AppTheme } from "../themes/theme";
 
 
 // TODO figure out which font variant to use exactly -- importing 700Bold and 400Regular for now
@@ -40,10 +42,13 @@ export default function RootLayout() {
 
   // TODO add custom theme and pass it as prop in PaperProvider
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <PaperProvider theme={AppTheme}>
-        <Stack screenOptions={{headerShown: false,}}/>
-      </PaperProvider>
-    </View>
+    <SafeAreaProvider>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <PaperProvider theme={AppTheme}>
+          <AppBar/>
+          <Stack screenOptions={{headerShown: false,}}/>
+        </PaperProvider>
+      </View>
+    </SafeAreaProvider>
   );
 }
