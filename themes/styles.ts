@@ -3,7 +3,28 @@ import { AppTheme } from './theme';
 
 
 export const GlobalStyles = StyleSheet.create({
-
+    container: { flex: 1 },
+    
+    sectionHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 15,
+        marginBottom: 8,
+    },
+    
+    label: {
+        marginTop: 10,
+        marginBottom: 4,
+        fontSize: 14,
+    },
+    
+    required: {
+        color: 'red',
+    },
+    
+    textInput: {
+        marginBottom: 8,
+    },
 
     // Checkbox - adapted from RRAte repo: 
     // https://github.com/part-cw/rrate/blob/main/assets/styles.tsx#L248C3-L268C5

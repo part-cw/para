@@ -26,7 +26,7 @@ function CustomDrawerContent(props: any) {
         }}
       >
         <Text style={{ color: 'black', fontSize: 20, fontWeight: 'bold' }}>
-         Add Child Menu
+         Add Patient Menu
         </Text>
         <Pressable onPress={() => {
             props.navigation.closeDrawer();
