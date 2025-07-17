@@ -9,15 +9,41 @@ export default function AppBar() {
 
   // get current route
   const pathname = usePathname();
-
   const isHome = pathname === '/';
 
   return (
     <Appbar.Header 
       style={{ backgroundColor: colors.primary}}
-      mode='center-aligned'
-      >
-      {/* LEFT SIDE: User info with dropdown */}
+      mode='center-aligned'>
+
+      {/* LEFT SIDE: Show SD logo if on Home Screen, else show 'Home' button */}
+      {/* TODO make sure Home button works on other screens */}
+      <View style={{ flex: 1, alignItems: 'flex-start',  marginLeft: 12}}>
+        {isHome ? (
+          <Image source={require('../assets/images/SD-logo-text_side.png')}
+                 style={{
+                 width: 140}}
+                 resizeMode="contain"/>)
+          : (
+          <Button style={{ width: 110}}
+                  buttonColor={colors.secondary} 
+                  textColor={colors.onSecondary} 
+                  icon= 'home'
+                  mode="elevated" 
+                  onPress={() => {
+                    router.push('/')
+                    }}>
+              Home
+            </Button>)}
+      </View>
+
+      {/* RIGHT SIDE: User info with dropdown */}
+      {/* TODO make username + position update depending on who logged in */}
+      <View style={{ flexDirection: 'column', flex: 1, alignItems: 'flex-end' }}>
+        <Text style={{ color: colors.onPrimary, fontSize: 20, fontWeight: 'bold' }}>Emmet</Text> 
+        <Text style={{ color: colors.onPrimary, fontSize: 16 }}>Clinician</Text>
+      </View>
+
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
@@ -36,34 +62,7 @@ export default function AppBar() {
         <Menu.Item onPress={() => {}} leadingIcon= "logout" title="Logout"/>
           {/* TODO add close button + UBC copywrite; make buttons responsive; fix colour scheme*/}
       </Menu>
-
-        {/* TODO make username + position update depending on who logged in */}
-      <View style={{ flexDirection: 'column', marginLeft: 4 }}>
-        <Text style={{ color: colors.onPrimary, fontSize: 20, fontWeight: 'bold' }}>Emmet</Text> 
-        <Text style={{ color: colors.onPrimary, fontSize: 16 }}>Clinician</Text>
-      </View>
-      
-      {/* Show SD logo if on Home Screen, else show 'Home' button */}
-      {/* TODO make sure Home button works on other screens */}
-      <View style={{ flex: 1, alignItems: 'flex-end',  marginRight: 12}}>
-        {isHome ? (
-          <Image source={require('../assets/images/SD-logo-text_side.png')}
-                 style={{
-                 width: 140}}
-                 resizeMode="contain"/>)
-                : (
-                  <Button style={{ width: 110}}
-                          buttonColor={colors.secondary} 
-                          textColor={colors.onSecondary} 
-                          icon= 'home'
-                          mode="elevated" 
-                          onPress={() => {
-                            router.push('/')
-                            }}>
-                      Home
-                    </Button>
-                )}
-      </View>
+    
     </Appbar.Header>
   );
 }
