@@ -29,7 +29,6 @@ function CustomDrawerContent(props: any) {
          Add Child Menu
         </Text>
         <Pressable onPress={() => {
-            console.log('close side nav')
             props.navigation.closeDrawer();
           }}>
           <MaterialIcons name="cancel" size={27} color={ colors.primary} />

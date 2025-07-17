@@ -11,7 +11,6 @@ export default function AppBar() {
   const pathname = usePathname();
 
   const isHome = pathname === '/';
-  console.log(isHome, 'isHome') // TODO - delete
 
   return (
     <Appbar.Header 

@@ -15,7 +15,6 @@ export default function Index() {
               mode="elevated" 
               onPress={() => {
                 router.push('../(dataEntry-sidenav)/patientInformation')
-                console.log('Pressed')
                 }}>
           Add Child
         </Button>

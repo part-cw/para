@@ -15,7 +15,7 @@ export default function AddChildHeader({ title }: Props) {
         <View style={[styles.wrapper]}>
             <View style={[styles.container, { backgroundColor: colors.primaryContainer }]}>
                 <Pressable onPress={() => {
-                    console.log('burger menu pressed')
+                    console.log('burger menu pressed') // TODO - delete
                     }}>
                     <MaterialIcons name="menu" size={28} color={colors.tertiary} />
                 </Pressable>
