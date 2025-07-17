@@ -59,7 +59,6 @@ export default function AppBar() {
                           mode="elevated" 
                           onPress={() => {
                             router.push('/')
-                            console.log('Pressed')
                             }}>
                       Home
                     </Button>
