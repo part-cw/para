@@ -1,8 +1,9 @@
+import Checkbox from '@/components/Checkbox';
+import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Checkbox from '../../components/Checkbox';
 
 
 export default function PatientInformationScreen() {
@@ -19,6 +20,13 @@ export default function PatientInformationScreen() {
                 <TextInput label="Other Name"/>
 
                 <Checkbox label={'test'} checked={false} onChange={() => {}}/>
+                
+                <RadioButtonGroup 
+                    options={[
+                        { label: 'test', value: 'A'},
+                        { label: 'tEsT', value: 'B'}]} 
+                    selected={''} 
+                    onSelect={function (value: string): void {throw new Error('Function not implemented.');} }/>
             </ScrollView>
         </SafeAreaView>
     );
