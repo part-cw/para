@@ -18,9 +18,7 @@ export default function PatientInformationScreen() {
                 <TextInput label="First Name"/>
                 <TextInput label="Other Name"/>
 
-                <Checkbox label={'test'} checked={false} onChange={function (): void {
-              throw new Error('Function not implemented.');
-          } }/>
+                <Checkbox label={'test'} checked={false} onChange={() => {}}/>
             </ScrollView>
         </SafeAreaView>
     );
