@@ -2,7 +2,7 @@ import { GlobalStyles as Styles } from '@/themes/styles';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Button, List, TextInput, useTheme } from 'react-native-paper';
+import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -46,12 +46,24 @@ export default function AdmissionClinicalDataScreen() {
                                     style={Styles.accordionTextInput} 
                                     right={<TextInput.Affix text="kg" />}
                                 />
-                                <TextInput 
-                                    label="MUAC (required)"
-                                    mode="flat"
-                                    keyboardType="numeric" 
-                                    style={Styles.accordionTextInput} 
-                                    right={<TextInput.Affix text="mm" />}                        />
+                                <View style={{flexDirection:'row', alignItems: 'center'}}>
+                                     <TextInput 
+                                        label="MUAC (required)"
+                                        mode="flat"
+                                        keyboardType="numeric" 
+                                        style={[Styles.accordionTextInput, { flex: 1 }]} 
+                                        right={<TextInput.Affix text="mm" />}/>
+                                    <IconButton
+                                        icon="help-circle-outline"
+                                        size={20}
+                                        iconColor={colors.primary}
+                                        onPress={() => {
+                                        // TODO - use tooltip instead of alert message
+                                        // tooltip package: https://www.npmjs.com/package/react-native-walkthrough-tooltip
+                                        alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for accurate model calculations');
+                                        }}
+                                    />
+                                </View>
                                 <TextInput
                                     label="Temperature (required)" 
                                     mode="flat" 
@@ -59,8 +71,21 @@ export default function AdmissionClinicalDataScreen() {
                                     style={Styles.accordionTextInput}
                                     right={<TextInput.Affix text="°C" />}
                                 />
-                                
-                                <Text style={Styles.accordionSubheading}>Respiratory Rate <Text style={Styles.required}>*</Text></Text>
+
+                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                    <Text style={Styles.accordionSubheading}>Respiratory Rate</Text>
+                                    <IconButton
+                                        icon="help-circle-outline"
+                                        size={20}
+                                        iconColor={colors.primary}
+                                        onPress={() => {
+                                        // TODO - use tooltip instead of alert message
+                                        // tooltip package: https://www.npmjs.com/package/react-native-walkthrough-tooltip
+                                        alert('Manually count breaths per minute, or measure from the RRate app by clicking "Record from RRate" button');
+                                        }}
+                                    />
+                                </View>
+                               
                                 <TextInput
                                     label="Breaths per minute (required)"
                                     mode="flat" 
@@ -73,7 +98,7 @@ export default function AdmissionClinicalDataScreen() {
                                         textColor={colors.onPrimary} 
                                         mode="elevated" 
                                         onPress={() => {}}>
-                                    Record from RRate App
+                                    Record from RRate
                                 </Button>
 
                                 <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
