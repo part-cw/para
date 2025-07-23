@@ -1,18 +1,28 @@
+import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
+import { Dropdown } from "react-native-paper-dropdown";
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 
 
 export default function AdmissionClinicalDataScreen() {  
     const {colors, fonts} = useTheme()
 
     // TODO - fix useState and handlePress
+    const [hivStatus, setHivStatus] = useState<string>('');
     const [expanded, setExpanded] = useState(false);
     const handlePress = () => setExpanded(!expanded);
+
+    const [lastHospitalized, setLastHospitalized] = useState<string>();
+    const hospitalizationOptions = [
+    { label: 'Never', value: 'a' },
+    { label: 'Less than 7 days ago', value: 'b' },
+    { label: '7 days to 1 month ago', value: 'c' },
+    { label: '1 month to 1 year ago', value: 'd' },
+    { label: 'More than 1 year ago', value: 'e' }];
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -25,9 +35,22 @@ export default function AdmissionClinicalDataScreen() {
                             titleStyle={Styles.accordionListTitle}
                             left={props => <List.Icon {...props} icon="history" />}>
                             <View style={Styles.accordionContentWrapper}>
-                                {/* TODO - remove placeholder */}
-                                <List.Item title="First item" />
-                                <List.Item title="Second item" />
+                                <Dropdown
+                                    label={"Last Hopitalized"}
+                                    mode={"outlined"}
+                                    options={hospitalizationOptions}
+                                    value={lastHospitalized}
+                                    onSelect={setLastHospitalized}
+                                    menuContentStyle={{backgroundColor: colors.secondary}}
+                                />
+                                <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
+                                <RadioButtonGroup 
+                                    options={[
+                                        { label: 'Positive', value: 'positive'},
+                                        { label: 'Negative', value: 'negative'},
+                                        { label: 'Unknown', value: 'unknown'}]} 
+                                    selected={hivStatus} 
+                                    onSelect={setHivStatus}/>
                             </View>
                         </List.Accordion>
                     </View>

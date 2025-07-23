@@ -20,7 +20,7 @@ type Props = {
 // Displays a group of radio buttons. 
 export default function RadioButtonGroup({ options, selected, onSelect }: Props) {
   return (
-    <View style={{flexDirection: 'row'}}>
+    <View style={{flexDirection: 'column'}}>
       {options.map((option) => (
         <Pressable
           key={option.value}
