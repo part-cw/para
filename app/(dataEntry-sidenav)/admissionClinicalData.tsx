@@ -9,20 +9,43 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function AdmissionClinicalDataScreen() {  
-    const {colors, fonts} = useTheme()
+    const { colors } = useTheme()
 
-    // TODO - fix useState and handlePress
-    const [hivStatus, setHivStatus] = useState<string>('');
+    // TODO - fix setuseState and handlePress
     const [expanded, setExpanded] = useState(false);
     const handlePress = () => setExpanded(!expanded);
 
+    const [hivStatus, setHivStatus] = useState<string>('');
+
     const [lastHospitalized, setLastHospitalized] = useState<string>();
     const hospitalizationOptions = [
-    { label: 'Never', value: 'a' },
-    { label: 'Less than 7 days ago', value: 'b' },
-    { label: '7 days to 1 month ago', value: 'c' },
-    { label: '1 month to 1 year ago', value: 'd' },
-    { label: 'More than 1 year ago', value: 'e' }];
+    { label: 'Never', value: 'never' },
+    { label: 'Less than 7 days ago', value: '<7d' },
+    { label: '7 days to 1 month ago', value: '7d-1m' },
+    { label: '1 month to 1 year ago', value: '1m-1y' },
+    { label: 'More than 1 year ago', value: '>1y' }];
+
+    const [eyeMovement, setEyeMovement] = useState<string>();
+    const eyeMovementOptions = [
+        {label: 'Watches or follows', value: 'watches'},
+        {label: 'Fails to watch or follow', value: 'fails'}
+    ]
+
+    const [motorResponse, setMotorResponse] = useState<string>();
+    const motorResponseOptions = [
+        {label: 'Normal behavior observed', value: 'normal'},
+        {label: 'Localizes painful stimulus', value: 'localize'},
+        {label: 'Withdraws from painful stimulus', value: 'withdraw'},
+        {label: 'No or inappropriate response', value: 'no-response'}
+    ]
+
+    const [verbalResponse, setVerbalResponse] = useState<string>();
+    const verbalResponseOptions = [
+        {label: 'Normal behavior observed', value: 'normal'},
+        {label: 'Cries appropriately', value: 'cries'},
+        {label: 'Moan or abnormal cry', value: 'moan'},
+        {label: 'No vocal response', value: 'no-response'}
+    ]
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -36,7 +59,7 @@ export default function AdmissionClinicalDataScreen() {
                             left={props => <List.Icon {...props} icon="history" />}>
                             <View style={Styles.accordionContentWrapper}>
                                 <Dropdown
-                                    label={"Last Hopitalized"}
+                                    label={"Last Hopitalized (required)"}
                                     mode={"outlined"}
                                     options={hospitalizationOptions}
                                     value={lastHospitalized}
@@ -145,6 +168,7 @@ export default function AdmissionClinicalDataScreen() {
                     </View>
                     
                     {/* Blantyre Coma Scale Accordion */}
+                    {/* TODO - add BCS score card & required flag */}
                     <View style={Styles.accordionListWrapper}>
                         <List.Accordion
                             title="Blantyre Coma Scale"
@@ -153,7 +177,31 @@ export default function AdmissionClinicalDataScreen() {
                             expanded={expanded}
                             onPress={handlePress}>
                             <View style={Styles.accordionContentWrapper}>
-                                <List.Item title="Second item" />
+                                <Text style={Styles.accordionSubheading}>Info TODO</Text>
+                                <Dropdown
+                                    label={"Eye movement"}
+                                    mode={"outlined"}
+                                    options={eyeMovementOptions}
+                                    value={eyeMovement}
+                                    onSelect={setEyeMovement}
+                                    menuContentStyle={{backgroundColor: colors.secondary}}
+                                />
+                                <Dropdown
+                                    label={"Best motor response"}
+                                    mode={"outlined"}
+                                    options={motorResponseOptions}
+                                    value={motorResponse}
+                                    onSelect={setMotorResponse}
+                                    menuContentStyle={{backgroundColor: colors.secondary}}
+                                />
+                                <Dropdown
+                                    label={"Best verbal response"}
+                                    mode={"outlined"}
+                                    options={verbalResponseOptions}
+                                    value={verbalResponse}
+                                    onSelect={setVerbalResponse}
+                                    menuContentStyle={{backgroundColor: colors.secondary}}
+                                />
                             </View>
                         </List.Accordion>
                     </View>
