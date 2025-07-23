@@ -5,15 +5,28 @@ import { AppTheme } from './theme';
 export const GlobalStyles = StyleSheet.create({
     container: { flex: 1 },
     
+    accordionListWrapper: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        marginBottom: 8,
+        backgroundColor: 'white',
+        elevation: 2, // TODO - confirm this works for iOS and web
+        overflow: 'hidden',
+    },
+
+    accordionContentWrapper: { 
+        paddingHorizontal: 30, 
+        paddingVertical: 8, 
+        gap: 8 
+    },
+
     accordionListTitle: {
         fontSize: 18
     },
 
     accordionTextInput: {
         marginBottom: 8,
-        paddingLeft: 8,
-        marginLeft: 20,
-        marginRight: 30
     },
 
      accordionSubheading: {
