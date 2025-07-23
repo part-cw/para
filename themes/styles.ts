@@ -5,6 +5,23 @@ import { AppTheme } from './theme';
 export const GlobalStyles = StyleSheet.create({
     container: { flex: 1 },
     
+    accordionListTitle: {
+        fontSize: 18
+    },
+
+    accordionTextInput: {
+        marginBottom: 8,
+        paddingLeft: 8,
+        marginLeft: 20,
+        marginRight: 30
+    },
+
+     accordionSubheading: {
+        fontSize: 16,
+        marginTop: 15,
+        marginBottom: 8,
+    },
+
     sectionHeader: {
         fontSize: 18,
         fontWeight: 'bold',
@@ -24,6 +41,7 @@ export const GlobalStyles = StyleSheet.create({
     
     textInput: {
         marginBottom: 8,
+        paddingLeft: 8
     },
 
     // Checkbox - adapted from RRAte repo: 
@@ -32,7 +50,7 @@ export const GlobalStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 8,
-        paddingRight: 30
+        paddingRight: 30,
     },
     checkbox: {
         height: 22,

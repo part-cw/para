@@ -17,7 +17,7 @@ export default function Index() {
                 onPress={() => {
                   router.push('../(dataEntry-sidenav)/patientInformation')
                   }}>
-            Add Child
+            Add Patient
           </Button>
       </View>
     </>
