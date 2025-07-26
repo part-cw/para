@@ -84,14 +84,15 @@ export const GlobalStyles = StyleSheet.create({
         position: 'relative',
         right: 16,
         bottom: Platform.OS === 'ios' ? 30 : 16,
-        zIndex: 10,
+        zIndex: 11,
         alignSelf: 'flex-end'
     },
 
     previousButtonContainer: {
-        position: 'absolute',
+        position: 'relative',
         left: 16,
         bottom: Platform.OS === 'ios' ? 30 : 16,
         zIndex: 10,
+        alignSelf: 'flex-start'
     },
 })

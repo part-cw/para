@@ -1,5 +1,7 @@
+import PaginationButton from '@/components/PaginationButton';
 import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -207,6 +209,26 @@ export default function AdmissionClinicalDataScreen() {
                     </View>
                 </List.Section>
             </ScrollView>
+            
+             {/* Pagination controls */}
+             {/* TODO - make sure this is the correct way to navigate to different screens */}
+            {/* <View style={{flexDirection: 'row-reverse', flex: 1}}> */}
+                <PaginationButton
+                    // TODO - add alerts on press ??
+                    onPress={() => 
+                        {router.push('../(dataEntry-sidenav)/medicalConditions')}}
+                    isNext={ true }
+                    label='Next'
+                />
+                <PaginationButton
+                    // TODO - add alerts on press ??
+                    onPress={() => 
+                        {router.push('../(dataEntry-sidenav)/patientInformation')}}
+                    isNext={ false }
+                    label='Previous'
+                />
+            {/* </View> */}
+           
         </SafeAreaView>
     );
 }
