@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { AppTheme } from './theme';
 
 
@@ -79,5 +79,19 @@ export const GlobalStyles = StyleSheet.create({
         backgroundColor: AppTheme.colors.primary,
         borderColor: '#2e86de',
     },
+
+    paginationButtonContainer: {
+        position: 'absolute',
+        right: 16,
+        bottom: Platform.OS === 'ios' ? 30 : 16,
+        zIndex: 10,
+    },
+
+    // paginationButtonStyle: {
+    //     // borderRadius: 24,
+    //     // paddingVertical: 6,
+    //     // minWidth: 120,
+    //     elevation: 2,
+    // }
     
 })

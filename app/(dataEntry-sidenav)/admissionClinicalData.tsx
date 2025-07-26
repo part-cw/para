@@ -36,7 +36,7 @@ export default function AdmissionClinicalDataScreen() {
         {label: 'Normal behavior observed', value: 'normal'},
         {label: 'Localizes painful stimulus', value: 'localize'},
         {label: 'Withdraws from painful stimulus', value: 'withdraw'},
-        {label: 'No or inappropriate response', value: 'no-response'}
+        {label: 'No resonse/inappropriate response', value: 'no-response'}
     ]
 
     const [verbalResponse, setVerbalResponse] = useState<string>();
@@ -106,7 +106,7 @@ export default function AdmissionClinicalDataScreen() {
                                         onPress={() => {
                                         // TODO - use tooltip instead of alert message
                                         // tooltip package: https://www.npmjs.com/package/react-native-walkthrough-tooltip
-                                        alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for accurate model calculations');
+                                        alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions');
                                         }}
                                     />
                                 </View>
@@ -119,7 +119,7 @@ export default function AdmissionClinicalDataScreen() {
                                 />
 
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                    <Text style={Styles.accordionSubheading}>Respiratory Rate</Text>
+                                    <Text style={Styles.accordionSubheading}>Respiratory Rate <Text style={Styles.required}>*</Text></Text>
                                     <IconButton
                                         icon="help-circle-outline"
                                         size={20}
