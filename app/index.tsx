@@ -9,7 +9,7 @@ export default function Index() {
     <>
       <View style={{ flex: 1, alignItems: 'center' }}>
         <Text style={{paddingBlock: 50}}>TODO Edit app/index.tsx to edit home screen.</Text>
-        <Button style={{ width: '40%' }}
+        <Button style={{ alignSelf: 'center' }}
                 buttonColor={colors.primary} 
                 textColor={colors.onPrimary} 
                 icon= 'plus'
@@ -17,7 +17,7 @@ export default function Index() {
                 onPress={() => {
                   router.push('../(dataEntry-sidenav)/patientInformation')
                   }}>
-            Add Child
+            Add Patient
           </Button>
       </View>
     </>

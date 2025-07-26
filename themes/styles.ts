@@ -1,9 +1,61 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { AppTheme } from './theme';
 
 
 export const GlobalStyles = StyleSheet.create({
+    container: { flex: 1 },
+    
+    accordionListWrapper: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        marginBottom: 8,
+        backgroundColor: 'white',
+        elevation: 2, // TODO - confirm this works for iOS and web
+        overflow: 'hidden',
+    },
 
+    accordionContentWrapper: { 
+        paddingHorizontal: 30, 
+        paddingVertical: 8, 
+        gap: 8 
+    },
+
+    accordionListTitle: {
+        fontSize: 18
+    },
+
+    accordionTextInput: {
+        marginBottom: 8,
+    },
+
+     accordionSubheading: {
+        fontSize: 16,
+        marginTop: 15,
+        marginBottom: 8,
+    },
+
+    sectionHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 15,
+        marginBottom: 8,
+    },
+    
+    label: {
+        marginTop: 10,
+        marginBottom: 4,
+        fontSize: 14,
+    },
+    
+    required: {
+        color: 'red',
+    },
+    
+    textInput: {
+        marginBottom: 8,
+        paddingLeft: 8
+    },
 
     // Checkbox - adapted from RRAte repo: 
     // https://github.com/part-cw/rrate/blob/main/assets/styles.tsx#L248C3-L268C5
@@ -11,7 +63,7 @@ export const GlobalStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 8,
-        paddingRight: 30
+        paddingRight: 30,
     },
     checkbox: {
         height: 22,
@@ -27,5 +79,19 @@ export const GlobalStyles = StyleSheet.create({
         backgroundColor: AppTheme.colors.primary,
         borderColor: '#2e86de',
     },
-    
+
+    nextButtonContainer: {
+        position: 'relative',
+        right: 16,
+        bottom: Platform.OS === 'ios' ? 30 : 16,
+        zIndex: 10,
+        alignSelf: 'flex-end'
+    },
+
+    previousButtonContainer: {
+        position: 'absolute',
+        left: 16,
+        bottom: Platform.OS === 'ios' ? 30 : 16,
+        zIndex: 10,
+    },
 })
