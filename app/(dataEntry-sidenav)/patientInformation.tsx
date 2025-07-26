@@ -50,13 +50,13 @@ export default function PatientInformationScreen() {
                           checked={isDOBUnknown} 
                           onChange={() => {setIsDOBUnknown((prev) => !prev)}}/>
                 <TextInput label="Date of Birth (YYYY/MM/DD)" mode="flat" style={Styles.textInput} />
-                <PaginationButton 
+                <PaginationButton
+                    // TODO - add alerts on press ??
                     onPress={() => 
                         {router.push('../(dataEntry-sidenav)/admissionClinicalData')}}
+                    isNext={ true }
                     label='Next'
                 />
-                
-            
             </ScrollView>
         </SafeAreaView>
     );

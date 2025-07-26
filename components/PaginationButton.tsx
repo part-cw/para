@@ -4,26 +4,26 @@ import { View } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';
 
 
-type NextButtonProps = {
+type PaginationProps = {
   onPress: () => void;
   label?: string;
-  disabled?: boolean;
+  icon?: string;
   isNext?: boolean;
+  disabled?: boolean;
 };
 
 
-export default function PaginationButton({ onPress, label, disabled=false, isNext }: NextButtonProps) {
+export default function PaginationButton({ onPress, label, disabled=false, isNext }: PaginationProps) {
   const { colors } = useTheme();
 
   return (
-    <View style={Styles.paginationButtonContainer}>
+    <View style={isNext ? Styles.nextButtonContainer : Styles.previousButtonContainer}>
       <Button
-        mode="contained"
+        mode="elevated"
         buttonColor={colors.tertiary}
         textColor={colors.onPrimary}
-        icon="arrow-right"
-        contentStyle={{ flexDirection: 'row-reverse' }}
-        // style={Styles.paginationButtonStyle}
+        icon= {isNext ? "arrow-right" : 'arrow-left'}
+        contentStyle={{ flexDirection: isNext ? 'row-reverse' : 'row' }}
         onPress={onPress}
         disabled={disabled}>
           {label}

@@ -80,18 +80,18 @@ export const GlobalStyles = StyleSheet.create({
         borderColor: '#2e86de',
     },
 
-    paginationButtonContainer: {
-        position: 'absolute',
+    nextButtonContainer: {
+        position: 'relative',
         right: 16,
         bottom: Platform.OS === 'ios' ? 30 : 16,
         zIndex: 10,
+        alignSelf: 'flex-end'
     },
 
-    // paginationButtonStyle: {
-    //     // borderRadius: 24,
-    //     // paddingVertical: 6,
-    //     // minWidth: 120,
-    //     elevation: 2,
-    // }
-    
+    previousButtonContainer: {
+        position: 'absolute',
+        left: 16,
+        bottom: Platform.OS === 'ios' ? 30 : 16,
+        zIndex: 10,
+    },
 })
