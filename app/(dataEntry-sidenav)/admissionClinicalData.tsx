@@ -1,3 +1,4 @@
+import DebugStack from '@/components/DebugStack';
 import PaginationButton from '@/components/PaginationButton';
 import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
@@ -52,6 +53,7 @@ export default function AdmissionClinicalDataScreen() {
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
+                <DebugStack/>
                 <List.Section>
                     {/* Health History Accordion */}
                     <View style={Styles.accordionListWrapper}>
@@ -215,8 +217,7 @@ export default function AdmissionClinicalDataScreen() {
             <View style={Styles.paginationButtonContainer}>
                 <PaginationButton
                     // TODO - add alerts on press ??
-                    onPress={() => 
-                        {router.push('../(dataEntry-sidenav)/patientInformation')}}
+                    onPress={() => {router.back()}}
                     isNext={ false }
                     label='Previous'
                 />

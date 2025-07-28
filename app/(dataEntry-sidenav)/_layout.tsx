@@ -1,3 +1,4 @@
+import DebugStack from '@/components/DebugStack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { withLayoutContext } from 'expo-router';
@@ -44,6 +45,7 @@ function CustomDrawerContent(props: any) {
 export default function DrawerLayout() {
   return (
     <>
+    <DebugStack/>
       <SafeAreaProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <Drawer
