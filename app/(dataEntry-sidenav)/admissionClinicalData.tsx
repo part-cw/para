@@ -4,7 +4,7 @@ import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { Dropdown } from "react-native-paper-dropdown";
@@ -69,6 +69,7 @@ export default function AdmissionClinicalDataScreen() {
                                     value={lastHospitalized}
                                     onSelect={setLastHospitalized}
                                     menuContentStyle={{backgroundColor: colors.secondary}}
+                                    hideMenuHeader = {Platform.OS === 'web'}
                                 />
                                 <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
                                 <RadioButtonGroup 
@@ -189,6 +190,7 @@ export default function AdmissionClinicalDataScreen() {
                                     value={eyeMovement}
                                     onSelect={setEyeMovement}
                                     menuContentStyle={{backgroundColor: colors.secondary}}
+                                    hideMenuHeader = {Platform.OS === 'web'}
                                 />
                                 <Dropdown
                                     label={"Best motor response"}
@@ -197,6 +199,7 @@ export default function AdmissionClinicalDataScreen() {
                                     value={motorResponse}
                                     onSelect={setMotorResponse}
                                     menuContentStyle={{backgroundColor: colors.secondary}}
+                                    hideMenuHeader = {Platform.OS === 'web'}
                                 />
                                 <Dropdown
                                     label={"Best verbal response"}
@@ -205,6 +208,7 @@ export default function AdmissionClinicalDataScreen() {
                                     value={verbalResponse}
                                     onSelect={setVerbalResponse}
                                     menuContentStyle={{backgroundColor: colors.secondary}}
+                                    hideMenuHeader = {Platform.OS === 'web'}
                                 />
                             </View>
                         </List.Accordion>

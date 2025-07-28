@@ -3,7 +3,7 @@ import PaginationButton from '@/components/PaginationButton';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
 import { Dropdown } from 'react-native-paper-dropdown';
@@ -11,13 +11,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function MedicalConditionsScreen() {
+    // debugger;
     const { colors } = useTheme();
     
-    const [ anaemia, setAnaemia ] = useState<string | undefined>(undefined);
+    // const [ anaemia, setAnaemia ] = useState<string | undefined>(undefined);
+    const [ anaemia, setAnaemia ] = useState<string>();
     console.log('anaemia here!!!', anaemia)
 
     const [ pneumonia, setPneumonia ] = useState<string>();
-    const [ chronicIllness, setChronicIllness ] = useState<string>()
+    const [ chronicIllness, setChronicIllness ] = useState<string>();
     const [ acuteDiarrhea, setAcuteDiarrhea ] = useState<string>();
     const [ malaria, setMalaria ] = useState<string>();
     const [ sepsis, setSepsis ] = useState<string>();
@@ -25,6 +27,7 @@ export default function MedicalConditionsScreen() {
     const [ sickInfant, setSickInfant ] = useState<string>();
 
     const diagnosisOptions = [
+        // { label: '–––', value: '' },
         { label: 'Yes - positive diagnosis', value: 'yes'},
         { label: 'No - negative diagnosis', value: 'no'},
         { label: 'Suspected', value: 'suspected'},
@@ -52,7 +55,7 @@ export default function MedicalConditionsScreen() {
                         <Text variant="bodyMedium">
                             Indicate whether the patient is confirmed to have, suspected to have, 
                             or does not have any of the following common medical conditions. 
-                            If a <b>diagnosis is unclear and no testing</b> has been done, select 
+                            If a <Text style={{ fontWeight: 'bold' }}>diagnosis is unclear and no testing</Text> has been done, select 
                             ‘unsure’ where applicable</Text>
                     </Card.Content>
                 </Card>
@@ -102,6 +105,8 @@ export default function MedicalConditionsScreen() {
                     value = {sickInfant}
                     onSelect = {setSickInfant}
                     menuContentStyle={{backgroundColor: colors.secondary}}
+                    hideMenuHeader = {Platform.OS === 'web'}
+
                 />
                 <Dropdown 
                     label = {'Pneumonia'}
@@ -109,6 +114,7 @@ export default function MedicalConditionsScreen() {
                     options = {diagnosisOptions}
                     value = {pneumonia}
                     onSelect = {setPneumonia}
+                    hideMenuHeader = {Platform.OS === 'web'}
                     menuContentStyle={{backgroundColor: colors.secondary}}
                 />
                 <Dropdown 
@@ -116,13 +122,10 @@ export default function MedicalConditionsScreen() {
                     mode = {'outlined'}
                     options = {diagnosisOptions}
                     value = {anaemia}
-                    onSelect = {(value) => {
-                        console.log(value, 'value')
-                        console.log(anaemia, 'anaemia before set')
-                        setAnaemia(value ?? undefined)
-                    }
-                        }
+                    onSelect={setAnaemia}
                     menuContentStyle={{backgroundColor: colors.secondary}}
+                    hideMenuHeader = {Platform.OS === 'web'}
+
                 />
 
                 <View style = {{flexDirection: 'row', alignItems: 'center'}}>
@@ -133,7 +136,9 @@ export default function MedicalConditionsScreen() {
                             options = {diagnosisOptions}
                             value = {chronicIllness}
                             onSelect = {setChronicIllness}
-                            menuContentStyle={{backgroundColor: colors.secondary}}/>
+                            menuContentStyle={{backgroundColor: colors.secondary}}
+                            hideMenuHeader = {Platform.OS === 'web'}
+/>
                     </View>
                     <IconButton
                         icon="help-circle-outline"
@@ -153,7 +158,7 @@ export default function MedicalConditionsScreen() {
                     value = {acuteDiarrhea}
                     onSelect = {setAcuteDiarrhea}
                     menuContentStyle={{backgroundColor: colors.secondary}}
-                    // TODO - add more info
+                    hideMenuHeader = {Platform.OS === 'web'}
                 />
                 <Dropdown 
                     label = {'Malaria'}
@@ -162,6 +167,7 @@ export default function MedicalConditionsScreen() {
                     value = {malaria}
                     onSelect = {setMalaria}
                     menuContentStyle={{backgroundColor: colors.secondary}}
+                    hideMenuHeader = {Platform.OS === 'web'}
                 />
                 <Dropdown 
                     label = {'Sepsis'}
@@ -170,6 +176,7 @@ export default function MedicalConditionsScreen() {
                     value = {sepsis}
                     onSelect = {setSepsis}
                     menuContentStyle={{backgroundColor: colors.secondary}}
+                    hideMenuHeader = {Platform.OS === 'web'}
                 />
                 <Dropdown 
                     label = {'Meningitis/Encephalitis'}
@@ -178,6 +185,7 @@ export default function MedicalConditionsScreen() {
                     value = {meningitis}
                     onSelect = {setMeningitis}
                     menuContentStyle={{backgroundColor: colors.secondary}}
+                    hideMenuHeader = {Platform.OS === 'web'}
                 />
 
             </ScrollView>
