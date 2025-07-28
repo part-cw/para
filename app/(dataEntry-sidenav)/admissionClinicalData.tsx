@@ -85,7 +85,7 @@ export default function AdmissionClinicalDataScreen() {
                     {/* Vital Signs Accordion */}
                     <View style={Styles.accordionListWrapper}>
                         <List.Accordion
-                        title="Vital Signs"
+                        title="Body Measurements & Vitals"
                         titleStyle={Styles.accordionListTitle}
                         left={props => <List.Icon {...props} icon="heart-pulse" />}>
                             <View style={Styles.accordionContentWrapper}>

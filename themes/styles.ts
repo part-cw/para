@@ -35,6 +35,11 @@ export const GlobalStyles = StyleSheet.create({
         marginBottom: 8,
     },
 
+    cardWrapper: {
+        backgroundColor: AppTheme.colors.secondary,
+        marginBottom: 8,
+    },
+
     sectionHeader: {
         fontSize: 18,
         fontWeight: 'bold',
