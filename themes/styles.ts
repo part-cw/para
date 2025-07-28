@@ -84,15 +84,21 @@ export const GlobalStyles = StyleSheet.create({
         position: 'relative',
         right: 16,
         bottom: Platform.OS === 'ios' ? 30 : 16,
-        zIndex: 11,
-        alignSelf: 'flex-end'
+        alignSelf: 'flex-end',
     },
 
     previousButtonContainer: {
         position: 'relative',
         left: 16,
         bottom: Platform.OS === 'ios' ? 30 : 16,
-        zIndex: 10,
         alignSelf: 'flex-start'
+    },
+
+    paginationButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingBottom: Platform.OS === 'ios' ? 30 : 16,
+        width: '100%'
     },
 })

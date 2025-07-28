@@ -1,6 +1,4 @@
-import { GlobalStyles as Styles } from '@/themes/styles';
 import React from 'react';
-import { View } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';
 
 
@@ -17,7 +15,6 @@ export default function PaginationButton({ onPress, label, disabled=false, isNex
   const { colors } = useTheme();
 
   return (
-    <View style={isNext ? Styles.nextButtonContainer : Styles.previousButtonContainer}>
       <Button
         mode="elevated"
         buttonColor={colors.tertiary}
@@ -28,6 +25,5 @@ export default function PaginationButton({ onPress, label, disabled=false, isNex
         disabled={disabled}>
           {label}
       </Button>
-    </View>
   );
 }

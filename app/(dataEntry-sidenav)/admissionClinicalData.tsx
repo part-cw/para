@@ -212,14 +212,7 @@ export default function AdmissionClinicalDataScreen() {
             
              {/* Pagination controls */}
              {/* TODO - make sure this is the correct way to navigate to different screens */}
-            {/* <View style={{flexDirection: 'row-reverse', flex: 1}}> */}
-                <PaginationButton
-                    // TODO - add alerts on press ??
-                    onPress={() => 
-                        {router.push('../(dataEntry-sidenav)/medicalConditions')}}
-                    isNext={ true }
-                    label='Next'
-                />
+            <View style={Styles.paginationButtonContainer}>
                 <PaginationButton
                     // TODO - add alerts on press ??
                     onPress={() => 
@@ -227,7 +220,15 @@ export default function AdmissionClinicalDataScreen() {
                     isNext={ false }
                     label='Previous'
                 />
-            {/* </View> */}
+                <PaginationButton
+                    // TODO - add alerts on press ??
+                    onPress={() => {
+                        router.push('../(dataEntry-sidenav)/medicalConditions')
+                    }}
+                    isNext={ true }
+                    label='Next'
+                />
+            </View>
            
         </SafeAreaView>
     );

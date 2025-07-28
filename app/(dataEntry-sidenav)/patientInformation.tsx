@@ -4,7 +4,7 @@ import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,13 +54,16 @@ export default function PatientInformationScreen() {
             </ScrollView>
             
             {/* Pagination controls */}
-            <PaginationButton
-                // TODO - add alerts on press ??
-                onPress={() => 
-                    {router.push('../(dataEntry-sidenav)/admissionClinicalData')}}
-                isNext={ true }
-                label='Next'
-            />
+            <View style={Styles.nextButtonContainer}>
+                <PaginationButton
+                    // TODO - add alerts on press ??
+                    onPress={() => 
+                        {router.push('../(dataEntry-sidenav)/admissionClinicalData')}}
+                    isNext={ true }
+                    label='Next'
+                />
+            </View>
+          
         </SafeAreaView>
     );
 }
