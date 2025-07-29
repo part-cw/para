@@ -11,23 +11,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function MedicalConditionsScreen() {
-    // debugger;
     const { colors } = useTheme();
     
-    // const [ anaemia, setAnaemia ] = useState<string | undefined>(undefined);
     const [ anaemia, setAnaemia ] = useState<string>();
-    console.log('anaemia here!!!', anaemia)
-
     const [ pneumonia, setPneumonia ] = useState<string>();
     const [ chronicIllness, setChronicIllness ] = useState<string>();
     const [ acuteDiarrhea, setAcuteDiarrhea ] = useState<string>();
     const [ malaria, setMalaria ] = useState<string>();
     const [ sepsis, setSepsis ] = useState<string>();
     const [ meningitis, setMeningitis ] = useState<string>();
-    const [ sickInfant, setSickInfant ] = useState<string>();
 
     const diagnosisOptions = [
-        // { label: '–––', value: '' },
         { label: 'Yes - positive diagnosis', value: 'yes'},
         { label: 'No - negative diagnosis', value: 'no'},
         { label: 'Suspected', value: 'suspected'},
@@ -37,13 +31,6 @@ export default function MedicalConditionsScreen() {
     const simplifiedOptions = [
         { label: 'Yes', value: 'yes'},
         { label: 'No', value: 'no'},
-    ]
-
-    // TODO - remove sick infant from this page?
-    const sickInfantOptions = [
-        { label: 'Yes', value: 'yes'},
-        { label: 'No', value: 'no'},
-        { label: 'Not applicable', value: 'na'},
     ]
   
     return (
@@ -98,16 +85,6 @@ export default function MedicalConditionsScreen() {
                     />
                 </View>
                 
-                <Dropdown // TODO - make it autopopulate based on age OR remove altogether?
-                    label = {'Sick young infant'}
-                    mode = {'outlined'}
-                    options = {sickInfantOptions}
-                    value = {sickInfant}
-                    onSelect = {setSickInfant}
-                    menuContentStyle={{backgroundColor: colors.secondary}}
-                    hideMenuHeader = {Platform.OS === 'web'}
-
-                />
                 <Dropdown 
                     label = {'Pneumonia'}
                     mode = {'outlined'}
