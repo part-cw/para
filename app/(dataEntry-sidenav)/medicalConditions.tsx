@@ -32,14 +32,14 @@ export default function MedicalConditionsScreen() {
         { label: 'Yes', value: 'yes'},
         { label: 'No', value: 'no'},
     ]
-  
+      
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <DebugStack/>
             <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
                 <Card style={Styles.cardWrapper}>
                     <Card.Content>
-                        <Text variant="bodyMedium">
+                        <Text variant="bodyLarge">
                             Indicate whether the patient is confirmed to have, suspected to have, 
                             or does not have any of the following common medical conditions. 
                             If a <Text style={{ fontWeight: 'bold' }}>diagnosis is unclear and no testing</Text> has been done, select 
