@@ -4,7 +4,7 @@ import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -50,6 +50,11 @@ export default function PatientInformationScreen() {
                           checked={isDOBUnknown} 
                           onChange={() => {setIsDOBUnknown((prev) => !prev)}}/>
                 <TextInput label="Date of Birth (YYYY/MM/DD)" mode="flat" style={Styles.textInput} />
+                
+            </ScrollView>
+            
+            {/* Pagination controls */}
+            <View style={Styles.nextButtonContainer}>
                 <PaginationButton
                     // TODO - add alerts on press ??
                     onPress={() => 
@@ -57,7 +62,8 @@ export default function PatientInformationScreen() {
                     isNext={ true }
                     label='Next'
                 />
-            </ScrollView>
+            </View>
+          
         </SafeAreaView>
     );
 }

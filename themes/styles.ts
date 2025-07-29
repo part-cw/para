@@ -35,6 +35,11 @@ export const GlobalStyles = StyleSheet.create({
         marginBottom: 8,
     },
 
+    cardWrapper: {
+        backgroundColor: AppTheme.colors.secondary,
+        marginBottom: 8,
+    },
+
     sectionHeader: {
         fontSize: 18,
         fontWeight: 'bold',
@@ -84,14 +89,21 @@ export const GlobalStyles = StyleSheet.create({
         position: 'relative',
         right: 16,
         bottom: Platform.OS === 'ios' ? 30 : 16,
-        zIndex: 10,
-        alignSelf: 'flex-end'
+        alignSelf: 'flex-end',
     },
 
     previousButtonContainer: {
-        position: 'absolute',
+        position: 'relative',
         left: 16,
         bottom: Platform.OS === 'ios' ? 30 : 16,
-        zIndex: 10,
+        alignSelf: 'flex-start'
+    },
+
+    paginationButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingBottom: Platform.OS === 'ios' ? 30 : 16,
+        width: '100%'
     },
 })

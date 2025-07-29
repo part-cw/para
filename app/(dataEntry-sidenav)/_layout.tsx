@@ -1,3 +1,4 @@
+import DebugStack from '@/components/DebugStack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { withLayoutContext } from 'expo-router';
@@ -44,13 +45,14 @@ function CustomDrawerContent(props: any) {
 export default function DrawerLayout() {
   return (
     <>
+    <DebugStack/>
       <SafeAreaProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <Drawer
             drawerContent={(props) => <CustomDrawerContent {...props}/>}>
             <Drawer.Screen name="patientInformation" options={{title: 'Patient Information'}}/>
             <Drawer.Screen name="admissionClinicalData" options={{title: 'Admission Clinical Data'}}/>
-            <Drawer.Screen name="medicalConditions" options={{title: 'Medical Conditions'}}/>
+            <Drawer.Screen name="medicalConditions" options={{title: 'Common Medical Conditions'}}/>
             <Drawer.Screen name="vhtReferral" options={{title: 'VHT Referral'}}/>
             <Drawer.Screen name="caregiverContact" options={{title: 'Caregiver Contact Information'}}/>
             <Drawer.Screen name="review" options={{title: 'Review & Submit'}}/>
