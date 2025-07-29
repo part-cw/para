@@ -216,8 +216,8 @@ export default function AdmissionClinicalDataScreen() {
                 </List.Section>
             </ScrollView>
             
-             {/* Pagination controls */}
-             {/* TODO - make sure this is the correct way to navigate to different screens */}
+            {/* Pagination controls */}
+            {/* TODO - make sure this is the correct way to navigate to different screens */}
             <View style={Styles.paginationButtonContainer}>
                 <PaginationButton
                     // TODO - add alerts on press ??
