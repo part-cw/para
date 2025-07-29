@@ -5,7 +5,7 @@ import type { AutocompleteDropdownItem } from 'react-native-autocomplete-dropdow
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown'
 
 type Props = {
-  label: string
+//   label: string
   placeholder?: string
   dataSet: AutocompleteDropdownItem[]
   onSelectItem: (item: AutocompleteDropdownItem | null) => void
