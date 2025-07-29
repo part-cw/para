@@ -12,10 +12,10 @@ export default function VHTReferralScreen() {
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 <DebugStack/>
+                
             </ScrollView>
 
             {/* Pagination controls */}
-            {/* TODO - make sure this is the correct way to navigate to different screens */}
             <View style={Styles.paginationButtonContainer}>
                 <PaginationButton
                     // TODO - add alerts on press ??
