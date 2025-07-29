@@ -17,10 +17,19 @@ export default function AutocompleteField({
     placeholder, 
     dataSet, 
     onSelectItem,
-    // value
+    value
     }: Props) {
 
-    const [isFocused, setIsFocused] = useState(false);
+    // const [isFocused, setIsFocused] = useState(false);
+    const [inputText, setInputText] = useState('')
+
+     // Clear selection if input is cleared manually
+    const handleChangeText = (text: string) => {
+        setInputText(text)
+        if (text.trim() === '') {
+        onSelectItem(null)
+        }
+    }
     // const showFloatingLabel = isFocused || !!value?.title
     
     // const [value, setValue] = useState('');
@@ -34,7 +43,10 @@ export default function AutocompleteField({
                 clearOnFocus={false}
                 closeOnBlur={true}
                 closeOnSubmit={false}
-                onSelectItem={onSelectItem}
+                onSelectItem={(item) => {
+                    onSelectItem(item)
+                    // setInputText(item?.title || '')
+                }}
                 dataSet={dataSet}
                 ignoreAccents
                 // onFocus={() => setIsFocused(true)}
@@ -44,7 +56,7 @@ export default function AutocompleteField({
                     // isFocused && Styles.autocompleteFocusedInput
                     ]}
                 textInputProps={{
-                    placeholder: placeholder
+                    placeholder: placeholder,
                     // placeholder: showFloatingLabel ? placeholder : label,
                     // style: Styles.autocompleteTextInput 
                 }}
