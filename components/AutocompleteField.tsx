@@ -1,5 +1,5 @@
 import { GlobalStyles as Styles } from '@/themes/styles'
-import React, { useState } from 'react'
+import React from 'react'
 import { Text, View } from 'react-native'
 import type { AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown'
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown'
@@ -20,16 +20,24 @@ export default function AutocompleteField({
     value
     }: Props) {
 
-    const [inputText, setInputText] = useState('')
+    // const [inputText, setInputText] = useState('');
+    // const [selectedItem, setSelectedItem] = useState<AutocompleteDropdownItem | null>(null);
 
-     // Clear selection if input is cleared manually
-    const handleChangeText = (text: string) => {
-        setInputText(text)
-        if (text.trim() === '') {
-        onSelectItem(null)
-        }
-    }
-    
+    // console.log ('inputText here', inputText)
+    // // Clear selection if input is cleared manually
+    // const handleChangeText = (text: string) => {
+    //     console.log('text in handlechangeText', text)
+    //     if (text === '') {
+    //         console.log('@@@@')
+    //         // mimic onClearPress from AutocompleteDropdown
+    //         setInputText('')
+    //         setSelectedItem(null)
+    //         if (typeof onSelectItem === 'function') {
+    //             onSelectItem(null)
+    //         }
+    //     }
+    // }
+
     // const [value, setValue] = useState('');
     // console.log('value', value?.title)
 
@@ -43,13 +51,23 @@ export default function AutocompleteField({
                     clearOnFocus={false}
                     closeOnBlur={true}
                     closeOnSubmit={false}
+                    // initialValue={null}
                     onSelectItem={(item) => {
-                        onSelectItem(item)
+                        // setSelectedItem(item)
+                        // setInputText(item?.title ?? '')
+                        onSelectItem(item);
+                        console.log('item', item)
                     }}
                     dataSet={dataSet}
                     ignoreAccents
                     inputContainerStyle={Styles.autocompleteInputContainerStyle}
-                    textInputProps={{placeholder: placeholder}}
+                    textInputProps={{
+                        placeholder: placeholder,
+                        // value: inputText,
+                        // onChangeText: handleChangeText
+                    }}
+                    // showClear={!!inputText}
+                    emptyResultText="Nothing found"
                 />
             </View>
          </View>

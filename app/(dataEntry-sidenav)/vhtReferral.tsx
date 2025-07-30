@@ -5,12 +5,18 @@ import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
-import type { AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
+import { type AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, List, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
+// TODO:
+// - allow manual data entry if options not in Dropdown for all fields
+// - village required - error if left blank 
+// - data persisted when accordions close/open and when navigate away
+// - make accordion open state by default? or remove closing capabilities??
+// - make village selection filter down vht name and vice versa
+// write util function to covert csv to usable dataset for autocomplete componenet
 
 export default function VHTReferralScreen() {
     // TODO - fix setuseState and handlePress
@@ -34,7 +40,7 @@ export default function VHTReferralScreen() {
           { id: '2', title: 'Banana'},
           { id: '3', title: 'Cantaloupe'},
         ]
-    
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -44,7 +50,7 @@ export default function VHTReferralScreen() {
                         <Text variant="bodyLarge">
                             To connect the patient to a local health worker who can follow 
                             up with them, enter the village near to where they will stay one
-                            week after discharge OR their VHT's name      
+                            week after discharge and their VHT's contact information.      
                         </Text>
                     </Card.Content>
                 </Card>
@@ -61,7 +67,7 @@ export default function VHTReferralScreen() {
                                     dataSet={testDataset}
                                     placeholder= 'Start typing village name'
                                     onSelectItem={setVillage}
-                                    label ='Village'            
+                                    label ='Village (required)'            
                                 />
                                 <AutocompleteField 
                                     dataSet={testDataset}
