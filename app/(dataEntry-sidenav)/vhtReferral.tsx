@@ -7,12 +7,17 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import type { AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Card, Text } from 'react-native-paper';
+import { Card, List, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 
 export default function VHTReferralScreen() {
+    // TODO - fix setuseState and handlePress
+    const [expanded, setExpanded] = useState(true);
+    const handlePress = () => setExpanded(!expanded);
+
+    // TODO - add more states
     const [village, setVillage] = useState<AutocompleteDropdownItem | null>(null)
     const [vht, setVht] = useState<AutocompleteDropdownItem | null>(null)
 
@@ -25,9 +30,9 @@ export default function VHTReferralScreen() {
           { id: '3', title: 'Gamma'},
         ]
      const testDataset2 = [
-          { id: '1', title: 'A'},
-          { id: '2', title: 'B'},
-          { id: '3', title: 'G'},
+          { id: '1', title: 'Apple'},
+          { id: '2', title: 'Banana'},
+          { id: '3', title: 'Cantaloupe'},
         ]
     
     return (
@@ -38,26 +43,60 @@ export default function VHTReferralScreen() {
                     <Card.Content>
                         <Text variant="bodyLarge">
                             To connect the patient to a local health worker who can follow 
-                            up with them, enter their village or VHT's name below.      
+                            up with them, enter the village near to where they will stay one
+                            week after discharge OR their VHT's name      
                         </Text>
                     </Card.Content>
                 </Card>
 
-                <Text style={Styles.sectionHeader}>Village Name</Text>
-                {/* <AutocompleteField 
-                    dataSet={testDataset}
-                    placeholder= 'Start typing village name'
-                    onSelectItem={setVillage}            
-                /> */}
+                <List.Section>
+                    {/* Location Accordion */}
+                    <View style={Styles.accordionListWrapper}>
+                        <List.Accordion
+                            title="Patient Location"
+                            titleStyle={Styles.accordionListTitle}
+                            left={props => <List.Icon {...props} icon="map-marker" />}>
+                            <View style={Styles.accordionContentWrapper}>
+                                <AutocompleteField 
+                                    dataSet={testDataset}
+                                    placeholder= 'Start typing village name'
+                                    onSelectItem={setVillage}
+                                    label ='Village'            
+                                />
+                                <AutocompleteField 
+                                    dataSet={testDataset}
+                                    placeholder= 'Start typing HC name'
+                                    onSelectItem={setVillage}
+                                    label ='Health Facility'            
+                                />
+                            </View>
+                        </List.Accordion>
+                    </View>
 
-                <Text style={Styles.sectionHeader}>VHT Contact Info</Text>
-                <AutocompleteField
-                    placeholder="Start typing VHT name"
-                    dataSet={testDataset2}
-                    onSelectItem={setVht}
-                    // label='VHT Name'
-                />
-                
+                    {/* VHT Contact Info Accordion */}
+                    <View style={Styles.accordionListWrapper}>
+                        <List.Accordion
+                            title="VHT Contact Information"
+                            titleStyle={Styles.accordionListTitle}
+                            left={props => <List.Icon {...props} icon="doctor" />}>
+                            <View style={Styles.accordionContentWrapper}>
+                                <AutocompleteField
+                                    placeholder="Start typing VHT name"
+                                    dataSet={testDataset2}
+                                    onSelectItem={setVht}
+                                    label='Name'
+                                />
+                                <AutocompleteField
+                                    placeholder="Start typing phone number"
+                                    dataSet={testDataset}
+                                    onSelectItem={setVht}
+                                    label='Telephone'
+                                />
+                            </View>
+                        </List.Accordion>
+                    </View>
+
+                </List.Section>
             </ScrollView>
 
             {/* Pagination controls */}

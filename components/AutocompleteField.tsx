@@ -1,11 +1,11 @@
 import { GlobalStyles as Styles } from '@/themes/styles'
 import React, { useState } from 'react'
-import { View } from 'react-native'
+import { Text, View } from 'react-native'
 import type { AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown'
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown'
 
 type Props = {
-//   label: string
+  label: string
   placeholder?: string
   dataSet: AutocompleteDropdownItem[]
   onSelectItem: (item: AutocompleteDropdownItem | null) => void
@@ -13,14 +13,13 @@ type Props = {
 }
 
 export default function AutocompleteField({ 
-    // label,
+    label,
     placeholder, 
     dataSet, 
     onSelectItem,
     value
     }: Props) {
 
-    // const [isFocused, setIsFocused] = useState(false);
     const [inputText, setInputText] = useState('')
 
      // Clear selection if input is cleared manually
@@ -30,38 +29,31 @@ export default function AutocompleteField({
         onSelectItem(null)
         }
     }
-    // const showFloatingLabel = isFocused || !!value?.title
     
     // const [value, setValue] = useState('');
     // console.log('value', value?.title)
 
     
     return (
-        <View style={Styles.autocompleteWrapper}>
-            {/* {showFloatingLabel && <Text style={Styles.autocompleteLabel}>{label}</Text>} */}
-            <AutocompleteDropdown
-                clearOnFocus={false}
-                closeOnBlur={true}
-                closeOnSubmit={false}
-                onSelectItem={(item) => {
-                    onSelectItem(item)
-                    // setInputText(item?.title || '')
-                }}
-                dataSet={dataSet}
-                ignoreAccents
-                // onFocus={() => setIsFocused(true)}
-                // onBlur={() => setIsFocused(false)}
-                inputContainerStyle={[
-                    Styles.autocompleteInputContainerStyle,
-                    // isFocused && Styles.autocompleteFocusedInput
-                    ]}
-                textInputProps={{
-                    placeholder: placeholder,
-                    // placeholder: showFloatingLabel ? placeholder : label,
-                    // style: Styles.autocompleteTextInput 
-                }}
-            />
-        </View>
+        <>
+         <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={Styles.autocompleteLabel}>{label}</Text>
+            <View style={[Styles.autocompleteWrapper, {flex: 1}]}>
+                <AutocompleteDropdown
+                    clearOnFocus={false}
+                    closeOnBlur={true}
+                    closeOnSubmit={false}
+                    onSelectItem={(item) => {
+                        onSelectItem(item)
+                    }}
+                    dataSet={dataSet}
+                    ignoreAccents
+                    inputContainerStyle={Styles.autocompleteInputContainerStyle}
+                    textInputProps={{placeholder: placeholder}}
+                />
+            </View>
+         </View>
+        </>
        
     )
 }

@@ -1,6 +1,7 @@
 import { Platform, StyleSheet } from 'react-native';
 import { AppTheme } from './theme';
 
+// TODO - delete unused styles
 
 export const GlobalStyles = StyleSheet.create({
     container: { flex: 1 },
@@ -47,10 +48,17 @@ export const GlobalStyles = StyleSheet.create({
         marginBottom: 8,
     },
     
+    // sideLabel: {
+    //     fontSize: 16,
+    //     marginLeft: 0,
+    //     marginRight: 20,
+    //     marginBottom: 20
+    //     // fontWeight: 'bold'
+    // },
+
     label: {
-        marginTop: 10,
-        marginBottom: 4,
-        fontSize: 14,
+        fontSize: 16,
+        fontWeight: 'bold',
     },
     
     required: {
@@ -126,8 +134,8 @@ export const GlobalStyles = StyleSheet.create({
         position: 'absolute',
         top: -10,
         left: 12,
-        fontSize: 12,
-        color: '#666',
+        fontSize: 16,
+        color: '#00000',
         backgroundColor: '#fff',
         paddingHorizontal: 4,
         zIndex: 1,
