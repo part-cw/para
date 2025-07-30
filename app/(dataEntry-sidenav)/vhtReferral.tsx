@@ -1,5 +1,4 @@
 import AutocompleteField from '@/components/AutocompleteField';
-import DebugStack from '@/components/DebugStack';
 import PaginationControls from '@/components/PaginationControls';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
@@ -44,7 +43,7 @@ export default function VHTReferralScreen() {
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
-                <DebugStack/>
+                {/* <DebugStack/> */}
                 <Card style={Styles.cardWrapper}>
                     <Card.Content>
                         <Text variant="bodyLarge">

@@ -1,4 +1,3 @@
-import DebugStack from '@/components/DebugStack';
 import PaginationControls from '@/components/PaginationControls';
 import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
@@ -57,7 +56,7 @@ export default function AdmissionClinicalDataScreen() {
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
-                <DebugStack/>
+                {/* <DebugStack/> */}
                 <List.Section>
                     {/* Health History Accordion */}
                     <View style={Styles.accordionListWrapper}>
