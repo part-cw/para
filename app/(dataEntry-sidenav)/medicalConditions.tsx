@@ -1,4 +1,3 @@
-import DebugStack from '@/components/DebugStack';
 import PaginationControls from '@/components/PaginationControls';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
@@ -35,7 +34,7 @@ export default function MedicalConditionsScreen() {
       
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-            <DebugStack/>
+            {/* <DebugStack/> */}
             <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }}>
                 <Card style={Styles.cardWrapper}>
                     <Card.Content>
