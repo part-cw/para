@@ -1,5 +1,5 @@
 import DebugStack from '@/components/DebugStack';
-import PaginationButton from '@/components/PaginationButton';
+import PaginationControls from '@/components/PaginationControls';
 import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
@@ -258,26 +258,12 @@ export default function AdmissionClinicalDataScreen() {
                     </View>
                 </List.Section>
             </ScrollView>
-            
-            {/* Pagination controls */}
-            {/* TODO - make sure this is the correct way to navigate to different screens */}
-            <View style={Styles.paginationButtonContainer}>
-                <PaginationButton
-                    // TODO - add alerts on press ??
-                    onPress={() => {router.back()}}
-                    isNext={ false }
-                    label='Previous'
-                />
-                <PaginationButton
-                    // TODO - add alerts on press ??
-                    onPress={() => {
-                        router.push('../(dataEntry-sidenav)/medicalConditions')
-                    }}
-                    isNext={ true }
-                    label='Next'
-                />
-            </View>
-           
+            <PaginationControls
+                showPrevious={true}
+                showNext={true}
+                onPrevious={() => router.back()}
+                onNext={() => router.push('/(dataEntry-sidenav)/medicalConditions')}
+            />
         </SafeAreaView>
     );
 }

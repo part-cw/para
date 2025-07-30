@@ -1,6 +1,6 @@
 import AutocompleteField from '@/components/AutocompleteField';
 import DebugStack from '@/components/DebugStack';
-import PaginationButton from '@/components/PaginationButton';
+import PaginationControls from '@/components/PaginationControls';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -105,23 +105,12 @@ export default function VHTReferralScreen() {
                 </List.Section>
             </ScrollView>
 
-            {/* Pagination controls */}
-            <View style={Styles.paginationButtonContainer}>
-                <PaginationButton
-                    // TODO - add alerts on press ??
-                    onPress={() => {router.push('/(dataEntry-sidenav)/medicalConditions')}}
-                    isNext={ false }
-                    label='Previous'
-                />
-                <PaginationButton
-                    // TODO - add alerts on press ??
-                    onPress={() => {
-                        router.push('/(dataEntry-sidenav)/caregiverContact')
-                    }}
-                    isNext={ true }
-                    label='Next'
-                />
-            </View>
+            <PaginationControls
+                showPrevious={true}
+                showNext={true}
+                onPrevious={() => router.push('/(dataEntry-sidenav)/medicalConditions')}
+                onNext={() => router.push('/(dataEntry-sidenav)/caregiverContact')}
+            />  
         </SafeAreaView>
     );
 }
