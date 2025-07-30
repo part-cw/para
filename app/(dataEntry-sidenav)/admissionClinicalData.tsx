@@ -50,6 +50,10 @@ export default function AdmissionClinicalDataScreen() {
         {label: 'No vocal response', value: 'no-response'}
     ]
 
+    const bcsGeneralInfo = "Fully conscious children score 5 (have appropriate eye movement, motor response, and verbal response). Children who are unresponsive to painful stimuli score 0."
+    const eyeMovementInfo =  "Have the caregiver put a toy or bright object in front of the child, and see if they are able to follow it with their eyes";
+    const motorResponseInfo = "Response to pain should be assessed with firm nailbed pressure or pinch";
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -182,42 +186,81 @@ export default function AdmissionClinicalDataScreen() {
                             expanded={expanded}
                             onPress={handlePress}>
                             <View style={Styles.accordionContentWrapper}>
-                                <Text style={Styles.accordionSubheading}>Info TODO</Text>
-                                <Dropdown
-                                    label={"Eye movement"}
-                                    mode={"outlined"}
-                                    options={eyeMovementOptions}
-                                    value={eyeMovement}
-                                    onSelect={setEyeMovement}
-                                    menuContentStyle={{backgroundColor: colors.secondary}}
-                                    hideMenuHeader = {Platform.OS === 'web'}
-                                />
-                                <Dropdown
-                                    label={"Best motor response"}
-                                    mode={"outlined"}
-                                    options={motorResponseOptions}
-                                    value={motorResponse}
-                                    onSelect={setMotorResponse}
-                                    menuContentStyle={{backgroundColor: colors.secondary}}
-                                    hideMenuHeader = {Platform.OS === 'web'}
-                                />
-                                <Dropdown
-                                    label={"Best verbal response"}
-                                    mode={"outlined"}
-                                    options={verbalResponseOptions}
-                                    value={verbalResponse}
-                                    onSelect={setVerbalResponse}
-                                    menuContentStyle={{backgroundColor: colors.secondary}}
-                                    hideMenuHeader = {Platform.OS === 'web'}
-                                />
+                                <Text style={{fontStyle: 'normal'}}>{bcsGeneralInfo}</Text>
+                                <Text style={[Styles.required, {fontStyle: 'italic'}]}>**All fields required**</Text>
+                                
+                                {/* Eye movement dropdown */}
+                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                    <View style={{flex: 1}}>
+                                         <Dropdown
+                                            label={"Eye movement"}
+                                            mode={"outlined"}
+                                            options={eyeMovementOptions}
+                                            value={eyeMovement}
+                                            onSelect={setEyeMovement}
+                                            menuContentStyle={{backgroundColor: colors.secondary}}
+                                            hideMenuHeader = {Platform.OS === 'web'}
+                                        />
+                                    </View>
+                                    <IconButton
+                                        icon="information-outline"
+                                        size={20}
+                                        iconColor={colors.primary}
+                                        onPress={() => {alert(eyeMovementInfo)}} // TODO - change to tooltip
+                                    />
+                                </View>
+
+                                {/* Motor response dropdown */}
+                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                        <View style={{flex: 1}}>
+                                            <Dropdown
+                                                label={"Best motor response"}
+                                                mode={"outlined"}
+                                                options={motorResponseOptions}
+                                                value={motorResponse}
+                                                onSelect={setMotorResponse}
+                                                menuContentStyle={{
+                                                    backgroundColor: colors.secondary,
+                                                    minWidth: 320}}
+                                                hideMenuHeader = {Platform.OS === 'web'}
+                                            />
+                                        </View>
+                                        <IconButton
+                                            icon="information-outline"
+                                            size={20}
+                                            iconColor={colors.primary}
+                                            onPress={() => {alert(motorResponseInfo)}} // TODO - change to tooltip
+                                        />
+                                </View>
+                                
+                                {/* Verbal response dropdown */}
+                                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                    <View style={{flex: 1}}>
+                                        <Dropdown
+                                            label={"Best verbal response"}
+                                            mode={"outlined"}
+                                            options={verbalResponseOptions}
+                                            value={verbalResponse}
+                                            onSelect={setVerbalResponse}
+                                            menuContentStyle={{backgroundColor: colors.secondary}}
+                                            hideMenuHeader = {Platform.OS === 'web'}
+                                        />
+                                    </View>
+                                    {/* White icon to align dropdown with others */}
+                                    <IconButton
+                                        icon="information-outline"
+                                        size={20}
+                                        iconColor='#FFFF'
+                                    />
+                                </View>
                             </View>
                         </List.Accordion>
                     </View>
                 </List.Section>
             </ScrollView>
             
-             {/* Pagination controls */}
-             {/* TODO - make sure this is the correct way to navigate to different screens */}
+            {/* Pagination controls */}
+            {/* TODO - make sure this is the correct way to navigate to different screens */}
             <View style={Styles.paginationButtonContainer}>
                 <PaginationButton
                     // TODO - add alerts on press ??
