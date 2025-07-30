@@ -1,5 +1,5 @@
 import DebugStack from '@/components/DebugStack';
-import PaginationButton from '@/components/PaginationButton';
+import PaginationControls from '@/components/PaginationControls';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -166,27 +166,12 @@ export default function MedicalConditionsScreen() {
                 />
 
             </ScrollView>
-
-            {/* Pagination controls */}
-            {/* TODO - make sure this is the correct way to navigate to different screens */}
-            <View style={Styles.paginationButtonContainer}>
-                <PaginationButton
-                    // TODO - add alerts on press ??
-                    onPress={() => {
-                        router.push('../(dataEntry-sidenav)/admissionClinicalData')
-                    }}
-                    isNext={ false }
-                    label='Previous'
-                />
-                <PaginationButton
-                    // TODO - add alerts on press ??
-                    onPress={() => {
-                        router.push('../(dataEntry-sidenav)/vhtReferral')
-                    }}
-                    isNext={ true }
-                    label='Next'
-                />
-            </View>
+            <PaginationControls
+                showPrevious={true}
+                showNext={true}
+                onPrevious={() => router.push('/(dataEntry-sidenav)/admissionClinicalData')}
+                onNext={() => router.push('/(dataEntry-sidenav)/vhtReferral')}
+            /> 
         </SafeAreaView>
     );
 }
