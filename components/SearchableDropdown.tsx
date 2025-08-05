@@ -38,6 +38,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const inputRef = useRef(null);
   const dropdownTouchedRef = useRef(false);
 
+  // console.log('searchtext', searchText)
   // console.log('isFocused', isFocused)
   // console.log('isOpen', isOpen)
   // console.log("inputRef", inputRef.current)
@@ -56,18 +57,17 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   };
 
   const handleTextChange = (text: string) => {
-    setSearchText(text);
+    // set trimmed text to '' if empty string, othwerwise set to text
+    !text.trim() ? setSearchText('') : setSearchText(text)
     filterData(text.trim());
     
     if (!isOpen && text.trim().length > 0) {
       setIsOpen(true);
     }
     
-    // console.log('here!!!')
-    // console.log('onSelectionChange', onSelectionChange)
     // Call the callback with the current text
     if (onSelectionChange) {
-        // console.log('insde here condition$$')
+        console.log('^^^^insde onSelectionChange')
       onSelectionChange(text);
     }
   };
@@ -96,6 +96,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const handleBlur = () => {
     console.log('handleblur, dropdownRef.curr', dropdownTouchedRef.current)
      // Longer delay to ensure item selection works - TODO fix this
+
     setTimeout(() => {
         console.log('setTimeout%%%', dropdownTouchedRef.current)
         if (dropdownTouchedRef.current) {
@@ -205,7 +206,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   console.log('TouchableOpacity onPressIn for addnew');
                   dropdownTouchedRef.current = true;
                 }}
-                onPress={() => handleItemSelect(searchText)}
+                onPress={() => {
+                  console.log('add new click')
+                  handleItemSelect(searchText)
+                }}
                 activeOpacity={0.7}
               >
                 <Text style={styles.addNewText}>

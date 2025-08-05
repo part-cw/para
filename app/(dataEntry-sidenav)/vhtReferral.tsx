@@ -78,7 +78,7 @@ export default function VHTReferralScreen() {
                         maxHeight={200}
                     />
                     <Text style={styles.result}>
-                        Current value: {selectedValue || 'None selected'}
+                        Current value: {selectedValue.trim() ? selectedValue : 'None selected'}
                     </Text>
                 </View>
 
