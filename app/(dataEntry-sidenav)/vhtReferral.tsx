@@ -1,12 +1,13 @@
 import AutocompleteField from '@/components/AutocompleteField';
 import PaginationControls from '@/components/PaginationControls';
+import SearchableDropdown from '@/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { type AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Card, List, Text } from 'react-native-paper';
+import { Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO:
@@ -18,13 +19,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // write util function to covert csv to usable dataset for autocomplete componenet
 
 export default function VHTReferralScreen() {
-    // TODO - fix setuseState and handlePress
-    const [expanded, setExpanded] = useState(true);
-    const handlePress = () => setExpanded(!expanded);
-
     // TODO - add more states
+    const { colors } = useTheme()
     const [village, setVillage] = useState<AutocompleteDropdownItem | null>(null)
     const [vht, setVht] = useState<AutocompleteDropdownItem | null>(null)
+    
+    const [selectedValue, setSelectedValue] = useState<string>('');
+    const handleSelectionChange = (value: string) => {
+        setSelectedValue(value);
+    };
+
 
 
     // TODO convert csv data into dataset of this format
@@ -34,11 +38,22 @@ export default function VHTReferralScreen() {
           { id: '2', title: 'Beta'},
           { id: '3', title: 'Gamma'},
         ]
-     const testDataset2 = [
+    const testDataset2 = [
           { id: '1', title: 'Apple'},
           { id: '2', title: 'Banana'},
           { id: '3', title: 'Cantaloupe'},
         ]
+    
+    const testData3: string[] = [
+        'Apple',
+        'Banana',
+        'Cherry',
+        'Date',
+        'Elderberry',
+        'Fig',
+        'Grape',
+        'Honeydew',
+    ];
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -54,13 +69,29 @@ export default function VHTReferralScreen() {
                     </Card.Content>
                 </Card>
 
+                <View style={styles.dropdownContainer}>
+                    <SearchableDropdown
+                        data={testData3}
+                        label="Village (required)"
+                        onSelectionChange={handleSelectionChange}
+                        value={selectedValue}
+                        maxHeight={200}
+                    />
+                    <Text style={styles.result}>
+                        Current value: {selectedValue || 'None selected'}
+                    </Text>
+                </View>
+
                 <List.Section>
                     {/* Location Accordion */}
                     <View style={Styles.accordionListWrapper}>
                         <List.Accordion
-                            title="Patient Location"
+                            title="Patient Address"
                             titleStyle={Styles.accordionListTitle}
-                            left={props => <List.Icon {...props} icon="map-marker" />}>
+                            left={props => <List.Icon {...props} icon="map-marker" />}
+                            expanded={true}
+                            right={() => null}
+                            onPress={() => null}>
                             <View style={Styles.accordionContentWrapper}>
                                 <AutocompleteField 
                                     dataSet={testDataset}
@@ -80,10 +111,10 @@ export default function VHTReferralScreen() {
 
                     {/* VHT Contact Info Accordion */}
                     <View style={Styles.accordionListWrapper}>
-                        <List.Accordion
-                            title="VHT Contact Information"
-                            titleStyle={Styles.accordionListTitle}
-                            left={props => <List.Icon {...props} icon="doctor" />}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+                            <List.Icon icon="doctor" color={colors.primary} />
+                            <Text style={Styles.accordionListTitle}>VHT Contact Information</Text>
+                        </View>
                             <View style={Styles.accordionContentWrapper}>
                                 <AutocompleteField
                                     placeholder="Start typing VHT name"
@@ -98,7 +129,6 @@ export default function VHTReferralScreen() {
                                     label='Telephone'
                                 />
                             </View>
-                        </List.Accordion>
                     </View>
 
                 </List.Section>
@@ -113,3 +143,25 @@ export default function VHTReferralScreen() {
         </SafeAreaView>
     );
 }
+
+    const styles = StyleSheet.create({
+    dropdownContainer: {
+        flex: 1,
+        padding: 20,
+        // backgroundColor: '#f5f5f5',
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#333',
+    },
+    dropdown: {
+        marginBottom: 20,
+    },
+    result: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 10,
+    },
+    });

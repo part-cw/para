@@ -1,5 +1,5 @@
 import { GlobalStyles as Styles } from '@/themes/styles'
-import React from 'react'
+import React, { useState } from 'react'
 import { Text, View } from 'react-native'
 import type { AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown'
 import { AutocompleteDropdown } from 'react-native-autocomplete-dropdown'
@@ -9,7 +9,6 @@ type Props = {
   placeholder?: string
   dataSet: AutocompleteDropdownItem[]
   onSelectItem: (item: AutocompleteDropdownItem | null) => void
-  value?: AutocompleteDropdownItem | null
 }
 
 export default function AutocompleteField({ 
@@ -17,56 +16,41 @@ export default function AutocompleteField({
     placeholder, 
     dataSet, 
     onSelectItem,
-    value
     }: Props) {
 
-    // const [inputText, setInputText] = useState('');
-    // const [selectedItem, setSelectedItem] = useState<AutocompleteDropdownItem | null>(null);
+    // const dropdownController = useRef<IAutocompleteDropdownRef | null>(null)
+    // const searchRef = useRef(null)
+    // console.log('searchRef', searchRef)
 
-    // console.log ('inputText here', inputText)
-    // // Clear selection if input is cleared manually
-    // const handleChangeText = (text: string) => {
-    //     console.log('text in handlechangeText', text)
-    //     if (text === '') {
-    //         console.log('@@@@')
-    //         // mimic onClearPress from AutocompleteDropdown
-    //         setInputText('')
-    //         setSelectedItem(null)
-    //         if (typeof onSelectItem === 'function') {
-    //             onSelectItem(null)
-    //         }
-    //     }
-    // }
-
-    // const [value, setValue] = useState('');
-    // console.log('value', value?.title)
-
+    // const [focused, setFocused] = useState(false)
+    const [inputText, setInputText] = useState<string | null | undefined>();
     
+    // console.log('inputText', inputText)
+
     return (
         <>
          <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Text style={Styles.autocompleteLabel}>{label}</Text>
             <View style={[Styles.autocompleteWrapper, {flex: 1}]}>
                 <AutocompleteDropdown
+                    // ref= {searchRef}
                     clearOnFocus={false}
                     closeOnBlur={true}
                     closeOnSubmit={false}
-                    // initialValue={null}
                     onSelectItem={(item) => {
-                        // setSelectedItem(item)
-                        // setInputText(item?.title ?? '')
-                        onSelectItem(item);
-                        console.log('item', item)
+                        onSelectItem(item)
+                        setInputText(item?.title)
+                        // console.log('item', item)
                     }}
                     dataSet={dataSet}
                     ignoreAccents
                     inputContainerStyle={Styles.autocompleteInputContainerStyle}
                     textInputProps={{
                         placeholder: placeholder,
-                        // value: inputText,
-                        // onChangeText: handleChangeText
+                        // onChangeText(text) {
+                            
+                        // },
                     }}
-                    // showClear={!!inputText}
                     emptyResultText="Nothing found"
                 />
             </View>
@@ -75,3 +59,61 @@ export default function AutocompleteField({
        
     )
 }
+
+ // TODO - fix the manual deletion bug
+
+ // THIS IS MY FIRST ATTEMPT. ITWORKED BUT BROKE THE FILTER/AUTOCOMPLETE FUNCTIONALITY
+    // const [inputText, setInputText] = useState<string>('');
+    // const [selectedItem, setSelectedItem] = useState<AutocompleteDropdownItem | null>(null);
+    // console.log ('inputText here', inputText)
+ 
+    // const handleChangeText = (text: string) => {
+    //     setInputText(text)
+
+    //     const isEmptyText = (text.trim() === '')
+    //     console.log('isEmptyText', isEmptyText)
+
+    //     // Manually clear selection if user deletes content
+    //     if (isEmptyText && selectedItem !== null) {
+    //         setSelectedItem(null)
+    //         onSelectItem(null)
+    //     }
+    // }
+ 
+    // const handleBlur = () => {
+    //     const isEmptyInputText = (inputText.trim() === '')
+    //     // If text doesn't match selected item, treat as cleared
+    //     if (isEmptyInputText || inputText !== selectedItem?.title) {
+    //         setSelectedItem(null)
+    //         onSelectItem(null)
+    //     }
+    // }
+
+    // HERE"S ANOTHER ATTEMPT _ ALSO DIDNT WORK
+    // const handleChangeText = useCallback((searchText: string) => {
+    //     setInputText(searchText);
+    //     const isEmptyText = !searchText.trim();
+    //     console.log('isEmptyText', isEmptyText)
+    //     if (isEmptyText) {
+    //         // clear selection if text input field is empty. Handles manual deletions
+    //         console.log('@@@@')
+    //         onSelectItem(null)
+    //         return
+    //     }
+
+    //     // Find matching item or create new one
+    //     const matchingItem = dataSet.find(
+    //         item => item.id.toString().toLowerCase() === searchText.toLowerCase()
+    //     )
+
+    //     if (matchingItem) {
+    //         onSelectItem(matchingItem)
+    //     } else if (searchText.trim()) {
+    //         // Create new item if exact match isn't found
+    //         const newItem: AutocompleteDropdownItem = {
+    //             id: Date.now().toString(),
+    //             title: searchText,
+    //         }
+    //         onSelectItem(newItem)
+    //     }
+    // },[dataSet, onSelectItem])

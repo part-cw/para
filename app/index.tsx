@@ -1,4 +1,3 @@
-import DebugStack from '@/components/DebugStack';
 import { router } from 'expo-router';
 import { Text, View } from "react-native";
 import { Button, useTheme } from 'react-native-paper';
@@ -9,7 +8,7 @@ export default function Index() {
   return (
     <>
       <View style={{ flex: 1, alignItems: 'center' }}>
-        <DebugStack/>
+        {/* <DebugStack/> */}
         <Text style={{paddingBlock: 50}}>TODO Edit app/index.tsx to edit home screen.</Text>
         <Button style={{ alignSelf: 'center' }}
                 buttonColor={colors.primary} 
