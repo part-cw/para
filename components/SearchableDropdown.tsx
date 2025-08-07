@@ -1,7 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
+  Animated,
+  Easing,
   Keyboard,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -9,39 +12,105 @@ import {
   View,
   ViewStyle
 } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
 import { IconButton } from 'react-native-paper';
 
 interface SearchableDropdownProps {
   data?: string[];
   placeholder?: string;
   label?: string;
-  onSelectionChange?: (value: string) => void;
+  onSelect?: (selected: string) => void;
   value?: string;
   maxHeight?: number;
   style?: ViewStyle;
+  search: boolean;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   data = [],
   placeholder = "Search or enter new...",
   label,
-  onSelectionChange,
+  onSelect= (_: string) => {},
   value = "",
-  maxHeight = 200,
+  maxHeight,
   style = {},
+  search = true
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
-  const inputRef = useRef(null);
-  const dropdownTouchedRef = useRef(false);
+  const [_firstRender,_setFirstRender] = useState<boolean>(true);
+  const [height, setHeight] = useState<number>(200);
+  
+  const animatedvalue = React.useRef(new Animated.Value(0)).current;
+  const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
 
-  // console.log('searchtext', searchText)
-  // console.log('isFocused', isFocused)
-  // console.log('isOpen', isOpen)
-  // console.log("inputRef", inputRef.current)
+  const animateLabel = (toValue: number) => {
+    Animated.timing(labelAnim, {
+      toValue,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  };
+  // adapted from react-native-dropdown-select-list
+  const slidedown = () => {
+        setIsOpen(true)
+        setIsFocused(true)
+        Animated.timing(animatedvalue,{
+            toValue: height,
+            duration:300,
+            useNativeDriver:false,
+            easing: Easing.out(Easing.ease)
+            
+        }).start()
+  }
+
+  const slideup = () => {     
+        Animated.timing(animatedvalue,{
+            toValue:0,
+            duration:300,
+            useNativeDriver:false,
+            easing: Easing.out(Easing.ease)
+            
+        }).start(() => {
+          setIsOpen(false)
+          setIsFocused(false)
+        })
+  }
+
+  React.useEffect(() => {
+    if(!_firstRender){
+      if (isOpen) {
+        slidedown()
+        animateLabel(1) // float
+      } else {
+        slideup()
+        if (!searchText.trim()) {
+          animateLabel(0) // unfloat if no text
+        }  
+      }
+    }
+  },[isOpen])
+
+  React.useEffect(() => {
+      if(_firstRender){
+        _setFirstRender(false);
+        return;
+      }
+      onSelect(searchText)
+  },[searchText])
+
+  React.useEffect(() => {
+  if (searchText) {
+    animateLabel(1);
+  }
+  }, []);
+
+  React.useEffect(() => {
+    if (maxHeight) {
+      setHeight(maxHeight);
+    }
+  }, [maxHeight])
 
   // Filter data based on search text
   const filterData = (trimmedText: string) => {
@@ -51,175 +120,178 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
     
     const filtered = data.filter((item: string) =>
-      item.toLowerCase().includes(trimmedText.toLowerCase())
+        item.toLowerCase().includes(trimmedText.toLowerCase())
     );
     setFilteredData(filtered);
   };
 
-  const handleTextChange = (text: string) => {
-    // set trimmed text to '' if empty string, othwerwise set to text
-    !text.trim() ? setSearchText('') : setSearchText(text)
-    filterData(text.trim());
-    
-    if (!isOpen && text.trim().length > 0) {
-      setIsOpen(true);
-    }
-    
-    // Call the callback with the current text
-    if (onSelectionChange) {
-        console.log('^^^^insde onSelectionChange')
-      onSelectionChange(text);
-    }
-  };
-
-  const handleItemSelect = (item: string) => {
-    console.log('Item selected:', item); // Debug log
-    setSearchText(item);
-    setIsOpen(false);
-    setIsFocused(false);
-    Keyboard.dismiss();
-
-    dropdownTouchedRef.current = false;
-    
-    if (onSelectionChange) {
-      onSelectionChange(item);
-    }
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    setIsOpen(true);
-    console.log('inside handleFocus. searchtext: ', searchText)
-    filterData(searchText);
-  };
-
-  const handleBlur = () => {
-    console.log('handleblur, dropdownRef.curr', dropdownTouchedRef.current)
-     // Longer delay to ensure item selection works - TODO fix this
-
-    setTimeout(() => {
-        console.log('setTimeout%%%', dropdownTouchedRef.current)
-        if (dropdownTouchedRef.current) {
-          dropdownTouchedRef.current = false;
-          return;
-        }
-
-        console.log('Closing dropdown from blur');
-        setIsFocused(false);
-        setIsOpen(false);
-    }, 200); // TODO change?
-  };
-
-  const handleSubmit = () => {
-    setIsOpen(false);
-    Keyboard.dismiss();
-    
-    // If text doesn't exist in data, still call the callback
-    if (onSelectionChange) {
-      onSelectionChange(searchText);
-    }
-  };
-
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults && !data.includes(searchText);
-  const shouldShowFloatingLabel = isFocused || searchText.length > 0;
+  const showFloatingLabel = isFocused || searchText.length > 0;
 
   return (
     <View style={[styles.container, style]}>
-      <View style={[
-        styles.inputContainer,
-        isFocused && styles.inputContainerFocused,
-        isOpen && styles.inputContainerOpen
-      ]}>
-        {shouldShowFloatingLabel && (
-          <Text style={[
-            styles.floatingLabel,
-            isFocused && styles.floatingLabelFocused
-          ]}>
-            {label}
-          </Text>
-        )}
-        <View style={styles.inputRow}>
-          <TextInput
-            ref={inputRef}
-            style={[
-              styles.textInput,
-              shouldShowFloatingLabel && styles.textInputWithLabel
-            ]}
-            placeholder={!shouldShowFloatingLabel ? label : placeholder}
-            value={searchText}
-            onChangeText={handleTextChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            onSubmitEditing={handleSubmit}
-            returnKeyType="done"
-          />
-          <IconButton
+      {
+        (isOpen && search)
+        ?
+        <View style={[styles.inputContainer, styles.inputContainerOpen, isFocused && styles.inputContainerFocused,]}>
+          {showFloatingLabel && (
+            <Animated.Text
+              style={[
+                styles.floatingLabel,
+                {
+                  top: labelAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [16, -12],
+                  }),
+                  fontSize: labelAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [16, 12],
+                  }),
+                  color: isFocused ? '#1976d2' : '#666',
+                },
+              ]}>
+                {label}
+              </Animated.Text>
+            )
+          }
+        
+          <View style={styles.inputRow}>
+            <TextInput 
+              style={styles.textInput}
+              placeholder={!showFloatingLabel ? label : placeholder}
+              onChangeText={(text: string) => {
+                // set trimmed text to '' if empty string, othwerwise set to text
+                !text.trim() ? setSearchText('') : setSearchText(text)
+                filterData(text.trim());
+
+                if (text.trim().length > 0 || isFocused) {
+                  animateLabel(1); // float
+                } else {
+                  animateLabel(0); // shrink
+                }
+              }}
+              value={searchText}>
+            </TextInput>
+            <IconButton
               icon="chevron-down"
               size={25}
-              onPress={() => {
-                setIsOpen(!isOpen)
-                setIsFocused(!isFocused)
-              }}
+              style={[
+                styles.dropdownIcon,
+                (isFocused && isOpen) && styles.dropdownIconOpen
+              ]}
+              onPress={() => slideup()}
+            />
+          </View>
+        </View>
+        :
+        <View style={[styles.inputContainer, isFocused && styles.inputContainerFocused]}>
+          {showFloatingLabel && (
+              <Animated.Text
                 style={[
-                  styles.dropdownIcon,
-                  (isFocused && isOpen) && styles.dropdownIconOpen
+                  styles.floatingLabel,
+                  {
+                    top: labelAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [16, -12],
+                    }),
+                    fontSize: labelAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [16, 12],
+                    }),
+                    color: isFocused ? '#1976d2' : '#666',
+                  },
+                ]}>
+                  {label}
+              </Animated.Text>
+            )
+          }
+
+          <TouchableOpacity 
+            style={styles.inputRow}
+            onPress={() => {
+              if (!isOpen) {
+                Keyboard.dismiss();
+                slidedown();
+              } else {
+                slideup();
+              }
+            }
+          }>
+            <Text style={styles.textInput}>
+              {
+                searchText.trim().length > 0 
+                  ? searchText
+                  : !showFloatingLabel
+                    ? label
+                    : placeholder
+              }
+            </Text>
+            <IconButton
+              icon="chevron-down"
+              size={25}
+              style={[
+                styles.dropdownIcon,
+                (isFocused && isOpen) && styles.dropdownIconOpen
               ]}
             />
+          </TouchableOpacity>
+
         </View>
-      </View>
+      }
       
-      {isOpen && (
-        // <Pressable 
-        //   onPressIn={() => {console.log('***pressable onPressin')
-        //                     dropdownTouchedRef.current = true}}
-        //   style={{ zIndex: 1000 }}>
-          <View style={[styles.dropdown, { maxHeight }]}>
-            {filteredData.length > 0 ? (
-              <ScrollView
+      {
+        isOpen
+        ? 
+          <Animated.View style={[styles.dropdown, { maxHeight:animatedvalue }]}>
+            <ScrollView
                 keyboardShouldPersistTaps="handled"
+                contentContainerStyle={{overflow: 'hidden'}}
                 showsVerticalScrollIndicator={true}
                 nestedScrollEnabled={true}
               >
-                {filteredData.map((item, index) => (
-                  <TouchableOpacity
-                    key={`${item}-${index}`}
-                    style={styles.dropdownItem}
-                    onPressIn={() => {
-                      console.log('TouchableOpacity onPressIn for item:', item);
-                      dropdownTouchedRef.current = true;
-                    }}
-                    onPress={() => {
-                      console.log('item', item)
-                      handleItemSelect(item)
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.dropdownItemText}>{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : showAddNew ? (
-              <TouchableOpacity
-                style={[styles.dropdownItem, styles.addNewItem]}
-                onPressIn={() => {
-                  console.log('TouchableOpacity onPressIn for addnew');
-                  dropdownTouchedRef.current = true;
-                }}
-                onPress={() => {
-                  console.log('add new click')
-                  handleItemSelect(searchText)
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.addNewText}>
-                  Add "{searchText}"
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-          </View>
-        // </Pressable>
-      )}
+                {
+                  (filteredData.length > 0) 
+                  ? 
+                    filteredData.map((item, index) => (
+                      <TouchableOpacity
+                        key={`${item}-${index}`}
+                        style={styles.dropdownItem}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setSearchText(item)
+                          onSelect(item)
+                          slideup()
+                          setTimeout(() => {setFilteredData(data)}, 800)
+                        }}
+                      >
+                        <Text style={styles.dropdownItemText}>{item}</Text>
+                      </TouchableOpacity>
+                    ))
+                  : 
+                  showAddNew ? (
+                <TouchableOpacity
+                  style={[styles.dropdownItem, styles.addNewItem]}
+                  onPress={() => {
+                    console.log('add new click')
+                    console.log('add new selected:', searchText); // Debug log
+                    onSelect(searchText);  // TODO - fix -- currently double clicks to add
+                    Keyboard.dismiss();
+                    slideup();
+    
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.addNewText}>
+                    Add "{searchText}"
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </ScrollView>
+          </Animated.View>
+        :
+        null
+      }
     </View>
   );
 };
@@ -227,13 +299,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    zIndex: 1,
+    marginBottom: 10,
+    zIndex: 1000,
+    flex: 1,          // Allow expansion
+    minHeight: 'auto' // Dynamic height
   },
   inputContainer: {
     position: 'relative',
     borderWidth: 1,
     borderColor: '#c4c4c4',
-    borderRadius: 4,
+    borderRadius: 10,
     backgroundColor: '#fff',
     minHeight: 56,
     justifyContent: 'center',
@@ -256,9 +331,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     zIndex: 1,
   },
-  floatingLabelFocused: {
-    color: '#1976d2',
-  },
   textInput: {
     height: 56,
     textAlignVertical: 'center',
@@ -269,11 +341,11 @@ const styles = StyleSheet.create({
     color: '#333',
     backgroundColor: 'transparent',
     flex: 1,
-    ...Platform.select({
-      web: {
-        outlineStyle: 'none',
-      },
-    }),
+    // ...Platform.select({
+    //   web: {
+    //     outlineStyle: 'none',
+    //   },
+    // }),
   },
   textInputWithLabel: {
     paddingTop: 8,
@@ -289,13 +361,6 @@ const styles = StyleSheet.create({
     transitionDuration: '150ms',
   },
   dropdownIconOpen: {
-    transform: [{ rotate: '180deg' }],
-  },
-  arrow: {
-    fontSize: 12,
-    color: '#666',
-  },
-  arrowOpen: {
     transform: [{ rotate: '180deg' }],
   },
   dropdown: {
