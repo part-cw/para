@@ -10,7 +10,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 // TODO:
-// - allow manual data entry if options not in Dropdown for all fields
 // - village required - error if left blank 
 // - data persisted when accordions close/open and when navigate away
 // - make village selection filter down vht name and vice versa
@@ -53,28 +52,28 @@ export default function VHTReferralScreen() {
                 </Card>
 
                 <List.Section>
-                    {/* Location Accordion */}
+                    {/* Location Card */}
                     <View style={Styles.accordionListWrapper}>
-                        <List.Accordion
-                            title="Patient Address"
-                            titleStyle={Styles.accordionListTitle}
-                            left={props => <List.Icon {...props} icon="map-marker" />}
-                            expanded={true}
-                            right={() => null}
-                            onPress={() => null}>
-                            <View style={Styles.accordionContentWrapper}>
-                                <SearchableDropdown
-                                    data={testData3}
-                                    label="Village (required)"
-                                    placeholder='Enter village name'
-                                    onSelect={handleSelectionChange}
-                                    value={selectedValue}
-                                    maxHeight={200}
-                                    search={true}
-                                />
-                                
-                            </View>
-                        </List.Accordion>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+                            <List.Icon icon="map-marker" color={colors.primary} />
+                            <Text style={Styles.accordionListTitle}>Patient Address</Text>
+                        </View>
+                        <View style={Styles.accordionContentWrapper}>
+                            <SearchableDropdown
+                                data={testData3}
+                                label="Village (required)"
+                                placeholder='Enter village name'
+                                onSelect={handleSelectionChange}
+                                value={selectedValue}
+                            />
+                            <SearchableDropdown
+                                data={testData3}
+                                label="Health Facility (optional)"
+                                placeholder='Enter HC name'
+                                onSelect={handleSelectionChange}
+                                value={selectedValue}
+                            />
+                        </View>
                     </View>
 
                     {/* VHT Contact Info Card*/}
@@ -90,8 +89,6 @@ export default function VHTReferralScreen() {
                                 placeholder='Enter VHT name'
                                 onSelect={handleSelectionChange}
                                 value={selectedValue}
-                                maxHeight={200}
-                                search={true}
                             />
 
                             <SearchableDropdown
@@ -100,8 +97,6 @@ export default function VHTReferralScreen() {
                                 placeholder='Enter VHT telephone number'
                                 onSelect={handleSelectionChange}
                                 value={selectedValue}
-                                maxHeight={200}
-                                search={true}
                             />
                         </View>
                     </View>

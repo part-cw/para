@@ -23,7 +23,7 @@ interface SearchableDropdownProps {
   value?: string;
   maxHeight?: number;
   style?: ViewStyle;
-  search: boolean;
+  search?: boolean;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -57,6 +57,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       useNativeDriver: false,
     }).start();
   };
+  
   // adapted from react-native-dropdown-select-list
   const slidedown = () => {
         setIsOpen(true)
