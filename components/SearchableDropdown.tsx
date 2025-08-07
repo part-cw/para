@@ -41,7 +41,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
-  // const [showAddNew, setShowAddNew] = useState<boolean>(false)
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
@@ -49,10 +48,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults || !data.includes(searchText);
   const showFloatingLabel = isFocused || searchText.length > 0;
-  const showClearIcon = (searchText.trim() !== '')
-
-  console.log('showClear', showClearIcon)
-  
+  const showClearIcon = (searchText.trim() !== '')  
 
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
@@ -166,7 +162,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               style={styles.textInput}
               placeholder={!showFloatingLabel ? label : placeholder}
               onChangeText={(text: string) => {
-                console.log('text input', text)
                 // set trimmed text to '' if empty string, othwerwise set to text
                 !text.trim() ? setSearchText('') : setSearchText(text)
                 filterData(text.trim());

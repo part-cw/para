@@ -4,7 +4,6 @@ import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { type AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,34 +19,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function VHTReferralScreen() {
     // TODO - add more states
     const { colors } = useTheme()
-    const [village, setVillage] = useState<AutocompleteDropdownItem | null>(null)
-    const [vht, setVht] = useState<AutocompleteDropdownItem | null>(null)
     
     const [selectedValue, setSelectedValue] = useState<string>('');
     const handleSelectionChange = (value: string) => {
         setSelectedValue(value);
     };
 
-    const [selectedValueB, setSelectedValueB] = useState<string>('');
-    const handleSelectionChangeB = (value: string) => {
-        setSelectedValueB(value);
-    };
-
-
-
     // TODO convert csv data into dataset of this format
-    // TODO filter VHT name list based on 
-    const testDataset = [
-          { id: '1', title: 'Alpha'},
-          { id: '2', title: 'Beta'},
-          { id: '3', title: 'Gamma'},
-        ]
-    const testDataset2 = [
-          { id: '1', title: 'Apple'},
-          { id: '2', title: 'Banana'},
-          { id: '3', title: 'Cantaloupe'},
-        ]
-    
+    // TODO filter VHT name list based on
     const testData3: string[] = [
         'Apple',
         'Banana',
@@ -58,16 +37,6 @@ export default function VHTReferralScreen() {
         'Grape',
         'Honeydew',
     ];
-
-    const testData4 = [
-        { key: '1', value: 'Apple'},
-        { key: '2', value: 'Banana'},
-        { key: '3', value: 'Cantaloupe'},
-        { key: '4', value: 'Date'},
-        { key: '5', value: 'Elderberry'},
-        { key: '6', value: 'Fig'},
-        { key: '7', value: 'Honeydew'},
-    ]
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -94,12 +63,6 @@ export default function VHTReferralScreen() {
                             right={() => null}
                             onPress={() => null}>
                             <View style={Styles.accordionContentWrapper}>
-                                {/* <AutocompleteField 
-                                    dataSet={testDataset}
-                                    placeholder= 'Start typing village name'
-                                    onSelectItem={setVillage}
-                                    label ='Village (required)'            
-                                /> */}
                                 <SearchableDropdown
                                     data={testData3}
                                     label="Village (required)"
@@ -121,17 +84,15 @@ export default function VHTReferralScreen() {
                             <Text style={Styles.accordionListTitle}>VHT Contact Information</Text>
                         </View>
                         <View style={Styles.accordionContentWrapper}>
-                            {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}></TouchableWithoutFeedback> */}
-                                <SearchableDropdown
-                                    data={testData3}
-                                    label="Name"
-                                    placeholder='Enter VHT name'
-                                    onSelect={handleSelectionChange}
-                                    value={selectedValue}
-                                    maxHeight={200}
-                                    search={true}
-                                />
-                            {/* <TouchableWithoutFeedback/> */}
+                            <SearchableDropdown
+                                data={testData3}
+                                label="Name"
+                                placeholder='Enter VHT name'
+                                onSelect={handleSelectionChange}
+                                value={selectedValue}
+                                maxHeight={200}
+                                search={true}
+                            />
 
                             <SearchableDropdown
                                 data={testData3}
