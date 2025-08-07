@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { type AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
-import { SelectList } from 'react-native-dropdown-select-list';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -110,9 +109,6 @@ export default function VHTReferralScreen() {
                                     maxHeight={200}
                                     search={true}
                                 />
-                                <SelectList 
-                                    setSelected={setSelectedValueB}
-                                    data={testData4}/>
                                 
                             </View>
                         </List.Accordion>

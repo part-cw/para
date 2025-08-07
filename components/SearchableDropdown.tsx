@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Animated,
   Easing,
+  InteractionManager,
   Keyboard,
   Platform,
   ScrollView,
@@ -40,9 +41,18 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
+  // const [showAddNew, setShowAddNew] = useState<boolean>(false)
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
+
+  const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
+  const showAddNew = showNoResults || !data.includes(searchText);
+  const showFloatingLabel = isFocused || searchText.length > 0;
+  const showClearIcon = (searchText.trim() !== '')
+
+  console.log('showClear', showClearIcon)
+  
 
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
@@ -100,9 +110,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   },[searchText])
 
   React.useEffect(() => {
-  if (searchText) {
-    animateLabel(1);
-  }
+    if (searchText) {
+      animateLabel(1);
+    }
   }, []);
 
   // Filter data based on search text
@@ -118,9 +128,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     setFilteredData(filtered);
   };
 
-  const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
-  const showAddNew = showNoResults && !data.includes(searchText);
-  const showFloatingLabel = isFocused || searchText.length > 0;
+  const handleClear = () => {
+    setSearchText('')
+    setFilteredData(data)
+    Keyboard.dismiss()
+  }
 
   return (
     <View style={[styles.container, style]}>
@@ -154,6 +166,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               style={styles.textInput}
               placeholder={!showFloatingLabel ? label : placeholder}
               onChangeText={(text: string) => {
+                console.log('text input', text)
                 // set trimmed text to '' if empty string, othwerwise set to text
                 !text.trim() ? setSearchText('') : setSearchText(text)
                 filterData(text.trim());
@@ -166,15 +179,26 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               }}
               value={searchText}>
             </TextInput>
-            <IconButton
-              icon="chevron-down"
-              size={25}
-              style={[
-                styles.dropdownIcon,
-                (isFocused && isOpen) && styles.dropdownIconOpen
-              ]}
-              onPress={() => slideup()}
-            />
+            <View style={styles.iconContainer}>
+              { showClearIcon &&
+                <IconButton
+                  icon="close-circle-outline"
+                  size={25}
+                  style={styles.clearIcon}
+                  iconColor="rgb(234, 150, 150)"
+                  onPress={handleClear}
+                />
+              }
+              <IconButton
+                icon="chevron-down"
+                size={25}
+                style={[
+                  styles.dropdownIcon,
+                  (isFocused && isOpen) && styles.dropdownIconOpen
+                ]}
+                onPress={() => slideup()}
+              />
+            </View>
           </View>
         </View>
         :
@@ -220,14 +244,25 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                     : placeholder
               }
             </Text>
-            <IconButton
-              icon="chevron-down"
-              size={25}
-              style={[
-                styles.dropdownIcon,
-                (isFocused && isOpen) && styles.dropdownIconOpen
-              ]}
-            />
+            <View style={styles.iconContainer}>
+              { showClearIcon &&
+                <IconButton
+                  icon="close-circle-outline"
+                  size={25}
+                  style={styles.clearIcon}
+                  iconColor="rgb(234, 150, 150)"
+                  onPress={handleClear}
+                />
+              }
+              <IconButton
+                icon="chevron-down"
+                size={25}
+                style={[
+                  styles.dropdownIcon,
+                  (isFocused && isOpen) && styles.dropdownIconOpen
+                ]}
+              />
+            </View>
           </TouchableOpacity>
 
         </View>
@@ -262,25 +297,18 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                       </TouchableOpacity>
                     ))
                   : 
-                  showAddNew ? (
+                   showAddNew ? 
+                  (
                 <TouchableOpacity
                   style={[styles.dropdownItem, styles.addNewItem]}
                   onPress={() => {
-                    console.log('add new click')
-                    console.log('add new selected:', searchText); // Debug log
-                    
-                    // setSearchText((prev) => {
-                    //   console.log ('prev', prev)
-                    //   onSelect(prev)
-                    //   Keyboard.dismiss();
-                    //   slideup();
-                    //   return prev;
-                    // })    
-                    const trimmed = searchText.trim();
-                    setSearchText(trimmed);       // Ensure the displayed value is what user typed
-                    onSelect(trimmed);            // Send to parent immediately
                     Keyboard.dismiss();
-                    slideup();
+                    InteractionManager.runAfterInteractions(() => {
+                      const trimmed = searchText.trim();
+                      setSearchText(trimmed);
+                      onSelect(trimmed);
+                      slideup();
+                    });
                   }}
                   activeOpacity={0.7}
                 >
@@ -288,7 +316,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                     Add "{searchText}"
                   </Text>
                 </TouchableOpacity>
-              ) : null}
+              )
+                : null
+              }
             </ScrollView>
           </Animated.View>
         :
@@ -358,12 +388,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingRight: 4,
   },
+  clearIcon: {
+    marginRight: 0
+  },
   dropdownIcon: {
     transform: [{ rotate: '0deg' }],
     transitionDuration: '150ms',
+    marginLeft: 0
   },
   dropdownIconOpen: {
     transform: [{ rotate: '180deg' }],
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 4,
   },
   dropdown: {
     marginTop: 0,
