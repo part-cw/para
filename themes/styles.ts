@@ -10,7 +10,7 @@ export const GlobalStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 8,
-        marginBottom: 8,
+        marginBottom: 12,
         backgroundColor: 'white',
         elevation: 2, // TODO - confirm this works for iOS and web
         overflow: 'hidden',

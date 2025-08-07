@@ -31,7 +31,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   label,
   onSelect= (_: string) => {},
   value = "",
-  maxHeight,
+  maxHeight = 200,
   style = {},
   search = true
 }) => {
@@ -40,7 +40,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
-  const [height, setHeight] = useState<number>(200);
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
@@ -57,7 +56,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         setIsOpen(true)
         setIsFocused(true)
         Animated.timing(animatedvalue,{
-            toValue: height,
+            toValue: maxHeight,
             duration:300,
             useNativeDriver:false,
             easing: Easing.out(Easing.ease)
@@ -105,12 +104,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     animateLabel(1);
   }
   }, []);
-
-  React.useEffect(() => {
-    if (maxHeight) {
-      setHeight(maxHeight);
-    }
-  }, [maxHeight])
 
   // Filter data based on search text
   const filterData = (trimmedText: string) => {
@@ -275,10 +268,19 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   onPress={() => {
                     console.log('add new click')
                     console.log('add new selected:', searchText); // Debug log
-                    onSelect(searchText);  // TODO - fix -- currently double clicks to add
+                    
+                    // setSearchText((prev) => {
+                    //   console.log ('prev', prev)
+                    //   onSelect(prev)
+                    //   Keyboard.dismiss();
+                    //   slideup();
+                    //   return prev;
+                    // })    
+                    const trimmed = searchText.trim();
+                    setSearchText(trimmed);       // Ensure the displayed value is what user typed
+                    onSelect(trimmed);            // Send to parent immediately
                     Keyboard.dismiss();
                     slideup();
-    
                   }}
                   activeOpacity={0.7}
                 >
@@ -364,8 +366,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '180deg' }],
   },
   dropdown: {
-    position: 'absolute',
-    top: '100%',
+    marginTop: 0,
     left: 0,
     right: 0,
     backgroundColor: '#fff',

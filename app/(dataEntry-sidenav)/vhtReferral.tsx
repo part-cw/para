@@ -1,10 +1,9 @@
-import AutocompleteField from '@/components/AutocompleteField';
 import PaginationControls from '@/components/PaginationControls';
 import SearchableDropdown from '@/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { type AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
 import { SelectList } from 'react-native-dropdown-select-list';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -28,6 +27,11 @@ export default function VHTReferralScreen() {
     const [selectedValue, setSelectedValue] = useState<string>('');
     const handleSelectionChange = (value: string) => {
         setSelectedValue(value);
+    };
+
+    const [selectedValueB, setSelectedValueB] = useState<string>('');
+    const handleSelectionChangeB = (value: string) => {
+        setSelectedValueB(value);
     };
 
 
@@ -55,6 +59,16 @@ export default function VHTReferralScreen() {
         'Grape',
         'Honeydew',
     ];
+
+    const testData4 = [
+        { key: '1', value: 'Apple'},
+        { key: '2', value: 'Banana'},
+        { key: '3', value: 'Cantaloupe'},
+        { key: '4', value: 'Date'},
+        { key: '5', value: 'Elderberry'},
+        { key: '6', value: 'Fig'},
+        { key: '7', value: 'Honeydew'},
+    ]
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -97,8 +111,8 @@ export default function VHTReferralScreen() {
                                     search={true}
                                 />
                                 <SelectList 
-                                    setSelected={setSelectedValue}
-                                    data={testData3}/>
+                                    setSelected={setSelectedValueB}
+                                    data={testData4}/>
                                 
                             </View>
                         </List.Accordion>
@@ -111,29 +125,26 @@ export default function VHTReferralScreen() {
                             <Text style={Styles.accordionListTitle}>VHT Contact Information</Text>
                         </View>
                         <View style={Styles.accordionContentWrapper}>
+                            {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}></TouchableWithoutFeedback> */}
+                                <SearchableDropdown
+                                    data={testData3}
+                                    label="Name"
+                                    placeholder='Enter VHT name'
+                                    onSelect={handleSelectionChange}
+                                    value={selectedValue}
+                                    maxHeight={200}
+                                    search={true}
+                                />
+                            {/* <TouchableWithoutFeedback/> */}
+
                             <SearchableDropdown
                                 data={testData3}
-                                label="Name"
-                                placeholder='Enter VHT name'
+                                label="Telephone"
+                                placeholder='Enter VHT telephone number'
                                 onSelect={handleSelectionChange}
                                 value={selectedValue}
                                 maxHeight={200}
                                 search={true}
-                            />
-                            <Text style={styles.result}>
-                                Current value: {selectedValue.trim() ? selectedValue : 'None selected'}
-                            </Text>
-                            <AutocompleteField
-                                placeholder="Start typing VHT name"
-                                dataSet={testDataset2}
-                                onSelectItem={setVht}
-                                label='Name'
-                            />
-                            <AutocompleteField
-                                placeholder="Start typing phone number"
-                                dataSet={testDataset}
-                                onSelectItem={setVht}
-                                label='Telephone'
                             />
                         </View>
                     </View>
@@ -150,11 +161,3 @@ export default function VHTReferralScreen() {
         </SafeAreaView>
     );
 }
-
-    const styles = StyleSheet.create({
-    result: {
-        fontSize: 14,
-        color: '#666',
-        marginTop: 10,
-    },
-    });
