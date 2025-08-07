@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // - village required - error if left blank 
 // - data persisted when accordions close/open and when navigate away
 // - make village selection filter down vht name and vice versa
-// write util function to covert csv to usable dataset for autocomplete componenet
+// write util function to covert csv to usable dataset for searchable dropdown componenet
 
 export default function VHTReferralScreen() {
     // TODO - add more states

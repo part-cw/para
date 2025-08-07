@@ -16,10 +16,10 @@ import {
 import { IconButton } from 'react-native-paper';
 
 interface SearchableDropdownProps {
-  data?: string[];
+  data: string[];
   placeholder?: string;
-  label?: string;
-  onSelect?: (selected: string) => void;
+  label: string;
+  onSelect: (selected: string) => void;
   value?: string;
   maxHeight?: number;
   style?: ViewStyle;

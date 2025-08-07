@@ -8,7 +8,6 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
-import { AutocompleteDropdownContextProvider } from 'react-native-autocomplete-dropdown';
 import { Provider as PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppTheme } from "../themes/theme";
@@ -43,7 +42,6 @@ export default function RootLayout() {
   }
 
   return (
-     <AutocompleteDropdownContextProvider>
       <SafeAreaProvider>
         <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
           <PaperProvider theme={AppTheme}>
@@ -52,6 +50,5 @@ export default function RootLayout() {
           </PaperProvider>
         </View>
       </SafeAreaProvider>
-    </AutocompleteDropdownContextProvider>
   );
 }
