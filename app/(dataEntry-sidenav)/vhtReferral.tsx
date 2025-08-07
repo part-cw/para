@@ -1,44 +1,41 @@
-import AutocompleteField from '@/components/AutocompleteField';
 import PaginationControls from '@/components/PaginationControls';
+import SearchableDropdown from '@/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { type AutocompleteDropdownItem } from 'react-native-autocomplete-dropdown';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Card, List, Text } from 'react-native-paper';
+import { Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+
 // TODO:
-// - allow manual data entry if options not in Dropdown for all fields
 // - village required - error if left blank 
 // - data persisted when accordions close/open and when navigate away
-// - make accordion open state by default? or remove closing capabilities??
 // - make village selection filter down vht name and vice versa
-// write util function to covert csv to usable dataset for autocomplete componenet
+// write util function to covert csv to usable dataset for searchable dropdown componenet
 
 export default function VHTReferralScreen() {
-    // TODO - fix setuseState and handlePress
-    const [expanded, setExpanded] = useState(true);
-    const handlePress = () => setExpanded(!expanded);
-
     // TODO - add more states
-    const [village, setVillage] = useState<AutocompleteDropdownItem | null>(null)
-    const [vht, setVht] = useState<AutocompleteDropdownItem | null>(null)
-
+    const { colors } = useTheme()
+    
+    const [selectedValue, setSelectedValue] = useState<string>('');
+    const handleSelectionChange = (value: string) => {
+        setSelectedValue(value);
+    };
 
     // TODO convert csv data into dataset of this format
-    // TODO filter VHT name list based on 
-    const testDataset = [
-          { id: '1', title: 'Alpha'},
-          { id: '2', title: 'Beta'},
-          { id: '3', title: 'Gamma'},
-        ]
-     const testDataset2 = [
-          { id: '1', title: 'Apple'},
-          { id: '2', title: 'Banana'},
-          { id: '3', title: 'Cantaloupe'},
-        ]
+    // TODO filter VHT name list based on
+    const testData3: string[] = [
+        'Apple',
+        'Banana',
+        'Cherry',
+        'Date',
+        'Elderberry',
+        'Fig',
+        'Grape',
+        'Honeydew',
+    ];
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -55,50 +52,53 @@ export default function VHTReferralScreen() {
                 </Card>
 
                 <List.Section>
-                    {/* Location Accordion */}
+                    {/* Location Card */}
                     <View style={Styles.accordionListWrapper}>
-                        <List.Accordion
-                            title="Patient Location"
-                            titleStyle={Styles.accordionListTitle}
-                            left={props => <List.Icon {...props} icon="map-marker" />}>
-                            <View style={Styles.accordionContentWrapper}>
-                                <AutocompleteField 
-                                    dataSet={testDataset}
-                                    placeholder= 'Start typing village name'
-                                    onSelectItem={setVillage}
-                                    label ='Village (required)'            
-                                />
-                                <AutocompleteField 
-                                    dataSet={testDataset}
-                                    placeholder= 'Start typing HC name'
-                                    onSelectItem={setVillage}
-                                    label ='Health Facility'            
-                                />
-                            </View>
-                        </List.Accordion>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+                            <List.Icon icon="map-marker" color={colors.primary} />
+                            <Text style={Styles.cardTitle}>Patient Address</Text>
+                        </View>
+                        <View style={Styles.accordionContentWrapper}>
+                            <SearchableDropdown
+                                data={testData3}
+                                label="Village (required)"
+                                placeholder='Enter village name'
+                                onSelect={handleSelectionChange}
+                                value={selectedValue}
+                            />
+                            <SearchableDropdown
+                                data={testData3}
+                                label="Health Facility (optional)"
+                                placeholder='Enter HC name'
+                                onSelect={handleSelectionChange}
+                                value={selectedValue}
+                            />
+                        </View>
                     </View>
 
-                    {/* VHT Contact Info Accordion */}
+                    {/* VHT Contact Info Card*/}
                     <View style={Styles.accordionListWrapper}>
-                        <List.Accordion
-                            title="VHT Contact Information"
-                            titleStyle={Styles.accordionListTitle}
-                            left={props => <List.Icon {...props} icon="doctor" />}>
-                            <View style={Styles.accordionContentWrapper}>
-                                <AutocompleteField
-                                    placeholder="Start typing VHT name"
-                                    dataSet={testDataset2}
-                                    onSelectItem={setVht}
-                                    label='Name'
-                                />
-                                <AutocompleteField
-                                    placeholder="Start typing phone number"
-                                    dataSet={testDataset}
-                                    onSelectItem={setVht}
-                                    label='Telephone'
-                                />
-                            </View>
-                        </List.Accordion>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+                            <List.Icon icon="doctor" color={colors.primary} />
+                            <Text style={Styles.cardTitle}>VHT Contact Information</Text>
+                        </View>
+                        <View style={Styles.accordionContentWrapper}>
+                            <SearchableDropdown
+                                data={testData3}
+                                label="Name"
+                                placeholder='Enter VHT name'
+                                onSelect={handleSelectionChange}
+                                value={selectedValue}
+                            />
+
+                            <SearchableDropdown
+                                data={testData3}
+                                label="Telephone"
+                                placeholder='Enter VHT telephone number'
+                                onSelect={handleSelectionChange}
+                                value={selectedValue}
+                            />
+                        </View>
                     </View>
 
                 </List.Section>

@@ -10,7 +10,7 @@ export const GlobalStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 8,
-        marginBottom: 8,
+        marginBottom: 12,
         backgroundColor: 'white',
         elevation: 2, // TODO - confirm this works for iOS and web
         overflow: 'hidden',
@@ -23,7 +23,13 @@ export const GlobalStyles = StyleSheet.create({
     },
 
     accordionListTitle: {
-        fontSize: 18
+        fontSize: 18,
+    },
+
+    cardTitle: {
+        fontSize: 18,
+        marginLeft: 10,
+        color: AppTheme.colors.primary
     },
 
     accordionTextInput: {
@@ -114,38 +120,4 @@ export const GlobalStyles = StyleSheet.create({
         paddingBottom: Platform.OS === 'ios' ? 30 : 16,
         width: '100%'
     },
-
-    // Autocomplete Dropdown Menu
-    autocompleteWrapper: {
-        marginBottom: 20,
-        position: 'relative',
-        // overflow: 'hidden'
-    },
-    autocompleteInputContainerStyle: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        backgroundColor: '#fff',
-        overflow: 'hidden'
-    },
-    autocompleteLabel: {
-        position: 'absolute',
-        top: -10,
-        left: 12,
-        fontSize: 16,
-        color: '#00000',
-        backgroundColor: '#fff',
-        paddingHorizontal: 4,
-        zIndex: 1,
-    },
-    autocompleteFocusedInput: {
-        borderColor: AppTheme.colors.primary,
-    },
-    // autocompleteTextInput: {
-    //     // paddingVertical: Platform.OS === 'ios' ? 10 : 6,
-    //     // fontSize: 16,
-    //     color: 'black'
-    // },
 })
