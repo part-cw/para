@@ -56,7 +56,7 @@ export default function VHTReferralScreen() {
                     <View style={Styles.accordionListWrapper}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
                             <List.Icon icon="map-marker" color={colors.primary} />
-                            <Text style={Styles.accordionListTitle}>Patient Address</Text>
+                            <Text style={Styles.cardTitle}>Patient Address</Text>
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
@@ -80,7 +80,7 @@ export default function VHTReferralScreen() {
                     <View style={Styles.accordionListWrapper}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
                             <List.Icon icon="doctor" color={colors.primary} />
-                            <Text style={Styles.accordionListTitle}>VHT Contact Information</Text>
+                            <Text style={Styles.cardTitle}>VHT Contact Information</Text>
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown

@@ -24,6 +24,10 @@ export const GlobalStyles = StyleSheet.create({
 
     accordionListTitle: {
         fontSize: 18,
+    },
+
+    cardTitle: {
+        fontSize: 18,
         marginLeft: 10,
         color: AppTheme.colors.primary
     },
