@@ -2,10 +2,10 @@ import PaginationControls from '@/components/PaginationControls';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
-import { Dropdown } from 'react-native-paper-dropdown';
+// import { Dropdown } from 'react-native-paper-dropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -84,7 +84,7 @@ export default function MedicalConditionsScreen() {
                     />
                 </View>
                 
-                <Dropdown 
+                {/* <Dropdown 
                     label = {'Pneumonia'}
                     mode = {'outlined'}
                     options = {diagnosisOptions}
@@ -102,11 +102,11 @@ export default function MedicalConditionsScreen() {
                     menuContentStyle={{backgroundColor: colors.secondary}}
                     hideMenuHeader = {Platform.OS === 'web'}
 
-                />
+                /> */}
 
                 <View style = {{flexDirection: 'row', alignItems: 'center'}}>
                     <View style={{flex: 1}}>
-                        <Dropdown 
+                        {/* <Dropdown 
                             label = {'Chronic illnesses'}
                             mode = {'outlined'}
                             options = {diagnosisOptions}
@@ -114,7 +114,7 @@ export default function MedicalConditionsScreen() {
                             onSelect = {setChronicIllness}
                             menuContentStyle={{backgroundColor: colors.secondary}}
                             hideMenuHeader = {Platform.OS === 'web'}
-/>
+                        /> */}
                     </View>
                     <IconButton
                         icon="help-circle-outline"
@@ -127,7 +127,7 @@ export default function MedicalConditionsScreen() {
                         }}
                     />
                 </View>
-                <Dropdown 
+                {/* <Dropdown 
                     label = {'Acute diarrhea'}
                     mode = {'outlined'}
                     options = {simplifiedOptions}
@@ -162,7 +162,7 @@ export default function MedicalConditionsScreen() {
                     onSelect = {setMeningitis}
                     menuContentStyle={{backgroundColor: colors.secondary}}
                     hideMenuHeader = {Platform.OS === 'web'}
-                />
+                /> */}
 
             </ScrollView>
             <PaginationControls

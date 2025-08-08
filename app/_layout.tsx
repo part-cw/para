@@ -1,9 +1,4 @@
 import AppBar from "@/components/AppBar";
-import {
-  Inter_400Regular,
-  Inter_700Bold,
-  useFonts,
-} from "@expo-google-fonts/inter";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
@@ -14,32 +9,50 @@ import { AppTheme } from "../themes/theme";
 
 
 
-// TODO figure out which font variant to use exactly -- importing 700Bold and 400Regular for now
+// // TODO figure out which font variant to use exactly -- importing 700Bold and 400Regular for now
 
 // Keep splash screen visible while loading fonts
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    Inter_400Regular,
-    Inter_700Bold,
-  });
+//   const [fontsLoaded] = useFonts({
+//     Inter_400Regular,
+//     Inter_700Bold,
+//   });
 
-  useEffect(() => {
-    // Tell expo-splash-screen not to auto-hide yet
-    SplashScreen.preventAutoHideAsync();
-  }, []);
+//   useEffect(() => {
+//     // Tell expo-splash-screen not to auto-hide yet
+//     SplashScreen.preventAutoHideAsync();
+//   }, []);
 
   // Only hide splash when fonts are ready and layout is complete
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await new Promise(resolve => setTimeout(resolve, 5000)); // TODO: for testing only - delete later
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+//   const onLayoutRootView = useCallback(async () => {
+//     if (fontsLoaded) {
+//       await new Promise(resolve => setTimeout(resolve, 5000)); // TODO: for testing only - delete later
+//       await SplashScreen.hideAsync();
+//     }
+//   }, [fontsLoaded]);
 
-  // Show nothing while fonts are loading (native splash stays visible)
-  if (!fontsLoaded) {
-    return null;
-  }
+//   // Show nothing while fonts are loading (native splash stays visible)
+//   if (!fontsLoaded) {
+//     return null;
+//   }
+
+    useEffect(() => {
+        // Prevent splash screen from auto-hiding immediately
+        SplashScreen.preventAutoHideAsync();
+        
+        // Hide splash screen after a short delay (or immediately if you prefer)
+        const hideSplash = async () => {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay, optional
+        await SplashScreen.hideAsync();
+        };
+        hideSplash();
+    }, []);
+
+    const onLayoutRootView = useCallback(async () => {
+        // No font loading, so just hide splash screen immediately on layout
+        await SplashScreen.hideAsync();
+    }, []);
+
 
   return (
       <SafeAreaProvider>

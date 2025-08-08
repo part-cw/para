@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import {
-  Animated,
-  Easing,
-  InteractionManager,
-  Keyboard,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  ViewStyle
+    Animated,
+    Easing,
+    InteractionManager,
+    Keyboard,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    ViewStyle
 } from 'react-native';
 import { IconButton } from 'react-native-paper';
 

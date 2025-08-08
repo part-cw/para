@@ -10,7 +10,7 @@ import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO - implement functionality for event handlers!
+// // TODO - implement functionality for event handlers!
 
 export default function PatientInformationScreen() {
     const [sex, setSex] = useState<string>('');

@@ -1,10 +1,11 @@
-import { router } from 'expo-router';
+import { router } from "expo-router";
 import { Text, View } from "react-native";
 import { Button, useTheme } from 'react-native-paper';
 
 
 export default function Index() {
-  const {colors} = useTheme();
+  const { colors } = useTheme();
+
   return (
     <>
       <View style={{ flex: 1, alignItems: 'center' }}>

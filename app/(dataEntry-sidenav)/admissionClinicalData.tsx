@@ -3,10 +3,10 @@ import RadioButtonGroup from '@/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
-import { Dropdown } from "react-native-paper-dropdown";
+// import { Dropdown } from "react-native-paper-dropdown";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -65,7 +65,7 @@ export default function AdmissionClinicalDataScreen() {
                             titleStyle={Styles.accordionListTitle}
                             left={props => <List.Icon {...props} icon="history" />}>
                             <View style={Styles.accordionContentWrapper}>
-                                <Dropdown
+                                {/* <Dropdown
                                     label={"Last Hopitalized (required)"}
                                     mode={"outlined"}
                                     options={hospitalizationOptions}
@@ -73,7 +73,7 @@ export default function AdmissionClinicalDataScreen() {
                                     onSelect={setLastHospitalized}
                                     menuContentStyle={{backgroundColor: colors.secondary}}
                                     hideMenuHeader = {Platform.OS === 'web'}
-                                />
+                                /> */}
                                 <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
                                 <RadioButtonGroup 
                                     options={[
@@ -191,7 +191,7 @@ export default function AdmissionClinicalDataScreen() {
                                 {/* Eye movement dropdown */}
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                     <View style={{flex: 1}}>
-                                         <Dropdown
+                                         {/* <Dropdown
                                             label={"Eye movement"}
                                             mode={"outlined"}
                                             options={eyeMovementOptions}
@@ -199,7 +199,7 @@ export default function AdmissionClinicalDataScreen() {
                                             onSelect={setEyeMovement}
                                             menuContentStyle={{backgroundColor: colors.secondary}}
                                             hideMenuHeader = {Platform.OS === 'web'}
-                                        />
+                                        /> */}
                                     </View>
                                     <IconButton
                                         icon="information-outline"
@@ -212,7 +212,7 @@ export default function AdmissionClinicalDataScreen() {
                                 {/* Motor response dropdown */}
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                         <View style={{flex: 1}}>
-                                            <Dropdown
+                                            {/* <Dropdown
                                                 label={"Best motor response"}
                                                 mode={"outlined"}
                                                 options={motorResponseOptions}
@@ -222,7 +222,7 @@ export default function AdmissionClinicalDataScreen() {
                                                     backgroundColor: colors.secondary,
                                                     minWidth: 320}}
                                                 hideMenuHeader = {Platform.OS === 'web'}
-                                            />
+                                            /> */}
                                         </View>
                                         <IconButton
                                             icon="information-outline"
@@ -235,7 +235,7 @@ export default function AdmissionClinicalDataScreen() {
                                 {/* Verbal response dropdown */}
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                     <View style={{flex: 1}}>
-                                        <Dropdown
+                                        {/* <Dropdown
                                             label={"Best verbal response"}
                                             mode={"outlined"}
                                             options={verbalResponseOptions}
@@ -243,7 +243,7 @@ export default function AdmissionClinicalDataScreen() {
                                             onSelect={setVerbalResponse}
                                             menuContentStyle={{backgroundColor: colors.secondary}}
                                             hideMenuHeader = {Platform.OS === 'web'}
-                                        />
+                                        /> */}
                                     </View>
                                     {/* White icon to align dropdown with others */}
                                     <IconButton
