@@ -46,15 +46,19 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
+  const [addedItems, setAddedItems] = useState<DropdownItem[]>([]); // Track added items
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
 
+  const allData = [...data, ...addedItems];
+  console.log('allData', allData)
+  
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
-  const showAddNew = showNoResults || !data.some(d => d.value === searchText);
+  const showAddNew = showNoResults && !allData.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim());
   const showFloatingLabel = isFocused || searchText.length > 0;
   const showClearIcon = (searchText.trim() !== '')  
-
+ 
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
       toValue,
@@ -104,33 +108,28 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   },[isOpen])
 
   React.useEffect(() => {
-    if(_firstRender){
-      _setFirstRender(false);
-      return;
-    }
-
-    const newItem: DropdownItem = {
-      key: `custom-${Date.now()}`,
-      value: searchText.trim(),
-    };
-    
-    onSelect(newItem);
-  },[searchText])
-
-  React.useEffect(() => {
     if (searchText) {
       animateLabel(1);
     }
   }, []);
 
-  // Filter data based on search text
-  const filterData = (trimmedText: string) => {
-    if (!trimmedText) {
-      setFilteredData(data);
+  // TODO - remove?
+  React.useEffect(() => {
+    if(_firstRender){
+      _setFirstRender(false);
       return;
     }
     
-    const filtered = data.filter((item: DropdownItem) =>
+  },[searchText])
+
+  // Filter data based on search text
+  const filterData = (trimmedText: string) => {
+    if (!trimmedText) {
+      setFilteredData(allData);
+      return;
+    }
+    
+    const filtered = allData.filter((item: DropdownItem) =>
         item.value.toLowerCase().includes(trimmedText.toLowerCase())
     );
     setFilteredData(filtered);
@@ -138,8 +137,32 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   const handleClear = () => {
     setSearchText('')
-    setFilteredData(data)
+    setFilteredData(allData)
     Keyboard.dismiss()
+  }
+
+  const handleAddNew = () => {
+      Keyboard.dismiss();
+      InteractionManager.runAfterInteractions(() => {
+        const newItem: DropdownItem = {
+          key: `new-${Date.now()}`, // TODO change to hash?
+          value: searchText.trim(),
+        };
+
+        console.log('newItem', newItem)
+        setAddedItems((prev) => [...prev, newItem]) // add to local items array
+
+        onSelect(newItem);
+        setSearchText(newItem.value)
+        slideup();
+      });
+  }
+
+  const handleItemSelect = (item: DropdownItem) => {
+    setSearchText(item.value)
+    onSelect(item)
+    slideup()
+    setTimeout(() => {setFilteredData(allData)}, 800)                   
   }
 
   return (
@@ -293,12 +316,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                         key={item.key}
                         style={styles.dropdownItem}
                         activeOpacity={0.7}
-                        onPress={() => {
-                          setSearchText(item.value)
-                          onSelect(item)
-                          slideup()
-                          setTimeout(() => {setFilteredData(data)}, 800)
-                        }}
+                        onPress={() => handleItemSelect(item)}
                       >
                         <Text style={styles.dropdownItemText}>{item.value}</Text>
                       </TouchableOpacity>
@@ -308,19 +326,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   (
                 <TouchableOpacity
                   style={[styles.dropdownItem, styles.addNewItem]}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    InteractionManager.runAfterInteractions(() => {
-                      const newItem: DropdownItem = {
-                        key: `custom-${Date.now()}`, // TODO change to hash?
-                        value: searchText.trim(),
-                      };
-                      onSelect(newItem);
-                      setSearchText('')
-                      slideup();
-                    });
-                    
-                  }}
+                  onPress={handleAddNew}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.addNewText}>
