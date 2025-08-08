@@ -15,11 +15,16 @@ import {
 } from 'react-native';
 import { IconButton } from 'react-native-paper';
 
+export interface DropdownItem {
+  key: string;
+  value: string;
+}
+
 interface SearchableDropdownProps {
-  data: string[];
+  data: DropdownItem[];
   placeholder?: string;
   label: string;
-  onSelect: (selected: string) => void;
+  onSelect: (selected: DropdownItem) => void;
   value?: string;
   maxHeight?: number;
   style?: ViewStyle;
@@ -30,7 +35,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   data = [],
   placeholder = "Search or enter new...",
   label,
-  onSelect= (_: string) => {},
+  onSelect= (_: DropdownItem) => {},
   value = "",
   maxHeight = 200,
   style = {},
@@ -46,7 +51,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
 
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
-  const showAddNew = showNoResults || !data.includes(searchText);
+  const showAddNew = showNoResults || !data.some(d => d.value === searchText);
   const showFloatingLabel = isFocused || searchText.length > 0;
   const showClearIcon = (searchText.trim() !== '')  
 
@@ -99,11 +104,17 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   },[isOpen])
 
   React.useEffect(() => {
-      if(_firstRender){
-        _setFirstRender(false);
-        return;
-      }
-      onSelect(searchText)
+    if(_firstRender){
+      _setFirstRender(false);
+      return;
+    }
+
+    const newItem: DropdownItem = {
+      key: `custom-${Date.now()}`,
+      value: searchText.trim(),
+    };
+    
+    onSelect(newItem);
   },[searchText])
 
   React.useEffect(() => {
@@ -119,8 +130,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       return;
     }
     
-    const filtered = data.filter((item: string) =>
-        item.toLowerCase().includes(trimmedText.toLowerCase())
+    const filtered = data.filter((item: DropdownItem) =>
+        item.value.toLowerCase().includes(trimmedText.toLowerCase())
     );
     setFilteredData(filtered);
   };
@@ -277,19 +288,19 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                 {
                   (filteredData.length > 0) 
                   ? 
-                    filteredData.map((item, index) => (
+                    filteredData.map((item) => (
                       <TouchableOpacity
-                        key={`${item}-${index}`}
+                        key={item.key}
                         style={styles.dropdownItem}
                         activeOpacity={0.7}
                         onPress={() => {
-                          setSearchText(item)
+                          setSearchText(item.value)
                           onSelect(item)
                           slideup()
                           setTimeout(() => {setFilteredData(data)}, 800)
                         }}
                       >
-                        <Text style={styles.dropdownItemText}>{item}</Text>
+                        <Text style={styles.dropdownItemText}>{item.value}</Text>
                       </TouchableOpacity>
                     ))
                   : 
@@ -300,11 +311,15 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   onPress={() => {
                     Keyboard.dismiss();
                     InteractionManager.runAfterInteractions(() => {
-                      const trimmed = searchText.trim();
-                      setSearchText(trimmed);
-                      onSelect(trimmed);
+                      const newItem: DropdownItem = {
+                        key: `custom-${Date.now()}`, // TODO change to hash?
+                        value: searchText.trim(),
+                      };
+                      onSelect(newItem);
+                      setSearchText('')
                       slideup();
                     });
+                    
                   }}
                   activeOpacity={0.7}
                 >
