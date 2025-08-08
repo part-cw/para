@@ -37,8 +37,6 @@ export default function VHTReferralScreen() {
         {key: "8", value: 'pie'},
     ]
 
-    console.log('data', testData)
-
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>

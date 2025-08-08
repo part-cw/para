@@ -52,7 +52,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
 
   const allData = [...data, ...addedItems];
-  console.log('allData', allData)
   
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults && !allData.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim());
@@ -119,7 +118,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       _setFirstRender(false);
       return;
     }
-    
   },[searchText])
 
   // Filter data based on search text
@@ -135,6 +133,18 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     setFilteredData(filtered);
   };
 
+  const handleTextChange = (text: string) => {
+    // set trimmed text to '' if empty string, othwerwise set to text
+    !text.trim() ? setSearchText('') : setSearchText(text)
+    filterData(text.trim());
+
+    if (text.trim().length > 0 || isFocused) {
+      animateLabel(1); // float
+    } else {
+      animateLabel(0); // shrink
+    }
+  }
+
   const handleClear = () => {
     setSearchText('')
     setFilteredData(allData)
@@ -142,20 +152,17 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const handleAddNew = () => {
-      Keyboard.dismiss();
-      InteractionManager.runAfterInteractions(() => {
-        const newItem: DropdownItem = {
-          key: `new-${Date.now()}`, // TODO change to hash?
-          value: searchText.trim(),
-        };
-
-        console.log('newItem', newItem)
-        setAddedItems((prev) => [...prev, newItem]) // add to local items array
-
-        onSelect(newItem);
-        setSearchText(newItem.value)
-        slideup();
-      });
+    Keyboard.dismiss();
+    InteractionManager.runAfterInteractions(() => {
+      const newItem: DropdownItem = {
+        key: `new-${Date.now()}`, // TODO change to hash?
+        value: searchText.trim(),
+      };
+      setAddedItems((prev) => [...prev, newItem]) // add to local items array
+      onSelect(newItem);
+      setSearchText(newItem.value)
+      slideup();
+    });
   }
 
   const handleItemSelect = (item: DropdownItem) => {
@@ -196,17 +203,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
             <TextInput 
               style={styles.textInput}
               placeholder={!showFloatingLabel ? label : placeholder}
-              onChangeText={(text: string) => {
-                // set trimmed text to '' if empty string, othwerwise set to text
-                !text.trim() ? setSearchText('') : setSearchText(text)
-                filterData(text.trim());
-
-                if (text.trim().length > 0 || isFocused) {
-                  animateLabel(1); // float
-                } else {
-                  animateLabel(0); // shrink
-                }
-              }}
+              onChangeText={handleTextChange}
               value={searchText}>
             </TextInput>
             <View style={styles.iconContainer}>
