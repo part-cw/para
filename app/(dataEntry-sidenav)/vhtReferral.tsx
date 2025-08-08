@@ -1,5 +1,5 @@
 import PaginationControls from '@/components/PaginationControls';
-import SearchableDropdown from '@/components/SearchableDropdown';
+import SearchableDropdown, { DropdownItem } from '@/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -19,23 +19,23 @@ export default function VHTReferralScreen() {
     // TODO - add more states
     const { colors } = useTheme()
     
-    const [selectedValue, setSelectedValue] = useState<string>('');
-    const handleSelectionChange = (value: string) => {
-        setSelectedValue(value);
+    const [selected, setSelected] = useState<DropdownItem | null>(null);
+    const handleSelectionChange = (item: DropdownItem) => {
+        setSelected(item);
     };
 
     // TODO convert csv data into dataset of this format
-    // TODO filter VHT name list based on
-    const testData3: string[] = [
-        'Apple',
-        'Banana',
-        'Cherry',
-        'Date',
-        'Elderberry',
-        'Fig',
-        'Grape',
-        'Honeydew',
-    ];
+    // TODO filter VHT name list based on village
+    const testData = [
+        {key: "1", value: 'alpha'},
+        {key: "2", value: 'beta'},
+        {key: "3", value: 'gamma'},
+        {key: "4", value: 'delta'},
+        {key: "5", value: 'deelta'},
+        {key: "6", value: 'deltaa'},
+        {key: "7", value: 'apple'},
+        {key: "8", value: 'pie'},
+    ]
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -60,18 +60,18 @@ export default function VHTReferralScreen() {
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
-                                data={testData3}
+                                data={testData}
                                 label="Village (required)"
                                 placeholder='Enter village name'
                                 onSelect={handleSelectionChange}
-                                value={selectedValue}
+                                value={selected?.value}
                             />
                             <SearchableDropdown
-                                data={testData3}
+                                data={testData}
                                 label="Health Facility (optional)"
                                 placeholder='Enter HC name'
                                 onSelect={handleSelectionChange}
-                                value={selectedValue}
+                                value={selected?.value}
                             />
                         </View>
                     </View>
@@ -84,19 +84,19 @@ export default function VHTReferralScreen() {
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
-                                data={testData3}
+                                data={testData}
                                 label="Name"
                                 placeholder='Enter VHT name'
                                 onSelect={handleSelectionChange}
-                                value={selectedValue}
+                                value={selected?.value}
                             />
 
                             <SearchableDropdown
-                                data={testData3}
+                                data={testData}
                                 label="Telephone"
                                 placeholder='Enter VHT telephone number'
                                 onSelect={handleSelectionChange}
-                                value={selectedValue}
+                                value={selected?.value}
                             />
                         </View>
                     </View>
