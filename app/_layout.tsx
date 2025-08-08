@@ -1,11 +1,11 @@
-// import AppBar from "@/components/AppBar";
+import AppBar from "@/components/AppBar";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
-// import { Provider as PaperProvider } from "react-native-paper";
-// import { SafeAreaProvider } from "react-native-safe-area-context";
-// import { AppTheme } from "../themes/theme";
+import { Provider as PaperProvider } from "react-native-paper";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AppTheme } from "../themes/theme";
 
 
 
@@ -55,13 +55,13 @@ export default function RootLayout() {
 
 
   return (
-    //   <SafeAreaProvider>
+      <SafeAreaProvider>
         <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-          {/* <PaperProvider theme={AppTheme}> */}
-            {/* <AppBar/> */}
+          <PaperProvider theme={AppTheme}>
+            <AppBar/>
             <Stack screenOptions={{headerShown: false,}}/>
-          {/* </PaperProvider> */}
+          </PaperProvider>
         </View>
-    //   </SafeAreaProvider>
+      </SafeAreaProvider>
   );
 }
