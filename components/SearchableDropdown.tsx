@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import {
-    Animated,
-    Easing,
-    InteractionManager,
-    Keyboard,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    ViewStyle
+  Animated,
+  Easing,
+  Keyboard,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ViewStyle
 } from 'react-native';
 import { IconButton } from 'react-native-paper';
 
@@ -56,7 +55,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults && !allData.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim());
   const showFloatingLabel = isFocused || searchText.length > 0;
-  const showClearIcon = (searchText.trim() !== '')  
+  const showClearIcon = (searchText.trim() !== '') 
+  
+  console.log('isOpen', isOpen)
+  console.log('showAddNew', showAddNew)
+  console.log('filteredData.length>0', filteredData.length > 0)
+  console.log('searchText', searchText)
+  console.log('firstRender', _firstRender)
+  console.log('addedItems', addedItems)
  
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
@@ -68,31 +74,35 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   
   // adapted from react-native-dropdown-select-list
   const slidedown = () => {
-        setIsOpen(true)
-        setIsFocused(true)
-        Animated.timing(animatedvalue,{
-            toValue: maxHeight,
-            duration:300,
-            useNativeDriver:false,
-            easing: Easing.out(Easing.ease)
-            
-        }).start()
+    console.log ('slidedown')
+    setIsOpen(true)
+    setIsFocused(true)
+    Animated.timing(animatedvalue,{
+        toValue: maxHeight,
+        duration:300,
+        useNativeDriver:false,
+        easing: Easing.out(Easing.ease)
+        
+    }).start()
   }
 
-  const slideup = () => {     
-        Animated.timing(animatedvalue,{
-            toValue:0,
-            duration:300,
-            useNativeDriver:false,
-            easing: Easing.out(Easing.ease)
-            
-        }).start(() => {
-          setIsOpen(false)
-          setIsFocused(false)
-        })
+  const slideup = () => {   
+    console.log('slideup')  
+    Animated.timing(animatedvalue,{
+        toValue:0,
+        duration:300,
+        useNativeDriver:false,
+        easing: Easing.out(Easing.ease)
+        
+    }).start(() => {
+      setIsOpen(false)
+      setIsFocused(false)
+    })
   }
 
   React.useEffect(() => {
+    console.log('inside isOPen useEffect')
+    console.log('firstRender', _firstRender)
     if(!_firstRender){
       if (isOpen) {
         slidedown()
@@ -152,25 +162,26 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const handleAddNew = () => {
+    console.log('!!!insdie handle AddNew')
+    const newItem: DropdownItem = {
+      key: `new-${Date.now()}`, // TODO change to hash?
+      value: searchText.trim(),
+    };
+    console.log('!!!newItem', newItem)    
+    setAddedItems((prev) => [...prev, newItem]) // add to local items array
+    onSelect(newItem);
+    setSearchText(newItem.value)
+    slideup();
     Keyboard.dismiss();
-    InteractionManager.runAfterInteractions(() => {
-      const newItem: DropdownItem = {
-        key: `new-${Date.now()}`, // TODO change to hash?
-        value: searchText.trim(),
-      };
-      setAddedItems((prev) => [...prev, newItem]) // add to local items array
-      onSelect(newItem);
-      setSearchText(newItem.value)
-      slideup();
-    });
   }
 
   const handleItemSelect = (item: DropdownItem) => {
     setSearchText(item.value)
     onSelect(item)
     slideup()
-    setTimeout(() => {setFilteredData(allData)}, 800)                   
-  }
+    setFilteredData(allData)
+  }                   
+  
 
   return (
     <View style={[styles.container, style]}>
