@@ -1,7 +1,7 @@
-import Checkbox from '@/components/Checkbox';
-import PaginationButton from '@/components/PaginationButton';
-import RadioButtonGroup from '@/components/RadioButtonGroup';
-import { GlobalStyles as Styles } from '@/themes/styles';
+import Checkbox from '@/src/components/Checkbox';
+import PaginationButton from '@/src/components/PaginationButton';
+import RadioButtonGroup from '@/src/components/RadioButtonGroup';
+import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';

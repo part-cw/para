@@ -45,7 +45,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
-  const [addedItems, setAddedItems] = useState<DropdownItem[]>([]); // Track added items
+  const [addedItems, setAddedItems] = useState<DropdownItem[]>([]);
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
@@ -57,6 +57,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showFloatingLabel = isFocused || searchText.length > 0;
   const showClearIcon = (searchText.trim() !== '') 
   
+  // TODO - delete console logs
   console.log('isOpen', isOpen)
   console.log('showAddNew', showAddNew)
   console.log('filteredData.length>0', filteredData.length > 0)

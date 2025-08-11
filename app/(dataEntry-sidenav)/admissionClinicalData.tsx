@@ -1,7 +1,7 @@
-import PaginationControls from '@/components/PaginationControls';
-import RadioButtonGroup from '@/components/RadioButtonGroup';
-import SearchableDropdown, { DropdownItem } from '@/components/SearchableDropdown';
-import { GlobalStyles as Styles } from '@/themes/styles';
+import PaginationControls from '@/src/components/PaginationControls';
+import RadioButtonGroup from '@/src/components/RadioButtonGroup';
+import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
+import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';

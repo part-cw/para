@@ -1,6 +1,6 @@
-import Checkbox from '@/components/Checkbox';
-import PaginationControls from '@/components/PaginationControls';
-import { GlobalStyles as Styles } from '@/themes/styles';
+import Checkbox from '@/src/components/Checkbox';
+import PaginationControls from '@/src/components/PaginationControls';
+import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';

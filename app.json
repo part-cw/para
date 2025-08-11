@@ -4,7 +4,7 @@
     "slug": "para",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/smart-discharges-logo_script.png",
+    "icon": "./src/assets/images/smart-discharges-logo_script.png",
     "backgroundColor": "#ffffff",
     "scheme": "para",
     "userInterfaceStyle": "automatic",
@@ -14,7 +14,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon_sd-logo_noscript.png",
+        "foregroundImage": "./src/assets/images/icon_sd-logo_noscript.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -25,7 +25,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "assets/images/smart-discharges-logo_script.png",
+          "image": "./src/assets/images/smart-discharges-logo_script.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
