@@ -1,5 +1,6 @@
 import PaginationControls from '@/components/PaginationControls';
 import RadioButtonGroup from '@/components/RadioButtonGroup';
+import SearchableDropdown, { DropdownItem } from '@/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -19,34 +20,34 @@ export default function AdmissionClinicalDataScreen() {
 
     const [hivStatus, setHivStatus] = useState<string>('');
 
-    const [lastHospitalized, setLastHospitalized] = useState<string>();
+    const [lastHospitalized, setLastHospitalized] = useState<DropdownItem | null>(null);
     const hospitalizationOptions = [
-    { label: 'Never', value: 'never' },
-    { label: 'Less than 7 days ago', value: '<7d' },
-    { label: '7 days to 1 month ago', value: '7d-1m' },
-    { label: '1 month to 1 year ago', value: '1m-1y' },
-    { label: 'More than 1 year ago', value: '>1y' }];
+    { value: 'Never', key: 'never' },
+    { value: 'Less than 7 days ago', key: '<7d' },
+    { value: '7 days to 1 month ago', key: '7d-1m' },
+    { value: '1 month to 1 year ago', key: '1m-1y' },
+    { value: 'More than 1 year ago', key: '>1y' }];
 
-    const [eyeMovement, setEyeMovement] = useState<string>();
+    const [eyeMovement, setEyeMovement] = useState<DropdownItem | null>(null);
     const eyeMovementOptions = [
-        {label: 'Watches or follows', value: 'watches'},
-        {label: 'Fails to watch or follow', value: 'fails'}
+        {value: 'Watches or follows', key: 'watches'},
+        {value: 'Fails to watch or follow', key: 'fails'}
     ]
 
-    const [motorResponse, setMotorResponse] = useState<string>();
+    const [motorResponse, setMotorResponse] = useState<DropdownItem | null>(null);
     const motorResponseOptions = [
-        {label: 'Normal behavior observed', value: 'normal'},
-        {label: 'Localizes painful stimulus', value: 'localize'},
-        {label: 'Withdraws from painful stimulus', value: 'withdraw'},
-        {label: 'No resonse/inappropriate response', value: 'no-response'}
+        {value: 'Normal behavior observed', key: 'normal'},
+        {value: 'Localizes painful stimulus', key: 'localize'},
+        {value: 'Withdraws from painful stimulus', key: 'withdraw'},
+        {value: 'No resonse/inappropriate response', key: 'no-response'}
     ]
 
-    const [verbalResponse, setVerbalResponse] = useState<string>();
+    const [verbalResponse, setVerbalResponse] = useState<DropdownItem | null>(null);
     const verbalResponseOptions = [
-        {label: 'Normal behavior observed', value: 'normal'},
-        {label: 'Cries appropriately', value: 'cries'},
-        {label: 'Moan or abnormal cry', value: 'moan'},
-        {label: 'No vocal response', value: 'no-response'}
+        {value: 'Normal behavior observed', key: 'normal'},
+        {value: 'Cries appropriately', key: 'cries'},
+        {value: 'Moan or abnormal cry', key: 'moan'},
+        {value: 'No vocal response', key: 'no-response'}
     ]
 
     const bcsGeneralInfo = "Fully conscious children score 5 (have appropriate eye movement, motor response, and verbal response). Children who are unresponsive to painful stimuli score 0."
@@ -65,15 +66,15 @@ export default function AdmissionClinicalDataScreen() {
                             titleStyle={Styles.accordionListTitle}
                             left={props => <List.Icon {...props} icon="history" />}>
                             <View style={Styles.accordionContentWrapper}>
-                                {/* <Dropdown
-                                    label={"Last Hopitalized (required)"}
-                                    mode={"outlined"}
-                                    options={hospitalizationOptions}
-                                    value={lastHospitalized}
-                                    onSelect={setLastHospitalized}
-                                    menuContentStyle={{backgroundColor: colors.secondary}}
-                                    hideMenuHeader = {Platform.OS === 'web'}
-                                /> */}
+                                <SearchableDropdown 
+                                    data={hospitalizationOptions} 
+                                    label={'Last Hopitalized (required)'}
+                                    placeholder='select option below' 
+                                    onSelect={(item: DropdownItem) => 
+                                        {setLastHospitalized(item)}}
+                                    value={lastHospitalized?.value}
+                                    search={false}
+                                />
                                 <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
                                 <RadioButtonGroup 
                                     options={[
@@ -186,20 +187,20 @@ export default function AdmissionClinicalDataScreen() {
                             onPress={handlePress}>
                             <View style={Styles.accordionContentWrapper}>
                                 <Text style={{fontStyle: 'normal'}}>{bcsGeneralInfo}</Text>
-                                <Text style={[Styles.required, {fontStyle: 'italic'}]}>**All fields required**</Text>
+                                <Text style={[Styles.required, {fontStyle: 'italic', marginBottom: 8}]}>**All fields required**</Text>
                                 
                                 {/* Eye movement dropdown */}
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                     <View style={{flex: 1}}>
-                                         {/* <Dropdown
-                                            label={"Eye movement"}
-                                            mode={"outlined"}
-                                            options={eyeMovementOptions}
-                                            value={eyeMovement}
-                                            onSelect={setEyeMovement}
-                                            menuContentStyle={{backgroundColor: colors.secondary}}
-                                            hideMenuHeader = {Platform.OS === 'web'}
-                                        /> */}
+                                        <SearchableDropdown 
+                                            data={eyeMovementOptions} 
+                                            label={'Eye movement'}
+                                            placeholder='select option below' 
+                                            onSelect={(item: DropdownItem) => 
+                                                {setEyeMovement(item)}}
+                                            value={eyeMovement?.value}
+                                            search={false}
+                                        />
                                     </View>
                                     <IconButton
                                         icon="information-outline"
@@ -212,17 +213,15 @@ export default function AdmissionClinicalDataScreen() {
                                 {/* Motor response dropdown */}
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                         <View style={{flex: 1}}>
-                                            {/* <Dropdown
-                                                label={"Best motor response"}
-                                                mode={"outlined"}
-                                                options={motorResponseOptions}
-                                                value={motorResponse}
-                                                onSelect={setMotorResponse}
-                                                menuContentStyle={{
-                                                    backgroundColor: colors.secondary,
-                                                    minWidth: 320}}
-                                                hideMenuHeader = {Platform.OS === 'web'}
-                                            /> */}
+                                            <SearchableDropdown 
+                                                data={motorResponseOptions} 
+                                                label={'Best motor response'}
+                                                placeholder='select option below' 
+                                                onSelect={(item: DropdownItem) => 
+                                                    {setMotorResponse(item)}}
+                                                value={motorResponse?.value}
+                                                search={false}
+                                            />
                                         </View>
                                         <IconButton
                                             icon="information-outline"
@@ -235,15 +234,15 @@ export default function AdmissionClinicalDataScreen() {
                                 {/* Verbal response dropdown */}
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                     <View style={{flex: 1}}>
-                                        {/* <Dropdown
-                                            label={"Best verbal response"}
-                                            mode={"outlined"}
-                                            options={verbalResponseOptions}
-                                            value={verbalResponse}
-                                            onSelect={setVerbalResponse}
-                                            menuContentStyle={{backgroundColor: colors.secondary}}
-                                            hideMenuHeader = {Platform.OS === 'web'}
-                                        /> */}
+                                        <SearchableDropdown 
+                                            data={verbalResponseOptions} 
+                                            label={'Verbal response'}
+                                            placeholder='select option below' 
+                                            onSelect={(item: DropdownItem) => 
+                                                {setVerbalResponse(item)}}
+                                            value={verbalResponse?.value}
+                                            search={false}
+                                        />
                                     </View>
                                     {/* White icon to align dropdown with others */}
                                     <IconButton
