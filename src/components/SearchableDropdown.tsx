@@ -58,12 +58,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showClearIcon = (searchText.trim() !== '') 
   
   // TODO - delete console logs
-  console.log('isOpen', isOpen)
-  console.log('showAddNew', showAddNew)
-  console.log('filteredData.length>0', filteredData.length > 0)
-  console.log('searchText', searchText)
-  console.log('firstRender', _firstRender)
-  console.log('addedItems', addedItems)
+  // console.log('isOpen', isOpen)
+  // console.log('showAddNew', showAddNew)
+  // console.log('filteredData.length>0', filteredData.length > 0)
+  // console.log('searchText', searchText)
+  // console.log('firstRender', _firstRender)
+  // console.log('addedItems', addedItems)
  
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
@@ -75,7 +75,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   
   // adapted from react-native-dropdown-select-list
   const slidedown = () => {
-    console.log ('slidedown')
+    // console.log ('slidedown')
     setIsOpen(true)
     setIsFocused(true)
     Animated.timing(animatedvalue,{
@@ -88,7 +88,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const slideup = () => {   
-    console.log('slideup')  
+    // console.log('slideup')  
     Animated.timing(animatedvalue,{
         toValue:0,
         duration:300,
@@ -102,8 +102,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   React.useEffect(() => {
-    console.log('inside isOPen useEffect')
-    console.log('firstRender', _firstRender)
+    // console.log('inside isOPen useEffect')
+    // console.log('firstRender', _firstRender)
     if(!_firstRender){
       if (isOpen) {
         slidedown()

@@ -1,8 +1,10 @@
 import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { vhtData } from '@/src/utils/vhtDataLoader'; // currently hardcoded to be 'buikwe' - TODO make it dynamically selected
+import { filterVhtsByVillage, filterVillagesbyVht, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, List, Text, useTheme } from 'react-native-paper';
@@ -11,21 +13,49 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO:
 // - village required - error if left blank 
-// - data persisted when accordions close/open and when navigate away
+// - data persisted when navigate away
 // - make village selection filter down vht name and vice versa
-// write util function to covert csv to usable dataset for searchable dropdown componenet
 
 export default function VHTReferralScreen() {
-    // TODO - add more states
     const { colors } = useTheme()
-    
-    const [selected, setSelected] = useState<DropdownItem | null>(null);
-    const handleSelectionChange = (item: DropdownItem) => {
-        setSelected(item);
-    };
 
-    // TODO convert csv data into dataset of this format
-    // TODO filter VHT name list based on village
+    const [villages, setVillages] = useState<DropdownItem[]>(getVillageDropdownItems(vhtData));
+    const [vhts, setVHTs] = useState<DropdownItem[]>(getVhtDropdownItems(vhtData));
+
+    const [selectedVillage, setSelectedVillage] = useState<DropdownItem | null>(null);
+    const [selectedVHT, setSelectedVHT] = useState<DropdownItem | null>(null);
+
+    console.log('selected village', selectedVillage)
+    console.log('selected vht', selectedVHT)
+    console.log('~~~vhts', vhts)
+
+    useEffect(() => {
+        if (selectedVillage) {
+            console.log('*** sel vill useEffect')
+            setVHTs(filterVhtsByVillage(vhtData, selectedVillage.value))
+            // setSelectedVHT(null); 
+            console.log('***vhts', vhts)
+        } else {
+            console.log('here?')
+            setVHTs(getVhtDropdownItems(vhtData))
+        }
+    }, [selectedVillage])
+
+    useEffect(() => {
+        selectedVHT && filterVillagesbyVht(vhtData, selectedVHT.value)
+        if (selectedVHT) {
+            setVillages(filterVillagesbyVht(vhtData, selectedVHT.value))
+        } else {
+            setVillages(getVillageDropdownItems(vhtData))
+        }
+    }, [selectedVHT])
+
+    // TODO delete -- for testing purposes only
+    // const allVillages= getVillageDropdownItems(vhtData)
+    // const vhtNames = getVhtDropdownItems(vhtData);
+    // const filteredNames = filterVhtsByVillage(vhtData, 'kanyogoga')
+    // const filteredVillages = filterVillagesbyVht(vhtData, 'Wasswa Joseph')
+
     const testData = [
         {key: "1", value: 'alpha'},
         {key: "2", value: 'beta'},
@@ -60,19 +90,19 @@ export default function VHTReferralScreen() {
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
-                                data={testData}
+                                data={villages}
                                 label="Village (required)"
                                 placeholder='Enter village name'
-                                onSelect={handleSelectionChange}
-                                value={selected?.value}
+                                onSelect={setSelectedVillage}
+                                value={selectedVillage?.value}
                             />
-                            <SearchableDropdown
+                            {/* <SearchableDropdown
                                 data={testData}
                                 label="Health Facility (optional)"
                                 placeholder='Enter HC name'
                                 onSelect={handleSelectionChange}
                                 value={selected?.value}
-                            />
+                            /> */}
                         </View>
                     </View>
 
@@ -84,20 +114,20 @@ export default function VHTReferralScreen() {
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
-                                data={testData}
+                                data={vhts}
                                 label="Name"
                                 placeholder='Enter VHT name'
-                                onSelect={handleSelectionChange}
-                                value={selected?.value}
+                                onSelect={setSelectedVHT}
+                                value={selectedVHT?.value}
                             />
 
-                            <SearchableDropdown
+                            {/* <SearchableDropdown
                                 data={testData}
                                 label="Telephone"
                                 placeholder='Enter VHT telephone number'
                                 onSelect={handleSelectionChange}
                                 value={selected?.value}
-                            />
+                            /> */}
                         </View>
                     </View>
 
