@@ -1,4 +1,5 @@
 import PaginationControls from '@/components/PaginationControls';
+import SearchableDropdown, { DropdownItem } from '@/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -12,24 +13,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
     
-    const [ anaemia, setAnaemia ] = useState<string>();
-    const [ pneumonia, setPneumonia ] = useState<string>();
-    const [ chronicIllness, setChronicIllness ] = useState<string>();
-    const [ acuteDiarrhea, setAcuteDiarrhea ] = useState<string>();
-    const [ malaria, setMalaria ] = useState<string>();
-    const [ sepsis, setSepsis ] = useState<string>();
-    const [ meningitis, setMeningitis ] = useState<string>();
+    const [ anaemia, setAnaemia ] = useState<DropdownItem | null>(null);
+    const [ pneumonia, setPneumonia ] = useState<DropdownItem | null>(null);
+    const [ chronicIllness, setChronicIllness ] = useState<DropdownItem | null>(null);
+    const [ acuteDiarrhea, setAcuteDiarrhea ] = useState<DropdownItem | null>(null);
+    const [ malaria, setMalaria ] = useState<DropdownItem | null>(null);
+    const [ sepsis, setSepsis ] = useState<DropdownItem | null>(null);
+    const [ meningitis, setMeningitis ] = useState<DropdownItem | null>(null);
 
     const diagnosisOptions = [
-        { label: 'Yes - positive diagnosis', value: 'yes'},
-        { label: 'No - negative diagnosis', value: 'no'},
-        { label: 'Suspected', value: 'suspected'},
-        { label: 'Unsure', value: 'unsure'},
+        { value: 'Yes - positive diagnosis', key: 'yes'},
+        { value: 'No - negative diagnosis', key: 'no'},
+        { value: 'Suspected', key: 'suspected'},
+        { value: 'Unsure', key: 'unsure'},
     ]
 
     const simplifiedOptions = [
-        { label: 'Yes', value: 'yes'},
-        { label: 'No', value: 'no'},
+        { value: 'Yes', key: 'yes'},
+        { value: 'No', key: 'no'},
     ]
       
     return (
@@ -65,7 +66,7 @@ export default function MedicalConditionsScreen() {
                     />
                 </View>
                 
-               <View style = {{flexDirection: 'row', alignItems: 'center'}}>
+               <View style = {{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
                     <TextInput 
                         label="Sick young infant" 
                         mode="flat" 
@@ -84,37 +85,33 @@ export default function MedicalConditionsScreen() {
                     />
                 </View>
                 
-                {/* <Dropdown 
-                    label = {'Pneumonia'}
-                    mode = {'outlined'}
-                    options = {diagnosisOptions}
-                    value = {pneumonia}
-                    onSelect = {setPneumonia}
-                    hideMenuHeader = {Platform.OS === 'web'}
-                    menuContentStyle={{backgroundColor: colors.secondary}}
+                <SearchableDropdown 
+                    data={diagnosisOptions} 
+                    label={'Pneumonia'}
+                    placeholder='select option below' 
+                    onSelect={setPneumonia}
+                    value={pneumonia?.value}
+                    search={false}
                 />
-                <Dropdown 
-                    label = {'Severe anaemia'}
-                    mode = {'outlined'}
-                    options = {diagnosisOptions}
-                    value = {anaemia}
+                <SearchableDropdown 
+                    data={diagnosisOptions} 
+                    label={'Severe anaemia'}
+                    placeholder='select option below' 
                     onSelect={setAnaemia}
-                    menuContentStyle={{backgroundColor: colors.secondary}}
-                    hideMenuHeader = {Platform.OS === 'web'}
-
-                /> */}
+                    value={anaemia?.value}
+                    search={false}
+                />
 
                 <View style = {{flexDirection: 'row', alignItems: 'center'}}>
                     <View style={{flex: 1}}>
-                        {/* <Dropdown 
-                            label = {'Chronic illnesses'}
-                            mode = {'outlined'}
-                            options = {diagnosisOptions}
-                            value = {chronicIllness}
-                            onSelect = {setChronicIllness}
-                            menuContentStyle={{backgroundColor: colors.secondary}}
-                            hideMenuHeader = {Platform.OS === 'web'}
-                        /> */}
+                        <SearchableDropdown 
+                            data={diagnosisOptions} 
+                            label={'Chronic illnesses'}
+                            placeholder='select option below' 
+                            onSelect={setChronicIllness}
+                            value={chronicIllness?.value}
+                            search={false}
+                        />
                     </View>
                     <IconButton
                         icon="help-circle-outline"
@@ -127,42 +124,38 @@ export default function MedicalConditionsScreen() {
                         }}
                     />
                 </View>
-                {/* <Dropdown 
+                <SearchableDropdown 
                     label = {'Acute diarrhea'}
-                    mode = {'outlined'}
-                    options = {simplifiedOptions}
-                    value = {acuteDiarrhea}
-                    onSelect = {setAcuteDiarrhea}
-                    menuContentStyle={{backgroundColor: colors.secondary}}
-                    hideMenuHeader = {Platform.OS === 'web'}
+                    data = {simplifiedOptions}
+                    value = {acuteDiarrhea?.value}
+                    placeholder='select option below'
+                    onSelect={setAcuteDiarrhea}
+                    search={false}
                 />
-                <Dropdown 
+                <SearchableDropdown 
                     label = {'Malaria'}
-                    mode = {'outlined'}
-                    options = {diagnosisOptions}
-                    value = {malaria}
-                    onSelect = {setMalaria}
-                    menuContentStyle={{backgroundColor: colors.secondary}}
-                    hideMenuHeader = {Platform.OS === 'web'}
+                    data = {diagnosisOptions}
+                    value = {malaria?.value}
+                    placeholder='select option below' 
+                    onSelect={setMalaria}
+                    search={false}
                 />
-                <Dropdown 
+                <SearchableDropdown 
                     label = {'Sepsis'}
-                    mode = {'outlined'}
-                    options = {diagnosisOptions}
-                    value = {sepsis}
+                    data = {diagnosisOptions}
+                    value = {sepsis?.value}
+                    placeholder='select option below' 
                     onSelect = {setSepsis}
-                    menuContentStyle={{backgroundColor: colors.secondary}}
-                    hideMenuHeader = {Platform.OS === 'web'}
+                    search={false}
                 />
-                <Dropdown 
+                <SearchableDropdown 
                     label = {'Meningitis/Encephalitis'}
-                    mode = {'outlined'}
-                    options = {diagnosisOptions}
-                    value = {meningitis}
+                    data = {diagnosisOptions}
+                    value = {meningitis?.value}
+                    placeholder='select option below' 
                     onSelect = {setMeningitis}
-                    menuContentStyle={{backgroundColor: colors.secondary}}
-                    hideMenuHeader = {Platform.OS === 'web'}
-                /> */}
+                    search={false}
+                />
 
             </ScrollView>
             <PaginationControls

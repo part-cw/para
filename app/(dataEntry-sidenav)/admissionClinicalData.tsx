@@ -70,8 +70,7 @@ export default function AdmissionClinicalDataScreen() {
                                     data={hospitalizationOptions} 
                                     label={'Last Hopitalized (required)'}
                                     placeholder='select option below' 
-                                    onSelect={(item: DropdownItem) => 
-                                        {setLastHospitalized(item)}}
+                                    onSelect={setLastHospitalized}
                                     value={lastHospitalized?.value}
                                     search={false}
                                 />
@@ -196,8 +195,7 @@ export default function AdmissionClinicalDataScreen() {
                                             data={eyeMovementOptions} 
                                             label={'Eye movement'}
                                             placeholder='select option below' 
-                                            onSelect={(item: DropdownItem) => 
-                                                {setEyeMovement(item)}}
+                                            onSelect={setEyeMovement}
                                             value={eyeMovement?.value}
                                             search={false}
                                         />
@@ -217,8 +215,7 @@ export default function AdmissionClinicalDataScreen() {
                                                 data={motorResponseOptions} 
                                                 label={'Best motor response'}
                                                 placeholder='select option below' 
-                                                onSelect={(item: DropdownItem) => 
-                                                    {setMotorResponse(item)}}
+                                                onSelect={setMotorResponse}
                                                 value={motorResponse?.value}
                                                 search={false}
                                             />
@@ -238,8 +235,7 @@ export default function AdmissionClinicalDataScreen() {
                                             data={verbalResponseOptions} 
                                             label={'Verbal response'}
                                             placeholder='select option below' 
-                                            onSelect={(item: DropdownItem) => 
-                                                {setVerbalResponse(item)}}
+                                            onSelect={setVerbalResponse}
                                             value={verbalResponse?.value}
                                             search={false}
                                         />
