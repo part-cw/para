@@ -19,34 +19,58 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function VHTReferralScreen() {
     const { colors } = useTheme()
 
-    const [villages, setVillages] = useState<DropdownItem[]>([]);
-    const [vhts, setVHTs] = useState<DropdownItem[]>([]);
+    const [villages, setVillages] = useState<DropdownItem[]>(() => getVillageDropdownItems(allData));
+    const [vhts, setVHTs] = useState<DropdownItem[]>(() => getVhtDropdownItems(allData));
+    const [addedVillages, setAddedVillages] = useState<DropdownItem[]>([]);
+    const [addedVHTs, setAddedVHTs] = useState<DropdownItem[]>([]);
 
     const [selectedVillage, setSelectedVillage] = useState<DropdownItem | null>(null);
     const [selectedVHT, setSelectedVHT] = useState<DropdownItem | null>(null);
+
+    const allVillages = [...villages, ...addedVillages];
+    const allVHTs = [...vhts, ...addedVHTs];
 
     console.log('selected village', selectedVillage)
     console.log('~~~villages', villages)
     console.log('selected vht', selectedVHT)
     console.log('~~~vhts', vhts)
 
+    // handle village selection change
     useEffect(() => {
-        if (selectedVillage) {
+        if (selectedVillage && selectedVillage.value) {
             console.log('*** village selected ... filtering vhts')
-            setVHTs(filterVhtsByVillage(allData, selectedVillage.value))
-            // setSelectedVHT(null); 
+            
+            const filteredVHTs = filterVhtsByVillage(allData, selectedVillage.value);
+            setVHTs(filteredVHTs);
+
+            // Clear VHT selection if it's no longer valid for the selected village
+            // TODO - check this logic
+            // if (selectedVHT && !filteredVHTs.some(vht => vht.key === selectedVHT.key) && 
+            //     !addedVHTs.some(vht => vht.key === selectedVHT.key)) {
+            //     setSelectedVHT(null);
+            // }
+
             console.log('***vhts', vhts)
         } else {
             console.log('@@@ no village selected', selectedVillage)
             setVHTs(getVhtDropdownItems(allData))
             console.log('***vhts', vhts)
         }
-    }, [selectedVillage, selectedVHT])
+    }, [selectedVillage])
 
     useEffect(() => {
-        if (selectedVHT) {
+        if (selectedVHT && selectedVHT.value) {
             console.log('%%%vht selected...filtering villages')
-            setVillages(filterVillagesbyVht(allData, selectedVHT.value))
+            const filteredVillages = filterVillagesbyVht(allData, selectedVHT.value)
+            setVillages(filteredVillages)
+
+            // Clear village selection if it's no longer valid for the selected VHT
+            // TODO check logic
+            // if (selectedVillage && !filteredVillages.some(village => village.key === selectedVillage.key) &&
+            //     !addedVillages.some(village => village.key === selectedVillage.key)) {
+            //     setSelectedVillage(null);
+            // }
+
             // setSelectedVillage(null)
             console.log('%%%villages', villages)
         } else {
@@ -54,7 +78,39 @@ export default function VHTReferralScreen() {
             setVillages(getVillageDropdownItems(allData))
             console.log('%%%villages', villages)
         }
-    }, [selectedVHT, selectedVillage])
+    }, [selectedVHT])
+
+     // Handle adding new villages
+    const handleAddVillage = (newVillage: DropdownItem) => {
+        setAddedVillages(prev => [...prev, newVillage]);
+        // Optionally: save to backend, validate, etc.
+    };
+
+    // Handle adding new VHTs
+    const handleAddVHT = (newVHT: DropdownItem) => {
+        setAddedVHTs(prev => [...prev, newVHT]);
+        // Optionally: save to backend, validate, etc.
+    };
+
+    // Handle village selection - check for cleared selection
+    const handleVillageSelect = (village: DropdownItem) => {
+        if (village.value === '') {
+            // Clear selection
+            setSelectedVillage(null);
+        } else {
+            setSelectedVillage(village);
+        }
+    };
+
+    // Handle VHT selection - check for cleared selection
+    const handleVHTSelect = (vht: DropdownItem) => {
+        if (vht.value === '') {
+            // Clear selection
+            setSelectedVHT(null);
+        } else {
+            setSelectedVHT(vht);
+        }
+    };
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -79,11 +135,12 @@ export default function VHTReferralScreen() {
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
-                                data={villages}
+                                data={allVillages}
                                 label="Village (required)"
                                 placeholder='Enter village name'
-                                onSelect={setSelectedVillage}
-                                value={selectedVillage?.value}
+                                onSelect={handleVillageSelect}
+                                onAddItem={handleAddVillage}
+                                value={selectedVillage?.value || ''}
                             />
                             {/* <SearchableDropdown
                                 data={testData}
@@ -106,8 +163,9 @@ export default function VHTReferralScreen() {
                                 data={vhts}
                                 label="Name"
                                 placeholder='Enter VHT name'
-                                onSelect={setSelectedVHT}
-                                value={selectedVHT?.value}
+                                onSelect={handleVHTSelect}
+                                onAddItem={handleAddVHT}
+                                value={selectedVHT?.value || ''}
                             />
 
                             {/* <SearchableDropdown
