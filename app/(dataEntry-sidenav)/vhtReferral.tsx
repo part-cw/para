@@ -12,9 +12,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 // TODO:
-// - village required - error if left blank 
-// - data persisted when navigate away
-// - make village selection filter down vht name and vice versa
+//  - village required - error if left blank 
+//  - data persisted when navigate away
+//  - make sure only one dropdown open at a time
+
+// Bug Fixes:
+//  - auto sets search text if onle 1 dropdown item available 
+//  - don't display newly added vhts if selected village is in original dataset and vice versa for vhts
+//  - Clear VHT selection if it's no longer valid for the selected village, and vice versa
 
 export default function VHTReferralScreen() {
     const { colors } = useTheme()
@@ -30,10 +35,10 @@ export default function VHTReferralScreen() {
     const allVillages = [...villages, ...addedVillages];
     const allVHTs = [...vhts, ...addedVHTs];
 
-    console.log('selected village', selectedVillage)
-    console.log('~~~villages', villages)
-    console.log('selected vht', selectedVHT)
-    console.log('~~~vhts', vhts)
+    // console.log('selected village', selectedVillage)
+    // console.log('~~~villages', villages)
+    // console.log('selected vht', selectedVHT)
+    // console.log('~~~vhts', vhts)
 
     // handle village selection change
     useEffect(() => {
@@ -43,18 +48,17 @@ export default function VHTReferralScreen() {
             const filteredVHTs = filterVhtsByVillage(allData, selectedVillage.value);
             setVHTs(filteredVHTs);
 
-            // Clear VHT selection if it's no longer valid for the selected village
-            // TODO - check this logic
+            // TODO -- Clear VHT selection if it's no longer valid for the selected village
             // if (selectedVHT && !filteredVHTs.some(vht => vht.key === selectedVHT.key) && 
             //     !addedVHTs.some(vht => vht.key === selectedVHT.key)) {
             //     setSelectedVHT(null);
             // }
 
-            console.log('***vhts', vhts)
+            // console.log('***vhts', vhts)
         } else {
             console.log('@@@ no village selected', selectedVillage)
             setVHTs(getVhtDropdownItems(allData))
-            console.log('***vhts', vhts)
+            // console.log('***vhts', vhts)
         }
     }, [selectedVillage])
 
@@ -64,19 +68,18 @@ export default function VHTReferralScreen() {
             const filteredVillages = filterVillagesbyVht(allData, selectedVHT.value)
             setVillages(filteredVillages)
 
-            // Clear village selection if it's no longer valid for the selected VHT
-            // TODO check logic
+            // TODO -- Clear village selection if it's no longer valid for the selected VHT
             // if (selectedVillage && !filteredVillages.some(village => village.key === selectedVillage.key) &&
             //     !addedVillages.some(village => village.key === selectedVillage.key)) {
             //     setSelectedVillage(null);
             // }
 
             // setSelectedVillage(null)
-            console.log('%%%villages', villages)
+            // console.log('%%%villages', villages)
         } else {
             console.log('%%% no vht sel', selectedVHT)
             setVillages(getVillageDropdownItems(allData))
-            console.log('%%%villages', villages)
+            // console.log('%%%villages', villages)
         }
     }, [selectedVHT])
 
@@ -95,7 +98,6 @@ export default function VHTReferralScreen() {
     // Handle village selection - check for cleared selection
     const handleVillageSelect = (village: DropdownItem) => {
         if (village.value === '') {
-            // Clear selection
             setSelectedVillage(null);
         } else {
             setSelectedVillage(village);
@@ -105,7 +107,6 @@ export default function VHTReferralScreen() {
     // Handle VHT selection - check for cleared selection
     const handleVHTSelect = (vht: DropdownItem) => {
         if (vht.value === '') {
-            // Clear selection
             setSelectedVHT(null);
         } else {
             setSelectedVHT(vht);
@@ -160,7 +161,7 @@ export default function VHTReferralScreen() {
                         </View>
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
-                                data={vhts}
+                                data={allVHTs}
                                 label="Name"
                                 placeholder='Enter VHT name'
                                 onSelect={handleVHTSelect}
@@ -193,7 +194,7 @@ export default function VHTReferralScreen() {
 
 
 /*
-Scenarios:
+Double check these scenarios:
 2. Enter/select Village first, then clear:
     - village list successfully shows all data 
     - !!! vht list only show filtered (based on previously selected village)

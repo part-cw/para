@@ -47,22 +47,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
-  // const [addedItems, setAddedItems] = useState<DropdownItem[]>([]);
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
-
-  // TODO fix - this is not updating properly -- once items are selected and list autofitlers, allData 
-  // const allData = React.useMemo(() => [...data, ...addedItems], [data, addedItems]);
-  console.log('outside!!!', data) // or use allData?
-
-  // const filteredData = React.useMemo(() => {
-  //   const text = searchText.trim().toLowerCase();
-  //   if (!text) return data;
-  //   return data.filter((item) =>
-  //     item.value.toLowerCase().includes(text)
-  //   );
-  // }, [data, searchText]);
   
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults && !data.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim()); // or use allData?
@@ -70,6 +57,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showClearIcon = (searchText.trim() !== '') 
   
   // TODO - delete console logs
+  //  console.log('outside!!!', data)
   // console.log('isOpen', isOpen)
   // console.log('showAddNew', showAddNew)
   // console.log('filteredData.length>0', filteredData.length > 0)
@@ -89,7 +77,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   
   // adapted from react-native-dropdown-select-list
   const slidedown = () => {
-    // console.log ('slidedown')
     setIsOpen(true)
     setIsFocused(true)
     Animated.timing(animatedvalue,{
@@ -102,7 +89,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const slideup = () => {   
-    // console.log('slideup')  
     Animated.timing(animatedvalue,{
         toValue:0,
         duration:300,
@@ -132,11 +118,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   },[isOpen])
 
-  React.useEffect(() => {
-    if (searchText) {
-      animateLabel(1);
-    }
-  }, []);
+  // TODO - delete -- make sure it's working ok without this
+  // React.useEffect(() => {
+  //   if (searchText) {
+  //     animateLabel(1);
+  //   }
+  // }, []);
 
   React.useEffect(() => {
     if(_firstRender){
@@ -160,7 +147,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
     setFilteredData(data);
 
-    // auto sets search text if onle 1 dropdown item available
+    // TODO - auto sets search text if onle 1 dropdown item available
     // if (filteredData.length === 1) {
     //   animateLabel(1)
     //   setSearchText(filteredData[0].value)
@@ -181,8 +168,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   };
 
   const handleTextChange = (text: string) => {
-    // set trimmed text to '' if empty string, othwerwise set to text
-    !text.trim() ? setSearchText('') : setSearchText(text)
+    // set trimmed text to '' and clear if empty string, othwerwise set to text
+    if (!text.trim()) {
+      setSearchText('')
+      setFilteredData(data)
+      onSelect({ key: '', value: '' });
+    } else {
+      setSearchText(text)
+    }
     filterData(text.trim());
 
     if (text.trim().length > 0 || isFocused) {
@@ -193,12 +186,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const handleClear = () => {
-    console.log('clearing text')
+    // console.log('clearing text')
     setSearchText('')
-
-    setFilteredData(data) // TODO fix this -- this is only the previous seletion
+    setFilteredData(data)
     onSelect({ key: '', value: '' }); // notify parent that the selection is cleared
-    console.log('cleared data', data)
+    // console.log('cleared data', data)
     Keyboard.dismiss()
   }
 
@@ -214,7 +206,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     };
     console.log('!!!newItem', newItem)
 
-    // setAddedItems((prev) => [...prev, newItem]) // add to local items array
     onAddItem?.(newItem)
     onSelect(newItem);
     setSearchText(newItem.value)
@@ -226,7 +217,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     setSearchText(item.value)
     onSelect(item)
     slideup()
-    // setFilteredData(allData)
   }                   
   
 
@@ -436,7 +426,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   textInput: {
-    height: 56,
     textAlignVertical: 'center',
     paddingHorizontal: 16,
     paddingTop: 8,
