@@ -61,7 +61,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   // console.log('isOpen', isOpen)
   // console.log('showAddNew', showAddNew)
   // console.log('filteredData.length>0', filteredData.length > 0)
-  // console.log('searchText', searchText)
+  console.log('searchText', searchText)
   // console.log('firstRender', _firstRender)
   // console.log('addedItems', addedItems)
 
@@ -118,40 +118,31 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   },[isOpen])
 
-  // TODO - delete -- make sure it's working ok without this
-  // React.useEffect(() => {
-  //   if (searchText) {
-  //     animateLabel(1);
-  //   }
-  // }, []);
-
+  // handle first render flag
   React.useEffect(() => {
     if(_firstRender){
       _setFirstRender(false);
       return;
     }
+
+    // float label if searchText is not null
+    if (searchText) {
+      animateLabel(1);
+    }
   },[searchText])
 
-   React.useEffect(() => {
+  // updates search text based on parent's value
+  React.useEffect(() => {
     setSearchText(value || '');
   }, [value]);
 
-  // TODO - check this is ok
   // sets dropdown selections when data changes (e.g. is filtered)
   React.useEffect(() => {
-    console.log('inside SearchableDropdown...setting filtered data...')
     if (searchText.trim()) {
       filterData(searchText.trim());
     } else {
       setFilteredData(data);
     }
-    setFilteredData(data);
-
-    // TODO - auto sets search text if onle 1 dropdown item available
-    // if (filteredData.length === 1) {
-    //   animateLabel(1)
-    //   setSearchText(filteredData[0].value)
-    // }
   }, [data]);  
 
   // // Filter data based on search text
@@ -167,6 +158,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     setFilteredData(filtered);
   };
 
+  // TODO add callback to all handlers??
+  
   const handleTextChange = (text: string) => {
     // set trimmed text to '' and clear if empty string, othwerwise set to text
     if (!text.trim()) {

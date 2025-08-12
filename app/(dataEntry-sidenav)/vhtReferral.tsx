@@ -35,7 +35,8 @@ export default function VHTReferralScreen() {
     const allVillages = [...villages, ...addedVillages];
     const allVHTs = [...vhts, ...addedVHTs];
 
-    // console.log('selected village', selectedVillage)
+    console.log('villages', villages)
+    console.log('selected village', selectedVillage)
     // console.log('~~~villages', villages)
     // console.log('selected vht', selectedVHT)
     // console.log('~~~vhts', vhts)
@@ -49,16 +50,37 @@ export default function VHTReferralScreen() {
             setVHTs(filteredVHTs);
 
             // TODO -- Clear VHT selection if it's no longer valid for the selected village
+            // Check if we have a selected VHT AND that VHT is not in the filtered list
             // if (selectedVHT && !filteredVHTs.some(vht => vht.key === selectedVHT.key) && 
             //     !addedVHTs.some(vht => vht.key === selectedVHT.key)) {
             //     setSelectedVHT(null);
             // }
+            //  OR USE THIS 
+            // else if (selectedVHT && !filteredVHTs.some(vht => vht.key === selectedVHT.key)) {
+            // setSelectedVHT(null);
+            // }
+            //So if some() returns true (meaning the VHT WAS found), the ! makes it false
+
+
+            console.log('filtered vhts', filteredVHTs)
+            // TODO Auto-select VHT if only one option AND no VHT currently selected
+            if (filteredVHTs.length === 1 && !selectedVHT) {
+                setSelectedVHT(filteredVHTs[0])
+            }
 
             // console.log('***vhts', vhts)
         } else {
             console.log('@@@ no village selected', selectedVillage)
-            setVHTs(getVhtDropdownItems(allData))
+            const allVHTData = getVhtDropdownItems(allData);
+            setVHTs(allVHTData)
             // console.log('***vhts', vhts)
+
+            //TODO - DOUBLE CHECK THIS
+             // Auto-select VHT if only one option in entire dataset AND no VHT selected
+            // if (allVHTData.length === 1 && !selectedVHT) {
+            //     console.log('Auto-selecting single VHT from all data:', allVHTData[0].value);
+            //     setSelectedVHT(allVHTData[0]);
+            // }
         }
     }, [selectedVillage])
 
@@ -67,6 +89,12 @@ export default function VHTReferralScreen() {
             console.log('%%%vht selected...filtering villages')
             const filteredVillages = filterVillagesbyVht(allData, selectedVHT.value)
             setVillages(filteredVillages)
+
+            // TODO: Auto-select village if only one option AND no village currently selected
+            console.log('filtered villages', filteredVillages)
+            if (filteredVillages.length === 1 && !selectedVillage) {
+                setSelectedVillage(filteredVillages[0])
+            }
 
             // TODO -- Clear village selection if it's no longer valid for the selected VHT
             // if (selectedVillage && !filteredVillages.some(village => village.key === selectedVillage.key) &&
@@ -162,7 +190,7 @@ export default function VHTReferralScreen() {
                         <View style={Styles.accordionContentWrapper}>
                             <SearchableDropdown
                                 data={allVHTs}
-                                label="Name"
+                                label="Name (required)"
                                 placeholder='Enter VHT name'
                                 onSelect={handleVHTSelect}
                                 onAddItem={handleAddVHT}

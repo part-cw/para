@@ -1,10 +1,5 @@
 // parses VHT JSON files based on district
 
-// Import the correct JSON based on the selected district.
-// Use Papa Parse to turn it into objects.
-// Map them into {key, val} arrays for SearchableDropdown.
-// Set up the village <-> VHT filtering logic here ??
-
 import { DropdownItem } from "../components/SearchableDropdown";
 
 export interface VhtDataObject {
@@ -45,10 +40,6 @@ export function getVillageDropdownItems(data: VhtDataObject[]): DropdownItem[] {
 // Returns a list of VHT names in alphabetical order as DropdownItem from vht data JSON 
 export function getVhtDropdownItems(data: VhtDataObject[]): DropdownItem[] {
     const vhtSet = new Set<string>();
-    
-    // const vhtNames = new Array<string>()
-    // data.forEach(row => vhtNames.push(row.NAME))
-    // console.log(vhtNames.sort(), vhtNames.length)
 
     // for each data item, store unique vht name and sort alphabetically
     data.forEach(obj => vhtSet.add(obj.NAME.trim()))
@@ -104,54 +95,55 @@ export function filterVillagesbyVht(data: VhtDataObject[], vhtName: string) {
 }
 
 
+// TODO - write unit tests
 // testing scenarios
 // same vht name,diff telephone multiple villages eg. Wasswa Joseph 
 // same village, multiple vhts
 // edge cases - uppercase, lowercase, extra spaces before/after/in-between, off by 1 letter
 
-const testDataset: VhtDataObject[] = [
-    {
-        DISTRICT: 'test',
-        VILLAGE: 'Whoville',
-        NAME: 'Cindy Lou Who',
-        "TELEPHONE NUMBER": 123456789
-    },
-    {
-        DISTRICT: 'test',
-        VILLAGE: 'Townsville',
-        NAME: 'Cindy Lou Who',
-        "TELEPHONE NUMBER": 987654321
-    },
-    {
-        DISTRICT: 'test',
-        VILLAGE: 'Whoville',
-        NAME: 'The Grinch',
-        "TELEPHONE NUMBER": 741852963
-    },
-    {
-        DISTRICT: 'test',
-        VILLAGE: 'Townsville',
-        NAME: 'Bubbles',
-        "TELEPHONE NUMBER": 1112223333
-    },
-    {
-        DISTRICT: 'test',
-        VILLAGE: 'Townsville',
-        NAME: 'Blossom',
-        "TELEPHONE NUMBER": 4445556666
-    },
-    {
-        DISTRICT: 'test',
-        VILLAGE: 'Townsville',
-        NAME: 'Buttercup',
-        "TELEPHONE NUMBER": 7778889999
-    },
-    {
-        DISTRICT: 'test',
-        VILLAGE: 'Townsville',
-        NAME: 'ButterCup ',
-        "TELEPHONE NUMBER": 7778889999
-    },
-]
+// const testDataset: VhtDataObject[] = [
+//     {
+//         DISTRICT: 'test',
+//         VILLAGE: 'Whoville',
+//         NAME: 'Cindy Lou Who',
+//         "TELEPHONE NUMBER": 123456789
+//     },
+//     {
+//         DISTRICT: 'test',
+//         VILLAGE: 'Townsville',
+//         NAME: 'Cindy Lou Who',
+//         "TELEPHONE NUMBER": 987654321
+//     },
+//     {
+//         DISTRICT: 'test',
+//         VILLAGE: 'Whoville',
+//         NAME: 'The Grinch',
+//         "TELEPHONE NUMBER": 741852963
+//     },
+//     {
+//         DISTRICT: 'test',
+//         VILLAGE: 'Townsville',
+//         NAME: 'Bubbles',
+//         "TELEPHONE NUMBER": 1112223333
+//     },
+//     {
+//         DISTRICT: 'test',
+//         VILLAGE: 'Townsville',
+//         NAME: 'Blossom',
+//         "TELEPHONE NUMBER": 4445556666
+//     },
+//     {
+//         DISTRICT: 'test',
+//         VILLAGE: 'Townsville',
+//         NAME: 'Buttercup',
+//         "TELEPHONE NUMBER": 7778889999
+//     },
+//     {
+//         DISTRICT: 'test',
+//         VILLAGE: 'Townsville',
+//         NAME: 'ButterCup ',
+//         "TELEPHONE NUMBER": 7778889999
+//     },
+// ]
 
 
