@@ -28,6 +28,7 @@ interface SearchableDropdownProps {
   maxHeight?: number;
   style?: ViewStyle;
   search?: boolean;
+  // onAddItem?: (item: DropdownItem) => void;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -38,7 +39,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   value = "",
   maxHeight = 200,
   style = {},
-  search = true
+  search = true,
+  // onAddItem
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -50,7 +52,17 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
 
-  const allData = [...data, ...addedItems];
+  // TODO fix - this is not updating properly -- once items are selected and list autofitlers, allData 
+  const allData = React.useMemo(() => [...data, ...addedItems], [data, addedItems]);
+  console.log('outside!!!', allData)
+
+  // const filteredData = React.useMemo(() => {
+  //   const text = searchText.trim().toLowerCase();
+  //   if (!text) return data;
+  //   return data.filter((item) =>
+  //     item.value.toLowerCase().includes(text)
+  //   );
+  // }, [data, searchText]);
   
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults && !allData.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim());
@@ -64,6 +76,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   // console.log('searchText', searchText)
   // console.log('firstRender', _firstRender)
   // console.log('addedItems', addedItems)
+
+  // console.log('filteredData in SearchableDropdown', filteredData)
  
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
@@ -101,6 +115,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     })
   }
 
+  // animate label and dropdown slider
   React.useEffect(() => {
     // console.log('inside isOPen useEffect')
     // console.log('firstRender', _firstRender)
@@ -123,7 +138,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   }, []);
 
-  // TODO - remove?
   React.useEffect(() => {
     if(_firstRender){
       _setFirstRender(false);
@@ -131,7 +145,20 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   },[searchText])
 
-  // Filter data based on search text
+  // TODO - check this is ok
+  // sets dropdown selections when data changes (e.g. is filtered)
+  React.useEffect(() => {
+    console.log('inside SearchableDropdown...setting filtered data...')
+    setFilteredData(allData);
+
+    // auto sets search text if onle 1 dropdown item available
+    // if (filteredData.length === 1) {
+    //   animateLabel(1)
+    //   setSearchText(filteredData[0].value)
+    // }
+  }, [allData]);  
+
+  // // Filter data based on search text
   const filterData = (trimmedText: string) => {
     if (!trimmedText) {
       setFilteredData(allData);
@@ -157,8 +184,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const handleClear = () => {
+    console.log('clearing text')
     setSearchText('')
-    setFilteredData(allData)
+
+    setFilteredData(allData) // this is only the previous seletion
+    console.log('cleared data', data)
     Keyboard.dismiss()
   }
 
@@ -168,8 +198,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       key: `new-${Date.now()}`, // TODO change to hash?
       value: searchText.trim(),
     };
-    console.log('!!!newItem', newItem)    
+    console.log('!!!newItem', newItem)
+
     setAddedItems((prev) => [...prev, newItem]) // add to local items array
+    // onAddItem?.(newItem)
     onSelect(newItem);
     setSearchText(newItem.value)
     slideup();
@@ -180,7 +212,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     setSearchText(item.value)
     onSelect(item)
     slideup()
-    setFilteredData(allData)
+    // setFilteredData(allData)
   }                   
   
 

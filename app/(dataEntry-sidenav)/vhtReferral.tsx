@@ -1,7 +1,7 @@
 import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { vhtData } from '@/src/utils/vhtDataLoader'; // currently hardcoded to be 'buikwe' - TODO make it dynamically selected
+import { vhtData as allData } from '@/src/utils/vhtDataLoader'; // currently hardcoded to be 'buikwe' - TODO make it dynamically selected
 import { filterVhtsByVillage, filterVillagesbyVht, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -19,53 +19,42 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function VHTReferralScreen() {
     const { colors } = useTheme()
 
-    const [villages, setVillages] = useState<DropdownItem[]>(getVillageDropdownItems(vhtData));
-    const [vhts, setVHTs] = useState<DropdownItem[]>(getVhtDropdownItems(vhtData));
+    const [villages, setVillages] = useState<DropdownItem[]>([]);
+    const [vhts, setVHTs] = useState<DropdownItem[]>([]);
 
     const [selectedVillage, setSelectedVillage] = useState<DropdownItem | null>(null);
     const [selectedVHT, setSelectedVHT] = useState<DropdownItem | null>(null);
 
     console.log('selected village', selectedVillage)
+    console.log('~~~villages', villages)
     console.log('selected vht', selectedVHT)
     console.log('~~~vhts', vhts)
 
     useEffect(() => {
         if (selectedVillage) {
-            console.log('*** sel vill useEffect')
-            setVHTs(filterVhtsByVillage(vhtData, selectedVillage.value))
+            console.log('*** village selected ... filtering vhts')
+            setVHTs(filterVhtsByVillage(allData, selectedVillage.value))
             // setSelectedVHT(null); 
             console.log('***vhts', vhts)
         } else {
-            console.log('here?')
-            setVHTs(getVhtDropdownItems(vhtData))
+            console.log('@@@ no village selected', selectedVillage)
+            setVHTs(getVhtDropdownItems(allData))
+            console.log('***vhts', vhts)
         }
-    }, [selectedVillage])
+    }, [selectedVillage, selectedVHT])
 
     useEffect(() => {
-        selectedVHT && filterVillagesbyVht(vhtData, selectedVHT.value)
         if (selectedVHT) {
-            setVillages(filterVillagesbyVht(vhtData, selectedVHT.value))
+            console.log('%%%vht selected...filtering villages')
+            setVillages(filterVillagesbyVht(allData, selectedVHT.value))
+            // setSelectedVillage(null)
+            console.log('%%%villages', villages)
         } else {
-            setVillages(getVillageDropdownItems(vhtData))
+            console.log('%%% no vht sel', selectedVHT)
+            setVillages(getVillageDropdownItems(allData))
+            console.log('%%%villages', villages)
         }
-    }, [selectedVHT])
-
-    // TODO delete -- for testing purposes only
-    // const allVillages= getVillageDropdownItems(vhtData)
-    // const vhtNames = getVhtDropdownItems(vhtData);
-    // const filteredNames = filterVhtsByVillage(vhtData, 'kanyogoga')
-    // const filteredVillages = filterVillagesbyVht(vhtData, 'Wasswa Joseph')
-
-    const testData = [
-        {key: "1", value: 'alpha'},
-        {key: "2", value: 'beta'},
-        {key: "3", value: 'gamma'},
-        {key: "4", value: 'delta'},
-        {key: "5", value: 'deelta'},
-        {key: "6", value: 'deltaa'},
-        {key: "7", value: 'apple'},
-        {key: "8", value: 'pie'},
-    ]
+    }, [selectedVHT, selectedVillage])
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -143,3 +132,37 @@ export default function VHTReferralScreen() {
         </SafeAreaView>
     );
 }
+
+
+/*
+Scenarios:
+2. Enter/select Village first, then clear:
+    - village list successfully shows all data 
+    - !!! vht list only show filtered (based on previously selected village)
+
+3. Enter/select Village first
+   - successfully filters vht list
+   - village dropdown shows all villages
+   Clear village
+   - see all villages
+   - !!! see filtered vhts only
+
+4. Enter/select village
+    - vhts filtered (expected)
+    - village dropdown show all (expected)
+   Select VHT
+    - !!! vht dropwdown show all (should show filtered)
+    - village dropdown show filtered 
+   Clear VHT
+   - !!! vht dropdown show all (should show filter by village)
+   - !!! village dropdown show filtered (should show all)
+   - !!! selectedVillage consol.log = null but village still entered 
+   Clear Village
+   -  vht dropdown show all (expected, but same as prev state)
+   - !!! village dropdown show filtered (should show all)
+   Select VHT for diff village
+   - vht dropwdown show all (expected)
+   - village dropdown show filtered (Expected)
+   - !!! village should be auto selected when only option
+
+*/
