@@ -35,10 +35,13 @@ export default function VHTReferralScreen() {
     const [selectedVillage, setSelectedVillage] = useState<DropdownItem | null>(null);
     const [selectedVHT, setSelectedVHT] = useState<DropdownItem | null>(null);
     const [selectedTelNumber, setSelectedTelNumber] = useState<DropdownItem | null>(null);
+    const [subvillage, setSubvillage] = useState<string | undefined>(undefined)
 
     const allVillages = [...villages, ...addedVillages];
     const allVHTs = [...vhts, ...addedVHTs];
     const allNumbers = [...telNumbers, ...addedNumbers];
+
+    console.log('subvill', subvillage)
 
     // handle village selection change
     // if village and/or telephone user added - should render entire vht list
@@ -196,7 +199,13 @@ export default function VHTReferralScreen() {
                                 placeholder="Enter subvillage name" 
                                 mode="outlined" 
                                 style={Styles.textInput}
-                            />
+                                value = {subvillage || ''}
+                                onChangeText={setSubvillage}
+                                onBlur={() => {
+                                    // remove extra spaces from subvillage text 
+                                    setSubvillage((prev) => prev?.trim())
+                                }}
+                            /> 
                         </View>
                     </View>
 
