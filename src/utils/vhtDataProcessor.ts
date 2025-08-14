@@ -76,6 +76,7 @@ export function getTelephoneDropdownItems(data: VhtDataObject[]): DropdownItem[]
     return telDropdownItems;
 }
 
+// TODO - filter by tel
 // Filters vht dropdown options based on selected village
 export function filterVhtsByVillage(data: VhtDataObject[], village: string): DropdownItem[] {
     const filteredVhtSet = new Set<string>();
@@ -96,6 +97,7 @@ export function filterVhtsByVillage(data: VhtDataObject[], village: string): Dro
     }));
 }
 
+// TODO filter by tel
 // Filters village dropdown options based on selected vht name
 export function filterVillagesbyVht(data: VhtDataObject[], vhtName: string): DropdownItem[] {
     const filteredVillageSet = new Set<string>();

@@ -126,6 +126,10 @@ export default function VHTReferralScreen() {
     useEffect(() => {
         const filteredNumbers = filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value)
         setTelNumbers(filteredNumbers)
+
+        if (filteredNumbers.length === 1 && !selectedTelNumber) {
+                setSelectedTelNumber(filteredNumbers[0])
+        }
     }, [selectedVillage, selectedVHT])
 
     // Handle adding new villages

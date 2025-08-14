@@ -57,15 +57,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showClearIcon = (searchText.trim() !== '') 
   
   // TODO - delete console logs
-  //  console.log('outside!!!', data)
-  // console.log('isOpen', isOpen)
-  // console.log('showAddNew', showAddNew)
-  // console.log('filteredData.length>0', filteredData.length > 0)
   console.log('searchText', searchText)
-  // console.log('firstRender', _firstRender)
-  // console.log('addedItems', addedItems)
-
-  // console.log('filteredData in SearchableDropdown', filteredData)
  
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
@@ -103,8 +95,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   // animate label and dropdown slider
   React.useEffect(() => {
-    // console.log('inside isOPen useEffect')
-    // console.log('firstRender', _firstRender)
     if(!_firstRender){
       if (isOpen) {
         slidedown()
@@ -145,7 +135,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   }, [data]);  
 
-  // // Filter data based on search text
+  // Filter data based on search text
   const filterData = (trimmedText: string) => {
     if (!trimmedText) {
       setFilteredData(data);
@@ -179,11 +169,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const handleClear = () => {
-    // console.log('clearing text')
     setSearchText('')
     setFilteredData(data)
     onSelect({ key: '', value: '' }); // notify parent that the selection is cleared
-    // console.log('cleared data', data)
     Keyboard.dismiss()
   }
 
