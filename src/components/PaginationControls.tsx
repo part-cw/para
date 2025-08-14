@@ -1,4 +1,4 @@
-import { GlobalStyles as Styles } from '@/themes/styles';
+import { GlobalStyles as Styles } from '@/src/themes/styles';
 import React from 'react';
 import { View } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';

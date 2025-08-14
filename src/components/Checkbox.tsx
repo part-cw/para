@@ -1,4 +1,4 @@
-import { GlobalStyles as Style } from '@/themes/styles';
+import { GlobalStyles as Style } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';

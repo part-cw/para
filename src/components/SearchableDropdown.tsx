@@ -1,25 +1,30 @@
 import React, { useState } from 'react';
 import {
-    Animated,
-    Easing,
-    InteractionManager,
-    Keyboard,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    ViewStyle
+  Animated,
+  Easing,
+  Keyboard,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ViewStyle
 } from 'react-native';
 import { IconButton } from 'react-native-paper';
 
+export interface DropdownItem {
+  key: string;
+  value: string;
+}
+
 interface SearchableDropdownProps {
-  data: string[];
+  data: DropdownItem[];
   placeholder?: string;
   label: string;
-  onSelect: (selected: string) => void;
+  onSelect: (selected: DropdownItem) => void;
+  onAddItem?: (item: DropdownItem) => void;
   value?: string;
   maxHeight?: number;
   style?: ViewStyle;
@@ -30,11 +35,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   data = [],
   placeholder = "Search or enter new...",
   label,
-  onSelect= (_: string) => {},
+  onSelect= (_: DropdownItem) => {},
+  onAddItem,
   value = "",
   maxHeight = 200,
   style = {},
-  search = true
+  search = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -44,12 +50,15 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
-
+  
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
-  const showAddNew = showNoResults || !data.includes(searchText);
+  const showAddNew = showNoResults && !data.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim()); // or use allData?
   const showFloatingLabel = isFocused || searchText.length > 0;
-  const showClearIcon = (searchText.trim() !== '')  
-
+  const showClearIcon = (searchText.trim() !== '') 
+  
+  // TODO - delete console logs
+  console.log('searchText', searchText)
+ 
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
       toValue,
@@ -60,30 +69,31 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   
   // adapted from react-native-dropdown-select-list
   const slidedown = () => {
-        setIsOpen(true)
-        setIsFocused(true)
-        Animated.timing(animatedvalue,{
-            toValue: maxHeight,
-            duration:300,
-            useNativeDriver:false,
-            easing: Easing.out(Easing.ease)
-            
-        }).start()
+    setIsOpen(true)
+    setIsFocused(true)
+    Animated.timing(animatedvalue,{
+        toValue: maxHeight,
+        duration:300,
+        useNativeDriver:false,
+        easing: Easing.out(Easing.ease)
+        
+    }).start()
   }
 
-  const slideup = () => {     
-        Animated.timing(animatedvalue,{
-            toValue:0,
-            duration:300,
-            useNativeDriver:false,
-            easing: Easing.out(Easing.ease)
-            
-        }).start(() => {
-          setIsOpen(false)
-          setIsFocused(false)
-        })
+  const slideup = () => {   
+    Animated.timing(animatedvalue,{
+        toValue:0,
+        duration:300,
+        useNativeDriver:false,
+        easing: Easing.out(Easing.ease)
+        
+    }).start(() => {
+      setIsOpen(false)
+      setIsFocused(false)
+    })
   }
 
+  // animate label and dropdown slider
   React.useEffect(() => {
     if(!_firstRender){
       if (isOpen) {
@@ -98,19 +108,32 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   },[isOpen])
 
+  // handle first render flag
   React.useEffect(() => {
-      if(_firstRender){
-        _setFirstRender(false);
-        return;
-      }
-      onSelect(searchText)
-  },[searchText])
+    if(_firstRender){
+      _setFirstRender(false);
+      return;
+    }
 
-  React.useEffect(() => {
+    // float label if searchText is not null
     if (searchText) {
       animateLabel(1);
     }
-  }, []);
+  },[searchText])
+
+  // updates search text based on parent's value
+  React.useEffect(() => {
+    setSearchText(value || '');
+  }, [value]);
+
+  // sets dropdown selections when data changes (e.g. is filtered)
+  React.useEffect(() => {
+    if (searchText.trim()) {
+      filterData(searchText.trim());
+    } else {
+      setFilteredData(data);
+    }
+  }, [data]);  
 
   // Filter data based on search text
   const filterData = (trimmedText: string) => {
@@ -119,17 +142,64 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       return;
     }
     
-    const filtered = data.filter((item: string) =>
-        item.toLowerCase().includes(trimmedText.toLowerCase())
+    const filtered = data.filter((item: DropdownItem) =>
+        item.value.toLowerCase().includes(trimmedText.toLowerCase())
     );
     setFilteredData(filtered);
   };
 
+  // TODO add callback to all handlers??
+  
+  const handleTextChange = (text: string) => {
+    // set trimmed text to '' and clear if empty string, othwerwise set to text
+    if (!text.trim()) {
+      setSearchText('')
+      setFilteredData(data)
+      onSelect({ key: '', value: '' });
+    } else {
+      setSearchText(text)
+    }
+    filterData(text.trim());
+
+    if (text.trim().length > 0 || isFocused) {
+      animateLabel(1); // float
+    } else {
+      animateLabel(0); // shrink
+    }
+  }
+
   const handleClear = () => {
     setSearchText('')
     setFilteredData(data)
+    onSelect({ key: '', value: '' }); // notify parent that the selection is cleared
     Keyboard.dismiss()
   }
+
+  const handleAddNew = () => {
+    if (!onAddItem) {
+      return
+    }
+
+    console.log('!!!insdie handle AddNew')
+    const newItem: DropdownItem = {
+      key: `new-${Date.now()}`, // TODO change to hash?
+      value: searchText.trim(),
+    };
+    console.log('!!!newItem', newItem)
+
+    onAddItem?.(newItem)
+    onSelect(newItem);
+    setSearchText(newItem.value)
+    slideup();
+    Keyboard.dismiss();
+  }
+
+  const handleItemSelect = (item: DropdownItem) => {
+    setSearchText(item.value)
+    onSelect(item)
+    slideup()
+  }                   
+  
 
   return (
     <View style={[styles.container, style]}>
@@ -162,17 +232,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
             <TextInput 
               style={styles.textInput}
               placeholder={!showFloatingLabel ? label : placeholder}
-              onChangeText={(text: string) => {
-                // set trimmed text to '' if empty string, othwerwise set to text
-                !text.trim() ? setSearchText('') : setSearchText(text)
-                filterData(text.trim());
-
-                if (text.trim().length > 0 || isFocused) {
-                  animateLabel(1); // float
-                } else {
-                  animateLabel(0); // shrink
-                }
-              }}
+              onChangeText={handleTextChange}
               value={searchText}>
             </TextInput>
             <View style={styles.iconContainer}>
@@ -277,19 +337,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                 {
                   (filteredData.length > 0) 
                   ? 
-                    filteredData.map((item, index) => (
+                    filteredData.map((item) => (
                       <TouchableOpacity
-                        key={`${item}-${index}`}
+                        key={item.key}
                         style={styles.dropdownItem}
                         activeOpacity={0.7}
-                        onPress={() => {
-                          setSearchText(item)
-                          onSelect(item)
-                          slideup()
-                          setTimeout(() => {setFilteredData(data)}, 800)
-                        }}
+                        onPress={() => handleItemSelect(item)}
                       >
-                        <Text style={styles.dropdownItemText}>{item}</Text>
+                        <Text style={styles.dropdownItemText}>{item.value}</Text>
                       </TouchableOpacity>
                     ))
                   : 
@@ -297,15 +352,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   (
                 <TouchableOpacity
                   style={[styles.dropdownItem, styles.addNewItem]}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    InteractionManager.runAfterInteractions(() => {
-                      const trimmed = searchText.trim();
-                      setSearchText(trimmed);
-                      onSelect(trimmed);
-                      slideup();
-                    });
-                  }}
+                  onPress={handleAddNew}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.addNewText}>
@@ -360,7 +407,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   textInput: {
-    height: 56,
     textAlignVertical: 'center',
     paddingHorizontal: 16,
     paddingTop: 8,

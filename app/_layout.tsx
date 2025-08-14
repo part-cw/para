@@ -1,11 +1,11 @@
-import AppBar from "@/components/AppBar";
+import AppBar from "@/src/components/AppBar";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AppTheme } from "../themes/theme";
+import { AppTheme } from "../src/themes/theme";
 
 
 

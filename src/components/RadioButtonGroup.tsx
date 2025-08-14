@@ -1,4 +1,4 @@
-import { AppTheme } from '@/themes/theme';
+import { AppTheme } from '@/src/themes/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
