@@ -5,7 +5,7 @@ import { vhtData as allData } from '@/src/utils/vhtDataLoader'; // currently har
 import { filterTelephoneNumbers, filterVHTs, filterVillages, getTelephoneDropdownItems, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Alert, Platform, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, Card, List, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -164,6 +164,30 @@ export default function VHTReferralScreen() {
         }
     }
 
+    const confirmClear = () => {
+    if (Platform.OS === 'web') {
+        if (window.confirm("Are you sure you want to clear selections? All entered data will be wiped from this screen.")) {
+        clearSelections();
+        }
+    } else {
+        Alert.alert(
+        "Confirm Clear",
+        "Are you sure you want to clear selections? All entered data will be wiped from this screen.",
+        [
+            { text: "Cancel", style: "cancel" },
+            { text: "OK", onPress: clearSelections }
+        ]
+        );
+    }
+    };
+
+    const clearSelections = () => {
+    setSelectedVillage(null);
+    setSelectedVHT(null);
+    setSelectedTelNumber(null);
+    setSubvillage('');
+};
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -241,11 +265,7 @@ export default function VHTReferralScreen() {
                     mode="elevated"
                     buttonColor={colors.primary}
                     textColor={colors.onPrimary}
-                    onPress={() => {
-                        setSelectedVillage(null)
-                        setSelectedVHT(null)
-                        setSelectedTelNumber(null)
-                    }}
+                    onPress={confirmClear}
                 >
                     Clear All Selections
                 </Button>
