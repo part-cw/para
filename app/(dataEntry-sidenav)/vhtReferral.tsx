@@ -2,7 +2,7 @@ import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { vhtData as allData } from '@/src/utils/vhtDataLoader'; // currently hardcoded to be 'buikwe' - TODO make it dynamically selected
-import { filterTelephoneNumbers, filterVhtsByVillage, filterVillagesbyVht, getTelephoneDropdownItems, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
+import { filterTelephoneNumbers, filterVHTs, filterVillages, getTelephoneDropdownItems, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -44,73 +44,39 @@ export default function VHTReferralScreen() {
     console.log('selected number', selectedTelNumber)
 
     // handle village selection change
-    useEffect(() => {
-        if (selectedVillage && selectedVillage.value) {
-            // console.log('*** village selected ... filtering vhts')
-            
-            const filteredVHTs = filterVhtsByVillage(allData, selectedVillage.value);
-            setVHTs(filteredVHTs);
+    useEffect(() => {        
+        const filteredVHTs = filterVHTs(allData, selectedVillage?.value, selectedTelNumber?.value);
+        setVHTs(filteredVHTs);
 
-            // TODO -- Clear VHT selection if it's no longer valid for the selected village
-            // Check if we have a selected VHT AND that VHT is not in the filtered list
-            // if (selectedVHT && !filteredVHTs.some(vht => vht.key === selectedVHT.key) && 
-            //     !addedVHTs.some(vht => vht.key === selectedVHT.key)) {
-            //     setSelectedVHT(null);
-            // }
-            //  OR USE THIS 
-            // else if (selectedVHT && !filteredVHTs.some(vht => vht.key === selectedVHT.key)) {
-            // setSelectedVHT(null);
-            // }
-            //So if some() returns true (meaning the VHT WAS found), the ! makes it false
+        // TODO -- Clear VHT selection if it's no longer valid for the selected village
+        // if (selectedVHT && !filteredVHTs.some(vht => vht.key === selectedVHT.key)) {
+        // setSelectedVHT(null);
+        // }
+        //So if some() returns true (meaning the VHT WAS found), the ! makes it false
 
-
-            // console.log('filtered vhts', filteredVHTs)
-            // TODO Auto-select VHT if only one option AND no VHT currently selected
-            if (filteredVHTs.length === 1 && !selectedVHT) {
-                setSelectedVHT(filteredVHTs[0])
-            }
-
-            // console.log('***vhts', vhts)
-        } else {
-            console.log('@@@ no village selected', selectedVillage)
-            const allVHTData = getVhtDropdownItems(allData);
-            setVHTs(allVHTData)
-            // console.log('***vhts', vhts)
-
-            //TODO - remove this? -- not likely to only have 1 option in entire database
-             // Auto-select VHT if only one option in entire dataset AND no VHT selected
-            // if (allVHTData.length === 1 && !selectedVHT) {
-            //     console.log('Auto-selecting single VHT from all data:', allVHTData[0].value);
-            //     setSelectedVHT(allVHTData[0]);
-            // }
+        // Auto-select VHT if only one option AND no VHT currently selected
+        if (filteredVHTs.length === 1 && !selectedVHT) {
+            setSelectedVHT(filteredVHTs[0])
         }
-    }, [selectedVillage])
+    }, [selectedVillage, selectedTelNumber])
 
     // handle vht selection change
     useEffect(() => {
-        if (selectedVHT && selectedVHT.value) {
-            console.log('%%%vht selected...filtering villages')
-            const filteredVillages = filterVillagesbyVht(allData, selectedVHT.value)
-            setVillages(filteredVillages)
+        const filteredVillages = filterVillages(allData, selectedVHT?.value, selectedTelNumber?.value)
+        setVillages(filteredVillages)
 
-            // TODO: Auto-select village if only one option AND no village currently selected
-            console.log('filtered villages', filteredVillages)
-            if (filteredVillages.length === 1 && !selectedVillage) {
-                setSelectedVillage(filteredVillages[0])
-            }
+        // Auto-select village if only one option AND no village currently selected
+        console.log('filtered villages', filteredVillages)
+        if (filteredVillages.length === 1 && !selectedVillage) {
+            setSelectedVillage(filteredVillages[0])
+        }
 
             // TODO -- Clear village selection if it's no longer valid for the selected VHT
             // if (selectedVillage && !filteredVillages.some(village => village.key === selectedVillage.key) &&
             //     !addedVillages.some(village => village.key === selectedVillage.key)) {
             //     setSelectedVillage(null);
             // }
-
-            // setSelectedVillage(null)
-            // console.log('%%%villages', villages)
-        } else {
-            setVillages(getVillageDropdownItems(allData))
-        }
-    }, [selectedVHT])
+    }, [selectedVHT, selectedTelNumber])
 
     // handle telephone filtering with village and vht selection change
     useEffect(() => {
@@ -121,6 +87,8 @@ export default function VHTReferralScreen() {
         if (filteredNumbers.length === 1 && !selectedTelNumber) {
             setSelectedTelNumber(filteredNumbers[0])
         }
+
+        // TODO - clear tel selection if no longer valid for selected village/vht
     }, [selectedVillage, selectedVHT])
 
     // Handle adding new villages
@@ -198,11 +166,12 @@ export default function VHTReferralScreen() {
                                 onAddItem={handleAddVillage}
                                 value={selectedVillage?.value || ''}
                             />
-                              <TextInput 
+                            <TextInput 
                                 label="Subvillage (required)"
                                 placeholder="Enter subvillage name" 
                                 mode="outlined" 
-                                style={Styles.textInput} />
+                                style={Styles.textInput}
+                            />
                         </View>
                     </View>
 

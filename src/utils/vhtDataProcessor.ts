@@ -78,44 +78,102 @@ export function getTelephoneDropdownItems(data: VhtDataObject[]): DropdownItem[]
 
 // TODO - filter by tel
 // Filters vht dropdown options based on selected village
-export function filterVhtsByVillage(data: VhtDataObject[], village: string): DropdownItem[] {
-    const filteredVhtSet = new Set<string>();
+// export function filterVhtsByVillage(data: VhtDataObject[], village: string): DropdownItem[] {
+//     const filteredVhtSet = new Set<string>();
+
+//     data.forEach(obj => {
+//         if (obj.VILLAGE.trim().toUpperCase() === village.trim().toUpperCase()) {
+//             filteredVhtSet.add(obj.NAME.trim());
+//         }
+//     });
+
+//     // sort filtered vht names alphabetically
+//     const filteredVhtArray = Array.from(filteredVhtSet).sort()
+//     console.log('filteredVhts', filteredVhtArray)
+
+//     return filteredVhtArray.map((vhtName, index) => ({
+//         key: `${index}`,
+//         value: vhtName,
+//     }));
+// }
+
+// // Filters village dropdown options based on selected vht name
+// export function filterVillagesbyVht(data: VhtDataObject[], vhtName: string): DropdownItem[] {
+//     const filteredVillageSet = new Set<string>();
+
+//     data.forEach(obj => {
+//         if (obj.NAME.trim().toUpperCase() === vhtName.trim().toUpperCase()) {
+//             filteredVillageSet.add(obj.VILLAGE.trim());
+//         }
+//     });
+
+//     // sort filtered villages alphabetically
+//     const filteredVillageArray = Array.from(filteredVillageSet).sort()
+//     // console.log('filteredVillages', filteredVillageArray)
+
+//     return filteredVillageArray.map((village, index) => ({
+//         key: `${index}`,
+//         value: village,
+//     }));
+// }
+
+
+export function filterVHTs(
+    data: VhtDataObject[], 
+    selectedVillage: string | undefined, 
+    selectedTelephone: string | undefined
+): DropdownItem[] {
+    const normalize = (val: string) => val.trim().toUpperCase();
+    
+    const village = selectedVillage ? normalize(selectedVillage) : undefined;
+    const telephone = selectedTelephone ? selectedTelephone.trim() : undefined;
+
+    const filteredVhts = new Set<string>()
 
     data.forEach(obj => {
-        if (obj.VILLAGE.trim().toUpperCase() === village.trim().toUpperCase()) {
-            filteredVhtSet.add(obj.NAME.trim());
+        const matchesVillage = !village || normalize(obj.VILLAGE) === village;
+        const matchesTelephone = !telephone || obj["TELEPHONE NUMBER"].toString() === telephone;
+
+        if (matchesVillage && matchesTelephone) {
+        filteredVhts.add(normalize(obj.NAME));
         }
     });
 
-    // sort filtered vht names alphabetically
-    const filteredVhtArray = Array.from(filteredVhtSet).sort()
-    console.log('filteredVhts', filteredVhtArray)
-
-    return filteredVhtArray.map((vhtName, index) => ({
-        key: `${index}`,
-        value: vhtName,
-    }));
+    return (
+        Array.from(filteredVhts).map((name, index) => ({
+            key: `${index}`,
+            value: name,
+        }))
+    );
 }
 
-// TODO filter by tel
-// Filters village dropdown options based on selected vht name
-export function filterVillagesbyVht(data: VhtDataObject[], vhtName: string): DropdownItem[] {
-    const filteredVillageSet = new Set<string>();
+export function filterVillages(
+    data: VhtDataObject[], 
+    selectedVht: string | undefined, 
+    selectedTelephone: string | undefined
+): DropdownItem[] {
+    const normalize = (val: string) => val.trim().toUpperCase();
+    
+    const vht = selectedVht ? normalize(selectedVht) : undefined;
+    const telephone = selectedTelephone ? selectedTelephone.trim() : undefined;
+
+    const filteredVillages = new Set<string>()
 
     data.forEach(obj => {
-        if (obj.NAME.trim().toUpperCase() === vhtName.trim().toUpperCase()) {
-            filteredVillageSet.add(obj.VILLAGE.trim());
+        const matchesVht = !vht || normalize(obj.NAME) === vht;
+        const matchesTelephone = !telephone || obj["TELEPHONE NUMBER"].toString() === telephone;
+
+        if (matchesVht && matchesTelephone) {
+        filteredVillages.add(normalize(obj.VILLAGE));
         }
     });
 
-    // sort filtered villages alphabetically
-    const filteredVillageArray = Array.from(filteredVillageSet).sort()
-    // console.log('filteredVillages', filteredVillageArray)
-
-    return filteredVillageArray.map((village, index) => ({
-        key: `${index}`,
-        value: village,
-    }));
+    return (
+        Array.from(filteredVillages).map((village, index) => ({
+            key: `${index}`,
+            value: village,
+        }))
+    );
 }
 
 // Filters telephone numbers based on selected vht and/or village

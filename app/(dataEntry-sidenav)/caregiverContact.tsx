@@ -41,14 +41,9 @@ export default function CaregiverContactScreen() {
                     label="Name of Head of Family (required)"
                     placeholder="Enter name of the patient's primary caregiver" 
                     mode="outlined" 
-                    style={Styles.textInput} />
-                    
-                <TextInput 
-                    label="Subvillage (required)"
-                    placeholder="Enter subvillage name" 
-                    mode="outlined" 
-                    style={Styles.textInput} />
-                
+                    style={Styles.textInput}
+                />
+
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
                      <TextInput 
                         label="Telephone"
