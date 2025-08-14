@@ -16,9 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 //  - data persisted when navigate away
 //  - make sure only one dropdown open at a time
 
-// Bug Fixes:
+// Bug Fixes ?? (confirm if these are actually bugs):
 //  - don't display newly added vhts if selected village is in original dataset and vice versa for vhts
-//  - Clear VHT selection if it's no longer valid for the selected village, and vice versa
+//  - Clear VHT selection if it's no longer valid for the selected village, and vice versa??
 // if enter mew item, other dropdowns should render entire list
 
 export default function VHTReferralScreen() {
@@ -41,8 +41,21 @@ export default function VHTReferralScreen() {
     const allNumbers = [...telNumbers, ...addedNumbers];
 
     // handle village selection change
+    // if village and/or telephone user added - should render entire vht list
     useEffect(() => {        
-        const filteredVHTs = filterVHTs(allData, selectedVillage?.value, selectedTelNumber?.value);
+        const isUserAddedVillage = !!addedVillages.find(v => v.value === selectedVillage?.value);
+        const isUserAddedNumber = !!addedNumbers.find(n => n.value === selectedTelNumber?.value);
+        console.log('isUseradded village', isUserAddedVillage)
+        console.log('isUseradded tel', isUserAddedNumber)
+        
+        const filteredVHTs = (isUserAddedVillage && !selectedTelNumber) || (isUserAddedNumber && !selectedVillage)
+            ? getVhtDropdownItems(allData)
+            : filterVHTs(allData, selectedVillage?.value, selectedTelNumber?.value);
+        
+        // TODO if isUserAddedNumber && selectedVillage && !isUserAddedVillage -- filter vht by village ??
+        // if isUserAddedVillage && selectedNumber $$ !isUserAddedNumer -- filter vht by tel ??
+        // todo -- confirm isUserAddedVillage && !selectedTelNumber -> render all is correct? is this ever a use case?
+        
         setVHTs(filteredVHTs);
 
         // TODO -- Clear VHT selection if it's no longer valid for the selected village
@@ -59,6 +72,7 @@ export default function VHTReferralScreen() {
 
     // handle vht selection change
     useEffect(() => {
+        // TODO add logic for user added tel and vht and whether villages should be filterd??
         const filteredVillages = filterVillages(allData, selectedVHT?.value, selectedTelNumber?.value)
         setVillages(filteredVillages)
 
@@ -67,16 +81,31 @@ export default function VHTReferralScreen() {
             setSelectedVillage(filteredVillages[0])
         }
 
-            // TODO -- Clear village selection if it's no longer valid for the selected VHT
-            // if (selectedVillage && !filteredVillages.some(village => village.key === selectedVillage.key) &&
-            //     !addedVillages.some(village => village.key === selectedVillage.key)) {
-            //     setSelectedVillage(null);
-            // }
+        // TODO?? -- Clear village selection if it's no longer valid for the selected VHT
+        // if (selectedVillage && !filteredVillages.some(village => village.key === selectedVillage.key) &&
+        //     !addedVillages.some(village => village.key === selectedVillage.key)) {
+        //     setSelectedVillage(null);
+        // }
     }, [selectedVHT, selectedTelNumber])
 
     // handle telephone filtering with village and vht selection change
+    // if vht selected from list tel and village will be auto filtered
     useEffect(() => {
-        const filteredNumbers = filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value)
+        const isUserAddedVillage = !!addedVillages.find(v => v.value === selectedVillage?.value);
+        const isUserAddedVht = !!addedVHTs.find(v => v.value === selectedVHT?.value);
+        console.log('isUseradded village', isUserAddedVillage)
+        console.log('isUseradded vht', isUserAddedVht)
+        
+        // TODO - check conditional
+        // if vht selected from list, tel auto filtered
+        // if village user added and vht use added -- show all?
+        const filteredNumbers = (isUserAddedVillage && !selectedTelNumber)
+            ? getTelephoneDropdownItems(allData)
+            : filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value);
+
+        
+        // const filteredNumbers = filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value);
+        
         setTelNumbers(filteredNumbers)
 
         // tel autopopulates if only option
