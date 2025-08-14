@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Card, List, Text, useTheme } from 'react-native-paper';
+import { Card, List, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -17,7 +17,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 //  - make sure only one dropdown open at a time
 
 // Bug Fixes:
-//  - auto sets search text if onle 1 dropdown item available 
 //  - don't display newly added vhts if selected village is in original dataset and vice versa for vhts
 //  - Clear VHT selection if it's no longer valid for the selected village, and vice versa
 
@@ -40,14 +39,7 @@ export default function VHTReferralScreen() {
     const allVHTs = [...vhts, ...addedVHTs];
     const allNumbers = [...telNumbers, ...addedNumbers];
 
-    // const filteredTelephone = filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value)
-    // console.log('filtered tel', filteredTelephone)
-
-    // console.log('villages', villages)
-    // console.log('selected village', selectedVillage)
-    // console.log('~~~villages', villages)
-    // console.log('selected vht', selectedVHT)
-    // console.log('~~~vhts', vhts)
+    // TODO delete console.log
     console.log('telNumbers', telNumbers)
     console.log('selected number', selectedTelNumber)
 
@@ -116,9 +108,7 @@ export default function VHTReferralScreen() {
             // setSelectedVillage(null)
             // console.log('%%%villages', villages)
         } else {
-            // console.log('%%% no vht sel', selectedVHT)
             setVillages(getVillageDropdownItems(allData))
-            // console.log('%%%villages', villages)
         }
     }, [selectedVHT])
 
@@ -127,8 +117,9 @@ export default function VHTReferralScreen() {
         const filteredNumbers = filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value)
         setTelNumbers(filteredNumbers)
 
+        // tel autopopulates if only option
         if (filteredNumbers.length === 1 && !selectedTelNumber) {
-                setSelectedTelNumber(filteredNumbers[0])
+            setSelectedTelNumber(filteredNumbers[0])
         }
     }, [selectedVillage, selectedVHT])
 
@@ -202,11 +193,16 @@ export default function VHTReferralScreen() {
                             <SearchableDropdown
                                 data={allVillages}
                                 label="Village (required)"
-                                placeholder='Enter village name'
+                                placeholder='Search or enter village name'
                                 onSelect={handleVillageSelect}
                                 onAddItem={handleAddVillage}
                                 value={selectedVillage?.value || ''}
                             />
+                              <TextInput 
+                                label="Subvillage (required)"
+                                placeholder="Enter subvillage name" 
+                                mode="outlined" 
+                                style={Styles.textInput} />
                         </View>
                     </View>
 
@@ -220,7 +216,7 @@ export default function VHTReferralScreen() {
                             <SearchableDropdown
                                 data={allVHTs}
                                 label="Name (required)"
-                                placeholder='Enter VHT name'
+                                placeholder='Search or enter VHT name'
                                 onSelect={handleVHTSelect}
                                 onAddItem={handleAddVHT}
                                 value={selectedVHT?.value || ''}
@@ -228,7 +224,7 @@ export default function VHTReferralScreen() {
                             <SearchableDropdown
                                 data={allNumbers}
                                 label="Telephone"
-                                placeholder='Enter VHT telephone number'
+                                placeholder='Search or enter VHT telephone number'
                                 onSelect={handleTelSelect}
                                 onAddItem={handleAddTel}
                                 value={selectedTelNumber?.value || ''}
