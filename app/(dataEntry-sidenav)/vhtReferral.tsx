@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Card, List, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, Card, List, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -198,6 +198,19 @@ export default function VHTReferralScreen() {
                     </View>
 
                 </List.Section>
+                <Button
+                    style={{ alignSelf: 'center' }}
+                    mode="elevated"
+                    buttonColor={colors.primary}
+                    textColor={colors.onPrimary}
+                    onPress={() => {
+                        setSelectedVillage(null)
+                        setSelectedVHT(null)
+                        setSelectedTelNumber(null)
+                    }}
+                >
+                    Clear All Selections
+                </Button>
             </ScrollView>
 
             <PaginationControls
