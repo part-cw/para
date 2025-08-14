@@ -27,9 +27,9 @@ export function isProperCase(input: string): boolean {
  * - Single number: "0123456789"
  * - Multiple numbers separated by "/": "0123456789/0987654321"
  * - International numbers starting with "+": unchanged -- assume # in valid international format 
- * - 9-digit numbers not starting with 0 --> prepended with "0"
- * - 10-digit numbers starting with 0 --> unchanged
- * - Invalid strings --> empty string
+ * - 9-digit numbers not starting with 0: prepended with "0"
+ * - 10-digit numbers starting with 0:  unchanged
+ * - Everything else = Invalid strings: return empty string
  */
 export function formatPhoneNumber(str: string): string {
     const trimmed = str.trim();
@@ -65,9 +65,31 @@ export function formatPhoneNumber(str: string): string {
     return ""; // TODO -- handle invalid number differently ??
 }
 
-// determines whether entered phone # is valid
-// returns True if valid, else False
-// TODO
-export function isValidPhoneFormat(input: string): boolean {
-    return false // stub
+/**
+ * 
+ * Determines whether entered phone # is valid
+ * - Assumes only a single phone number is provided -- multiple numbers separated by '/' invalid
+ * - Returns True if valid, else False
+ */
+export function isValidPhoneNumber(input: string): boolean {
+    const invalidSymbols = /[^0-9]/
+    const trimmedInput = input.trim()
+
+    // '+' international numbers allowed without further checks
+    // TODO - make this more strict in the future - should explicitly validate international format
+    if (trimmedInput.startsWith("+")) {
+        return trimmedInput.length > 1;
+    }
+
+    // False if empty input, or if containts non-numerical characters
+    if (!input || trimmedInput === '' || invalidSymbols.test(input)) return false
+
+    
+    // phone must be 10 digits and start with 0
+    if(trimmedInput.length !== 10) {
+        return false
+    } else {
+        return trimmedInput.startsWith("0")
+    }
+
 }

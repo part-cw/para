@@ -1,4 +1,4 @@
-import { formatPhoneNumber, isProperCase, toProperCase } from "../inputValidator";
+import { formatPhoneNumber, isProperCase, isValidPhoneNumber, toProperCase } from "../inputValidator";
 
 describe('toProperCase', () => {
   it('trims spaces and capitalizes words', () => {
@@ -91,4 +91,47 @@ describe('formatPhoneNumber', () => {
     it('handles multiple slashes with spaces', () => {
         expect(formatPhoneNumber('123456789 /  123456789 /0123456789 ')).toBe(validNumber+'/'+validNumber+'/'+validNumber);
     });
+});
+
+
+describe('isValidPhoneNumber', () => {
+  it('should return true for 10 digits starting with 0', () => {
+    expect(isValidPhoneNumber('0123456789')).toBe(true);
+  });
+
+  it('should return false for 10 digits not starting with 0', () => {
+    expect(isValidPhoneNumber('1234567890')).toBe(false);
+  });
+
+  it('should return true for number starting with + and having 1 extra digit', () => {
+    expect(isValidPhoneNumber('+12345678901')).toBe(true);
+  });
+
+  it("should return false for '+' on its own", () => {
+    expect(isValidPhoneNumber('+')).toBe(false);
+  });
+
+  it("should return false for '+' in the middle of the number", () => {
+    expect(isValidPhoneNumber('123+4567890')).toBe(false);
+  });
+
+  it("should return false for '+' at the end of the number", () => {
+    expect(isValidPhoneNumber('012345678+')).toBe(false);
+  });
+
+  it('should return false for any other symbol or letter anywhere', () => {
+    expect(isValidPhoneNumber('01234567a')).toBe(false);
+    expect(isValidPhoneNumber('1234-56789')).toBe(false);
+    expect(isValidPhoneNumber('(123)456789')).toBe(false);
+  });
+
+  it('should return false for 9 digits (with or without leading 0)', () => {
+    expect(isValidPhoneNumber('012345678')).toBe(false);
+    expect(isValidPhoneNumber('123456789')).toBe(false);
+  });
+
+  it('should return false for 11 digits (with or without leading 0)', () => {
+    expect(isValidPhoneNumber('01234567890')).toBe(false);
+    expect(isValidPhoneNumber('12345678901')).toBe(false);
+  });
 });
