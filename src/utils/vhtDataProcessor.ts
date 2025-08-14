@@ -10,7 +10,7 @@ export interface VhtDataObject {
   VILLAGE: string;
   FACILITY?: string;
   NAME: string;
-  "TELEPHONE NUMBER": number | string;
+  "TELEPHONE NUMBER": number;
   GENDER?: string;
   "MEDIC UUID"?: string;
   "HEALTH FACILITY IN CHARGE"?: string;
@@ -54,6 +54,28 @@ export function getVhtDropdownItems(data: VhtDataObject[]): DropdownItem[] {
     return vhtDropdownItems
 }
 
+// Returns phone numbers as DropdownItems from vht data JSON
+export function getTelephoneDropdownItems(data: VhtDataObject[]): DropdownItem[] {
+   // TODO delete console logs (here for testing)
+    // const telArray = new Array<string>()
+    // data.forEach(obj => telArray.push(obj["TELEPHONE NUMBER"].toString()))
+    // const duplicates = telArray.filter((item, index, arr) => arr.indexOf(item) !== index);
+    // console.log('Duplicates:', duplicates);
+    // console.log(`Duplicate count: ${duplicates.length}`);
+
+    const telSet = new Set<string>();
+    data.forEach(obj => telSet.add(obj["TELEPHONE NUMBER"].toString()))
+
+    const telDropdownItems = Array.from(telSet).map((tel, index) => (
+        {
+            key: `${index}`,
+            value: tel
+        }
+    ))
+    
+    return telDropdownItems;
+}
+
 // Filters vht dropdown options based on selected village
 export function filterVhtsByVillage(data: VhtDataObject[], village: string): DropdownItem[] {
     const filteredVhtSet = new Set<string>();
@@ -75,7 +97,7 @@ export function filterVhtsByVillage(data: VhtDataObject[], village: string): Dro
 }
 
 // Filters village dropdown options based on selected vht name
-export function filterVillagesbyVht(data: VhtDataObject[], vhtName: string) {
+export function filterVillagesbyVht(data: VhtDataObject[], vhtName: string): DropdownItem[] {
     const filteredVillageSet = new Set<string>();
 
     data.forEach(obj => {
@@ -94,12 +116,44 @@ export function filterVillagesbyVht(data: VhtDataObject[], vhtName: string) {
     }));
 }
 
+// Filters telephone numbers based on selected vht and/or village
+export function filterTelephoneNumbers(
+    data: VhtDataObject[], 
+    selectedVht: string | undefined, 
+    selectedVillage: string | undefined
+): DropdownItem[] {
+    const normalize = (val: string) => val.trim().toUpperCase();
+    
+    const vht = selectedVht ? normalize(selectedVht) : undefined;
+    const village = selectedVillage ? normalize(selectedVillage) : undefined;
+
+    const filteredNumberSet = new Set<string>()
+
+    data.forEach(obj => {
+        const matchesVht = !vht || normalize(obj.NAME) === vht;
+        const matchesVillage = !village || normalize(obj.VILLAGE) === village;
+
+        if (matchesVht && matchesVillage) {
+        filteredNumberSet.add(obj['TELEPHONE NUMBER'].toString());
+        }
+    });
+
+    return (
+        Array.from(filteredNumberSet).map((tel, index) => ({
+            key: `${index}`,
+            value: tel,
+        }))
+    );
+}
+
 
 // TODO - write unit tests
 // testing scenarios
 // same vht name,diff telephone multiple villages eg. Wasswa Joseph 
 // same village, multiple vhts
 // edge cases - uppercase, lowercase, extra spaces before/after/in-between, off by 1 letter
+// diff vhts same tel e.g. Nabaweesi  Margret,750950818... Katusabe  Janet,750950818
+// same vht nam, same village, same coordinar, diff coo num e.g. Nankya Rose M,751436017
 
 // const testDataset: VhtDataObject[] = [
 //     {

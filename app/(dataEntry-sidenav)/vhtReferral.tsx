@@ -2,7 +2,7 @@ import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { vhtData as allData } from '@/src/utils/vhtDataLoader'; // currently hardcoded to be 'buikwe' - TODO make it dynamically selected
-import { filterVhtsByVillage, filterVillagesbyVht, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
+import { filterTelephoneNumbers, filterVhtsByVillage, filterVillagesbyVht, getTelephoneDropdownItems, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -26,25 +26,35 @@ export default function VHTReferralScreen() {
 
     const [villages, setVillages] = useState<DropdownItem[]>(() => getVillageDropdownItems(allData));
     const [vhts, setVHTs] = useState<DropdownItem[]>(() => getVhtDropdownItems(allData));
+    const [telNumbers, setTelNumbers] = useState<DropdownItem[]>(() => getTelephoneDropdownItems(allData));
+
     const [addedVillages, setAddedVillages] = useState<DropdownItem[]>([]);
     const [addedVHTs, setAddedVHTs] = useState<DropdownItem[]>([]);
+    const [addedNumbers, setAddedNumbers] = useState<DropdownItem[]>([]);
 
     const [selectedVillage, setSelectedVillage] = useState<DropdownItem | null>(null);
     const [selectedVHT, setSelectedVHT] = useState<DropdownItem | null>(null);
+    const [selectedTelNumber, setSelectedTelNumber] = useState<DropdownItem | null>(null);
 
     const allVillages = [...villages, ...addedVillages];
     const allVHTs = [...vhts, ...addedVHTs];
+    const allNumbers = [...telNumbers, ...addedNumbers];
 
-    console.log('villages', villages)
-    console.log('selected village', selectedVillage)
+    // const filteredTelephone = filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value)
+    // console.log('filtered tel', filteredTelephone)
+
+    // console.log('villages', villages)
+    // console.log('selected village', selectedVillage)
     // console.log('~~~villages', villages)
     // console.log('selected vht', selectedVHT)
     // console.log('~~~vhts', vhts)
+    console.log('telNumbers', telNumbers)
+    console.log('selected number', selectedTelNumber)
 
     // handle village selection change
     useEffect(() => {
         if (selectedVillage && selectedVillage.value) {
-            console.log('*** village selected ... filtering vhts')
+            // console.log('*** village selected ... filtering vhts')
             
             const filteredVHTs = filterVhtsByVillage(allData, selectedVillage.value);
             setVHTs(filteredVHTs);
@@ -62,7 +72,7 @@ export default function VHTReferralScreen() {
             //So if some() returns true (meaning the VHT WAS found), the ! makes it false
 
 
-            console.log('filtered vhts', filteredVHTs)
+            // console.log('filtered vhts', filteredVHTs)
             // TODO Auto-select VHT if only one option AND no VHT currently selected
             if (filteredVHTs.length === 1 && !selectedVHT) {
                 setSelectedVHT(filteredVHTs[0])
@@ -75,7 +85,7 @@ export default function VHTReferralScreen() {
             setVHTs(allVHTData)
             // console.log('***vhts', vhts)
 
-            //TODO - DOUBLE CHECK THIS
+            //TODO - remove this? -- not likely to only have 1 option in entire database
              // Auto-select VHT if only one option in entire dataset AND no VHT selected
             // if (allVHTData.length === 1 && !selectedVHT) {
             //     console.log('Auto-selecting single VHT from all data:', allVHTData[0].value);
@@ -84,6 +94,7 @@ export default function VHTReferralScreen() {
         }
     }, [selectedVillage])
 
+    // handle vht selection change
     useEffect(() => {
         if (selectedVHT && selectedVHT.value) {
             console.log('%%%vht selected...filtering villages')
@@ -105,23 +116,35 @@ export default function VHTReferralScreen() {
             // setSelectedVillage(null)
             // console.log('%%%villages', villages)
         } else {
-            console.log('%%% no vht sel', selectedVHT)
+            // console.log('%%% no vht sel', selectedVHT)
             setVillages(getVillageDropdownItems(allData))
             // console.log('%%%villages', villages)
         }
     }, [selectedVHT])
 
-     // Handle adding new villages
+    // handle telephone filtering with village and vht selection change
+    useEffect(() => {
+        const filteredNumbers = filterTelephoneNumbers(allData, selectedVHT?.value, selectedVillage?.value)
+        setTelNumbers(filteredNumbers)
+    }, [selectedVillage, selectedVHT])
+
+    // Handle adding new villages
     const handleAddVillage = (newVillage: DropdownItem) => {
         setAddedVillages(prev => [...prev, newVillage]);
-        // Optionally: save to backend, validate, etc.
+        // TODO: save to backend, validate, etc.
     };
 
     // Handle adding new VHTs
     const handleAddVHT = (newVHT: DropdownItem) => {
         setAddedVHTs(prev => [...prev, newVHT]);
-        // Optionally: save to backend, validate, etc.
+        // TODO: save to backend, validate, etc.
     };
+
+    // Handle adding new telephone number
+    const handleAddTel = (newNumber: DropdownItem) => {
+        setAddedNumbers(prev => [...prev, newNumber])
+        // TOOD validate input 
+    }
 
     // Handle village selection - check for cleared selection
     const handleVillageSelect = (village: DropdownItem) => {
@@ -140,6 +163,15 @@ export default function VHTReferralScreen() {
             setSelectedVHT(vht);
         }
     };
+
+    // Handle tel number selection - check for cleared selection
+    const handleTelSelect = (tel: DropdownItem) => {
+        if (tel.value === '') {
+            setSelectedTelNumber(null)
+        } else {
+            setSelectedTelNumber(tel)
+        }
+    }
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -171,13 +203,6 @@ export default function VHTReferralScreen() {
                                 onAddItem={handleAddVillage}
                                 value={selectedVillage?.value || ''}
                             />
-                            {/* <SearchableDropdown
-                                data={testData}
-                                label="Health Facility (optional)"
-                                placeholder='Enter HC name'
-                                onSelect={handleSelectionChange}
-                                value={selected?.value}
-                            /> */}
                         </View>
                     </View>
 
@@ -196,14 +221,14 @@ export default function VHTReferralScreen() {
                                 onAddItem={handleAddVHT}
                                 value={selectedVHT?.value || ''}
                             />
-
-                            {/* <SearchableDropdown
-                                data={testData}
+                            <SearchableDropdown
+                                data={allNumbers}
                                 label="Telephone"
                                 placeholder='Enter VHT telephone number'
-                                onSelect={handleSelectionChange}
-                                value={selected?.value}
-                            /> */}
+                                onSelect={handleTelSelect}
+                                onAddItem={handleAddTel}
+                                value={selectedTelNumber?.value || ''}
+                            />
                         </View>
                     </View>
 
