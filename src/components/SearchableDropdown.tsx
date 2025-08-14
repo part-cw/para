@@ -55,9 +55,6 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showAddNew = showNoResults && !data.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim()); // or use allData?
   const showFloatingLabel = isFocused || searchText.length > 0;
   const showClearIcon = (searchText.trim() !== '') 
-  
-  // TODO - delete console logs
-  console.log('searchText', searchText)
  
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
@@ -180,12 +177,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       return
     }
 
-    console.log('!!!insdie handle AddNew')
     const newItem: DropdownItem = {
       key: `new-${Date.now()}`, // TODO change to hash?
       value: searchText.trim(),
     };
-    console.log('!!!newItem', newItem)
 
     onAddItem?.(newItem)
     onSelect(newItem);

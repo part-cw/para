@@ -41,15 +41,11 @@ export default function VHTReferralScreen() {
     const allVHTs = [...vhts, ...addedVHTs];
     const allNumbers = [...telNumbers, ...addedNumbers];
 
-    console.log('subvill', subvillage)
-
     // handle village selection change
     // if village and/or telephone user added - should render entire vht list
     useEffect(() => {        
         const isUserAddedVillage = !!addedVillages.find(v => v.value === selectedVillage?.value);
         const isUserAddedNumber = !!addedNumbers.find(n => n.value === selectedTelNumber?.value);
-        console.log('isUseradded village', isUserAddedVillage)
-        console.log('isUseradded tel', isUserAddedNumber)
         
         const filteredVHTs = (isUserAddedVillage && !selectedTelNumber) || (isUserAddedNumber && !selectedVillage)
             ? getVhtDropdownItems(allData)
@@ -96,8 +92,6 @@ export default function VHTReferralScreen() {
     useEffect(() => {
         const isUserAddedVillage = !!addedVillages.find(v => v.value === selectedVillage?.value);
         const isUserAddedVht = !!addedVHTs.find(v => v.value === selectedVHT?.value);
-        console.log('isUseradded village', isUserAddedVillage)
-        console.log('isUseradded vht', isUserAddedVht)
         
         // TODO - check conditional
         // if vht selected from list, tel auto filtered
@@ -182,11 +176,11 @@ export default function VHTReferralScreen() {
     };
 
     const clearSelections = () => {
-    setSelectedVillage(null);
-    setSelectedVHT(null);
-    setSelectedTelNumber(null);
-    setSubvillage('');
-};
+        setSelectedVillage(null);
+        setSelectedVHT(null);
+        setSelectedTelNumber(null);
+        setSubvillage('');
+    };
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>

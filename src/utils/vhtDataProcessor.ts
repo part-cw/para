@@ -76,8 +76,6 @@ export function filterVHTs(
 
     const filteredVhts = new Set<string>()
 
-    console.log('filtering VHTs...', village, telephone)
-
     data.forEach(obj => {
         const matchesVillage = !village || normalize(obj.VILLAGE) === village;
         const matchesTelephone = !telephone || obj["TELEPHONE NUMBER"].toString() === telephone;
