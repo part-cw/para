@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // Bug Fixes:
 //  - don't display newly added vhts if selected village is in original dataset and vice versa for vhts
 //  - Clear VHT selection if it's no longer valid for the selected village, and vice versa
+// if enter mew item, other dropdowns should render entire list
 
 export default function VHTReferralScreen() {
     const { colors } = useTheme()
@@ -38,10 +39,6 @@ export default function VHTReferralScreen() {
     const allVillages = [...villages, ...addedVillages];
     const allVHTs = [...vhts, ...addedVHTs];
     const allNumbers = [...telNumbers, ...addedNumbers];
-
-    // TODO delete console.log
-    console.log('telNumbers', telNumbers)
-    console.log('selected number', selectedTelNumber)
 
     // handle village selection change
     useEffect(() => {        
@@ -66,7 +63,6 @@ export default function VHTReferralScreen() {
         setVillages(filteredVillages)
 
         // Auto-select village if only one option AND no village currently selected
-        console.log('filtered villages', filteredVillages)
         if (filteredVillages.length === 1 && !selectedVillage) {
             setSelectedVillage(filteredVillages[0])
         }
