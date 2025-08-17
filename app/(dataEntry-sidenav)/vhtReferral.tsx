@@ -42,8 +42,6 @@ export default function VHTReferralScreen() {
     const allVHTs = [...vhts, ...addedVHTs];
     const allNumbers = [...telNumbers, ...addedNumbers];
 
-    console.log('selected tel', selectedTelNumber)
-
     // handle village selection change
     // if village and/or telephone user added - should render entire vht list
     useEffect(() => {        
@@ -269,6 +267,7 @@ export default function VHTReferralScreen() {
                                 validator={validatePhoneNumber}
                                 formatter={(value) => formatPhoneNumber(value)}
                                 showError={true}
+                                keyboard='phone-pad'
                             />
                         </View>
                     </View>

@@ -3,6 +3,7 @@ import {
   Animated,
   Easing,
   Keyboard,
+  KeyboardTypeOptions,
   Platform,
   ScrollView,
   StyleSheet,
@@ -38,6 +39,7 @@ interface SearchableDropdownProps {
   validator?: (value: string) => ValidationResult;
   formatter?: (value: string) => string; // TODO - remove formatter?
   showError?: boolean;
+  keyboard?: KeyboardTypeOptions;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -53,6 +55,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   validator,
   formatter,
   showError = true,
+  keyboard = 'default'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -318,7 +321,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               placeholder={!showFloatingLabel ? label : placeholder}
               onChangeText={handleTextChange}
               onBlur={handleBlur}
-              value={searchText}>
+              value={searchText}
+              keyboardType={keyboard}>
             </TextInput>
             <View style={styles.iconContainer}>
               { showClearIcon &&
