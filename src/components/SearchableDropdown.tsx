@@ -200,6 +200,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       if (!validation.isValid) {
         setHasValidationError(true);
         setValidationError(validation.errorMessage || 'Invalid input');
+        
+        if (isOpen) {
+          slideup();
+        }
       } else {
         setHasValidationError(false);
         setValidationError('');
@@ -235,6 +239,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       if (!validation.isValid) {
         setHasValidationError(true);
         setValidationError(validation.errorMessage || 'Invalid input');
+        slideup()
         return; // Don't add invalid item
       }
     }
