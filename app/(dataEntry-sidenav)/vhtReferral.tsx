@@ -1,6 +1,7 @@
 import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { formatPhoneNumber, validatePhoneNumber } from '@/src/utils/inputValidator';
 import { vhtData as allData } from '@/src/utils/vhtDataLoader'; // currently hardcoded to be 'buikwe' - TODO make it dynamically selected
 import { filterTelephoneNumbers, filterVHTs, filterVillages, getTelephoneDropdownItems, getVhtDropdownItems, getVillageDropdownItems } from '@/src/utils/vhtDataProcessor';
 import { router } from 'expo-router';
@@ -40,6 +41,8 @@ export default function VHTReferralScreen() {
     const allVillages = [...villages, ...addedVillages];
     const allVHTs = [...vhts, ...addedVHTs];
     const allNumbers = [...telNumbers, ...addedNumbers];
+
+    console.log('selected tel', selectedTelNumber)
 
     // handle village selection change
     // if village and/or telephone user added - should render entire vht list
@@ -127,8 +130,22 @@ export default function VHTReferralScreen() {
 
     // Handle adding new telephone number
     const handleAddTel = (newNumber: DropdownItem) => {
-        setAddedNumbers(prev => [...prev, newNumber])
+        // setAddedNumbers(prev => [...prev, newNumber])
         // TOOD validate input 
+         // Additional validation check before adding to state
+        const validation = validatePhoneNumber(newNumber.value);
+        if (validation.isValid) {
+            // Use formatted value if available
+            const formattedNumber = {
+                ...newNumber,
+                value: validation.formattedValue || newNumber.value
+            };
+            setAddedNumbers(prev => [...prev, formattedNumber]);
+            console.log('Added valid phone number:', formattedNumber.value);
+        } else {
+            console.error('Attempted to add invalid phone number:', newNumber.value);
+            // This shouldn't happen due to dropdown validation, but good to have as backup
+        }
     }
 
     // Handle village selection - check for cleared selection
@@ -249,6 +266,9 @@ export default function VHTReferralScreen() {
                                 onSelect={handleTelSelect}
                                 onAddItem={handleAddTel}
                                 value={selectedTelNumber?.value || ''}
+                                validator={validatePhoneNumber}
+                                formatter={(value) => formatPhoneNumber(value)}
+                                showError={true}
                             />
                         </View>
                     </View>

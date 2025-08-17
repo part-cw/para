@@ -2,6 +2,9 @@
 Functions to validate text input and convert entered text to proper form 
 */
 
+import { ValidationResult } from "../components/SearchableDropdown";
+
+
 // convert input to proper case: trim leading/trailing spaces, capitalize first letter of each word
 export function toProperCase(input: string): string {
   return input
@@ -91,5 +94,26 @@ export function isValidPhoneNumber(input: string): boolean {
     } else {
         return trimmedInput.startsWith("0")
     }
-
 }
+
+  // Phone number validator function - wraps existing utils with dropdown interface
+    export const validatePhoneNumber = (value: string): ValidationResult => {
+        const trimmed = value.trim();
+        
+        // Empty is okay since phone is optional
+        if (!trimmed) {
+            return { isValid: true };
+        }
+
+        if (!isValidPhoneNumber(trimmed)) {
+            return {
+                isValid: false,
+                errorMessage: 'Invalid phone number format. Use format: 0xxxxxxxxx (10 digits starting with 0) or +xxx... (international)'
+            };
+        }
+
+        return {
+            isValid: true,
+            formattedValue: formatPhoneNumber(trimmed)
+        };
+    };

@@ -19,6 +19,12 @@ export interface DropdownItem {
   value: string;
 }
 
+export interface ValidationResult {
+  isValid: boolean;
+  errorMessage?: string;
+  formattedValue?: string;
+}
+
 interface SearchableDropdownProps {
   data: DropdownItem[];
   placeholder?: string;
@@ -29,6 +35,9 @@ interface SearchableDropdownProps {
   maxHeight?: number;
   style?: ViewStyle;
   search?: boolean;
+  validator?: (value: string) => ValidationResult;
+  formatter?: (value: string) => string; // TODO - remove formatter?
+  showError?: boolean;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -41,12 +50,17 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   maxHeight = 200,
   style = {},
   search = true,
+  validator,
+  formatter,
+  showError = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [searchText, setSearchText] = useState(value);
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
+  const [validationError, setValidationError] = useState<string>('');
+  const [hasValidationError, setHasValidationError] = useState(false);
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
@@ -56,6 +70,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showFloatingLabel = isFocused || searchText.length > 0;
   const showClearIcon = (searchText.trim() !== '') 
  
+  // Validate input
+  const validateInput = (input: string): ValidationResult => {
+    if (validator) {
+      return validator(input);
+    }
+    return { isValid: true };
+  };
+
   const animateLabel = (toValue: number) => {
     Animated.timing(labelAnim, {
       toValue,
@@ -148,6 +170,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   // TODO add callback to all handlers??
   
   const handleTextChange = (text: string) => {
+    // Clear previous validation errors when user starts typing
+    if (hasValidationError) {
+      setHasValidationError(false);
+      setValidationError('');
+    }
+    
     // set trimmed text to '' and clear if empty string, othwerwise set to text
     if (!text.trim()) {
       setSearchText('')
@@ -165,9 +193,31 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   }
 
+  const handleBlur = () => {
+    // Validate on blur if validator exists and there's text
+    if (validator && searchText.trim()) {
+      const validation = validateInput(searchText.trim());
+      if (!validation.isValid) {
+        setHasValidationError(true);
+        setValidationError(validation.errorMessage || 'Invalid input');
+      } else {
+        setHasValidationError(false);
+        setValidationError('');
+        
+        // Apply formatting if formatter exists
+        if (formatter && validation.formattedValue) {
+          setSearchText(validation.formattedValue);
+          onSelect({ key: `formatted-${Date.now()}`, value: validation.formattedValue });
+        }
+      }
+    }
+  }
+
   const handleClear = () => {
     setSearchText('')
     setFilteredData(data)
+    setHasValidationError(false)
+    setValidationError('')
     onSelect({ key: '', value: '' }); // notify parent that the selection is cleared
     Keyboard.dismiss()
   }
@@ -177,9 +227,23 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       return
     }
 
+    const trimmedText = searchText.trim();
+
+    // Validate before adding if validator exists
+    if (validator) {
+      const validation = validateInput(trimmedText);
+      if (!validation.isValid) {
+        setHasValidationError(true);
+        setValidationError(validation.errorMessage || 'Invalid input');
+        return; // Don't add invalid item
+      }
+    }
+
+    const valueToAdd = formatter ? formatter(trimmedText) : trimmedText;
+
     const newItem: DropdownItem = {
       key: `new-${Date.now()}`, // TODO change to hash?
-      value: searchText.trim(),
+      value: valueToAdd,
     };
 
     onAddItem?.(newItem)
@@ -191,9 +255,22 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   const handleItemSelect = (item: DropdownItem) => {
     setSearchText(item.value)
+    setHasValidationError(false)
+    setValidationError('')
     onSelect(item)
     slideup()
-  }                   
+  } 
+  
+  // Determine border color based on validation state
+  const getBorderColor = () => {
+    if (hasValidationError) return '#d32f2f'; // Red for error
+    if (isFocused) return '#1976d2'; // Blue for focused
+    return '#c4c4c4'; // Default gray
+  };
+
+  const getBorderWidth = () => {
+    return (isFocused || hasValidationError) ? 2 : 1;
+  };
   
 
   return (
@@ -201,7 +278,14 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       {
         (isOpen && search)
         ?
-        <View style={[styles.inputContainer, styles.inputContainerOpen, isFocused && styles.inputContainerFocused,]}>
+        <View style={[
+          styles.inputContainer, 
+          styles.inputContainerOpen, 
+          { 
+            borderColor: getBorderColor(),
+            borderWidth: getBorderWidth()
+          }
+        ]}>
           {showFloatingLabel && (
             <Animated.Text
               style={[
@@ -215,7 +299,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                     inputRange: [0, 1],
                     outputRange: [16, 12],
                   }),
-                  color: isFocused ? '#1976d2' : '#666',
+                  color: hasValidationError ? '#d32f2f' : (isFocused ? '#1976d2' : '#666'),
                 },
               ]}>
                 {label}
@@ -228,6 +312,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               style={styles.textInput}
               placeholder={!showFloatingLabel ? label : placeholder}
               onChangeText={handleTextChange}
+              onBlur={handleBlur}
               value={searchText}>
             </TextInput>
             <View style={styles.iconContainer}>
@@ -253,7 +338,13 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
           </View>
         </View>
         :
-        <View style={[styles.inputContainer, isFocused && styles.inputContainerFocused]}>
+        <View style={[
+          styles.inputContainer, 
+          { 
+            borderColor: getBorderColor(),
+            borderWidth: getBorderWidth()
+          }
+        ]}>
           {showFloatingLabel && (
               <Animated.Text
                 style={[
@@ -267,7 +358,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                       inputRange: [0, 1],
                       outputRange: [16, 12],
                     }),
-                    color: isFocused ? '#1976d2' : '#666',
+                    color: hasValidationError ? '#d32f2f' : (isFocused ? '#1976d2' : '#666'),
                   },
                 ]}>
                   {label}
@@ -318,6 +409,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
         </View>
       }
+
+      {/* Error message */}
+      {hasValidationError && showError && (
+        <Text style={styles.errorText}>{validationError}</Text>
+      )}
       
       {
         isOpen
@@ -488,6 +584,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1976d2',
     fontWeight: '500',
+  },
+   errorText: {
+    color: '#d32f2f',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 12,
+    lineHeight: 16,
   },
 });
 

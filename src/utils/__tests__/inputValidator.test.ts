@@ -123,6 +123,7 @@ describe('isValidPhoneNumber', () => {
     expect(isValidPhoneNumber('01234567a')).toBe(false);
     expect(isValidPhoneNumber('1234-56789')).toBe(false);
     expect(isValidPhoneNumber('(123)456789')).toBe(false);
+    expect(isValidPhoneNumber('123456789/123456789')).toBe(false);
   });
 
   it('should return false for 9 digits (with or without leading 0)', () => {
