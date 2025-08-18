@@ -60,6 +60,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [searchText, setSearchText] = useState(value);
+  const [isSearching, setIsSearching] = useState(false)
   const [filteredData, setFilteredData] = useState(data);
   const [_firstRender,_setFirstRender] = useState<boolean>(true);
   const [validationError, setValidationError] = useState<string>('');
@@ -72,7 +73,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showAddNew = showNoResults && !data.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim()); // or use allData?
   const showFloatingLabel = isFocused || searchText.length > 0;
   const showClearIcon = (searchText.trim() !== '') 
- 
+  
   // Validate input
   const validateInput = (input: string): ValidationResult => {
     if (validator) {
@@ -112,6 +113,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }).start(() => {
       setIsOpen(false)
       setIsFocused(false)
+      setIsSearching(false)
     })
   }
 
@@ -164,15 +166,21 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       return;
     }
     
-    const filtered = data.filter((item: DropdownItem) =>
+    if (isSearching && trimmedText) {
+      const filtered = data.filter((item: DropdownItem) =>
         item.value.toLowerCase().includes(trimmedText.toLowerCase())
-    );
-    setFilteredData(filtered);
+      );
+
+      setFilteredData(filtered);
+    }
+  
   };
 
   // TODO add callback to all handlers??
   
   const handleTextChange = (text: string) => {
+    setIsSearching(true)
+
     // Clear previous validation errors when user starts typing
     if (hasValidationError) {
       setHasValidationError(false);
