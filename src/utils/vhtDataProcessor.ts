@@ -1,6 +1,7 @@
 // parses VHT JSON files based on district
 
 import { DropdownItem } from "../components/SearchableDropdown";
+import { formatPhoneNumber, toProperCase } from "./inputValidator";
 
 export interface VhtDataObject {
   DISTRICT: string;
@@ -29,7 +30,7 @@ export function getVillageDropdownItems(data: VhtDataObject[]): DropdownItem[] {
 
     const villageDropdownItems = sortedVillages.map((village, index) => ({
         key: `${index}`,
-        value: village
+        value: toProperCase(village)
     }))
 
     return villageDropdownItems;
@@ -45,7 +46,7 @@ export function getVhtDropdownItems(data: VhtDataObject[]): DropdownItem[] {
 
     const vhtDropdownItems = sortedVHTs.map((name, index) => ({
         key: `${index}`,
-        value: name
+        value: toProperCase(name)
     }))
 
     return vhtDropdownItems
@@ -57,7 +58,7 @@ export function getTelephoneDropdownItems(data: VhtDataObject[]): DropdownItem[]
     data.forEach(obj => telSet.add(obj["TELEPHONE NUMBER"].toString()))
 
     const telDropdownItems = Array.from(telSet).map((tel, index) => (
-        {key: `${index}`, value: tel}
+        {key: `${index}`, value: formatPhoneNumber(tel)}
     ))
     
     return telDropdownItems;
@@ -76,11 +77,9 @@ export function filterVHTs(
 
     const filteredVhts = new Set<string>()
 
-    console.log('filtering VHTs...', village, telephone)
-
     data.forEach(obj => {
         const matchesVillage = !village || normalize(obj.VILLAGE) === village;
-        const matchesTelephone = !telephone || obj["TELEPHONE NUMBER"].toString() === telephone;
+        const matchesTelephone = !telephone || formatPhoneNumber(obj["TELEPHONE NUMBER"].toString()) === telephone;
 
         if (matchesVillage && matchesTelephone) {
         filteredVhts.add(obj.NAME.trim());
@@ -90,7 +89,7 @@ export function filterVHTs(
     return (
         Array.from(filteredVhts).map((name, index) => ({
             key: `${index}`,
-            value: name,
+            value: toProperCase(name),
         }))
     );
 }
@@ -109,7 +108,7 @@ export function filterVillages(
 
     data.forEach(obj => {
         const matchesVht = !vht || normalize(obj.NAME) === vht;
-        const matchesTelephone = !telephone || obj["TELEPHONE NUMBER"].toString() === telephone;
+        const matchesTelephone = !telephone || formatPhoneNumber(obj["TELEPHONE NUMBER"].toString()) === telephone;
 
         if (matchesVht && matchesTelephone) {
         filteredVillages.add(normalize(obj.VILLAGE));
@@ -119,7 +118,7 @@ export function filterVillages(
     return (
         Array.from(filteredVillages).map((village, index) => ({
             key: `${index}`,
-            value: village,
+            value: toProperCase(village),
         }))
     );
 }
@@ -149,7 +148,7 @@ export function filterTelephoneNumbers(
     return (
         Array.from(filteredNumberSet).map((tel, index) => ({
             key: `${index}`,
-            value: tel,
+            value: formatPhoneNumber(tel),
         }))
     );
 }
