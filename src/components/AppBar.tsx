@@ -2,6 +2,7 @@ import { router, usePathname } from 'expo-router';
 import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { Appbar, Button, Menu, Text, useTheme } from 'react-native-paper';
+import { ACTIVE_SITE, CURRENT_USER, DEVICE_ID_KEY } from '../config';
 
 export default function AppBar() {
   const { colors } = useTheme();
@@ -40,8 +41,8 @@ export default function AppBar() {
       {/* RIGHT SIDE: User info with dropdown */}
       {/* TODO make username + position update depending on who logged in */}
       <View style={{ flexDirection: 'column', flex: 1, alignItems: 'flex-end' }}>
-        <Text style={{ color: colors.onPrimary, fontSize: 20, fontWeight: 'bold' }}>Emmet</Text> 
-        <Text style={{ color: colors.onPrimary, fontSize: 16 }}>Clinician</Text>
+        <Text style={{ color: colors.onPrimary, fontSize: 20, fontWeight: 'bold' }}>{CURRENT_USER}</Text> 
+        <Text style={{ color: colors.onPrimary, fontSize: 16 }}>{ACTIVE_SITE} - Device {DEVICE_ID_KEY}</Text>
       </View>
 
       <Menu
