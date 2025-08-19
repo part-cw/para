@@ -19,10 +19,10 @@ export class PatientIdGenerator {
     try {
       const site = ACTIVE_SITE
       const patientNumber = await this.getNextPatientNumber();
-
-      const patientId = `${site}-${this.deviceId}-${patientNumber.toString().padStart(4, '0')}`;
       
+      const patientId = `${site}-${this.deviceId}-${patientNumber.toString().padStart(4, '0')}`;
       console.log(`Generated patient ID: ${patientId}`);
+      
       return patientId;
     } catch (error) {
       console.error('Failed to generate patient ID:', error);
@@ -44,6 +44,7 @@ export class PatientIdGenerator {
         counter = stored ? parseInt(stored, 10) : 0;
       } else {
         const stored = await SecureStore.getItemAsync(storageKey);
+        console.log('getNextPatientNumber stored', stored)
         counter = stored ? parseInt(stored, 10) : 0;
       }
 
@@ -69,11 +70,10 @@ export class PatientIdGenerator {
      * Generate a preview ID without incrementing the counter
      */ 
     static async getPreviewPatientId(): Promise<string> {
-        if (!this.previewId) {
-        const counter = await this.peekNextPatientNumber(); // does NOT increment
+        const counter = await this.peekNextPatientNumber();
         const site = ACTIVE_SITE;
         this.previewId = `${site}-${this.deviceId}-${counter.toString().padStart(4, '0')}`;
-        }
+
         return this.previewId;
     }
 
@@ -119,113 +119,3 @@ export class PatientIdGenerator {
   }
 
 }
-
-    /**
-   * Parse patient ID to extract components
-   */
-//   static parsePatientId(patientId: string): {
-//     district: string;
-//     deviceId: string;
-//     date: string;
-//     patientNumber: number;
-//     isValid: boolean;
-//   } {
-//     const regex = /^([A-Z]{3})-([D]\d{3})-(\d{8})-(\d{4})$/;
-//     const match = patientId.match(regex);
-
-//     if (match) {
-//       return {
-//         district: match[1],
-//         deviceId: match[2],
-//         date: match[3],
-//         patientNumber: parseInt(match[4], 10),
-//         isValid: true
-//       };
-//     }
-
-//     return {
-//       district: '',
-//       deviceId: '',
-//       date: '',
-//       patientNumber: 0,
-//       isValid: false
-//     };
-//   }
-
-//   /**
-//    * Validate a patient ID format
-//    */
-//   static validatePatientId(patientId: string): boolean {
-//     const parsed = this.parsePatientId(patientId);
-//     return parsed.isValid;
-//   }
-
-//   /**
-//    * Get district from patient ID
-//    */
-//   static getDistrictFromPatientId(patientId: string): string {
-//     const parsed = this.parsePatientId(patientId);
-//     return parsed.isValid ? parsed.district : '';
-//   }
-
-//   /**
-//    * Check if patient ID belongs to current district
-//    */
-//   static isFromCurrentDistrict(patientId: string): boolean {
-//     const expectedDistrictCode = DISTRICT_CODES[ACTIVE_DISTRICT] || ACTIVE_DISTRICT.toUpperCase().slice(0, 3);
-//     const patientDistrictCode = this.getDistrictFromPatientId(patientId);
-//     return patientDistrictCode === expectedDistrictCode;
-//   }
-
-
-
-
-// hooks/usePatientId.ts
-// import { useState, useCallback, useEffect } from 'react';
-
-// export const usePatientId = () => {
-//   const [currentPatientId, setCurrentPatientId] = useState<string>('');
-//   const [isGenerating, setIsGenerating] = useState(false);
-//   const [stats, setStats] = useState<any>(null);
-
-//   // Generate new patient ID
-//   const generateNewPatientId = useCallback(async (): Promise<string> => {
-//     setIsGenerating(true);
-//     try {
-//       const newId = await PatientIdGenerator.generatePatientId();
-//       setCurrentPatientId(newId);
-//       return newId;
-//     } catch (error) {
-//       console.error('Failed to generate patient ID:', error);
-//       throw error;
-//     } finally {
-//       setIsGenerating(false);
-//     }
-//   }, []);
-
-//   // Load stats
-//   const loadStats = useCallback(async () => {
-//     try {
-//       const currentStats = await PatientIdGenerator.getPatientIdStats();
-//       setStats(currentStats);
-//     } catch (error) {
-//       console.error('Failed to load patient ID stats:', error);
-//     }
-//   }, []);
-
-//   // Load stats on mount
-//   useEffect(() => {
-//     loadStats();
-//   }, [loadStats]);
-
-//   return {
-//     currentPatientId,
-//     generateNewPatientId,
-//     isGenerating,
-//     stats,
-//     loadStats,
-//     validatePatientId: PatientIdGenerator.validatePatientId,
-//     parsePatientId: PatientIdGenerator.parsePatientId,
-//     isFromCurrentDistrict: PatientIdGenerator.isFromCurrentDistrict
-//   };
-// };
