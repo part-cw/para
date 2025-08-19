@@ -74,6 +74,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showFloatingLabel = isFocused || searchText.length > 0;
   const showClearIcon = (searchText.trim() !== '') 
   
+  // TODO - show input error when close dropdown and invalid entry -- make sure searchText is not set
+  // currently it only shows error message if click ok from keyboard or 'add'
+  
   // Validate input
   const validateInput = (input: string): ValidationResult => {
     if (validator) {
