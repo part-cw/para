@@ -17,12 +17,12 @@ export default function PatientInformationScreen() {
     const [sex, setSex] = useState<string>('');
     const [isUnderSixMonths, setIsUnderSixMonths] = useState(false);
     const [isDOBUnknown, setIsDOBUnknown] = useState(false);
-    const [patientId, setPatientId] = useState<string>('');
+    const [previewPatientId, setPreviewPatientId] = useState<string>('');
 
     useEffect(() => {
         const fetchId = async () => {
-        const id = await PatientIdGenerator.generatePatientId();
-        setPatientId(id);
+        const id = await PatientIdGenerator.getPreviewPatientId();
+        setPreviewPatientId(id);
         };
         fetchId();
     }, []);
@@ -32,7 +32,7 @@ export default function PatientInformationScreen() {
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 {/* Patient ID Section */}
                 <Text style={Styles.sectionHeader}>Patient ID</Text>
-                <TextInput mode="flat" value={patientId} disabled />
+                <TextInput mode="flat" value={previewPatientId} disabled />
 
                 {/* Patient Name Section */}
                 <Text style={Styles.sectionHeader}>Patient Name <Text style={Styles.required}>*</Text></Text>
