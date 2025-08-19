@@ -2,8 +2,9 @@ import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInput } from 'react-native-paper';
@@ -16,14 +17,22 @@ export default function PatientInformationScreen() {
     const [sex, setSex] = useState<string>('');
     const [isUnderSixMonths, setIsUnderSixMonths] = useState(false);
     const [isDOBUnknown, setIsDOBUnknown] = useState(false);
+    const [previewPatientId, setPreviewPatientId] = useState<string>('');
+
+    useEffect(() => {
+        const fetchId = async () => {
+        const id = await PatientIdGenerator.getPreviewPatientId();
+        setPreviewPatientId(id);
+        };
+        fetchId();
+    }, []);
   
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 {/* Patient ID Section */}
-                {/* TODO - implement setID function */}
                 <Text style={Styles.sectionHeader}>Patient ID</Text>
-                <TextInput mode="flat" value="<<auto-filled by setID function>>" disabled />
+                <TextInput mode="flat" value={previewPatientId} disabled />
 
                 {/* Patient Name Section */}
                 <Text style={Styles.sectionHeader}>Patient Name <Text style={Styles.required}>*</Text></Text>

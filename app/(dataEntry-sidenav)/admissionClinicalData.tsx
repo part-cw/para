@@ -7,7 +7,6 @@ import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
-// import { Dropdown } from "react-native-paper-dropdown";
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
