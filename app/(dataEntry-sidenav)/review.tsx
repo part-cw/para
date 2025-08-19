@@ -9,7 +9,6 @@ export default function ReviewScreen() {
 
     const handleSubmit = async () => {
         const finalPID = await PatientIdGenerator.generatePatientId()
-        console.log('final patientId', finalPID)
         router.push('/') // TODO - reroute to prediction screen, not home
 
     }

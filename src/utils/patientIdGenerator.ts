@@ -22,7 +22,7 @@ export class PatientIdGenerator {
       
       const patientId = `${site}-${this.deviceId}-${patientNumber.toString().padStart(4, '0')}`;
       console.log(`Generated patient ID: ${patientId}`);
-      
+
       return patientId;
     } catch (error) {
       console.error('Failed to generate patient ID:', error);
@@ -44,7 +44,6 @@ export class PatientIdGenerator {
         counter = stored ? parseInt(stored, 10) : 0;
       } else {
         const stored = await SecureStore.getItemAsync(storageKey);
-        console.log('getNextPatientNumber stored', stored)
         counter = stored ? parseInt(stored, 10) : 0;
       }
 
