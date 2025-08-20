@@ -18,6 +18,7 @@ export default function PatientInformationScreen() {
     const [sex, setSex] = useState<string>('');
     const [isUnderSixMonths, setIsUnderSixMonths] = useState(false);
     const [isDOBUnknown, setIsDOBUnknown] = useState(false);
+    const [isYearMonthUnknown, setIsYearMonthUnknown] = useState(false);
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [surname, setSurname] = useState<string>('');
 
@@ -77,9 +78,32 @@ export default function PatientInformationScreen() {
                           checked={isUnderSixMonths} 
                           onChange={() => {setIsUnderSixMonths((prev) => !prev)}}/>
                 <Checkbox label={'Exact date of birth (DOB) unknown'} 
-                          checked={isDOBUnknown} 
-                          onChange={() => {setIsDOBUnknown((prev) => !prev)}}/>
-                <TextInput label="Date of Birth (YYYY/MM/DD)" mode="flat" style={Styles.textInput} />
+                        checked={isDOBUnknown} 
+                        onChange={() => {setIsDOBUnknown((prev) => !prev)}}/>  
+                {
+                    !isDOBUnknown
+                    ?
+                    <TextInput label="Date of Birth (YYYY/MM/DD)" mode="flat" style={[Styles.textInput, {marginTop: 10}]} />
+                    :
+                    <>
+                        <Checkbox label={'Birth year and month unknown'} 
+                                checked={isYearMonthUnknown} 
+                                onChange={() => {setIsYearMonthUnknown((prev) => !prev)}}/>  
+                        {
+                            !isYearMonthUnknown
+                            ?
+                            <>
+                                <TextInput label="Birth Year" mode="flat" style={[Styles.textInput, {marginTop: 10}]} keyboardType='number-pad'/>
+                                <TextInput label="Birth Month" mode="flat" style={[Styles.textInput]} />
+                            </>
+                            :
+                            <TextInput label="Approximate Age (in years)" mode="flat" style={[Styles.textInput, {marginTop: 10}]} keyboardType='number-pad'/>
+                        }
+                        
+                    </>
+
+                }
+                        
                 
             </ScrollView>
             
