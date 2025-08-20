@@ -3,6 +3,7 @@ import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { ageErrorMessage, isValidAge } from '@/src/utils/inputValidator';
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -12,7 +13,8 @@ import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// // TODO - implement functionality for event handlers!
+// TODO - add age validation for DOB and birth year/month!
+// TODO - find good date picker for DOB
 
 export default function PatientInformationScreen() {
     const [sex, setSex] = useState<string>('');
@@ -90,6 +92,7 @@ export default function PatientInformationScreen() {
                 {
                     !isDOBUnknown
                     ?
+                    // TODO - replace TextInput with DatePicker
                     <TextInput label="Date of Birth (YYYY/MM/DD)" mode="flat" style={[Styles.textInput, {marginTop: 10}]} />
                     :
                     <>
@@ -100,16 +103,21 @@ export default function PatientInformationScreen() {
                             !isYearMonthUnknown
                             ?
                             <>
+                                {/* TODO - replace TextInput with ValidatedTextInput */}
                                 <TextInput label="Birth Year" mode="flat" style={[Styles.textInput, {marginTop: 10}]} keyboardType='number-pad'/>
                                 <TextInput label="Birth Month" mode="flat" style={[Styles.textInput]} />
                             </>
                             :
-                            <TextInput 
+                            <ValidatedTextInput 
                                 label="Approximate Age (in years)" 
-                                mode="flat" 
-                                style={[Styles.textInput, {marginTop: 10}]} 
-                                keyboardType='number-pad'
-                                right={<TextInput.Affix text="years old" />}/>
+                                value={approxAge}
+                                onChangeText={setApproxAge}
+                                inputType={INPUT_TYPES.NUMERIC}
+                                customValidator={() => isValidAge(approxAge)}
+                                customErrorMessage={ageErrorMessage}
+                                isRequired={true}
+                                right={<TextInput.Affix text="years old" />}
+                            />
                         }
                         
                     </>

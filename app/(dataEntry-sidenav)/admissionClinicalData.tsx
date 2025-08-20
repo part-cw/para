@@ -1,6 +1,7 @@
 import PaginationControls from '@/src/components/PaginationControls';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
+import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -18,6 +19,12 @@ export default function AdmissionClinicalDataScreen() {
     const handlePress = () => setExpanded(!expanded);
 
     const [hivStatus, setHivStatus] = useState<string>('');
+    const [weight, setWeight] = useState<string>('');
+    const [muac, setMUAC] = useState<string>('')
+    const [temperature, setTemperature] = useState<string>('')
+    const [rrate, setRRate] = useState<string>('')
+    const [spo2, setSpO2] = useState<string>('')
+    const [heartRate, setHeartRate] = useState<string>('')
 
     const [lastHospitalized, setLastHospitalized] = useState<DropdownItem | null>(null);
     const hospitalizationOptions = [
@@ -92,20 +99,25 @@ export default function AdmissionClinicalDataScreen() {
                         titleStyle={Styles.accordionListTitle}
                         left={props => <List.Icon {...props} icon="heart-pulse" />}>
                             <View style={Styles.accordionContentWrapper}>
-                                <TextInput 
-                                    label="Weight (required)"
-                                    mode="flat"
-                                    keyboardType="numeric"
-                                    style={Styles.accordionTextInput} 
-                                    right={<TextInput.Affix text="kg" />}
+                                {/* TODO - add custom validator and custom messge for each of the inputs */}
+                                <ValidatedTextInput 
+                                    label={'Weight (required)'}
+                                    value={weight} 
+                                    onChangeText={setWeight}
+                                    inputType={INPUT_TYPES.NUMERIC}
+                                    isRequired={true} 
+                                    right={<TextInput.Affix text="kg" />}                             
                                 />
                                 <View style={{flexDirection:'row', alignItems: 'center'}}>
-                                     <TextInput 
-                                        label="MUAC (required)"
-                                        mode="flat"
-                                        keyboardType="numeric" 
-                                        style={[Styles.accordionTextInput, { flex: 1 }]} 
-                                        right={<TextInput.Affix text="mm" />}/>
+                                    <ValidatedTextInput 
+                                        label={'MUAC (required)'}
+                                        value={muac} 
+                                        onChangeText={setMUAC}
+                                        inputType={INPUT_TYPES.NUMERIC}
+                                        isRequired={true} 
+                                        style={[Styles.accordionTextInput, { flex: 1 }]}
+                                        right={<TextInput.Affix text="mm" />}                             
+                                    />
                                     <IconButton
                                         icon="help-circle-outline"
                                         size={20}
@@ -117,12 +129,13 @@ export default function AdmissionClinicalDataScreen() {
                                         }}
                                     />
                                 </View>
-                                <TextInput
-                                    label="Temperature (required)" 
-                                    mode="flat" 
-                                    keyboardType="numeric"
-                                    style={Styles.accordionTextInput}
-                                    right={<TextInput.Affix text="°C" />}
+                                <ValidatedTextInput 
+                                    label={'Temperature (required)'}
+                                    value={temperature} 
+                                    onChangeText={setTemperature}
+                                    inputType={INPUT_TYPES.NUMERIC}
+                                    isRequired={true} 
+                                    right={<TextInput.Affix text="°C" />}                             
                                 />
 
                                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -139,12 +152,13 @@ export default function AdmissionClinicalDataScreen() {
                                     />
                                 </View>
                                
-                                <TextInput
-                                    label="Breaths per minute (required)"
-                                    mode="flat" 
-                                    keyboardType="numeric"
-                                    style={Styles.accordionTextInput}
-                                    right={<TextInput.Affix text="bpm" />}
+                                <ValidatedTextInput 
+                                    label={'Breaths per minute (required)'}
+                                    value={rrate} 
+                                    onChangeText={setRRate}
+                                    inputType={INPUT_TYPES.NUMERIC}
+                                    isRequired={true} 
+                                    right={<TextInput.Affix text="bpm" />}                             
                                 />
                                 <Button style={{ alignSelf: 'center'}}
                                         buttonColor={colors.primary} 
@@ -155,19 +169,20 @@ export default function AdmissionClinicalDataScreen() {
                                 </Button>
 
                                 <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
-                                <TextInput
-                                    label="SpO2 (required)"
-                                    mode="flat" 
-                                    keyboardType="numeric"
-                                    style={Styles.accordionTextInput}
-                                    right={<TextInput.Affix text="%" />}
+                                <ValidatedTextInput 
+                                    label={'SpO2 (required)'}
+                                    value={spo2} 
+                                    onChangeText={setSpO2}
+                                    inputType={INPUT_TYPES.NUMERIC}
+                                    isRequired={true} 
+                                    right={<TextInput.Affix text="%" />}                             
                                 />
-                                <TextInput
+                                <ValidatedTextInput
                                     label="Heart rate (required)"
-                                    placeholder='Beats per minute' 
-                                    mode="flat" 
-                                    keyboardType="numeric"
-                                    style={Styles.accordionTextInput}
+                                    placeholder='Beats per minute'
+                                    value={heartRate}
+                                    onChangeText={setHeartRate} 
+                                    inputType={INPUT_TYPES.NUMERIC}
                                     right={<TextInput.Affix text="bpm" />}
                                 />
                             </View>

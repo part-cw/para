@@ -4,7 +4,7 @@ Functions to validate text input and convert entered text to proper form
 
 import { ValidationResult } from "../components/SearchableDropdown";
 
-
+// TODO - add input validation for weight, muac, temp, rrate, spo2
 
 /** 
 * convert input to proper case: trim leading/trailing spaces, capitalize first letter of each word 
@@ -133,7 +133,10 @@ export function isValidPhoneNumber(input: string): boolean {
         };
     };
 
-    // Age-specific validation (positive integers only)
+    /**
+     * Age-specific validation (positive integers only) - must be 0-5 years old
+     * TODO - fix validation!
+     */
     export function isValidAge(input: string): boolean {
         if (!input || !input.trim()) {
             return false;
@@ -186,7 +189,7 @@ export function isValidPhoneNumber(input: string): boolean {
     }
 
 
-    export const textErrorMessage:string = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
+    export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";
     export const ageErrorMessage = "Must be a valid age (0-5 years)";
 
