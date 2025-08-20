@@ -47,7 +47,6 @@ export default function PatientInformationScreen() {
         { value: 'December', key: 'Dec'},
     ]
 
-
     useEffect(() => {
         const fetchId = async () => {
         const id = await PatientIdGenerator.getPreviewPatientId();
@@ -104,12 +103,21 @@ export default function PatientInformationScreen() {
                           onChange={() => {setIsUnderSixMonths((prev) => !prev)}}/>
                 <Checkbox label={'Exact date of birth (DOB) unknown'} 
                         checked={isDOBUnknown} 
-                        onChange={() => {setIsDOBUnknown((prev) => !prev)}}/>  
+                        onChange={() => {
+                            setIsDOBUnknown(prev => {
+                                const newValue = !prev;
+                                if (!newValue) {
+                                    setIsYearMonthUnknown(false); // reset when DOB is known
+                                }
+                                return newValue;
+                            });
+                        }}
+                />  
                 {
                     !isDOBUnknown
                     ?
                     // TODO - replace TextInput with DatePicker
-                    <TextInput label="Date of Birth (YYYY/MM/DD)" mode="flat" style={[Styles.textInput, {marginTop: 10}]} />
+                    <TextInput label="Date of Birth" placeholder='YYYY/MM/DD' mode="flat" style={[Styles.textInput, {marginTop: 10}]} />
                     :
                     <>
                         <Checkbox label={'Birth year and month unknown'} 
@@ -137,7 +145,7 @@ export default function PatientInformationScreen() {
                                     onSelect={setBirthMonth}
                                     value={birthMonth?.value}
                                     search={true}
-                                    style={{marginTop: 20}}
+                                    style={{marginTop: 10}}
                                 />
                                 
                             </>

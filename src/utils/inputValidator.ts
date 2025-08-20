@@ -143,7 +143,7 @@ export function isValidPhoneNumber(input: string): boolean {
         }
 
         const trimmed = input.trim();
-        const ageRegex = /^(\d+(\.\d+)?|\.\d+)$/; // Only positive integers
+        const ageRegex = /^(\d+(\.\d+)?|\.\d+)$/; // Only positive numbers - allow decimals
         
         if (!ageRegex.test(trimmed)) {
             return false;
@@ -191,7 +191,7 @@ export function isValidPhoneNumber(input: string): boolean {
 
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";
-    export const ageErrorMessage = "Children over 5.5 years are not eligible for this program";
+    export const ageErrorMessage = "Age must be between 0 and 5.5 years. Older children are not eligible for this program";
     export const telephoneErrorMessage = 'Invalid phone number format. Use format: 0xxxxxxxxx (10 digits starting with 0) or +xxx... (international)';
     export const confirmPhoneErrorMessage = 'Phone number must match and be in valid format'
     export const dateErrorMessage = 'Date must be in format YYYYMMDD'

@@ -10,7 +10,7 @@ import {
   textErrorMessage,
 } from '@/src/utils/inputValidator';
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleProp, Text, View, ViewStyle } from 'react-native';
 import { TextInput, TextInputProps } from 'react-native-paper';
 
 const INPUT_TYPES = {
@@ -31,6 +31,7 @@ interface ValidatedInputProps extends Omit<TextInputProps, 'value' | 'onChangeTe
   customErrorMessage?: string;
   minValue?: number | null;
   maxValue?: number | null;
+  showErrorOnTyping?: boolean;
 }
 
 const ValidatedTextInput: React.FC<ValidatedInputProps> = ({ 
@@ -43,6 +44,8 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   customErrorMessage = '',
   minValue = null,
   maxValue = null,
+  showErrorOnTyping = false,
+  style,
   ...props 
 }) => {
   const [hasBlurred, setHasBlurred] = useState(false);
@@ -88,7 +91,27 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   const { validator, formatter, errorMessage } = getValidatorAndFormatter();
   
   const isValid = validator(value);
-  const shouldShowError = hasBlurred && !isValid && (isRequired || value.length > 0);
+  // const shouldShowError = hasBlurred && !isValid && (isRequired || value.length > 0);
+
+  // Flexible error display logic
+  const shouldShowError = (() => {
+    // Never show error for empty optional fields
+    if (!isRequired && !value.length) {
+      return false;
+    }
+    
+    // For required fields, only show error after blur or if there's invalid content
+    if (isRequired) {
+      return (hasBlurred && !isValid) || (value.length > 0 && !isValid && showErrorOnTyping);
+    }
+    
+    // For optional fields with content, show error based on showErrorOnTyping setting
+    if (value.length > 0) {
+      return showErrorOnTyping ? !isValid : (hasBlurred && !isValid);
+    }
+    
+    return false;
+  })();
 
   const handleBlur = () => {
     setHasBlurred(true);
@@ -122,7 +145,7 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   };
 
   return (
-    <View style={{flex: 1}}>
+    <View style={style as StyleProp<ViewStyle>}>
       <TextInput
         label={label}
         mode="flat"
