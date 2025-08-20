@@ -4,7 +4,6 @@ Functions to validate text input and convert entered text to proper form
 
 import { ValidationResult } from "../components/SearchableDropdown";
 
-export const textErrorMessage:string = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
 
 
 /** 
@@ -133,3 +132,61 @@ export function isValidPhoneNumber(input: string): boolean {
             formattedValue: formatPhoneNumber(trimmed)
         };
     };
+
+    // Age-specific validation (positive integers only)
+    export function isValidAge(input: string): boolean {
+        if (!input || !input.trim()) {
+            return false;
+        }
+
+        const trimmed = input.trim();
+        const ageRegex = /^\d+$/; // Only positive integers
+        
+        if (!ageRegex.test(trimmed)) {
+            return false;
+        }
+
+        const age = parseInt(trimmed);
+        return age >= 0 && age <= 5; // TODO - change to 5.5 max?
+    }
+
+    // Numeric validation
+    export function isValidNumericFormat(input: string, minValue: number | null = null, maxValue: number | null = null): boolean {
+        console.log('validating numeric input...', input);
+        
+        if (!input || !input.trim()) {
+            return false;
+        }
+
+        const trimmed = input.trim();
+        
+        // Check if it's a valid number
+        const numericRegex = /^-?\d+(\.\d+)?$/;
+        if (!numericRegex.test(trimmed)) {
+            return false;
+        }
+
+        const numValue = parseFloat(trimmed);
+        
+        // Check if it's a valid number (not NaN)
+        if (isNaN(numValue)) {
+            return false;
+        }
+
+        // Check min/max constraints
+        if (minValue !== null && numValue < minValue) {
+            return false;
+        }
+        
+        if (maxValue !== null && numValue > maxValue) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    export const textErrorMessage:string = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
+    export const numericErrorMessage = "Must be a valid number";
+    export const ageErrorMessage = "Must be a valid age (0-5 years)";
+

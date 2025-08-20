@@ -2,7 +2,9 @@
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import {
     formatText,
+    isValidNumericFormat,
     isValidTextFormat,
+    numericErrorMessage,
     textErrorMessage,
 } from '@/src/utils/inputValidator';
 import React, { useState } from 'react';
@@ -54,12 +56,12 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
     }
 
     switch (inputType) {
-    //   case INPUT_TYPES.NUMERIC:
-    //     return {
-    //       validator: (val) => isValidNumericFormat(val, minValue, maxValue),
-    //       formatter: (val) => val.replace(/[^0-9.-]/g, ''), // Keep only numbers, dots, and dashes
-    //       errorMessage: numericErrorMessage
-    //     };
+      case INPUT_TYPES.NUMERIC:
+        return {
+          validator: (val: string) => isValidNumericFormat(val, minValue, maxValue),
+          formatter: (val: string) => val.replace(/[^0-9.-]/g, ''), // Keep only numbers, dots, and dashes
+          errorMessage: numericErrorMessage
+        };
       case INPUT_TYPES.TEXT:
       default:
         return {

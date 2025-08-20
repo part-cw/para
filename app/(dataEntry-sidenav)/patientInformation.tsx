@@ -24,6 +24,10 @@ export default function PatientInformationScreen() {
     const [surname, setSurname] = useState<string>('');
     const [firstName, setFirstName] = useState<string>('');
     const [otherName, setOtherName] = useState<string>('');
+    const [dob, setDOB] = useState<string>('');
+    const [birthYear, setBirthYear] = useState<string>('');
+    const [birthMonth, setBirthMonth] = useState<string>('');
+    const [approxAge, setApproxAge] = useState<string>('');
 
 
     useEffect(() => {
