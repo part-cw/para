@@ -1,7 +1,7 @@
 // parses VHT JSON files based on district
 
 import { DropdownItem } from "../components/SearchableDropdown";
-import { formatPhoneNumber, toProperCase } from "./inputValidator";
+import { formatPhoneNumber, formatText } from "./inputValidator";
 
 export interface VhtDataObject {
   DISTRICT: string;
@@ -30,7 +30,7 @@ export function getVillageDropdownItems(data: VhtDataObject[]): DropdownItem[] {
 
     const villageDropdownItems = sortedVillages.map((village, index) => ({
         key: `${index}`,
-        value: toProperCase(village)
+        value: formatText(village)
     }))
 
     return villageDropdownItems;
@@ -46,7 +46,7 @@ export function getVhtDropdownItems(data: VhtDataObject[]): DropdownItem[] {
 
     const vhtDropdownItems = sortedVHTs.map((name, index) => ({
         key: `${index}`,
-        value: toProperCase(name)
+        value: formatText(name)
     }))
 
     return vhtDropdownItems
@@ -89,7 +89,7 @@ export function filterVHTs(
     return (
         Array.from(filteredVhts).map((name, index) => ({
             key: `${index}`,
-            value: toProperCase(name),
+            value: formatText(name),
         }))
     );
 }
@@ -118,7 +118,7 @@ export function filterVillages(
     return (
         Array.from(filteredVillages).map((village, index) => ({
             key: `${index}`,
-            value: toProperCase(village),
+            value: formatText(village),
         }))
     );
 }

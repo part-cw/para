@@ -2,6 +2,7 @@ import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { formatText, isValidTextFormat, textErrorMessage } from '@/src/utils/inputValidator';
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -18,6 +19,7 @@ export default function PatientInformationScreen() {
     const [isUnderSixMonths, setIsUnderSixMonths] = useState(false);
     const [isDOBUnknown, setIsDOBUnknown] = useState(false);
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
+    const [surname, setSurname] = useState<string>('');
 
     useEffect(() => {
         const fetchId = async () => {
@@ -26,7 +28,7 @@ export default function PatientInformationScreen() {
         };
         fetchId();
     }, []);
-  
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -36,7 +38,26 @@ export default function PatientInformationScreen() {
 
                 {/* Patient Name Section */}
                 <Text style={Styles.sectionHeader}>Patient Name <Text style={Styles.required}>*</Text></Text>
-                <TextInput label="Surname (required)" mode="flat" style={Styles.textInput} />
+                <TextInput 
+                    label="Surname (required)" 
+                    mode="flat" 
+                    style={Styles.textInput}
+                    value = {surname}
+                    onChangeText={(text) => {
+                        setSurname(text);
+                    }}
+                    onBlur={() => {
+                        setSurname(formatText(surname))
+                    }}
+                    error={ !isValidTextFormat(surname)}
+                />
+                {
+                    !isValidTextFormat(surname)
+                    ? 
+                    <Text style={Styles.errorText}>{textErrorMessage}</Text>
+                    :
+                    null
+                }
                 <TextInput label="First Name (required)" mode="flat" style={Styles.textInput} />
                 <TextInput label="Other Name (optional)" mode="flat" style={Styles.textInput} />
 

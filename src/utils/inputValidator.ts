@@ -4,9 +4,16 @@ Functions to validate text input and convert entered text to proper form
 
 import { ValidationResult } from "../components/SearchableDropdown";
 
+export const textErrorMessage:string = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
 
-// convert input to proper case: trim leading/trailing spaces, capitalize first letter of each word
-export function toProperCase(input: string): string {
+
+/** 
+* convert input to proper case: trim leading/trailing spaces, capitalize first letter of each word 
+*/
+export function formatText(input: string): string {
+  if (input.trim().length < 2) {
+    return ''
+  }
   return input
     .trim()
     .replace(/\s+/g, " ") // replace multiple spaces with single space
@@ -19,10 +26,19 @@ export function toProperCase(input: string): string {
     .join(" ");
 }
 
-// Determines if text input has proper case
-// TODO - remove?
-export function isProperCase(input: string): boolean {
-   return (input === toProperCase(input) ? true : false)
+/**
+ *  Determines if text input is valid. 
+ *  Must contain only allow letters, spaces, hyphen, exclamation marks, or apostrophe, and be 2 or more characters
+ */ 
+export function isValidTextFormat(input: string): boolean {
+    console.log('validating input...', input)
+    if (!input) return true;
+    if (!input.trim()) return false;
+
+    const trimmed = input.trim();
+    const regex = /^[A-Za-z\s'!-]+$/;
+
+  return trimmed.length >= 2 && regex.test(trimmed);
 }
 
 /**

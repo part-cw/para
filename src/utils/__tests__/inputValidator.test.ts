@@ -1,38 +1,38 @@
-import { formatPhoneNumber, isProperCase, isValidPhoneNumber, toProperCase } from "../inputValidator";
+import { formatPhoneNumber, formatText, isValidPhoneNumber, isValidTextFormat } from "../inputValidator";
 
 describe('toProperCase', () => {
   it('trims spaces and capitalizes words', () => {
-    expect(toProperCase('  hello world  ')).toBe('Hello World');
+    expect(formatText('  hello world  ')).toBe('Hello World');
   });
 
   it('collapses multiple spaces', () => {
-    expect(toProperCase('hello  world')).toBe('Hello World');
+    expect(formatText('hello  world')).toBe('Hello World');
   });
 
   it('handles empty string', () => {
-    expect(toProperCase('')).toBe('');
+    expect(formatText('')).toBe('');
   });
 
   it('handles uppercase letters in middle', () => {
-    expect(toProperCase('heLLo WOrld')).toBe('Hello World');
+    expect(formatText('heLLo WOrld')).toBe('Hello World');
   });
 
   it('handles all uppercase', () => {
-    expect(toProperCase('HELLO WORLD')).toBe('Hello World');
+    expect(formatText('HELLO WORLD')).toBe('Hello World');
   });
 });
 
 describe('isProperCase', () => {
     it('returns TRUE if input proper case', () => {
-        expect(isProperCase('Hello World')).toBe(true);
+        expect(isValidTextFormat('Hello World')).toBe(true);
     });
 
     it('returns FALSE if input has multiple spaces in middle', () => {
-        expect(isProperCase('Hello  World')).toBe(false);
+        expect(isValidTextFormat('Hello  World')).toBe(false);
     });
 
     it('returns FALSE if input has non capitalized words', () => {
-        expect(isProperCase('hello  World')).toBe(false);
+        expect(isValidTextFormat('hello  World')).toBe(false);
     });
 
 });
