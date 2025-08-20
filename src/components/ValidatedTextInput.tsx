@@ -10,7 +10,7 @@ import {
   textErrorMessage,
 } from '@/src/utils/inputValidator';
 import React, { useState } from 'react';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { TextInput, TextInputProps } from 'react-native-paper';
 
 const INPUT_TYPES = {
@@ -122,7 +122,7 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   };
 
   return (
-    <>
+    <View style={{flex: 1}}>
       <TextInput
         label={label}
         mode="flat"
@@ -137,7 +137,7 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
       {shouldShowError && (
         <Text style={Styles.errorText}>{errorMessage}</Text>
       )}
-    </>
+    </View>
   );
 };
 
