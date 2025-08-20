@@ -1,6 +1,7 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
+import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { ageErrorMessage, isValidAge } from '@/src/utils/inputValidator';
@@ -28,8 +29,23 @@ export default function PatientInformationScreen() {
     const [otherName, setOtherName] = useState<string>('');
     const [dob, setDOB] = useState<string>('');
     const [birthYear, setBirthYear] = useState<string>('');
-    const [birthMonth, setBirthMonth] = useState<string>('');
+    const [birthMonth, setBirthMonth] = useState<DropdownItem | null>(null);
     const [approxAge, setApproxAge] = useState<string>('');
+
+    const months = [
+        { value: 'January', key: 'Jan'},
+        { value: 'February', key: 'Feb'},
+        { value: 'March', key: 'Mar'},
+        { value: 'April', key: 'Apr'},
+        { value: 'May', key: 'May'},
+        { value: 'June', key: 'Jun'},
+        { value: 'July', key: 'Jul'},
+        { value: 'August', key: 'Aug'},
+        { value: 'September', key: 'Sep'},
+        { value: 'October', key: 'Oct'},
+        { value: 'November', key: 'Nov'},
+        { value: 'December', key: 'Dec'},
+    ]
 
 
     useEffect(() => {
@@ -104,8 +120,26 @@ export default function PatientInformationScreen() {
                             ?
                             <>
                                 {/* TODO - replace TextInput with ValidatedTextInput */}
-                                <TextInput label="Birth Year" mode="flat" style={[Styles.textInput, {marginTop: 10}]} keyboardType='number-pad'/>
-                                <TextInput label="Birth Month" mode="flat" style={[Styles.textInput]} />
+                                <ValidatedTextInput 
+                                    label="Birth Year" 
+                                    value={birthYear}
+                                    onChangeText={setBirthYear}
+                                    inputType={INPUT_TYPES.NUMERIC}
+                                    style={{marginTop: 10}}
+                                    // customValidator={() => isValidAge(approxAge)}
+                                    // customErrorMessage={ageErrorMessage}
+                                    isRequired={true}
+                                />
+                                <SearchableDropdown 
+                                    data={months} 
+                                    label={'Birth Month'}
+                                    placeholder="Search for or select patient's birth month" 
+                                    onSelect={setBirthMonth}
+                                    value={birthMonth?.value}
+                                    search={true}
+                                    style={{marginTop: 20}}
+                                />
+                                
                             </>
                             :
                             <ValidatedTextInput 
