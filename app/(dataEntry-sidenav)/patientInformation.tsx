@@ -1,8 +1,8 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
+import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { formatText, isValidTextFormat, textErrorMessage } from '@/src/utils/inputValidator';
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -20,7 +20,11 @@ export default function PatientInformationScreen() {
     const [isDOBUnknown, setIsDOBUnknown] = useState(false);
     const [isYearMonthUnknown, setIsYearMonthUnknown] = useState(false);
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
+    
     const [surname, setSurname] = useState<string>('');
+    const [firstName, setFirstName] = useState<string>('');
+    const [otherName, setOtherName] = useState<string>('');
+
 
     useEffect(() => {
         const fetchId = async () => {
@@ -39,29 +43,28 @@ export default function PatientInformationScreen() {
 
                 {/* Patient Name Section */}
                 <Text style={Styles.sectionHeader}>Patient Name <Text style={Styles.required}>*</Text></Text>
-                <TextInput 
+                 <ValidatedTextInput 
                     label="Surname (required)" 
-                    mode="flat" 
-                    style={Styles.textInput}
-                    value = {surname}
-                    onChangeText={(text) => {
-                        setSurname(text);
-                    }}
-                    onBlur={() => {
-                        setSurname(formatText(surname))
-                    }}
-                    error={ !isValidTextFormat(surname)}
+                    value={surname}
+                    onChangeText={setSurname}
+                    inputType={INPUT_TYPES.TEXT}
+                    isRequired={true}
                 />
-                {
-                    !isValidTextFormat(surname)
-                    ? 
-                    <Text style={Styles.errorText}>{textErrorMessage}</Text>
-                    :
-                    null
-                }
-                <TextInput label="First Name (required)" mode="flat" style={Styles.textInput} />
-                <TextInput label="Other Name (optional)" mode="flat" style={Styles.textInput} />
-
+                <ValidatedTextInput 
+                    label="First Name (required)" 
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    inputType={INPUT_TYPES.TEXT}
+                    isRequired={true}
+                />
+                 <ValidatedTextInput 
+                    label="Other Name (optional)" 
+                    value={otherName}
+                    onChangeText={setOtherName}
+                    inputType={INPUT_TYPES.TEXT}
+                    isRequired={false}
+                />
+                
                 {/* Sex Section */}
                 {/* TODO - figure out what 'value' does in RadioButtonGroup*/}
                 <Text style={Styles.sectionHeader}>Sex <Text style={Styles.required}>*</Text></Text>
@@ -97,11 +100,15 @@ export default function PatientInformationScreen() {
                                 <TextInput label="Birth Month" mode="flat" style={[Styles.textInput]} />
                             </>
                             :
-                            <TextInput label="Approximate Age (in years)" mode="flat" style={[Styles.textInput, {marginTop: 10}]} keyboardType='number-pad'/>
+                            <TextInput 
+                                label="Approximate Age (in years)" 
+                                mode="flat" 
+                                style={[Styles.textInput, {marginTop: 10}]} 
+                                keyboardType='number-pad'
+                                right={<TextInput.Affix text="years old" />}/>
                         }
                         
                     </>
-
                 }
                         
                 
