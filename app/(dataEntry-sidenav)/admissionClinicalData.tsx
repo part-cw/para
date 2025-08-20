@@ -123,8 +123,6 @@ export default function AdmissionClinicalDataScreen() {
                                         size={20}
                                         iconColor={colors.primary}
                                         onPress={() => {
-                                        // TODO - use tooltip instead of alert message
-                                        // tooltip package: https://www.npmjs.com/package/react-native-walkthrough-tooltip
                                         alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions');
                                         }}
                                     />

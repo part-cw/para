@@ -192,4 +192,5 @@ export function isValidPhoneNumber(input: string): boolean {
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";
     export const ageErrorMessage = "Must be a valid age (0-5 years)";
-
+    export const telephoneErrorMessage = 'Invalid phone number format. Use format: 0xxxxxxxxx (10 digits starting with 0) or +xxx... (international)';
+    export const confirmPhoneErrorMessage = 'Phone number must match and be in valid format'

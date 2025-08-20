@@ -1,11 +1,13 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationControls from '@/src/components/PaginationControls';
+import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { confirmPhoneErrorMessage, isValidPhoneNumber, telephoneErrorMessage } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
+import { Card, IconButton, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO: add evenhandlers and autosave
@@ -13,11 +15,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CaregiverContactScreen() {
     const { colors } = useTheme();
+
+    const [caregiverName, setCaregiverName] = useState<string>('');
+    const [caregiverTel, setCaregiverTel] = useState<string>('');
+    const [confirmTel, setConfirmTel] = useState<string>('')
     const [sendReminders, setSendReminder] = useState(false);
     const [isCaregiversPhone, setIsCaregiversPhone] = useState(false);
 
     const telephoneInfo = "If the patient's caregiver does not have a phone, enter the number of a relative or friend who lives nearby"
     const telephoneCheckboxInfo = "Do not select this option if the entered telephone number belongs to anyone other than the patient's caregiver (e.g. friend, neighbour, or other relative)"
+
+    const isSameTelephone = caregiverTel === confirmTel
+    console.log('same tel?', isSameTelephone)
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -37,33 +46,45 @@ export default function CaregiverContactScreen() {
                     </Card.Content>
                 </Card>
 
-                <TextInput 
+                <ValidatedTextInput
                     label="Name of Head of Family (required)"
-                    placeholder="Enter name of the patient's primary caregiver" 
-                    mode="outlined" 
-                    style={Styles.textInput}
+                    placeholder="Enter name of the patient's primary caregiver"
+                    value={caregiverName}
+                    onChangeText={setCaregiverName}
+                    inputType={INPUT_TYPES.TEXT}
+                    isRequired={true}
                 />
-
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                     <TextInput 
+                    <ValidatedTextInput 
                         label="Telephone"
-                        placeholder="Enter phone number" 
-                        mode="outlined"
-                        keyboardType='numeric' 
-                        style={[Styles.textInput, {flex: 1}]} />
+                        placeholder="Enter phone number"  
+                        value={caregiverTel}
+                        onChangeText={setCaregiverTel}
+                        inputType={INPUT_TYPES.PHONE}
+                        customValidator={() => isValidPhoneNumber(caregiverTel)}
+                        customErrorMessage={telephoneErrorMessage}
+                        isRequired={false}
+                        style={{flex: 1}}
+                    />
                     <IconButton
                         icon="help-circle-outline"
                         size={20}
                         iconColor={colors.primary}
-                        onPress={() => {alert(telephoneInfo)}}/>
+                        onPress={() => {alert(telephoneInfo)}}
+                    />
                 </View>
                
-                <TextInput 
+                <ValidatedTextInput 
                     label="Confirm Telephone"
-                    placeholder="Re-enter phone number" 
-                    mode="outlined" 
-                    keyboardType='numeric' 
-                    style={Styles.textInput} />
+                    placeholder="Re-enter phone number"  
+                    inputType='phone' 
+                    value={confirmTel}
+                    onChangeText={setConfirmTel}
+                    customValidator={() => isSameTelephone && isValidPhoneNumber(caregiverTel)}
+                    customErrorMessage={confirmPhoneErrorMessage}
+                    isRequired={caregiverTel.trim() !== ''}
+                    style={{flex: 1}}
+                />
                 
                 <View style={{marginLeft: 8, marginRight: 8}}>
                     <Text style={Styles.sectionHeader}>Additional Information</Text>

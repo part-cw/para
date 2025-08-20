@@ -1,11 +1,13 @@
-// components/ValidatedInput.js
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import {
-    formatText,
-    isValidNumericFormat,
-    isValidTextFormat,
-    numericErrorMessage,
-    textErrorMessage,
+  formatPhoneNumber,
+  formatText,
+  isValidNumericFormat,
+  isValidPhoneNumber,
+  isValidTextFormat,
+  numericErrorMessage,
+  telephoneErrorMessage,
+  textErrorMessage,
 } from '@/src/utils/inputValidator';
 import React, { useState } from 'react';
 import { Text } from 'react-native';
@@ -31,7 +33,7 @@ interface ValidatedInputProps extends Omit<TextInputProps, 'value' | 'onChangeTe
   maxValue?: number | null;
 }
 
-const ValidatedInput: React.FC<ValidatedInputProps> = ({ 
+const ValidatedTextInput: React.FC<ValidatedInputProps> = ({ 
   label, 
   value, 
   onChangeText, 
@@ -62,7 +64,18 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
           formatter: (val: string) => val.replace(/[^0-9.-]/g, ''), // Keep only numbers, dots, and dashes
           errorMessage: numericErrorMessage
         };
+      case INPUT_TYPES.PHONE:
+        return {
+          validator: (val: string) => isValidPhoneNumber(val),
+          formatter: (val: string) => formatPhoneNumber(val),
+          errorMessage: telephoneErrorMessage
+        };
       case INPUT_TYPES.TEXT:
+        return {
+          validator: isValidTextFormat,
+          formatter: formatText,
+          errorMessage: textErrorMessage
+        };
       default:
         return {
           validator: isValidTextFormat,
@@ -129,5 +142,5 @@ const ValidatedInput: React.FC<ValidatedInputProps> = ({
 };
 
 
-export default ValidatedInput;
+export default ValidatedTextInput;
 export { INPUT_TYPES };
