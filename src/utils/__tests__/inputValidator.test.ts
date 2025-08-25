@@ -1,4 +1,4 @@
-import { formatPhoneNumber, formatText, isValidPhoneNumber, isValidTextFormat } from "../inputValidator";
+import { formatPhoneNumber, formatText, isValidPhoneNumber, isValidTextFormat, isValidYearInput } from "../inputValidator";
 
 describe('toProperCase', () => {
   it('trims spaces and capitalizes words', () => {
@@ -142,5 +142,51 @@ describe('isValidPhoneNumber', () => {
   it('should return false for 11 digits (with or without leading 0)', () => {
     expect(isValidPhoneNumber('01234567890')).toBe(false);
     expect(isValidPhoneNumber('12345678901')).toBe(false);
+  });
+});
+
+describe('isValidYearInput', () => {
+  it('returns true for valid year', () => {
+    expect(isValidYearInput('2025')).toBe(true);
+  });
+
+  it('returns true for valid year within min and max constraints', () => {
+    expect(isValidYearInput('2025', 2024, 2025)).toBe(true);
+  });
+
+  it('returns true for valid year within max constraints', () => {
+    expect(isValidYearInput('2025', null, 2025)).toBe(true);
+  });
+
+  it('returns true for valid year within min constraints', () => {
+    expect(isValidYearInput('2025', 2025, null)).toBe(true);
+  });
+
+  it('returns false for valid year greater than maxValue', () => {
+    expect(isValidYearInput('2025', 2023, 2024)).toBe(false);
+  });
+
+  it('returns false for valid year smaller than minValue', () => {
+    expect(isValidYearInput('2022', 2023, 2024)).toBe(false);
+  });
+
+  it('returns false for input length > 4', () => {
+    expect(isValidYearInput('20250')).toBe(false);
+  });
+
+  it('returns false for input length < 4', () => {
+    expect(isValidYearInput('202')).toBe(false);
+  });
+
+  it('returns false for input with non-numeric characters', () => {
+    expect(isValidYearInput('202A')).toBe(false);
+  });
+
+  it('returns false for input with 4 digits and decimals', () => {
+    expect(isValidYearInput('20.24')).toBe(false);
+  });
+
+  it('returns false for input with 3 digits and decimal', () => {
+    expect(isValidYearInput('20.2')).toBe(false);
   });
 });

@@ -155,6 +155,9 @@ export class AgeCalculator {
     // expose private functions only in test builds
     static __test = {
         monthToIndex: AgeCalculator.monthToIndex,
+        formatAge: AgeCalculator.formatAge,
+        getAgeFromDOB: AgeCalculator.getAgeFromDOB,
+        getAgeFromYearMonth: AgeCalculator.getAgeFromYearMonth,
     };
 
 }

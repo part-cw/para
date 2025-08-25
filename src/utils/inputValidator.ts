@@ -188,6 +188,39 @@ export function isValidPhoneNumber(input: string): boolean {
         return true;
     }
 
+    /**
+     * 
+     * @param input 
+     * @param minValue 
+     * @param maxValue 
+     * @returns true if input has numbers only and 4 digits long. Must be within minVal and maxVal, if they are set
+     */
+    export function isValidYearInput(
+        input:string, 
+        minValue: number | null = null, 
+        maxValue: number | null = null
+    ): boolean {
+
+        // Must be exactly 4 digits, only numbers
+        if (!/^\d{4}$/.test(input)) {
+            return false;
+        }
+
+        const year = parseInt(input, 10);
+
+         // If minValue is set, year must be >= minValue
+        if (minValue !== null && year < minValue) {
+            return false;
+        }
+
+        // If maxValue is set, year must be <= maxValue
+        if (maxValue !== null && year > maxValue) {
+            return false;
+        }
+
+        return true;
+    }
+
 
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";
