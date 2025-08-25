@@ -26,7 +26,6 @@ export default function CaregiverContactScreen() {
     const telephoneCheckboxInfo = "Do not select this option if the entered telephone number belongs to anyone other than the patient's caregiver (e.g. friend, neighbour, or other relative)"
 
     const isSameTelephone = caregiverTel === confirmTel
-    console.log('same tel?', isSameTelephone)
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -65,6 +64,7 @@ export default function CaregiverContactScreen() {
                         customErrorMessage={telephoneErrorMessage}
                         isRequired={false}
                         style={{flex: 1}}
+                        showErrorOnTyping={true}
                     />
                     <IconButton
                         icon="help-circle-outline"
@@ -82,7 +82,7 @@ export default function CaregiverContactScreen() {
                     onChangeText={setConfirmTel}
                     customValidator={() => isSameTelephone && isValidPhoneNumber(caregiverTel)}
                     customErrorMessage={confirmPhoneErrorMessage}
-                    isRequired={caregiverTel.trim() !== ''}
+                    isRequired={caregiverTel ? true : false} //caregiverTel.trim() !== ''
                     style={{flex: 1}}
                 />
                 
