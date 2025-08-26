@@ -120,4 +120,12 @@ export const GlobalStyles = StyleSheet.create({
         paddingBottom: Platform.OS === 'ios' ? 30 : 16,
         width: '100%'
     },
+
+    errorText: {
+        color: '#d32f2f',
+        fontSize: 12,
+        marginBottom: 10,
+        marginLeft: 12,
+        lineHeight: 16,
+    },
 })

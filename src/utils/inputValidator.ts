@@ -4,9 +4,15 @@ Functions to validate text input and convert entered text to proper form
 
 import { ValidationResult } from "../components/SearchableDropdown";
 
+// TODO - add input validation for weight, muac, temp, rrate, spo2
 
-// convert input to proper case: trim leading/trailing spaces, capitalize first letter of each word
-export function toProperCase(input: string): string {
+/** 
+* convert input to proper case: trim leading/trailing spaces, capitalize first letter of each word 
+*/
+export function formatText(input: string): string {
+  if (input.trim().length < 2) {
+    return ''
+  }
   return input
     .trim()
     .replace(/\s+/g, " ") // replace multiple spaces with single space
@@ -19,10 +25,19 @@ export function toProperCase(input: string): string {
     .join(" ");
 }
 
-// Determines if text input has proper case
-// TODO - remove?
-export function isProperCase(input: string): boolean {
-   return (input === toProperCase(input) ? true : false)
+/**
+ *  Determines if text input is valid. 
+ *  Must contain only allow letters, spaces, hyphen, exclamation marks, or apostrophe, and be 2 or more characters
+ */ 
+export function isValidTextFormat(input: string): boolean {
+    console.log('validating input...', input)
+    if (!input) return true;
+    if (!input.trim()) return false;
+
+    const trimmed = input.trim();
+    const regex = /^[A-Za-z\s'!-]+$/;
+
+  return trimmed.length >= 2 && regex.test(trimmed);
 }
 
 /**
@@ -117,3 +132,100 @@ export function isValidPhoneNumber(input: string): boolean {
             formattedValue: formatPhoneNumber(trimmed)
         };
     };
+
+    /**
+     * Age-specific validation (positive integers only) - must be 0-5.5 years old
+     * TODO - fix validation!
+     */
+    export function isValidAge(input: string): boolean {
+        if (!input || !input.trim()) {
+            return false;
+        }
+
+        const trimmed = input.trim();
+        const ageRegex = /^(\d+(\.\d+)?|\.\d+)$/; // Only positive numbers - allow decimals
+        
+        if (!ageRegex.test(trimmed)) {
+            return false;
+        }
+
+        const age = Number(trimmed);
+        return age >= 0 && age <= 5.5;
+    }
+
+    // Numeric validation
+    export function isValidNumericFormat(input: string, minValue: number | null = null, maxValue: number | null = null): boolean {
+        console.log('validating numeric input...', input);
+        
+        if (!input || !input.trim()) {
+            return false;
+        }
+
+        const trimmed = input.trim();
+        
+        // Check if it's a valid number
+        const numericRegex = /^-?\d+(\.\d+)?$/;
+        if (!numericRegex.test(trimmed)) {
+            return false;
+        }
+
+        const numValue = parseFloat(trimmed);
+        
+        // Check if it's a valid number (not NaN)
+        if (isNaN(numValue)) {
+            return false;
+        }
+
+        // Check min/max constraints
+        if (minValue !== null && numValue < minValue) {
+            return false;
+        }
+        
+        if (maxValue !== null && numValue > maxValue) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 
+     * @param input 
+     * @param minValue 
+     * @param maxValue 
+     * @returns true if input has numbers only and 4 digits long. Must be within minVal and maxVal, if they are set
+     */
+    export function isValidYearInput(
+        input:string, 
+        minValue: number | null = null, 
+        maxValue: number | null = null
+    ): boolean {
+
+        // Must be exactly 4 digits, only numbers
+        if (!/^\d{4}$/.test(input)) {
+            return false;
+        }
+
+        const year = parseInt(input, 10);
+
+         // If minValue is set, year must be >= minValue
+        if (minValue !== null && year < minValue) {
+            return false;
+        }
+
+        // If maxValue is set, year must be <= maxValue
+        if (maxValue !== null && year > maxValue) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
+    export const numericErrorMessage = "Must be a valid number";
+    export const ageErrorMessage = "Age must be between 0 and 5.5 years. Older children are not eligible for this program";
+    export const telephoneErrorMessage = 'Invalid phone number format. Use format: 0xxxxxxxxx (10 digits starting with 0) or +xxx... (international)';
+    export const confirmPhoneErrorMessage = 'Phone number must match and be in valid format'
+    export const dateErrorMessage = 'Date must be in format YYYYMMDD'
+    export const yearErrorMessage = 'Year must be in format YYYY. Non-numeric symbols not permitted'

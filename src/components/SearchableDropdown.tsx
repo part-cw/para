@@ -395,8 +395,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               } else {
                 slideup();
               }
-            }
-          }>
+            }}>
             <Text style={styles.textInput}>
               {
                 searchText.trim().length > 0 
