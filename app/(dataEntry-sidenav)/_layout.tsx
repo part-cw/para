@@ -1,3 +1,4 @@
+import { PatientDataProvider } from '@/src/contexts/PatientDataContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { withLayoutContext } from 'expo-router';
@@ -46,17 +47,19 @@ export default function DrawerLayout() {
     <>
     {/* <DebugStack/> */}
       <SafeAreaProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Drawer
-            drawerContent={(props) => <CustomDrawerContent {...props}/>}>
-            <Drawer.Screen name="patientInformation" options={{title: 'Patient Information'}}/>
-            <Drawer.Screen name="admissionClinicalData" options={{title: 'Admission Clinical Data'}}/>
-            <Drawer.Screen name="medicalConditions" options={{title: 'Common Medical Conditions'}}/>
-            <Drawer.Screen name="vhtReferral" options={{title: 'VHT Referral'}}/>
-            <Drawer.Screen name="caregiverContact" options={{title: 'Caregiver Contact Information'}}/>
-            <Drawer.Screen name="review" options={{title: 'Review & Submit'}}/>
-          </Drawer>
-        </GestureHandlerRootView>
+        <PatientDataProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Drawer
+              drawerContent={(props) => <CustomDrawerContent {...props}/>}>
+              <Drawer.Screen name="patientInformation" options={{title: 'Patient Information'}}/>
+              <Drawer.Screen name="admissionClinicalData" options={{title: 'Admission Clinical Data'}}/>
+              <Drawer.Screen name="medicalConditions" options={{title: 'Common Medical Conditions'}}/>
+              <Drawer.Screen name="vhtReferral" options={{title: 'VHT Referral'}}/>
+              <Drawer.Screen name="caregiverContact" options={{title: 'Caregiver Contact Information'}}/>
+              <Drawer.Screen name="review" options={{title: 'Review & Submit'}}/>
+            </Drawer>
+          </GestureHandlerRootView>
+        </PatientDataProvider>
       </SafeAreaProvider>
     </>
     
