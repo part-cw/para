@@ -5,7 +5,7 @@ import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDro
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
-import { ageErrorMessage, isValidAge } from '@/src/utils/inputValidator';
+import { ageErrorMessage, isValidAge, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
@@ -205,8 +205,8 @@ export default function PatientInformationScreen() {
                                     onChangeText={setBirthYear}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     style={{marginTop: 10}}
-                                    // customValidator={() => isValidAge(approxAge)}
-                                    // customErrorMessage={ageErrorMessage}
+                                    customValidator={() => isValidYearInput(birthYear)}
+                                    customErrorMessage={yearErrorMessage}
                                     isRequired={true}
                                 />
                                 <SearchableDropdown 

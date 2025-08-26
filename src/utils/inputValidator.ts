@@ -228,3 +228,4 @@ export function isValidPhoneNumber(input: string): boolean {
     export const telephoneErrorMessage = 'Invalid phone number format. Use format: 0xxxxxxxxx (10 digits starting with 0) or +xxx... (international)';
     export const confirmPhoneErrorMessage = 'Phone number must match and be in valid format'
     export const dateErrorMessage = 'Date must be in format YYYYMMDD'
+    export const yearErrorMessage = 'Year must be in format YYYY. Non-numeric symbols not permitted'

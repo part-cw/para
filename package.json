@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test:utils": "jest --config jest.utils.config.js"
+    "test": "jest --config jest.utils.config.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
