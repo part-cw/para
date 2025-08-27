@@ -46,9 +46,14 @@ export interface PatientData {
   malnutritionStatus: string;
   sickYoungInfant: boolean | null;
   
-  // Add other screen data as needed
-  // vhtReferral: { ... };
-  // caregiverContact: { ... };
+  // TODO add vhtReferral data : { ... };
+  
+  // caregiverContact
+  caregiverName: string;
+  caregiverTel: string;
+  confirmTel: string;
+  sendReminders: boolean;
+  isCaregiversPhone: boolean;
 }
 
 const initialPatientData: PatientData = {
@@ -89,6 +94,13 @@ const initialPatientData: PatientData = {
   meningitis: null,
   malnutritionStatus: '',
   sickYoungInfant: null,
+
+  // caregiver info
+  caregiverName: '',
+  caregiverTel: '',
+  confirmTel: '',
+  isCaregiversPhone: false,
+  sendReminders: false,
 };
 
 interface PatientDataContextType {
