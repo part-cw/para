@@ -5,7 +5,6 @@ import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { ageErrorMessage, isValidAge, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
@@ -19,22 +18,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // TODO - add age validation for DOB and birth year/month - ensure estimated age is <= 5.5!
 
 export default function PatientInformationScreen() {
-    // const [sex, setSex] = useState<string>('');
-    // const [isUnderSixMonths, setIsUnderSixMonths] = useState(false);
-    // const [isDOBUnknown, setIsDOBUnknown] = useState(false);
-    // const [isYearMonthUnknown, setIsYearMonthUnknown] = useState(false);
-    // const [previewPatientId, setPreviewPatientId] = useState<string>('');
-    
-    // const [surname, setSurname] = useState<string>('');
-    // const [firstName, setFirstName] = useState<string>('');
-    // const [otherName, setOtherName] = useState<string>('');
-    
-    // const [dob, setDOB] = useState<Date | null>(null);
-    // const [showDatePicker, setShowDatePicker] = useState(false);
-    // const [birthYear, setBirthYear] = useState<string>('');
-    // const [birthMonth, setBirthMonth] = useState<DropdownItem | null>(null);
-    // const [approxAge, setApproxAge] = useState<string>('');
-
     const { patientData, updatePatientData, getPreviewPatientId, startAdmission, isDataLoaded } = usePatientData();
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -54,11 +37,11 @@ export default function PatientInformationScreen() {
         approxAge
     } = patientData;
 
-    console.log('dob', dob)
-    console.log('year', birthYear)
-    console.log('month', birthMonth)
-    console.log('approxAge', approxAge)
-    console.log('calculated age', AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge))
+    // console.log('dob', dob)
+    // console.log('year', birthYear)
+    // console.log('month', birthMonth)
+    // console.log('approxAge', approxAge)
+    // console.log('calculated age', AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge))
     
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
@@ -69,10 +52,6 @@ export default function PatientInformationScreen() {
                 birthMonth: null,
                 approxAge: ''
             })
-            // setDOB(selectedDate);
-            // setBirthYear('');
-            // setBirthMonth(null);
-            // setApproxAge('');
         }
     
         if (Platform.OS === "android") {
@@ -160,8 +139,7 @@ export default function PatientInformationScreen() {
                 <Text style={Styles.sectionHeader}>Age <Text style={Styles.required}>*</Text></Text>
                 <Checkbox label={'Patient is less than 6 months old'} 
                           checked={isUnderSixMonths} 
-                          onChange={() => updatePatientData({isUnderSixMonths: !isUnderSixMonths})}/>. 
-                        {/* {() => {setIsUnderSixMonths((prev) => !prev)}} */}
+                          onChange={() => updatePatientData({isUnderSixMonths: !isUnderSixMonths})}/> 
                 <Checkbox label={'Exact date of birth (DOB) unknown'} 
                         checked={isDOBUnknown} 
                         onChange={() => {
@@ -177,21 +155,6 @@ export default function PatientInformationScreen() {
                                     approxAge: ''
                                 })
                             })
-                            // setIsDOBUnknown(prev => {
-                            //     const newValue = !prev;
-                            //     setDOB(null) // reset DOB value when checkbox clicked
-
-                            //     if (!newValue) { // DOB is known
-                            //         setIsYearMonthUnknown(false); // reset when DOB is known
-                                    
-                            //         // clear less detailed age fields
-                            //         setBirthYear('')
-                            //         setBirthMonth(null)
-                            //         setApproxAge('')
-                            //     }
-                            //     return newValue;
-
-                            // });
                         }}
                 />  
                 {
@@ -236,20 +199,6 @@ export default function PatientInformationScreen() {
                                         approxAge: ''
                                     })
                                 });
-                                // setIsYearMonthUnknown((prev) => {
-                                //     const newVal = !prev; // change checkbox val
-                                    
-                                //     // reset year/month when checkbox clicked
-                                //     setBirthYear('')
-                                //     setBirthMonth(null)
-
-                                //     // if birth year and birth month are known clear other age values
-                                //     if (!newVal) {
-                                //         setDOB(null)
-                                //         setApproxAge('')
-                                //     }
-                                //     return newVal;
-                                // })
                             }}
                         />  
                         {
@@ -296,7 +245,6 @@ export default function PatientInformationScreen() {
             {/* Pagination controls */}
             <View style={Styles.nextButtonContainer}>
                 <PaginationButton
-                    // TODO - add alerts on press ??
                     onPress={() => 
                         {router.push('../(dataEntry-sidenav)/admissionClinicalData')}}
                     isNext={ true }

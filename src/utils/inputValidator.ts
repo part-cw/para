@@ -30,7 +30,6 @@ export function formatText(input: string): string {
  *  Must contain only allow letters, spaces, hyphen, exclamation marks, or apostrophe, and be 2 or more characters
  */ 
 export function isValidTextFormat(input: string): boolean {
-    console.log('validating input...', input)
     if (!input) return true;
     if (!input.trim()) return false;
 
@@ -154,9 +153,7 @@ export function isValidPhoneNumber(input: string): boolean {
     }
 
     // Numeric validation
-    export function isValidNumericFormat(input: string, minValue: number | null = null, maxValue: number | null = null): boolean {
-        console.log('validating numeric input...', input);
-        
+    export function isValidNumericFormat(input: string, minValue: number | null = null, maxValue: number | null = null): boolean {        
         if (!input || !input.trim()) {
             return false;
         }

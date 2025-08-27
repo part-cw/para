@@ -84,11 +84,11 @@ export default function ReviewScreen() {
         children: React.ReactNode; 
         onEdit: () => void 
     }) => (
-        <Card style={[Styles.cardWrapper, { marginBottom: 16 }]}>
+        <Card style={[Styles.cardWrapper, { marginBottom: 16 }, ]}>
             <Card.Content>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                     <Text variant="headlineSmall" style={{ fontWeight: 'bold' }}>{title}</Text>
-                    <Button mode="outlined" onPress={onEdit} compact>
+                    <Button mode="elevated" onPress={onEdit} compact buttonColor='white'>
                         Edit
                     </Button>
                 </View>
@@ -105,18 +105,18 @@ export default function ReviewScreen() {
         </View>
     );
   
+    // TODO - use accordions instead; if opened and viewed icon changed to 'check' and is green
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 <ReviewSection 
                     title="Patient Information" 
-                    onEdit={() => handleEdit('patientInformation')}
-                >
+                    onEdit={() => handleEdit('patientInformation')}>
                     <InfoRow label="Full Name" value={`${patientData.firstName} ${patientData.otherName} ${patientData.surname}`.trim()} />
                     <InfoRow label="Sex" value={patientData.sex} />
-                    <InfoRow label="Age Information" value={formatAge()} />
+                    <InfoRow label="DOB/Age" value={formatAge()} />
                     <InfoRow label="Under 6 months" value={patientData.isUnderSixMonths ? 'Yes' : 'No'} />
-                    <InfoRow label="Admission Started" value={formatDateTime(patientData.admissionStartedAt)} />
+                    {/* <InfoRow label="Admission Started" value={formatDateTime(patientData.admissionStartedAt)} /> */}
                 </ReviewSection>
 
                 <Button

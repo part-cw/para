@@ -62,6 +62,5 @@ export default function DrawerLayout() {
         </PatientDataProvider>
       </SafeAreaProvider>
     </>
-    
   );
 }
