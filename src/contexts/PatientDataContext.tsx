@@ -43,6 +43,8 @@ export interface PatientData {
   malaria: DropdownItem | null;
   sepsis: DropdownItem | null;
   meningitis: DropdownItem | null;
+  malnutritionStatus: string;
+  sickYoungInfant: boolean | null;
   
   // Add other screen data as needed
   // vhtReferral: { ... };
@@ -85,6 +87,8 @@ const initialPatientData: PatientData = {
   malaria: null,
   sepsis: null,
   meningitis: null,
+  malnutritionStatus: '',
+  sickYoungInfant: null,
 };
 
 interface PatientDataContextType {
