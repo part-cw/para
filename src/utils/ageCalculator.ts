@@ -3,35 +3,67 @@
  *  Not exact age measurements
  */
 
+//  * TODO used for WAZ score calculations -- take floor (use months completed)
+//  * TODO for model calculation - round to 1 decimal place
+
 import { DropdownItem } from "../components/SearchableDropdown";
 
 export class AgeCalculator {
 
-    // Returns estimated age in string if age is less than 5.5 years old
-    static calculateEstimatedAge(
+    private static msPerDay = (1000 * 60 * 60 * 24)
+
+    // Returns estimated age in years
+    /**
+     * 
+     * @param dob 
+     * @param birthYear 
+     * @param birthMonth 
+     * @param approxAge 
+     * @returns unrounded age in years (e.g. 3.5) based on available input. Throws error if invalid or missing input
+     */
+    static calculateAgeInYears(
         dob: Date|null, 
         birthYear: string, 
         birthMonth: DropdownItem|null, 
         approxAge: string
-    ): string {
-        console.log('calculating est age')
-        let estimatedAge = ''
+    ): number {
 
         if (dob && !birthYear && !birthMonth && !approxAge) {
-            estimatedAge = `${this.getAgeFromDOB(dob)}`
-            console.log('!!!!! estimating age from dob')
-            console.log('age calc1', this.getAgeFromDOB(dob))
-            // console.log('age calc2', this.getEstimatedAgeFromDOB2(dob))
-        } else if (birthYear && birthMonth) {
-            console.log('&&&')
-            estimatedAge = `${this.getAgeFromYearMonth(birthYear, birthMonth)}`
-            console.log('age calc2', this.getAgeFromYearMonth(birthYear, birthMonth))
-        } else if (approxAge) {
-            estimatedAge = approxAge
+            const age = this.getAgeInYearsFromDOB(dob)
+            if (age < 0) {
+                throw new Error("DOB cannot be in the future");
+            }
+            return age;
+        } else if (birthYear && birthMonth && !dob && !approxAge) {
+            const newDob = this.createDob(birthYear, birthMonth)
+            const age = this.getAgeInYearsFromDOB(newDob)
+            if (age < 0) {
+                throw new Error("DOB (calculated from birth year/month) cannot be in the future")
+            }
+            return age;
+        } else if (approxAge && !dob && !birthMonth && !birthYear) {
+            const parsed = Number(approxAge);
+            
+            if (isNaN(parsed)) {
+                throw new Error("Approximate age is not a valid number.");
+            }
+            return parsed
         } 
 
-        // return (isValidAge(estimatedAge) ? estimatedAge : '')
-        return estimatedAge // TODO - revert to return statement on line above
+        // TODO handle if 'now' is same year/month as entered, but now.date is before dob.date, which is autoset to 15
+        throw new Error("No valid age information provided. Please supply DOB, birth year/month, or approximate age.");
+    }
+
+     /**
+     * @param dob entered DOB or created from birthYear and birthMonth
+     * @returns age in days from DOB and now
+     */
+    private static getAgeInDaysFromDob(dob: Date): number {
+        const now = new Date();
+        const diffTime = now.getTime() - dob.getTime(); // time is ms
+        const diffDays = diffTime / this.msPerDay;
+        
+        return diffDays;
     }
 
     /**
@@ -39,87 +71,25 @@ export class AgeCalculator {
      * @param dob entered from Date Picker
      * @returns age in years (eg. 3.5 years)
      */
-    private static getAgeInYearsFromDOB2(dob: Date): number {
-        const msPerDay = (1000 * 60 * 60 * 24)
-        const now = new Date();
-        const diffTime = now.getTime() - dob.getTime();
-        const diffDays = Math.floor(diffTime / msPerDay);
+    private static getAgeInYearsFromDOB(dob: Date): number {
+        const diffDays = this.getAgeInDaysFromDob(dob)
 
-        const years = diffDays/ 365.25 // age in years (approx)
-        const roundedYears = Math.round(years * 100) / 100
-
-        return roundedYears
-        
-        // if (diffDays < 30) {
-        //     return `${diffDays} days`;
-        // } else if (diffDays < 365) {
-        //     const months = Math.floor(diffDays / 30.44); // average month length = 30.44
-        //     return `${months} months`;
-        // } else {
-        //     const years = Math.floor(diffDays / 365.25); // approx 365.25 days/year
-        //     return `${years} years`;
-        // }
-    }
-
-    /**
-     * 
-     * @param dob entered from Date Picker.
-     * @returns calculates estimated age from DOB
-     */
-    private static getAgeFromDOB(dob: Date): number {
-        const now = new Date();
-        let yearsDiff = now.getFullYear() - dob.getFullYear();
-        let monthsDiff = now.getMonth() - dob.getMonth();
-        let daysDiff = now.getDate() - dob.getDate();
-
-        // Adjust for negative days differences
-        if (daysDiff < 0) {
-            monthsDiff--;
-            const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-            daysDiff += lastMonth.getDate();
-        }
-
-        // Adjust for negative months differences
-        if (monthsDiff < 0) {
-            yearsDiff--;
-            monthsDiff += 12;
-        }
-
-        // Convert to decimal years
-        const monthsAsDecimal = monthsDiff / 12;
-        const daysAsDecimal = daysDiff / 365.25; // Account for leap years
-        const totalYears = yearsDiff + monthsAsDecimal + daysAsDecimal;
-
-        const roundedYears = Math.round(totalYears * 100) / 100; // round to 2 decimal places
-        console.log('totalyears', totalYears)
-        console.log('roundedYears', roundedYears)
-
-        return roundedYears //TODO optionally, return formatted age (pass yearsDiff, monthsDiff and daysDiff to formatAge)
+        // Average 365.25 days/year. Source: https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
+        // TODO - use 31557600 seconds per year instead? -- from old PARA
+        return  (diffDays / 365.25)
     }
 
     /**
      * 
      * @param birthYear entered manually - assume valid input
      * @param birthMonth entered manually - assume valid input
-     * @returns calculates estimated age from entered birth year and month
+     * @returns creates DOB in Date formate. Assumes birth date is 15th of birth year
      */
-    private static getAgeFromYearMonth(birthYear: string, birthMonth: DropdownItem): number {
-        const now = new Date();
-        let yearsDiff = now.getFullYear() - Number(birthYear);
-        let monthsDiff = (now.getMonth()) - this.monthToIndex(birthMonth); 
-        
-        // Adjust for negative months differences
-        if (monthsDiff < 0) {
-            yearsDiff--;
-            monthsDiff += 12;
-        }
-
-        // Convert to decimal years
-        const monthsAsDecimal = monthsDiff / 12;
-        const totalYears = yearsDiff + monthsAsDecimal;
-
-        const roundedYears = Math.round(totalYears * 100) / 100; // round to 2 decimal places
-        return roundedYears //TODO optionally, return formatted age (pass yearsDiff and monthsDiff to formatAge)
+    private static createDob(birthYear: string, birthMonth: DropdownItem): Date {
+        console.log('making new dob...')
+        const birthMonthIndex = this.monthToIndex(birthMonth)
+        const dob = new Date(Number(birthYear), birthMonthIndex, 15) // TODO - what if curr date before the 15th:??
+        return dob
     }
 
     private static monthToIndex(month: DropdownItem): number {
@@ -142,6 +112,34 @@ export class AgeCalculator {
     }
 
     /**
+     * @param age can be age in months or years
+     * @returns rounds age to 1 decimal place
+     */
+    private static roundAge(age: number): number {
+        return Math.round(age * 10) / 10;
+    }
+
+    /**
+     * 
+     * @param dob entered DOB or created from birthYear and birthMonth; null if unavailabe 
+     * @param years raw, unrounded approximate age in years. Used if only have approxAge; null if dob available
+     * @returns converts DOB or age in years into age in months, unrounded. 
+     * Assume params are never both null - either dob or years must be defined
+     */
+    static getAgeInMonths(dob: Date | null, years: number | null): number {
+        let months: number = 0;
+
+        if (dob) {
+            const ageDays = this.getAgeInDaysFromDob(dob)
+            months = ageDays / 30.44 // days per month = 30.44
+        } else if (years) {
+            months = years / 12 // 12 months in a year
+        }
+  
+        return months;
+    }
+
+    /**
      * 
      * @param years from entered DOB OR birth year and birth month
      * @param months from entered DOB OR birth year and birth month
@@ -149,9 +147,10 @@ export class AgeCalculator {
      * @returns age in format 'X years Y months Z days'. If year or month null, not included in string
      */
     private static formatAge(years: number, months: number, days: number|null): string {
+        // TODO - refactor so it takes in age in years
         if (years < 1) {
             if (months < 1) {
-                return days ? `${days} days` : '0 months' // TODO double check this
+                return days ? `${days} days` : '0 months'
             }
             return days ? `${months} months ${days} days` :  `${months} months`
         }
@@ -169,30 +168,17 @@ export class AgeCalculator {
      * @returns age in format 'X years Y months Z days'
      */
     private static formatApproximateAge(age: number): number {
-        // TODO 
+        // TODO - or delete if formatAge takes in age in years
         return 0
-    }
-
-    /**
-     * 
-     * @param estimatedAge 
-     * @returns 
-     * converts estimated age in years to age in months
-     * used for WAZ score calculations
-     */
-    static convertYearsToMonths(years: number): number {
-        // TODO 
-        return 0;
     }
 
 
     // expose private functions only in test builds
     static __test = {
         monthToIndex: AgeCalculator.monthToIndex,
-        formatAge: AgeCalculator.formatAge,
-        getAgeFromDOB: AgeCalculator.getAgeFromDOB,
-        getAgeFromYearMonth: AgeCalculator.getAgeFromYearMonth,
-        getAgeInYearsFromDOB2: AgeCalculator.getAgeInYearsFromDOB2,
+        createDob: AgeCalculator.createDob,
+        getAgeInYearsFromDOB: AgeCalculator.getAgeInYearsFromDOB,
+        getAgeInMonths: AgeCalculator.getAgeInMonths
     };
 
 }
