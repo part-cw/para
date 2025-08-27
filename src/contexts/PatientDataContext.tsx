@@ -2,6 +2,7 @@
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { DropdownItem } from '../components/SearchableDropdown';
 
 // Define your data structure based on all screens
 export interface PatientData {
@@ -18,17 +19,31 @@ export interface PatientData {
   isYearMonthUnknown: boolean;
   dob: Date | null;
   birthYear: string;
-  birthMonth: { value: string; key: string } | null;
+  birthMonth: DropdownItem | null;
   approxAge: string;
   
+  // Admission Clinical Data
+  hivStatus: string;
+  weight: string;
+  muac: string;
+  temperature: string;
+  rrate: string;
+  spo2: string;
+  heartRate: string;
+  lastHospitalized: DropdownItem | null;
+  eyeMovement: DropdownItem | null;
+  motorResponse: DropdownItem | null;
+  verbalResponse: DropdownItem | null;
+
+
   // Medical Conditions
-  anaemia: { value: string; key: string } | null;
-  pneumonia: { value: string; key: string } | null;
-  chronicIllness: { value: string; key: string } | null;
-  acuteDiarrhea: { value: string; key: string } | null;
-  malaria: { value: string; key: string } | null;
-  sepsis: { value: string; key: string } | null;
-  meningitis: { value: string; key: string } | null;
+  anaemia: DropdownItem | null;
+  pneumonia: DropdownItem | null;
+  chronicIllness: DropdownItem | null;
+  acuteDiarrhea: DropdownItem | null;
+  malaria: DropdownItem | null;
+  sepsis: DropdownItem | null;
+  meningitis: DropdownItem | null;
   
   // Add other screen data as needed
   // admissionClinicalData: { ... };
@@ -37,6 +52,7 @@ export interface PatientData {
 }
 
 const initialPatientData: PatientData = {
+  // patient information
   admissionStartedAt: null,
   surname: '',
   firstName: '',
@@ -49,6 +65,21 @@ const initialPatientData: PatientData = {
   birthYear: '',
   birthMonth: null,
   approxAge: '',
+
+  // admission clinical data
+  hivStatus: '',
+  weight: '',
+  muac: '',
+  temperature: '',
+  rrate: '',
+  spo2: '',
+  heartRate: '',
+  lastHospitalized: null,
+  eyeMovement: null,
+  motorResponse: null,
+  verbalResponse: null,
+
+  // medical conditions
   anaemia: null,
   pneumonia: null,
   chronicIllness: null,

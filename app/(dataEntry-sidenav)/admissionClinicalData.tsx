@@ -2,6 +2,7 @@ import PaginationControls from '@/src/components/PaginationControls';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
+import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -17,6 +18,8 @@ export default function AdmissionClinicalDataScreen() {
     // TODO - fix setuseState and handlePress
     const [expanded, setExpanded] = useState(false);
     const handlePress = () => setExpanded(!expanded);
+
+    const { patientData, updatePatientData, isDataLoaded } = usePatientData();
 
     const [hivStatus, setHivStatus] = useState<string>('');
     const [weight, setWeight] = useState<string>('');
