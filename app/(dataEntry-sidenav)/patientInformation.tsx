@@ -40,8 +40,7 @@ export default function PatientInformationScreen() {
     console.log('year', birthYear)
     console.log('month', birthMonth)
     console.log('approxAge', approxAge)
-    console.log('estimated age', AgeCalculator.calculateEstimatedAge(dob, birthYear, birthMonth, approxAge))
-
+    console.log('calculated age', AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge))
     
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
