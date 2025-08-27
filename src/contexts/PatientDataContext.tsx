@@ -35,7 +35,6 @@ export interface PatientData {
   motorResponse: DropdownItem | null;
   verbalResponse: DropdownItem | null;
 
-
   // Medical Conditions
   anaemia: DropdownItem | null;
   pneumonia: DropdownItem | null;
@@ -46,7 +45,6 @@ export interface PatientData {
   meningitis: DropdownItem | null;
   
   // Add other screen data as needed
-  // admissionClinicalData: { ... };
   // vhtReferral: { ... };
   // caregiverContact: { ... };
 }
