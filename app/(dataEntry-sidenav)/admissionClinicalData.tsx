@@ -1,7 +1,8 @@
 import PaginationControls from '@/src/components/PaginationControls';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
-import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
+import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
+import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -14,19 +15,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
 
-    // TODO - fix setuseState and handlePress
+    // TODO - fix setuseState and handlePress ??
     const [expanded, setExpanded] = useState(false);
+    const { patientData, updatePatientData, isDataLoaded } = usePatientData();
+
     const handlePress = () => setExpanded(!expanded);
 
-    const [hivStatus, setHivStatus] = useState<string>('');
-    const [weight, setWeight] = useState<string>('');
-    const [muac, setMUAC] = useState<string>('')
-    const [temperature, setTemperature] = useState<string>('')
-    const [rrate, setRRate] = useState<string>('')
-    const [spo2, setSpO2] = useState<string>('')
-    const [heartRate, setHeartRate] = useState<string>('')
+    // Local state for form validation and UI
+    const {
+        hivStatus,
+        weight,
+        muac,
+        temperature,
+        rrate,
+        spo2,
+        heartRate,
+        lastHospitalized,
+        eyeMovement,
+        motorResponse,
+        verbalResponse,
+    } = patientData
 
-    const [lastHospitalized, setLastHospitalized] = useState<DropdownItem | null>(null);
     const hospitalizationOptions = [
     { value: 'Never', key: 'never' },
     { value: 'Less than 7 days ago', key: '<7d' },
@@ -34,13 +43,11 @@ export default function AdmissionClinicalDataScreen() {
     { value: '1 month to 1 year ago', key: '1m-1y' },
     { value: 'More than 1 year ago', key: '>1y' }];
 
-    const [eyeMovement, setEyeMovement] = useState<DropdownItem | null>(null);
     const eyeMovementOptions = [
         {value: 'Watches or follows', key: 'watches'},
         {value: 'Fails to watch or follow', key: 'fails'}
     ]
 
-    const [motorResponse, setMotorResponse] = useState<DropdownItem | null>(null);
     const motorResponseOptions = [
         {value: 'Normal behavior observed', key: 'normal'},
         {value: 'Localizes painful stimulus', key: 'localize'},
@@ -48,7 +55,6 @@ export default function AdmissionClinicalDataScreen() {
         {value: 'No resonse/inappropriate response', key: 'no-response'}
     ]
 
-    const [verbalResponse, setVerbalResponse] = useState<DropdownItem | null>(null);
     const verbalResponseOptions = [
         {value: 'Normal behavior observed', key: 'normal'},
         {value: 'Cries appropriately', key: 'cries'},
@@ -60,6 +66,15 @@ export default function AdmissionClinicalDataScreen() {
     const eyeMovementInfo =  "Have the caregiver put a toy or bright object in front of the child, and see if they are able to follow it with their eyes";
     const motorResponseInfo = "Response to pain should be assessed with firm nailbed pressure or pinch";
 
+    // Don't render until data is loaded
+    if (!isDataLoaded) {
+        return (
+            <SafeAreaView style={{flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center'}}>
+                <Text>Loading...</Text>
+            </SafeAreaView>
+        );
+    }
+    
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -76,7 +91,7 @@ export default function AdmissionClinicalDataScreen() {
                                     data={hospitalizationOptions} 
                                     label={'Last Hopitalized (required)'}
                                     placeholder='select option below' 
-                                    onSelect={setLastHospitalized}
+                                    onSelect={(value) => updatePatientData({ lastHospitalized: value })}
                                     value={lastHospitalized?.value}
                                     search={false}
                                 />
@@ -87,7 +102,7 @@ export default function AdmissionClinicalDataScreen() {
                                         { label: 'Negative', value: 'negative'},
                                         { label: 'Unknown', value: 'unknown'}]} 
                                     selected={hivStatus} 
-                                    onSelect={setHivStatus}/>
+                                    onSelect={(value) => updatePatientData({ hivStatus: value })}/>
                             </View>
                         </List.Accordion>
                     </View>
@@ -103,7 +118,7 @@ export default function AdmissionClinicalDataScreen() {
                                 <ValidatedTextInput 
                                     label={'Weight (required)'}
                                     value={weight} 
-                                    onChangeText={setWeight}
+                                    onChangeText={(value) => updatePatientData({ weight: value })}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     isRequired={true} 
                                     right={<TextInput.Affix text="kg" />}                             
@@ -112,7 +127,7 @@ export default function AdmissionClinicalDataScreen() {
                                     <ValidatedTextInput 
                                         label={'MUAC (required)'}
                                         value={muac} 
-                                        onChangeText={setMUAC}
+                                        onChangeText={(value) => updatePatientData({ muac: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         style={[Styles.accordionTextInput, { flex: 1 }]}
@@ -130,7 +145,7 @@ export default function AdmissionClinicalDataScreen() {
                                 <ValidatedTextInput 
                                     label={'Temperature (required)'}
                                     value={temperature} 
-                                    onChangeText={setTemperature}
+                                    onChangeText={(value) => updatePatientData({ temperature: value })}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     isRequired={true} 
                                     right={<TextInput.Affix text="°C" />}                             
@@ -153,7 +168,7 @@ export default function AdmissionClinicalDataScreen() {
                                 <ValidatedTextInput 
                                     label={'Breaths per minute (required)'}
                                     value={rrate} 
-                                    onChangeText={setRRate}
+                                    onChangeText={(value) => updatePatientData({ rrate: value })}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     isRequired={true} 
                                     right={<TextInput.Affix text="bpm" />}                             
@@ -170,7 +185,7 @@ export default function AdmissionClinicalDataScreen() {
                                 <ValidatedTextInput 
                                     label={'SpO2 (required)'}
                                     value={spo2} 
-                                    onChangeText={setSpO2}
+                                    onChangeText={(value) => updatePatientData({ spo2: value })}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     isRequired={true} 
                                     right={<TextInput.Affix text="%" />}                             
@@ -179,7 +194,7 @@ export default function AdmissionClinicalDataScreen() {
                                     label="Heart rate (required)"
                                     placeholder='Beats per minute'
                                     value={heartRate}
-                                    onChangeText={setHeartRate} 
+                                    onChangeText={(value) => updatePatientData({ heartRate: value })} 
                                     inputType={INPUT_TYPES.NUMERIC}
                                     right={<TextInput.Affix text="bpm" />}
                                 />
@@ -207,7 +222,7 @@ export default function AdmissionClinicalDataScreen() {
                                             data={eyeMovementOptions} 
                                             label={'Eye movement'}
                                             placeholder='select option below' 
-                                            onSelect={setEyeMovement}
+                                            onSelect={(value) => updatePatientData({ eyeMovement: value })}
                                             value={eyeMovement?.value}
                                             search={false}
                                         />
@@ -227,7 +242,7 @@ export default function AdmissionClinicalDataScreen() {
                                                 data={motorResponseOptions} 
                                                 label={'Best motor response'}
                                                 placeholder='select option below' 
-                                                onSelect={setMotorResponse}
+                                                onSelect={(value) => updatePatientData({ motorResponse: value })}
                                                 value={motorResponse?.value}
                                                 search={false}
                                             />
@@ -247,7 +262,7 @@ export default function AdmissionClinicalDataScreen() {
                                             data={verbalResponseOptions} 
                                             label={'Verbal response'}
                                             placeholder='select option below' 
-                                            onSelect={setVerbalResponse}
+                                            onSelect={(value) => updatePatientData({ verbalResponse: value })}
                                             value={verbalResponse?.value}
                                             search={false}
                                         />

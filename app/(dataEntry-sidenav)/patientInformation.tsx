@@ -1,12 +1,11 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
-import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
+import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
+import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { ageErrorMessage, isValidAge, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
-import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -16,39 +15,43 @@ import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO - add age validation for DOB and birth year/month!
-// TODO - find good date picker for DOB
+// TODO - add age validation for DOB and birth year/month - ensure estimated age is <= 5.5!
 
 export default function PatientInformationScreen() {
-    const [sex, setSex] = useState<string>('');
-    const [isUnderSixMonths, setIsUnderSixMonths] = useState(false);
-    const [isDOBUnknown, setIsDOBUnknown] = useState(false);
-    const [isYearMonthUnknown, setIsYearMonthUnknown] = useState(false);
+    const { patientData, updatePatientData, getPreviewPatientId, startAdmission, isDataLoaded } = usePatientData();
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
-    
-    const [surname, setSurname] = useState<string>('');
-    const [firstName, setFirstName] = useState<string>('');
-    const [otherName, setOtherName] = useState<string>('');
-    
-    const [dob, setDOB] = useState<Date | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [birthYear, setBirthYear] = useState<string>('');
-    const [birthMonth, setBirthMonth] = useState<DropdownItem | null>(null);
-    const [approxAge, setApproxAge] = useState<string>('');
 
-    console.log('dob', dob)
-    console.log('year', birthYear)
-    console.log('month', birthMonth)
-    console.log('approxAge', approxAge)
-    console.log('calculated age', AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge))
+    // Local state for form validation and UI
+    const {
+        sex,
+        isUnderSixMonths,
+        isDOBUnknown,
+        isYearMonthUnknown,
+        surname,
+        firstName,
+        otherName,
+        dob,
+        birthYear,
+        birthMonth,
+        approxAge
+    } = patientData;
+
+    // console.log('dob', dob)
+    // console.log('year', birthYear)
+    // console.log('month', birthMonth)
+    // console.log('approxAge', approxAge)
+    // console.log('calculated age', AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge))
     
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
             // make sure only one of these age params are set to non-null at a time (except year and month must be set together)
-            setDOB(selectedDate);
-            setBirthYear('');
-            setBirthMonth(null);
-            setApproxAge('');
+            updatePatientData({
+                dob: selectedDate,
+                birthYear: '',
+                birthMonth: null,
+                approxAge: ''
+            })
         }
     
         if (Platform.OS === "android") {
@@ -73,11 +76,23 @@ export default function PatientInformationScreen() {
 
     useEffect(() => {
         const fetchId = async () => {
-        const id = await PatientIdGenerator.getPreviewPatientId();
+        const id = await getPreviewPatientId();
         setPreviewPatientId(id);
         };
         fetchId();
+
+        // Start admission tracking when user first enters patient information screen
+        startAdmission();
     }, []);
+
+    // Don't render until data is loaded
+    if (!isDataLoaded) {
+        return (
+            <SafeAreaView style={{flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center'}}>
+                <Text>Loading...</Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -91,21 +106,21 @@ export default function PatientInformationScreen() {
                  <ValidatedTextInput 
                     label="Surname (required)" 
                     value={surname}
-                    onChangeText={setSurname}
+                    onChangeText={(value) => updatePatientData({ surname: value })}
                     inputType={INPUT_TYPES.TEXT}
                     isRequired={true}
                 />
                 <ValidatedTextInput 
                     label="First Name (required)" 
                     value={firstName}
-                    onChangeText={setFirstName}
+                    onChangeText={(value) => updatePatientData({ firstName: value })}
                     inputType={INPUT_TYPES.TEXT}
                     isRequired={true}
                 />
                  <ValidatedTextInput 
                     label="Other Name (optional)" 
                     value={otherName}
-                    onChangeText={setOtherName}
+                    onChangeText={(value) => updatePatientData({ otherName: value })}
                     inputType={INPUT_TYPES.TEXT}
                     isRequired={false}
                     showErrorOnTyping={true}
@@ -118,31 +133,28 @@ export default function PatientInformationScreen() {
                         { label: 'Male', value: 'male'},
                         { label: 'Female', value: 'female'}]} 
                     selected={sex} 
-                    onSelect={setSex}/>
+                    onSelect={(value) => updatePatientData({ sex: value })}/>
 
                 {/* Age Section */}
                 <Text style={Styles.sectionHeader}>Age <Text style={Styles.required}>*</Text></Text>
                 <Checkbox label={'Patient is less than 6 months old'} 
                           checked={isUnderSixMonths} 
-                          onChange={() => {setIsUnderSixMonths((prev) => !prev)}}/>
+                          onChange={() => updatePatientData({isUnderSixMonths: !isUnderSixMonths})}/> 
                 <Checkbox label={'Exact date of birth (DOB) unknown'} 
                         checked={isDOBUnknown} 
                         onChange={() => {
-                            setIsDOBUnknown(prev => {
-                                const newValue = !prev;
-                                setDOB(null) // reset DOB value when checkbox clicked
-
-                                if (!newValue) { // DOB is known
-                                    setIsYearMonthUnknown(false); // reset when DOB is known
-                                    
-                                    // clear less detailed age fields
-                                    setBirthYear('')
-                                    setBirthMonth(null)
-                                    setApproxAge('')
-                                }
-                                return newValue;
-
-                            });
+                            const newValue = !isDOBUnknown;
+                            updatePatientData({
+                                isDOBUnknown: newValue,
+                                dob: null,
+                                ...(newValue ? {} : {
+                                    // reset and clear all othe fields when dob unknown checked
+                                    isYearMonthUnknown: false,
+                                    birthYear: '',
+                                    birthMonth: null,
+                                    approxAge: ''
+                                })
+                            })
                         }}
                 />  
                 {
@@ -177,20 +189,16 @@ export default function PatientInformationScreen() {
                             label={'Birth year and month unknown'} 
                             checked={isYearMonthUnknown} 
                             onChange={() => {
-                                setIsYearMonthUnknown((prev) => {
-                                    const newVal = !prev; // change checkbox val
-                                    
-                                    // reset year/month when checkbox clicked
-                                    setBirthYear('')
-                                    setBirthMonth(null)
-
-                                    // if birth year and birth month are known clear other age values
-                                    if (!newVal) {
-                                        setDOB(null)
-                                        setApproxAge('')
-                                    }
-                                    return newVal;
-                                })
+                                const newVal = !isYearMonthUnknown;
+                                updatePatientData({
+                                    isYearMonthUnknown: newVal,
+                                    birthYear: '',
+                                    birthMonth: null,
+                                    ...(newVal ? {} : {
+                                        dob: null,
+                                        approxAge: ''
+                                    })
+                                });
                             }}
                         />  
                         {
@@ -201,7 +209,7 @@ export default function PatientInformationScreen() {
                                 <ValidatedTextInput 
                                     label="Birth Year" 
                                     value={birthYear}
-                                    onChangeText={setBirthYear}
+                                    onChangeText={(value) => updatePatientData({ birthYear: value })}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     style={{marginTop: 10}}
                                     customValidator={() => isValidYearInput(birthYear)}
@@ -212,7 +220,7 @@ export default function PatientInformationScreen() {
                                     data={months} 
                                     label={'Birth Month'}
                                     placeholder="Search for or select patient's birth month" 
-                                    onSelect={setBirthMonth}
+                                    onSelect={(value) => updatePatientData({ birthMonth: value })}
                                     value={birthMonth?.value}
                                     search={true}
                                     style={{marginTop: 10}}
@@ -222,25 +230,21 @@ export default function PatientInformationScreen() {
                             <ValidatedTextInput 
                                 label="Approximate Age (in years)" 
                                 value={approxAge}
-                                onChangeText={setApproxAge}
+                                onChangeText={(value) => updatePatientData({ approxAge: value })}
                                 inputType={INPUT_TYPES.NUMERIC}
                                 customValidator={() => isValidAge(approxAge)}
                                 customErrorMessage={ageErrorMessage}
                                 isRequired={true}
                                 right={<TextInput.Affix text="years old" />}
                             />
-                        }
-                        
+                        }       
                     </>
                 }
-                        
-                
             </ScrollView>
             
             {/* Pagination controls */}
             <View style={Styles.nextButtonContainer}>
                 <PaginationButton
-                    // TODO - add alerts on press ??
                     onPress={() => 
                         {router.push('../(dataEntry-sidenav)/admissionClinicalData')}}
                     isNext={ true }

@@ -1,25 +1,32 @@
 import PaginationControls from '@/src/components/PaginationControls';
-import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
+import SearchableDropdown from '@/src/components/SearchableDropdown';
+import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
-// import { Dropdown } from 'react-native-paper-dropdown';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
-    
-    const [ anaemia, setAnaemia ] = useState<DropdownItem | null>(null);
-    const [ pneumonia, setPneumonia ] = useState<DropdownItem | null>(null);
-    const [ chronicIllness, setChronicIllness ] = useState<DropdownItem | null>(null);
-    const [ acuteDiarrhea, setAcuteDiarrhea ] = useState<DropdownItem | null>(null);
-    const [ malaria, setMalaria ] = useState<DropdownItem | null>(null);
-    const [ sepsis, setSepsis ] = useState<DropdownItem | null>(null);
-    const [ meningitis, setMeningitis ] = useState<DropdownItem | null>(null);
+    const { patientData, updatePatientData, isDataLoaded } = usePatientData();
+
+    // TODO - measure malnutrition status and if sickYoungInfant (must be <28 days old)
+
+    const {
+        anaemia,
+        pneumonia,
+        chronicIllness,
+        acuteDiarrhea,
+        malaria,
+        sepsis,
+        meningitis,
+        malnutritionStatus,
+        sickYoungInfant
+    } = patientData
 
     const diagnosisOptions = [
         { value: 'Yes - positive diagnosis', key: 'yes'},
@@ -32,7 +39,16 @@ export default function MedicalConditionsScreen() {
         { value: 'Yes', key: 'yes'},
         { value: 'No', key: 'no'},
     ]
-      
+    
+    // Don't render until data is loaded
+    if (!isDataLoaded) {
+        return (
+            <SafeAreaView style={{flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center'}}>
+                <Text>Loading...</Text>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             {/* <DebugStack/> */}
@@ -66,7 +82,7 @@ export default function MedicalConditionsScreen() {
                     />
                 </View>
                 
-               <View style = {{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
+               {/* <View style = {{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
                     <TextInput 
                         label="Sick young infant" 
                         mode="flat" 
@@ -83,22 +99,22 @@ export default function MedicalConditionsScreen() {
                         alert("Applies to infants less than 28 days old. \nAutomatically determined based on patient's age");
                         }}
                     />
-                </View>
+                </View> */}
                 
                 <SearchableDropdown 
                     data={diagnosisOptions} 
                     label={'Pneumonia'}
                     placeholder='select option below' 
-                    onSelect={setPneumonia}
-                    value={pneumonia?.value}
+                    onSelect={(value) => updatePatientData({ pneumonia: value })}
+                    value={pneumonia?.key}
                     search={false}
                 />
                 <SearchableDropdown 
                     data={diagnosisOptions} 
                     label={'Severe anaemia'}
                     placeholder='select option below' 
-                    onSelect={setAnaemia}
-                    value={anaemia?.value}
+                    onSelect={(value) => updatePatientData({ anaemia: value })}
+                    value={anaemia?.key}
                     search={false}
                 />
 
@@ -108,8 +124,8 @@ export default function MedicalConditionsScreen() {
                             data={diagnosisOptions} 
                             label={'Chronic illnesses'}
                             placeholder='select option below' 
-                            onSelect={setChronicIllness}
-                            value={chronicIllness?.value}
+                            onSelect={(value) => updatePatientData({ chronicIllness: value })}
+                            value={chronicIllness?.key}
                             search={false}
                         />
                     </View>
@@ -127,33 +143,33 @@ export default function MedicalConditionsScreen() {
                 <SearchableDropdown 
                     label = {'Acute diarrhea'}
                     data = {simplifiedOptions}
-                    value = {acuteDiarrhea?.value}
+                    value = {acuteDiarrhea?.key}
                     placeholder='select option below'
-                    onSelect={setAcuteDiarrhea}
+                    onSelect={(value) => updatePatientData({ acuteDiarrhea: value })}
                     search={false}
                 />
                 <SearchableDropdown 
                     label = {'Malaria'}
                     data = {diagnosisOptions}
-                    value = {malaria?.value}
+                    value = {malaria?.key}
                     placeholder='select option below' 
-                    onSelect={setMalaria}
+                    onSelect={(value) => updatePatientData({ malaria: value })}
                     search={false}
                 />
                 <SearchableDropdown 
                     label = {'Sepsis'}
                     data = {diagnosisOptions}
-                    value = {sepsis?.value}
+                    value = {sepsis?.key}
                     placeholder='select option below' 
-                    onSelect = {setSepsis}
+                    onSelect = {(value) => updatePatientData({ sepsis: value })}
                     search={false}
                 />
                 <SearchableDropdown 
                     label = {'Meningitis/Encephalitis'}
                     data = {diagnosisOptions}
-                    value = {meningitis?.value}
+                    value = {meningitis?.key}
                     placeholder='select option below' 
-                    onSelect = {setMeningitis}
+                    onSelect = {(value) => updatePatientData({ meningitis: value })}
                     search={false}
                 />
 
