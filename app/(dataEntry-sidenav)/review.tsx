@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Button, Card, Divider, List, Text, useTheme } from 'react-native-paper';
+import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -13,12 +13,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData, clearPatientData } = usePatientData();
+    const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    console.log('reviewd sections', reviewedSections)
+    const handleAccordionPress = (sectionId: string) => {
+        setReviewedSections(prev => new Set([...prev, sectionId]));
+    };
 
     const handleSubmit = async () => {
         try {
             setIsSubmitting(true);
-            
+        
             // Validate required fields TODO -- add more required fields
             const requiredFields = ['surname', 'firstName', 'sex'];
             const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
@@ -49,9 +55,9 @@ export default function ReviewScreen() {
         }
     };
 
-    const handleEdit = (screen: string) => {
-        router.push(`/(dataEntry-sidenav)/${screen}` as any);
-    };
+    // const handleEdit = (screen: string) => {
+    //     router.push(`/(dataEntry-sidenav)/${screen}` as any);
+    // };
 
     const formatDate = (date: Date | null): string => {
         if (!date) return 'Not provided';
@@ -75,25 +81,6 @@ export default function ReviewScreen() {
         return 'Not provided';
     };
 
-    const ReviewSection = ({ title, children, onEdit }: { 
-        title: string; 
-        children: React.ReactNode; 
-        onEdit: () => void 
-    }) => (
-        <Card style={[Styles.cardWrapper, { marginBottom: 16 }, ]}>
-            <Card.Content>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <Text variant="headlineSmall" style={{ fontWeight: 'bold' }}>{title}</Text>
-                    <Button mode="elevated" onPress={onEdit} compact buttonColor='white'>
-                        Edit
-                    </Button>
-                </View>
-                <Divider style={{ marginBottom: 12 }} />
-                {children}
-            </Card.Content>
-        </Card>
-    );
-
     const InfoCard = () => (
         <Card style={[Styles.cardWrapper, { marginBottom: 16, padding: 8 }]}>
             <Card.Content>
@@ -103,12 +90,12 @@ export default function ReviewScreen() {
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
                 <MaterialIcons name="error-outline" size={18} color="orange" style={{ marginRight: 6 }} />
-                <Text>Non-reviewed sections are marked with an alert symbol</Text>
+                <Text>Alert symbol marks unreviewed sections</Text>
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                 <MaterialIcons name="check-circle-outline" size={18} color="green" style={{ marginRight: 6 }} />
-                <Text>Reviewed sections are marked with a check mark</Text>
+                <Text>Checkmark symbol marks reviewed sections</Text>
             </View>
 
             <Text style={{ marginBottom: 4 }}>
@@ -121,8 +108,6 @@ export default function ReviewScreen() {
         </Card>
     );
 
-    
-
     const InfoRow = ({ label, value }: { label: string; value: string }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             <Text style={{ fontWeight: 'bold', flex: 1 }}>{label}:</Text>
@@ -130,29 +115,37 @@ export default function ReviewScreen() {
         </View>
     );
 
-    const iconName = 'alert-circle-outline' 
-    //|| 'check-circle-outline'
+    const CustomAccordionIcon = ({ sectionId }: { sectionId: string }) => (
+        <MaterialIcons 
+            name={getAccordionIcon(sectionId) as any}
+            size={24} 
+            color={getAccordionIconColor(sectionId)}
+            style={{ marginLeft: 16, marginTop: 5 }}
+        />
+    );
+
+    const getAccordionIcon = (sectionId: string) => {
+        const isReviewed = reviewedSections.has(sectionId);
+        return isReviewed ? 'check-circle-outline' : 'error-outline';
+    };
+
+    const getAccordionIconColor = (sectionId: string) => {
+        const isReviewed = reviewedSections.has(sectionId);
+        return isReviewed ? 'green' : 'orange';
+    };
   
     // TODO - use accordions instead; if opened and viewed icon changed to 'check' and is green
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
-                
-                {/*<ReviewSection 
-                    title="Patient Information" 
-                    onEdit={() => handleEdit('patientInformation')}>
-                    <InfoRow label="Full Name" value={`${patientData.firstName} ${patientData.otherName} ${patientData.surname}`.trim()} />
-                    <InfoRow label="Sex" value={patientData.sex} />
-                    <InfoRow label="DOB/Age" value={formatAge()} />
-                    <InfoRow label="Under 6 months" value={patientData.isUnderSixMonths ? 'Yes' : 'No'} />
-                </ReviewSection>*/}
                 <InfoCard/>
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
                       title="Patient Information"
                       titleStyle={Styles.accordionListTitle}
-                      left={props => <List.Icon {...props} icon="alert-circle-outline" />}
+                      left={props => <CustomAccordionIcon sectionId="patientInformation" />}
+                      onPress={() => handleAccordionPress('patientInformation')}
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Full Name" value={`${patientData.firstName} ${patientData.otherName} ${patientData.surname}`.trim()} />
@@ -167,7 +160,9 @@ export default function ReviewScreen() {
                     <List.Accordion
                       title="Admission Clinical Data"
                       titleStyle={Styles.accordionListTitle}
-                      left={props => <List.Icon {...props} icon="check-circle-outline" />}>
+                      left={props => <CustomAccordionIcon sectionId="admissionClinicalData" />}
+                      onPress={() => handleAccordionPress('admissionClinicalData')}
+                    >
                         <View style={Styles.accordionContentWrapper}>
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
                             <InfoRow label="Last Hopitalized" value={`${patientData.lastHospitalized?.value}`} />
@@ -193,7 +188,9 @@ export default function ReviewScreen() {
                     <List.Accordion
                       title="Common Medical Conditions"
                       titleStyle={Styles.accordionListTitle}
-                      left={props => <List.Icon {...props} icon="check" />}>
+                      left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
+                      onPress={() => handleAccordionPress('medicalConditions')}
+                    >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Pneumonia" value={patientData.pneumonia?.value || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.anaemia?.value || 'Not provided'} />
@@ -210,7 +207,9 @@ export default function ReviewScreen() {
                     <List.Accordion
                       title="VHT Referral"
                       titleStyle={Styles.accordionListTitle}
-                      left={props => <List.Icon {...props} icon="check" />}>
+                      left={props => <CustomAccordionIcon sectionId="vhtReferral" />}
+                      onPress={() => handleAccordionPress('vhtReferral')}
+                    >
                         <View style={Styles.accordionContentWrapper}>
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Patient Address</Text>
                             <InfoRow label="Village" value={patientData.village?.value || 'Not provided'} />
@@ -227,7 +226,9 @@ export default function ReviewScreen() {
                     <List.Accordion
                       title="Caregiver Contact Information"
                       titleStyle={Styles.accordionListTitle}
-                      left={props => <List.Icon {...props} icon="check" />}>
+                      left={props => <CustomAccordionIcon sectionId="caregiverContact" />}
+                      onPress={() => handleAccordionPress('caregiverContact')}
+                    >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Head of Household" value={patientData.caregiverName || 'Not provided'} />
                             <InfoRow label="Telephone" value={patientData.caregiverTel || 'Not provided'} />
