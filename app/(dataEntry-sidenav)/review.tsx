@@ -16,7 +16,6 @@ export default function ReviewScreen() {
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    console.log('reviewd sections', reviewedSections)
     const handleAccordionPress = (sectionId: string) => {
         setReviewedSections(prev => new Set([...prev, sectionId]));
     };
@@ -29,8 +28,29 @@ export default function ReviewScreen() {
             const requiredFields = ['surname', 'firstName', 'sex'];
             const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
             
+            const allSections = new Set<string>([
+                'patientInformation',
+                'admissionClinicalData',
+                'medicalConditions',
+                'vhtReferral',
+                'caregiverContact'
+            ]);
+
+            function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
+                for (const item of a) {
+                    if (!b.has(item)) return false;
+                }
+                return true;
+            }
+
             if (missingFields.length > 0) {
                 Alert.alert('Missing Information', `Please fill in: ${missingFields.join(', ')}`);
+                return;
+            }
+
+            // check that all sections have been reviewed
+            if (!isSubset(allSections, reviewedSections)) {
+                Alert.alert('Unreviewed Sections', `Please review all sections before submitting patient record`);
                 return;
             }
 
@@ -54,10 +74,6 @@ export default function ReviewScreen() {
             setIsSubmitting(false);
         }
     };
-
-    // const handleEdit = (screen: string) => {
-    //     router.push(`/(dataEntry-sidenav)/${screen}` as any);
-    // };
 
     const formatDate = (date: Date | null): string => {
         if (!date) return 'Not provided';
