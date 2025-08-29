@@ -4,7 +4,7 @@ import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Platform, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, Card, List, Text, useTheme } from 'react-native-paper';
@@ -26,20 +26,19 @@ export default function ReviewScreen() {
         'vhtReferral',
         'caregiverContact'
     ]);
-    
-     // TODO check that that section is completed
-    // if section has NO missing fields, setCompletedSection(prev => new Set([...prev, sectionId]))
-    // have this when patientData changes
-    
-    // useEffect(() => {
-    //     const handleUpdateData = (sectionId: string) => {
-    //         setCompletedSections(prev => new Set([...prev, sectionId]))
-    //     }; 
-    // }, [patientData])
 
-    const handleUpdateData = (sectionId: string) => {
-        setCompletedSections(prev => new Set([...prev, sectionId]))
-    }; 
+    // track which sections are completed
+    useEffect(() => {
+        const missingSectionFields = validateRequiredFields(); // section objects
+        const incompleteSections = Object.keys(missingSectionFields) // display names
+
+        for (const section of allSections) {
+            // check that section is complete
+            if (!incompleteSections.includes(displayNames[section])) {
+                setCompletedSections(prev => new Set([...prev, section]))
+            }
+        }
+    }, [patientData])
 
     const validateRequiredFields = () => {
         const missingSectionFields: { [key: string]: string[] } = {};
@@ -115,14 +114,14 @@ export default function ReviewScreen() {
             // const requiredFields = ['surname', 'firstName', 'sex'];
             // const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
             const missingData = validateRequiredFields();
-
+            
             function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
                 for (const item of a) {
                     if (!b.has(item)) return false;
                 }
                 return true;
             }
-
+    
             // show error if any data is missing
             if (Object.keys(missingData).length > 0) {
                 if (Platform.OS === 'web') {
