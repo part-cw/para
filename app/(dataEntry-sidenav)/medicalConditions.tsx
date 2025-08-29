@@ -82,11 +82,11 @@ export default function MedicalConditionsScreen() {
                     />
                 </View>
                 
-               {/* <View style = {{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
+               <View style = {{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
                     <TextInput 
                         label="Sick young infant" 
                         mode="flat" 
-                        value="eg Not applicable"
+                        value={sickYoungInfant ? 'Yes' : 'No'}
                         style={{flex: 1}}
                         disabled />
                     <IconButton
@@ -99,7 +99,7 @@ export default function MedicalConditionsScreen() {
                         alert("Applies to infants less than 28 days old. \nAutomatically determined based on patient's age");
                         }}
                     />
-                </View> */}
+                </View>
                 
                 <SearchableDropdown 
                     data={diagnosisOptions} 

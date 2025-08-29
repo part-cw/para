@@ -5,6 +5,7 @@ import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { ageErrorMessage, isValidAge, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
@@ -34,23 +35,23 @@ export default function PatientInformationScreen() {
         dob,
         birthYear,
         birthMonth,
-        approxAge
+        approxAge,
+        sickYoungInfant,
     } = patientData;
 
-    // console.log('dob', dob)
-    // console.log('year', birthYear)
-    // console.log('month', birthMonth)
-    // console.log('approxAge', approxAge)
-    // console.log('calculated age', AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge))
-    
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
+            const ageInDays = AgeCalculator.getAgeInDaysFromDob(selectedDate);
+            const isYoungInfant = ageInDays < 28; // true if < 28 days
+            console.log('isyoungenfant?', isYoungInfant)
             // make sure only one of these age params are set to non-null at a time (except year and month must be set together)
+            
             updatePatientData({
                 dob: selectedDate,
                 birthYear: '',
                 birthMonth: null,
-                approxAge: ''
+                approxAge: '',
+                sickYoungInfant: isYoungInfant
             })
         }
     
@@ -240,6 +241,18 @@ export default function PatientInformationScreen() {
                         }       
                     </>
                 }
+                {
+                    (dob || (birthMonth && birthYear) || approxAge)
+                    &&
+                    <Text>
+                        Estimated age:{" "}
+                        {AgeCalculator.roundAge(
+                            AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge)
+                        )}{" "}
+                        years old
+                    </Text>
+                }
+                
             </ScrollView>
             
             {/* Pagination controls */}

@@ -58,7 +58,7 @@ export class AgeCalculator {
      * @param dob entered DOB or created from birthYear and birthMonth
      * @returns age in days from DOB and now
      */
-    private static getAgeInDaysFromDob(dob: Date): number {
+    static getAgeInDaysFromDob(dob: Date): number {
         const now = new Date();
         const diffTime = now.getTime() - dob.getTime(); // time is ms
         const diffDays = diffTime / this.msPerDay;
@@ -76,7 +76,9 @@ export class AgeCalculator {
 
         // Average 365.25 days/year. Source: https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
         // TODO - use 31557600 seconds per year instead? -- from old PARA
-        return  (diffDays / 365.25)
+        const diffYears = diffDays / 365.25
+        
+        return  diffYears
     }
 
     /**
@@ -115,7 +117,7 @@ export class AgeCalculator {
      * @param age can be age in months or years
      * @returns rounds age to 1 decimal place
      */
-    private static roundAge(age: number): number {
+    static roundAge(age: number): number {
         return Math.round(age * 10) / 10;
     }
 
@@ -126,7 +128,7 @@ export class AgeCalculator {
      * @returns converts DOB or age in years into age in months, unrounded. 
      * Assume params are never both null - either dob or years must be defined
      */
-    static getAgeInMonths(dob: Date | null, years: number | null): number {
+    static getAgeInMonths(dob: Date | null, years?: number | null): number {
         let months: number = 0;
 
         if (dob) {
