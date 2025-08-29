@@ -1,4 +1,6 @@
 import { usePatientData } from '@/src/contexts/PatientDataContext';
+import { displayNames } from '@/src/forms/displayNames';
+import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -15,6 +17,29 @@ export default function ReviewScreen() {
     const { patientData, savePatientData, clearPatientData } = usePatientData();
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+
+     const validateRequiredFields = () => {
+        const missingSectionFields: { [key: string]: string[] } = {};
+
+        for (const item of patientFormSchema) {
+            const missingFields: string[] = [];
+
+            for (const fieldName of item.required) {
+                const fieldValue = patientData[fieldName as keyof typeof patientData];
+
+                // Check if field is empty or null
+                if (!fieldValue || 
+                    (typeof fieldValue === 'string' && fieldValue.trim() === '') ||
+                    (fieldValue === null)) {
+                    missingFields.push(displayNames[fieldName] || fieldName);
+                }
+            }
+
+        }
+
+        return []; // stub
+    }
 
     const handleAccordionPress = (sectionId: string) => {
         setReviewedSections(prev => new Set([...prev, sectionId]));
@@ -24,10 +49,9 @@ export default function ReviewScreen() {
         try {
             setIsSubmitting(true);
         
-            // Validate required fields TODO -- add more required fields
             const requiredFields = ['surname', 'firstName', 'sex'];
             const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
-            
+
             const allSections = new Set<string>([
                 'patientInformation',
                 'admissionClinicalData',
@@ -267,7 +291,7 @@ export default function ReviewScreen() {
                     loading={isSubmitting}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? 'Saving Patient Data...' : 'Submit Patient Data'}
+                    {isSubmitting ? 'Saving Patient Record...' : 'Submit'}
                 </Button>
             </ScrollView>
         </SafeAreaView>

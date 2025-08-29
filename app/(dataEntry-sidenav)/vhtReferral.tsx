@@ -240,7 +240,7 @@ export default function VHTReferralScreen() {
                                 value={village?.value || ''}
                             />
                             <TextInput 
-                                label="Subvillage (required)"
+                                label="Subvillage" // TODO - make sure subvillage is optional
                                 placeholder="Enter subvillage name" 
                                 mode="outlined" 
                                 style={Styles.textInput}
