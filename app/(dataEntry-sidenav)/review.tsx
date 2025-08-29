@@ -108,9 +108,8 @@ export default function ReviewScreen() {
                 return true;
             }
 
-            // show error is any data is missing
+            // show error if any data is missing
             if (Object.keys(missingData).length > 0) {
-                console.log('printing missing info erro')
                 if (Platform.OS === 'web') {
                     alert(`Missing Information\n${formatMissingFieldsMessage(missingData)}`)
                     return;
