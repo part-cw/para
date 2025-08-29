@@ -16,8 +16,30 @@ export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData, clearPatientData } = usePatientData();
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set());
+    const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
     
+    const allSections = new Set<string>([
+        'patientInformation',
+        'admissionClinicalData',
+        'medicalConditions',
+        'vhtReferral',
+        'caregiverContact'
+    ]);
+    
+     // TODO check that that section is completed
+    // if section has NO missing fields, setCompletedSection(prev => new Set([...prev, sectionId]))
+    // have this when patientData changes
+    
+    // useEffect(() => {
+    //     const handleUpdateData = (sectionId: string) => {
+    //         setCompletedSections(prev => new Set([...prev, sectionId]))
+    //     }; 
+    // }, [patientData])
+
+    const handleUpdateData = (sectionId: string) => {
+        setCompletedSections(prev => new Set([...prev, sectionId]))
+    }; 
 
     const validateRequiredFields = () => {
         const missingSectionFields: { [key: string]: string[] } = {};
@@ -64,7 +86,8 @@ export default function ReviewScreen() {
             }
 
             if (missingFields.length > 0) {
-                missingSectionFields[section.sectionName] = missingFields;
+                const sectionTitle = displayNames[section.sectionName]
+                missingSectionFields[sectionTitle] = missingFields;
             }
         }
 
@@ -92,14 +115,6 @@ export default function ReviewScreen() {
             // const requiredFields = ['surname', 'firstName', 'sex'];
             // const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
             const missingData = validateRequiredFields();
-
-            const allSections = new Set<string>([
-                'patientInformation',
-                'admissionClinicalData',
-                'medicalConditions',
-                'vhtReferral',
-                'caregiverContact'
-            ]);
 
             function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
                 for (const item of a) {
@@ -182,12 +197,12 @@ export default function ReviewScreen() {
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
                 <MaterialIcons name="error-outline" size={18} color="orange" style={{ marginRight: 6 }} />
-                <Text>Alert symbol marks unreviewed sections</Text>
+                <Text>Alert marks incomplete or unreviewed sections</Text>
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                 <MaterialIcons name="check-circle-outline" size={18} color="green" style={{ marginRight: 6 }} />
-                <Text>Checkmark symbol marks reviewed sections</Text>
+                <Text>Check marks completed & reviewed sections</Text>
             </View>
 
             <Text style={{ marginBottom: 4 }}>
@@ -218,12 +233,14 @@ export default function ReviewScreen() {
 
     const getAccordionIcon = (sectionId: string) => {
         const isReviewed = reviewedSections.has(sectionId);
-        return isReviewed ? 'check-circle-outline' : 'error-outline';
+        const isComplete = completedSections.has(sectionId);
+        return isReviewed && isComplete ? 'check-circle-outline' : 'error-outline';
     };
 
     const getAccordionIconColor = (sectionId: string) => {
         const isReviewed = reviewedSections.has(sectionId);
-        return isReviewed ? 'green' : 'orange';
+        const isComplete = completedSections.has(sectionId);
+        return isReviewed && isComplete ? 'green' : 'orange';
     };
   
     return (

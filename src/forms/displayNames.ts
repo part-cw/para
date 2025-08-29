@@ -1,6 +1,7 @@
 
 export const displayNames: Record<string, string> = {
     // Patient Information
+    patientInformation: 'Patient Information',
     surname: 'Surname',
     firstName: 'First Name',
     otherName: 'Other Name',
@@ -14,6 +15,7 @@ export const displayNames: Record<string, string> = {
     isYearMonthUnknown: 'Birth year and month unknown',
     
     // Admission Clinical Data
+    admissionClinicalData: 'Admission Clincial Data',
     lastHospitalized: 'Last Hospitalized',
     hivStatus: 'HIV Status',
     muac: 'MUAC',
@@ -27,6 +29,7 @@ export const displayNames: Record<string, string> = {
     verbalResponse: 'Verbal response',
 
     // Medical Conditions
+    medicalConditions: 'Medical Conditions',
     anaemia: 'Severe anaemia',
     pneumonia: 'Pneumonia',
     chronicIllness: 'Chronic Illnesses',
@@ -38,12 +41,14 @@ export const displayNames: Record<string, string> = {
     sickYoungInfant: 'Sick young infant',
 
     // vhtReferral info
+    vhtReferral: 'VHT Referral',
     village: 'Village',
     subvillage: 'Subvillage',
     vhtName: 'VHT Name', 
     vhtTelephone: 'VHT Telephone',
 
     // caregiverContact
+    caregiverContact: 'Caregiver Contact',
     caregiverName: 'Name of Head of Family',
     caregiverTel: 'Telephone',
     confirmTel: 'Confirm Telephone',

@@ -4,11 +4,11 @@
      * All text input fields in patient admission form that can be modified by user
      * 'required' and 'oneOf' are fields that must be filled
      * 'optional' are fields that are NOT required
-     * Section is section name in human readable format
+     * Section name must match keys in displayNames.ts
      */
     export const patientFormSchema = [
         {
-            sectionName: 'Patient Information', 
+            sectionName: 'patientInformation', 
             required: ['surname', 'firstName', 'sex'],
             oneOf: [
                 ['dob'],
@@ -18,23 +18,23 @@
             optional: ['otherName']
         },
         {
-            sectionName: 'Admission Clincial Data', 
+            sectionName: 'admissionClinicalData', 
             required: ['lastHospitalized', 'hivStatus', 'temperature', 
                       'muac', 'rrate', 'spo2', 'heartRate', 'eyeMovement', 
                       "motorResponse", "verbalResponse" ]
         },
         {
-            sectionName: 'Medical Conditions', 
+            sectionName: 'medicalConditions', 
             required: ['anaemia', 'pneumonia', 'chronicIllness', 
                      'acuteDiarrhea', 'malaria', 'sepsis', 'meningitis']
         },
         {
-            sectionName: 'VHT Referral',
+            sectionName: 'vhtReferral',
             required: ['village', 'vhtName', 'vhtTelephone'],
             optional: ['subvillage']
         },
         {
-            sectionName: 'Caregiver Contact',
+            sectionName: 'caregiverContact',
             required: ['caregiverName'],
             optional: ['telephone', 'confirmTelephone']
         }
