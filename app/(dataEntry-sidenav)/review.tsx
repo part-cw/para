@@ -19,26 +19,66 @@ export default function ReviewScreen() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
 
-     const validateRequiredFields = () => {
+    const validateRequiredFields = () => {
         const missingSectionFields: { [key: string]: string[] } = {};
 
-        for (const item of patientFormSchema) {
+        for (const section of patientFormSchema) {
             const missingFields: string[] = [];
 
-            for (const fieldName of item.required) {
+            // check required fields
+            for (const fieldName of section.required) {
                 const fieldValue = patientData[fieldName as keyof typeof patientData];
 
                 // Check if field is empty or null
                 if (!fieldValue || 
                     (typeof fieldValue === 'string' && fieldValue.trim() === '') ||
                     (fieldValue === null)) {
-                    missingFields.push(displayNames[fieldName] || fieldName);
+                    missingFields.push(displayNames[fieldName] || fieldName); // if no display name, push fieldName
                 }
             }
 
+            // check optional fields
+            if (section.oneOf) {
+                let hasValidOption = false;
+ 
+                for (const option of section.oneOf) {
+                    // check if all fields in this option are filled
+                    const allFieldsFilled = option.every(fieldName => {
+                        const fieldValue = patientData[fieldName as keyof typeof patientData]
+                        // true if field value not empty string or null
+                        return fieldValue &&
+                               !(typeof fieldValue === 'string' && fieldValue.trim() === '') &&
+                               fieldValue !== null
+                    })
+
+                    if (allFieldsFilled) {
+                        hasValidOption = true;
+                        break;
+                    }
+                }
+
+                if (!hasValidOption){
+                    // TODO - hardcode message for now - only age info has 'oneof'. In the future we may want to create a more dynamic message
+                    missingFields.push('Age information')
+                }
+            }
+
+            if (missingFields.length > 0) {
+                missingSectionFields[section.sectionName] = missingFields;
+            }
         }
 
-        return []; // stub
+        return missingSectionFields;
+    }
+
+    const formatMissingFieldsMessage = (missingSectionFields: {[key: string]: string[]}) => {
+        let message = 'Please fill in:\n\n'
+        
+        for (const [sectionTitle, fields] of Object.entries(missingSectionFields)) {
+            message += `${sectionTitle.toUpperCase()}: ${fields.join(', ')}\n\n`
+        }
+        
+        return message.trim()
     }
 
     const handleAccordionPress = (sectionId: string) => {
@@ -49,8 +89,9 @@ export default function ReviewScreen() {
         try {
             setIsSubmitting(true);
         
-            const requiredFields = ['surname', 'firstName', 'sex'];
-            const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
+            // const requiredFields = ['surname', 'firstName', 'sex'];
+            // const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
+            const missingData = validateRequiredFields();
 
             const allSections = new Set<string>([
                 'patientInformation',
@@ -67,8 +108,8 @@ export default function ReviewScreen() {
                 return true;
             }
 
-            if (missingFields.length > 0) {
-                Alert.alert('Missing Information', `Please fill in: ${missingFields.join(', ')}`);
+            if (missingData) {
+                Alert.alert('Missing Information', `${formatMissingFieldsMessage(missingData)}`);
                 return;
             }
 
