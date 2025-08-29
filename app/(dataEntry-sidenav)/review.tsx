@@ -5,7 +5,7 @@ import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, Platform, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -108,13 +108,25 @@ export default function ReviewScreen() {
                 return true;
             }
 
-            if (missingData) {
+            // show error is any data is missing
+            if (Object.keys(missingData).length > 0) {
+                console.log('printing missing info erro')
+                if (Platform.OS === 'web') {
+                    alert(`Missing Information\n${formatMissingFieldsMessage(missingData)}`)
+                    return;
+                }
+
                 Alert.alert('Missing Information', `${formatMissingFieldsMessage(missingData)}`);
                 return;
             }
 
             // check that all sections have been reviewed
             if (!isSubset(allSections, reviewedSections)) {
+                if (Platform.OS === 'web') {
+                    alert('Unreviewed Sections\nPlease review all sections before submitting patient record')
+                    return;
+                }
+
                 Alert.alert('Unreviewed Sections', `Please review all sections before submitting patient record`);
                 return;
             }
