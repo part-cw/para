@@ -111,8 +111,6 @@ export default function ReviewScreen() {
         try {
             setIsSubmitting(true);
         
-            // const requiredFields = ['surname', 'firstName', 'sex'];
-            // const missingFields = requiredFields.filter(field => !patientData[field as keyof typeof patientData]);
             const missingData = validateRequiredFields();
             
             function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
@@ -125,7 +123,7 @@ export default function ReviewScreen() {
             // show error if any data is missing
             if (Object.keys(missingData).length > 0) {
                 if (Platform.OS === 'web') {
-                    alert(`Missing Information\n${formatMissingFieldsMessage(missingData)}`)
+                    alert(`Missing Information. ${formatMissingFieldsMessage(missingData)}`)
                     return;
                 }
 
