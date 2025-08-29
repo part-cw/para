@@ -215,7 +215,6 @@ export default function ReviewScreen() {
         return isReviewed ? 'green' : 'orange';
     };
   
-    // TODO - use accordions instead; if opened and viewed icon changed to 'check' and is green
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -246,16 +245,16 @@ export default function ReviewScreen() {
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
-                            <InfoRow label="Last Hopitalized" value={`${patientData.lastHospitalized?.value}`} />
+                            <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized?.value || 'Not provided'} />
                             <InfoRow label="HIV Status" value={patientData.hivStatus} />
                             
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                             <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                            <InfoRow label="MUAC" value={`${patientData.muac} mm`} />
-                            <InfoRow label="Temperature" value={`${patientData.temperature} °C`} />
-                            <InfoRow label="Respiratory Rate" value={`${patientData.rrate} breaths per min`} />
-                            <InfoRow label="SpO2" value={`${patientData.spo2} %`} />
-                            <InfoRow label="Heart Rate" value={`${patientData.heartRate} beats per min`} />
+                            <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                            <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
+                            <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
+                            <InfoRow label="SpO2" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
+                            <InfoRow label="Heart Rate" value={patientData.heartRate ? `${patientData.heartRate} beats per min` : 'Not provided'} />
                             
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
                             <InfoRow label="Eye movement" value={`${patientData.eyeMovement?.value}`} />
