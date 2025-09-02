@@ -44,7 +44,7 @@ export interface PatientData {
   sepsis: DropdownItem | null;
   meningitis: DropdownItem | null;
   malnutritionStatus: string;
-  sickYoungInfant: boolean | null;
+  sickYoungInfant: boolean;
   
   // vhtReferral info
   village: DropdownItem | null;
@@ -97,7 +97,7 @@ const initialPatientData: PatientData = {
   sepsis: null,
   meningitis: null,
   malnutritionStatus: '',
-  sickYoungInfant: null, // TODO - change to false?
+  sickYoungInfant: false,
 
   // vht referral information
   village: null,

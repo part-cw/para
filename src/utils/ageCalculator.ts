@@ -88,7 +88,7 @@ export class AgeCalculator {
      * @param birthMonth entered manually - assume valid input
      * @returns creates DOB in Date formate. Assumes birth date is 15th of birth year
      */
-    private static createDob(birthYear: string, birthMonth: DropdownItem): Date {
+    static createDob(birthYear: string, birthMonth: DropdownItem): Date {
         console.log('making new dob...')
         const birthMonthIndex = this.monthToIndex(birthMonth)
         const dob = new Date(Number(birthYear), birthMonthIndex, 15) // TODO - what if curr date before the 15th:??

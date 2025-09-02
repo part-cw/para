@@ -1,7 +1,7 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
-import SearchableDropdown from '@/src/components/SearchableDropdown';
+import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
@@ -43,8 +43,6 @@ export default function PatientInformationScreen() {
         if (event.type === "set" && selectedDate) {
             const ageInDays = AgeCalculator.getAgeInDaysFromDob(selectedDate);
             const isYoungInfant = ageInDays < 28; // true if < 28 days
-            console.log('isyoungenfant?', isYoungInfant)
-            // make sure only one of these age params are set to non-null at a time (except year and month must be set together)
             
             updatePatientData({
                 dob: selectedDate,
@@ -60,17 +58,30 @@ export default function PatientInformationScreen() {
         }
     };
 
-    const handleApproxAge = (value: string) => {
+    const handleApproxAgeChange = (value: string) => {
         // multiply years by 365.25 days/year
         let ageInDays = Number(value) * 365.25
         ageInDays = AgeCalculator.roundAge(ageInDays);
-
-        console.log('ageInDays', ageInDays)
         const isYoungInfant = ageInDays < 28;
 
         updatePatientData({ 
             approxAge: value,
             sickYoungInfant: isYoungInfant 
+        })
+    }
+
+    const handleYearMonthChange = (year: string, month: DropdownItem | null) => {
+        let isYoungInfant
+        if (year && month) {
+            const dob = AgeCalculator.createDob(year, month)
+            const ageInDays = AgeCalculator.getAgeInDaysFromDob(dob)
+            isYoungInfant = ageInDays < 28;
+        }
+
+        updatePatientData({ 
+            birthYear: year,
+            birthMonth: month,
+            sickYoungInfant: isYoungInfant
         })
     }
 
@@ -223,7 +234,7 @@ export default function PatientInformationScreen() {
                                 <ValidatedTextInput 
                                     label="Birth Year" 
                                     value={birthYear}
-                                    onChangeText={(value) => updatePatientData({ birthYear: value })}
+                                    onChangeText={(value) => handleYearMonthChange(value, patientData.birthMonth)}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     style={{marginTop: 10}}
                                     customValidator={() => isValidYearInput(birthYear)}
@@ -234,7 +245,7 @@ export default function PatientInformationScreen() {
                                     data={months} 
                                     label={'Birth Month'}
                                     placeholder="Search for or select patient's birth month" 
-                                    onSelect={(value) => updatePatientData({ birthMonth: value })}
+                                    onSelect={(value) => handleYearMonthChange(patientData.birthYear, value)}
                                     value={birthMonth?.value}
                                     search={true}
                                     style={{marginTop: 10}}
@@ -244,7 +255,7 @@ export default function PatientInformationScreen() {
                             <ValidatedTextInput 
                                 label="Approximate Age (in years)" 
                                 value={approxAge}
-                                onChangeText={handleApproxAge}
+                                onChangeText={handleApproxAgeChange}
                                 inputType={INPUT_TYPES.NUMERIC}
                                 customValidator={() => isValidAge(approxAge)}
                                 customErrorMessage={ageErrorMessage}
