@@ -1,5 +1,6 @@
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import {
+  formatNumericInput,
   formatPhoneNumber,
   formatText,
   isValidNumericFormat,
@@ -64,7 +65,7 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
       case INPUT_TYPES.NUMERIC:
         return {
           validator: (val: string) => isValidNumericFormat(val, minValue, maxValue),
-          formatter: (val: string) => val.replace(/[^0-9.-]/g, ''), // Keep only numbers, dots, and dashes
+          formatter: (val: string) => formatNumericInput(val),
           errorMessage: numericErrorMessage
         };
       case INPUT_TYPES.PHONE:

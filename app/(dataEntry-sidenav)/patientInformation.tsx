@@ -6,7 +6,7 @@ import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextI
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
-import { ageErrorMessage, isValidAge, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
+import { ageErrorMessage, formatNumericInput, isValidAge, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -52,7 +52,7 @@ export default function PatientInformationScreen() {
                 sickYoungInfant: isYoungInfant
             })
         }
-    
+
         if (Platform.OS === "android") {
             setShowDatePicker(false); // Android requires manual closing
         }
@@ -261,6 +261,7 @@ export default function PatientInformationScreen() {
                                 customErrorMessage={ageErrorMessage}
                                 isRequired={true}
                                 right={<TextInput.Affix text="years old" />}
+                                onBlur={() => handleApproxAgeChange(formatNumericInput(approxAge))}
                             />
                         }       
                     </>

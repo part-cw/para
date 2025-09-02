@@ -3,6 +3,7 @@ Functions to validate text input and convert entered text to proper form
 */
 
 import { ValidationResult } from "../components/SearchableDropdown";
+import { MAX_PATIENT_AGE } from "../config";
 
 // TODO - add input validation for weight, muac, temp, rrate, spo2
 
@@ -134,7 +135,6 @@ export function isValidPhoneNumber(input: string): boolean {
 
     /**
      * Age-specific validation (positive integers only) - must be 0-5.5 years old
-     * TODO - fix validation!
      */
     export function isValidAge(input: string): boolean {
         if (!input || !input.trim()) {
@@ -149,7 +149,7 @@ export function isValidPhoneNumber(input: string): boolean {
         }
 
         const age = Number(trimmed);
-        return age >= 0 && age <= 5.5;
+        return age >= 0 && age <= MAX_PATIENT_AGE;
     }
 
     // Numeric validation
@@ -161,7 +161,14 @@ export function isValidPhoneNumber(input: string): boolean {
         const trimmed = input.trim();
         
         // Check if it's a valid number
-        const numericRegex = /^-?\d+(\.\d+)?$/;
+        // Regex:
+        // ^             -> start
+        // -?            -> optional leading minus
+        // (?:\d+(\.\d*)?|\.\d+) -> either:
+        //    • digits, optional dot + digits
+        //    • OR dot + digits (for ".5")
+        // $             -> end
+        const numericRegex = /^-?(?:\d+(\.\d*)?|\.\d+)$/;
         if (!numericRegex.test(trimmed)) {
             return false;
         }
@@ -183,6 +190,12 @@ export function isValidPhoneNumber(input: string): boolean {
         }
 
         return true;
+    }
+
+    export function formatNumericInput(input: string): string {
+        return input.trim()
+                    .replace(/[^0-9.-]/g, '')     // Keep only numbers, dots, and dashes
+                    .replace(/^(-?)\./, '$10.')  // add leading 0 if starts with "." or "-."
     }
 
     /**
@@ -221,7 +234,7 @@ export function isValidPhoneNumber(input: string): boolean {
 
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";
-    export const ageErrorMessage = "Age must be between 0 and 5.5 years. Older children are not eligible for this program";
+    export const ageErrorMessage = `Age must be between 0 and ${MAX_PATIENT_AGE} years. Older children are not eligible for this program`;
     export const telephoneErrorMessage = 'Invalid phone number format. Use format: 0xxxxxxxxx (10 digits starting with 0) or +xxx... (international)';
     export const confirmPhoneErrorMessage = 'Phone number must match and be in valid format'
     export const dateErrorMessage = 'Date must be in format YYYYMMDD'

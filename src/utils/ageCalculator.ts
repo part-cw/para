@@ -27,7 +27,6 @@ export class AgeCalculator {
         birthMonth: DropdownItem|null, 
         approxAge: string
     ): number {
-
         if (dob && !birthYear && !birthMonth && !approxAge) {
             const age = this.getAgeInYearsFromDOB(dob)
             if (age < 0) {
@@ -43,11 +42,6 @@ export class AgeCalculator {
             return age;
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
             const parsed = Number(approxAge);
-            
-            // TODO fix error -- when i enter a decimal this is thrown.
-            if (isNaN(parsed)) {
-                throw new Error("Approximate age is not a valid number.");
-            }
             return parsed
         } 
 
