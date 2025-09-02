@@ -60,6 +60,20 @@ export default function PatientInformationScreen() {
         }
     };
 
+    const handleApproxAge = (value: string) => {
+        // multiply years by 365.25 days/year
+        let ageInDays = Number(value) * 365.25
+        ageInDays = AgeCalculator.roundAge(ageInDays);
+
+        console.log('ageInDays', ageInDays)
+        const isYoungInfant = ageInDays < 28;
+
+        updatePatientData({ 
+            approxAge: value,
+            sickYoungInfant: isYoungInfant 
+        })
+    }
+
     const months = [
         { value: 'January', key: 'Jan'},
         { value: 'February', key: 'Feb'},
@@ -206,7 +220,6 @@ export default function PatientInformationScreen() {
                             !isYearMonthUnknown
                             ?
                             <>
-                                {/* TODO - validate year -- numbers only, no special characters */}
                                 <ValidatedTextInput 
                                     label="Birth Year" 
                                     value={birthYear}
@@ -231,7 +244,7 @@ export default function PatientInformationScreen() {
                             <ValidatedTextInput 
                                 label="Approximate Age (in years)" 
                                 value={approxAge}
-                                onChangeText={(value) => updatePatientData({ approxAge: value })}
+                                onChangeText={handleApproxAge}
                                 inputType={INPUT_TYPES.NUMERIC}
                                 customValidator={() => isValidAge(approxAge)}
                                 customErrorMessage={ageErrorMessage}

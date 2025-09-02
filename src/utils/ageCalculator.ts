@@ -44,6 +44,7 @@ export class AgeCalculator {
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
             const parsed = Number(approxAge);
             
+            // TODO fix error -- when i enter a decimal this is thrown.
             if (isNaN(parsed)) {
                 throw new Error("Approximate age is not a valid number.");
             }
