@@ -6,7 +6,7 @@ import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextI
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
-import { ageErrorMessage, formatNumericInput, isValidAge, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
+import { formatNumericInput, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -22,6 +22,8 @@ export default function PatientInformationScreen() {
     const { patientData, updatePatientData, getPreviewPatientId, startAdmission, isDataLoaded } = usePatientData();
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [ageValidationError, setAgeValidationError] = useState<string>('');
+    const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
 
     // Local state for form validation and UI
     const {
@@ -39,6 +41,22 @@ export default function PatientInformationScreen() {
         sickYoungInfant,
     } = patientData;
 
+    // Function to validate age and set error state
+    const validateAge = () => {
+        try {
+            const age = AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge);
+            console.log('setting calculatedAge to', age)
+            setCalculatedAge(age);
+            setAgeValidationError(''); // Clear error if validation passes
+            return true;
+        } catch (error) {
+            setCalculatedAge(null);
+            setAgeValidationError(error instanceof Error ? error.message : 'Invalid age information');
+            return false;
+        }
+    };
+
+    console.log('calcualtedAge', calculatedAge)
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
             const ageInDays = AgeCalculator.getAgeInDaysFromDob(selectedDate);
@@ -51,6 +69,9 @@ export default function PatientInformationScreen() {
                 approxAge: '',
                 sickYoungInfant: isYoungInfant
             })
+
+            // Clear age validation error when date changes
+            setAgeValidationError('');
         }
 
         if (Platform.OS === "android") {
@@ -58,16 +79,25 @@ export default function PatientInformationScreen() {
         }
     };
 
+    console.log('patientdata.approxage', patientData.approxAge)
     const handleApproxAgeChange = (value: string) => {
         // multiply years by 365.25 days/year
         let ageInDays = Number(value) * 365.25
         ageInDays = AgeCalculator.roundAge(ageInDays);
         const isYoungInfant = ageInDays < 28;
 
+        let enteredAge = value;
+        if (Number(value) < 0) {
+            enteredAge = ''
+        }
+
         updatePatientData({ 
-            approxAge: value,
+            approxAge: enteredAge,
             sickYoungInfant: isYoungInfant 
         })
+
+        // Clear age validation error when approx age changes
+        setAgeValidationError('');
     }
 
     const handleYearMonthChange = (year: string, month: DropdownItem | null) => {
@@ -83,7 +113,27 @@ export default function PatientInformationScreen() {
             birthMonth: month,
             sickYoungInfant: isYoungInfant
         })
+
+        // Clear age validation error when year/month changes
+        setAgeValidationError('');
     }
+
+    // Validate age whenever relevant data changes
+    useEffect(() => {
+        // Only validate if we have some age information
+        if (dob || (birthYear && birthMonth) || approxAge) {
+            // Use setTimeout to avoid validation during rapid state changes
+            const timeoutId = setTimeout(() => {
+                validateAge();
+            }, 500);
+
+            return () => clearTimeout(timeoutId);
+        } else {
+            setAgeValidationError('');
+            setCalculatedAge(null);
+        }
+    }, [dob, birthYear, birthMonth, approxAge]);
+
 
     const months = [
         { value: 'January', key: 'Jan'},
@@ -122,7 +172,7 @@ export default function PatientInformationScreen() {
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-            <ScrollView contentContainerStyle={{ padding: 20 }}>
+            <ScrollView contentContainerStyle={{ padding: 20 }} automaticallyAdjustKeyboardInsets={true}>
                 {/* Patient ID Section */}
                 <Text style={Styles.sectionHeader}>Patient ID</Text>
                 <TextInput mode="flat" value={previewPatientId} disabled />
@@ -181,6 +231,7 @@ export default function PatientInformationScreen() {
                                     approxAge: ''
                                 })
                             })
+                            setAgeValidationError(''); // clear error when toggling
                         }}
                 />  
                 {
@@ -225,6 +276,7 @@ export default function PatientInformationScreen() {
                                         approxAge: ''
                                     })
                                 });
+                                setAgeValidationError(''); // Clear error when toggling
                             }}
                         />  
                         {
@@ -257,8 +309,6 @@ export default function PatientInformationScreen() {
                                 value={approxAge}
                                 onChangeText={handleApproxAgeChange}
                                 inputType={INPUT_TYPES.NUMERIC}
-                                customValidator={() => isValidAge(approxAge)}
-                                customErrorMessage={ageErrorMessage}
                                 isRequired={true}
                                 right={<TextInput.Affix text="years old" />}
                                 onBlur={() => handleApproxAgeChange(formatNumericInput(approxAge))}
@@ -266,15 +316,18 @@ export default function PatientInformationScreen() {
                         }       
                     </>
                 }
+                
+                {/* Display age validation error */}
+                {ageValidationError && (
+                    <Text style={[Styles.errorText, {marginTop: 5}]}>{ageValidationError}</Text>
+                )}
+
+                {/* Display estimated age if necessary fields filled and no ageValidation error */}
                 {
-                    (dob || (birthMonth && birthYear) || approxAge)
+                    (dob || (birthMonth && birthYear) || approxAge) && (!ageValidationError && calculatedAge!== null)
                     &&
                     <Text>
-                        Estimated age:{" "}
-                        {AgeCalculator.roundAge(
-                            AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge)
-                        )}{" "}
-                        years old
+                        Estimated age: {AgeCalculator.roundAge(calculatedAge)} years old
                     </Text>
                 }
                 
@@ -283,10 +336,14 @@ export default function PatientInformationScreen() {
             {/* Pagination controls */}
             <View style={Styles.nextButtonContainer}>
                 <PaginationButton
-                    onPress={() => 
-                        {router.push('../(dataEntry-sidenav)/admissionClinicalData')}}
+                    onPress={() => {
+                        if (!ageValidationError) {
+                            router.push('../(dataEntry-sidenav)/admissionClinicalData')
+                        }
+                    }}
                     isNext={ true }
                     label='Next'
+                    disabled={!!ageValidationError} // disable pagination if there are age validation errors
                 />
             </View>
           

@@ -7,6 +7,8 @@
 //  * TODO for model calculation - round to 1 decimal place
 
 import { DropdownItem } from "../components/SearchableDropdown";
+import { MAX_PATIENT_AGE } from "../config";
+import { ageRangeErrorMessage, isValidAge } from "./inputValidator";
 
 export class AgeCalculator {
 
@@ -32,6 +34,11 @@ export class AgeCalculator {
             if (age < 0) {
                 throw new Error("DOB cannot be in the future");
             }
+            
+            if (age > MAX_PATIENT_AGE) {
+                throw new Error(ageRangeErrorMessage)
+            }
+           
             return age;
         } else if (birthYear && birthMonth && !dob && !approxAge) {
             const newDob = this.createDob(birthYear, birthMonth)
@@ -39,8 +46,17 @@ export class AgeCalculator {
             if (age < 0) {
                 throw new Error("DOB (calculated from birth year/month) cannot be in the future")
             }
+            
+            if (age > MAX_PATIENT_AGE) {
+                throw new Error(ageRangeErrorMessage)
+            }
+            
             return age;
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
+            if(!isValidAge(Number(approxAge.trim()))) {
+                throw new Error(ageRangeErrorMessage)
+            }
+            
             const parsed = Number(approxAge);
             return parsed
         } 
