@@ -10,20 +10,28 @@ import { formatNumericInput, isValidYearInput, yearErrorMessage } from '@/src/ut
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform, Text, TouchableOpacity, View } from 'react-native';
+import {
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO - add age validation for DOB and birth year/month - ensure estimated age is <= 5.5!
-
 export default function PatientInformationScreen() {
+    const { height } = useWindowDimensions();
+
     const { patientData, updatePatientData, getPreviewPatientId, startAdmission, isDataLoaded } = usePatientData();
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [ageValidationError, setAgeValidationError] = useState<string>('');
     const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
+    // const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     // Local state for form validation and UI
     const {
@@ -41,6 +49,23 @@ export default function PatientInformationScreen() {
         sickYoungInfant,
     } = patientData;
 
+    // Keyboard event listeners -- TODO - remove?
+    // useEffect(() => {
+    //     if (Platform.OS === 'android') {
+    //         const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
+    //             setKeyboardHeight(e.endCoordinates.height);
+    //         });
+    //         const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+    //             setKeyboardHeight(0);
+    //         });
+
+    //         return () => {
+    //             keyboardDidShowListener?.remove();
+    //             keyboardDidHideListener?.remove();
+    //         };
+    //     }
+    // }, []);
+
     // Function to validate age and set error state
     const validateAge = () => {
         try {
@@ -56,7 +81,6 @@ export default function PatientInformationScreen() {
         }
     };
 
-    console.log('calcualtedAge', calculatedAge)
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
             const ageInDays = AgeCalculator.getAgeInDaysFromDob(selectedDate);
@@ -79,7 +103,6 @@ export default function PatientInformationScreen() {
         }
     };
 
-    console.log('patientdata.approxage', patientData.approxAge)
     const handleApproxAgeChange = (value: string) => {
         // multiply years by 365.25 days/year
         let ageInDays = Number(value) * 365.25
@@ -134,7 +157,6 @@ export default function PatientInformationScreen() {
         }
     }, [dob, birthYear, birthMonth, approxAge]);
 
-
     const months = [
         { value: 'January', key: 'Jan'},
         { value: 'February', key: 'Feb'},
@@ -152,8 +174,8 @@ export default function PatientInformationScreen() {
 
     useEffect(() => {
         const fetchId = async () => {
-        const id = await getPreviewPatientId();
-        setPreviewPatientId(id);
+            const id = await getPreviewPatientId();
+            setPreviewPatientId(id);
         };
         fetchId();
 
@@ -172,181 +194,197 @@ export default function PatientInformationScreen() {
 
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
-            <ScrollView contentContainerStyle={{ padding: 20 }} automaticallyAdjustKeyboardInsets={true}>
-                {/* Patient ID Section */}
-                <Text style={Styles.sectionHeader}>Patient ID</Text>
-                <TextInput mode="flat" value={previewPatientId} disabled />
+            <KeyboardAvoidingView 
+                style={{flex: 1}} 
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={height > 700 ? 60 : 40}
+            >
+                <ScrollView 
+                    contentContainerStyle={{ 
+                        padding: 20,
+                    }} 
+                    automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'} // true only in iOS
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Patient ID Section */}
+                    <Text style={Styles.sectionHeader}>Patient ID</Text>
+                    <TextInput mode="flat" value={previewPatientId} disabled />
 
-                {/* Patient Name Section */}
-                <Text style={Styles.sectionHeader}>Patient Name <Text style={Styles.required}>*</Text></Text>
-                 <ValidatedTextInput 
-                    label="Surname (required)" 
-                    value={surname}
-                    onChangeText={(value) => updatePatientData({ surname: value })}
-                    inputType={INPUT_TYPES.TEXT}
-                    isRequired={true}
-                />
-                <ValidatedTextInput 
-                    label="First Name (required)" 
-                    value={firstName}
-                    onChangeText={(value) => updatePatientData({ firstName: value })}
-                    inputType={INPUT_TYPES.TEXT}
-                    isRequired={true}
-                />
-                 <ValidatedTextInput 
-                    label="Other Name (optional)" 
-                    value={otherName}
-                    onChangeText={(value) => updatePatientData({ otherName: value })}
-                    inputType={INPUT_TYPES.TEXT}
-                    isRequired={false}
-                    showErrorOnTyping={true}
-                />
-                
-                {/* Sex Section */}
-                <Text style={Styles.sectionHeader}>Sex <Text style={Styles.required}>*</Text></Text>
-                <RadioButtonGroup 
-                    options={[
-                        { label: 'Male', value: 'male'},
-                        { label: 'Female', value: 'female'}]} 
-                    selected={sex} 
-                    onSelect={(value) => updatePatientData({ sex: value })}/>
+                    {/* Patient Name Section */}
+                    <Text style={Styles.sectionHeader}>Patient Name <Text style={Styles.required}>*</Text></Text>
+                    <ValidatedTextInput 
+                        label="Surname (required)" 
+                        value={surname}
+                        onChangeText={(value) => updatePatientData({ surname: value })}
+                        inputType={INPUT_TYPES.TEXT}
+                        isRequired={true}
+                    />
+                    <ValidatedTextInput 
+                        label="First Name (required)" 
+                        value={firstName}
+                        onChangeText={(value) => updatePatientData({ firstName: value })}
+                        inputType={INPUT_TYPES.TEXT}
+                        isRequired={true}
+                    />
+                    <ValidatedTextInput 
+                        label="Other Name (optional)" 
+                        value={otherName}
+                        onChangeText={(value) => updatePatientData({ otherName: value })}
+                        inputType={INPUT_TYPES.TEXT}
+                        isRequired={false}
+                        showErrorOnTyping={true}
+                    />
+                    
+                    {/* Sex Section */}
+                    <Text style={Styles.sectionHeader}>Sex <Text style={Styles.required}>*</Text></Text>
+                    <RadioButtonGroup 
+                        options={[
+                            { label: 'Male', value: 'male'},
+                            { label: 'Female', value: 'female'}]} 
+                        selected={sex} 
+                        onSelect={(value) => updatePatientData({ sex: value })}/>
 
-                {/* Age Section */}
-                <Text style={Styles.sectionHeader}>Age <Text style={Styles.required}>*</Text></Text>
-                <Checkbox label={'Patient is less than 6 months old'} 
-                          checked={isUnderSixMonths} 
-                          onChange={() => updatePatientData({isUnderSixMonths: !isUnderSixMonths})}/> 
-                <Checkbox label={'Exact date of birth (DOB) unknown'} 
-                        checked={isDOBUnknown} 
-                        onChange={() => {
-                            const newValue = !isDOBUnknown;
-                            updatePatientData({
-                                isDOBUnknown: newValue,
-                                dob: null,
-                                ...(newValue ? {} : {
-                                    // reset and clear all othe fields when dob unknown checked
-                                    isYearMonthUnknown: false,
-                                    birthYear: '',
-                                    birthMonth: null,
-                                    approxAge: ''
-                                })
-                            })
-                            setAgeValidationError(''); // clear error when toggling
-                        }}
-                />  
-                {
-                    !isDOBUnknown
-                    ?
-                    // TODO - DatePicker not supported on web - use regular TextInput if Platform.OS === 'web'
-                    <>
-                        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                            <TextInput 
-                                label="Date of Birth (YYYY-MM-DD)" 
-                                placeholder='Select date' 
-                                mode="flat" 
-                                value={dob ? dob.toISOString().split("T")[0] : ""}
-                                style={[Styles.textInput, {marginTop: 10}]}
-                                editable={false}
-                                pointerEvents="none"
-                            />
-                        </TouchableOpacity>
-                        {showDatePicker && (
-                            <DateTimePicker
-                                value={dob || new Date()}
-                                mode="date"
-                                display={Platform.OS === "ios" ? "spinner" : "default"}
-                                onChange={handleDateChange}
-                                maximumDate={new Date()}
-                            />
-                        )}
-                    </>
-                    :
-                    <>
-                        <Checkbox 
-                            label={'Birth year and month unknown'} 
-                            checked={isYearMonthUnknown} 
+                    {/* Age Section */}
+                    <Text style={Styles.sectionHeader}>Age <Text style={Styles.required}>*</Text></Text>
+                    <Checkbox label={'Patient is less than 6 months old'} 
+                            checked={isUnderSixMonths} 
+                            onChange={() => updatePatientData({isUnderSixMonths: !isUnderSixMonths})}/> 
+                    <Checkbox label={'Exact date of birth (DOB) unknown'} 
+                            checked={isDOBUnknown} 
                             onChange={() => {
-                                const newVal = !isYearMonthUnknown;
+                                const newValue = !isDOBUnknown;
                                 updatePatientData({
-                                    isYearMonthUnknown: newVal,
-                                    birthYear: '',
-                                    birthMonth: null,
-                                    ...(newVal ? {} : {
-                                        dob: null,
+                                    isDOBUnknown: newValue,
+                                    dob: null,
+                                    ...(newValue ? {} : {
+                                        // reset and clear all othe fields when dob unknown checked
+                                        isYearMonthUnknown: false,
+                                        birthYear: '',
+                                        birthMonth: null,
                                         approxAge: ''
                                     })
-                                });
-                                setAgeValidationError(''); // Clear error when toggling
+                                })
+                                setAgeValidationError(''); // clear error when toggling
                             }}
-                        />  
-                        {
-                            !isYearMonthUnknown
-                            ?
-                            <>
+                    />  
+                    {
+                        !isDOBUnknown
+                        ?
+                        // TODO - DatePicker not supported on web - use regular TextInput if Platform.OS === 'web'
+                        <>
+                            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                <TextInput 
+                                    label="Date of Birth (YYYY-MM-DD)" 
+                                    placeholder='Select date' 
+                                    mode="flat" 
+                                    value={dob ? dob.toISOString().split("T")[0] : ""}
+                                    style={[Styles.textInput, {marginTop: 10}]}
+                                    editable={false}
+                                    pointerEvents="none"
+                                />
+                            </TouchableOpacity>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={dob || new Date()}
+                                    mode="date"
+                                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                                    onChange={handleDateChange}
+                                    maximumDate={new Date()}
+                                />
+                            )}
+                        </>
+                        :
+                        <>
+                            <Checkbox 
+                                label={'Birth year and month unknown'} 
+                                checked={isYearMonthUnknown} 
+                                onChange={() => {
+                                    const newVal = !isYearMonthUnknown;
+                                    updatePatientData({
+                                        isYearMonthUnknown: newVal,
+                                        birthYear: '',
+                                        birthMonth: null,
+                                        ...(newVal ? {} : {
+                                            dob: null,
+                                            approxAge: ''
+                                        })
+                                    });
+                                    setAgeValidationError(''); // Clear error when toggling
+                                }}
+                            />  
+                            {
+                                !isYearMonthUnknown
+                                ?
+                                <>
+                                    <ValidatedTextInput 
+                                        label="Birth Year" 
+                                        value={birthYear}
+                                        onChangeText={(value) => handleYearMonthChange(value, patientData.birthMonth)}
+                                        inputType={INPUT_TYPES.NUMERIC}
+                                        style={{marginTop: 10}}
+                                        customValidator={() => isValidYearInput(birthYear)}
+                                        customErrorMessage={yearErrorMessage}
+                                        isRequired={true}
+                                    />
+                                    <SearchableDropdown 
+                                        data={months} 
+                                        label={'Birth Month'}
+                                        placeholder="Search for or select patient's birth month" 
+                                        onSelect={(value) => handleYearMonthChange(patientData.birthYear, value)}
+                                        value={birthMonth?.value}
+                                        search={true}
+                                        style={{marginTop: 10}}
+                                    />
+                                </>
+                                :
                                 <ValidatedTextInput 
-                                    label="Birth Year" 
-                                    value={birthYear}
-                                    onChangeText={(value) => handleYearMonthChange(value, patientData.birthMonth)}
+                                    label="Approximate Age (in years)" 
+                                    value={approxAge}
+                                    onChangeText={handleApproxAgeChange}
                                     inputType={INPUT_TYPES.NUMERIC}
-                                    style={{marginTop: 10}}
-                                    customValidator={() => isValidYearInput(birthYear)}
-                                    customErrorMessage={yearErrorMessage}
                                     isRequired={true}
+                                    right={<TextInput.Affix text="years old" />}
+                                    onBlur={() => handleApproxAgeChange(formatNumericInput(approxAge))}
                                 />
-                                <SearchableDropdown 
-                                    data={months} 
-                                    label={'Birth Month'}
-                                    placeholder="Search for or select patient's birth month" 
-                                    onSelect={(value) => handleYearMonthChange(patientData.birthYear, value)}
-                                    value={birthMonth?.value}
-                                    search={true}
-                                    style={{marginTop: 10}}
-                                />
-                            </>
-                            :
-                            <ValidatedTextInput 
-                                label="Approximate Age (in years)" 
-                                value={approxAge}
-                                onChangeText={handleApproxAgeChange}
-                                inputType={INPUT_TYPES.NUMERIC}
-                                isRequired={true}
-                                right={<TextInput.Affix text="years old" />}
-                                onBlur={() => handleApproxAgeChange(formatNumericInput(approxAge))}
-                            />
-                        }       
-                    </>
-                }
-                
-                {/* Display age validation error */}
-                {ageValidationError && (
-                    <Text style={[Styles.errorText, {marginTop: 5}]}>{ageValidationError}</Text>
-                )}
+                            }       
+                        </>
+                    }
+                    
+                    {/* Display age validation error */}
+                    {ageValidationError && (
+                        <Text style={[Styles.errorText, {marginTop: 5}]}>{ageValidationError}</Text>
+                    )}
 
-                {/* Display estimated age if necessary fields filled and no ageValidation error */}
-                {
-                    (dob || (birthMonth && birthYear) || approxAge) && (!ageValidationError && calculatedAge!== null)
-                    &&
-                    <Text>
-                        Estimated age: {AgeCalculator.roundAge(calculatedAge)} years old
-                    </Text>
-                }
+                    {/* Display estimated age if necessary fields filled and no ageValidation error */}
+                    {
+                        (dob || (birthMonth && birthYear) || approxAge) && (!ageValidationError && calculatedAge!== null)
+                        &&
+                        <Text>
+                            Estimated age: {AgeCalculator.roundAge(calculatedAge)} years old
+                        </Text>
+                    }
+                </ScrollView>
                 
-            </ScrollView>
-            
-            {/* Pagination controls */}
-            <View style={Styles.nextButtonContainer}>
-                <PaginationButton
-                    onPress={() => {
-                        if (!ageValidationError) {
-                            router.push('../(dataEntry-sidenav)/admissionClinicalData')
-                        }
-                    }}
-                    isNext={ true }
-                    label='Next'
-                    disabled={!!ageValidationError} // disable pagination if there are age validation errors
-                />
-            </View>
-          
+                {/* Pagination controls */}
+                <View style={[
+                    Styles.nextButtonContainer,
+                    // Platform.OS === 'android' && keyboardHeight > 0 && {
+                    //     bottom: keyboardHeight
+                    // }
+                ]}>
+                    <PaginationButton
+                        onPress={() => {
+                            if (!ageValidationError) {
+                                router.push('../(dataEntry-sidenav)/admissionClinicalData')
+                            }
+                        }}
+                        isNext={true}
+                        label='Next'
+                        disabled={!!ageValidationError} // disable pagination if there are age validation errors
+                    />
+                </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
