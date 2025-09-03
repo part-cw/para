@@ -11,7 +11,7 @@ import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-
+// TODO -- if they've previously visited this page and updated info, remove updated section from revewedSection
 export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData, clearPatientData } = usePatientData();
@@ -317,12 +317,12 @@ export default function ReviewScreen() {
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Patient Address</Text>
-                            <InfoRow label="Village" value={patientData.village?.value || 'Not provided'} />
+                            <InfoRow label="Village" value={patientData.village || 'Not provided'} />
                             <InfoRow label="Subvillage" value={patientData.subvillage || 'Not provided'} />
                             
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>VHT Contact Information</Text>
-                            <InfoRow label="Name" value={patientData.vhtName?.value || 'Not provided'} />
-                            <InfoRow label="Telephone" value={patientData.vhtTelephone?.value || 'Not provided'} />
+                            <InfoRow label="Name" value={patientData.vhtName || 'Not provided'} />
+                            <InfoRow label="Telephone" value={patientData.vhtTelephone || 'Not provided'} />
                         </View>
                     </List.Accordion>
                 </View>

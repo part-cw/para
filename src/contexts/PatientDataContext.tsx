@@ -47,10 +47,10 @@ export interface PatientData {
   sickYoungInfant: boolean;
   
   // vhtReferral info
-  village: DropdownItem | null;
+  village: string;
   subvillage: string;
-  vhtName: DropdownItem | null;
-  vhtTelephone: DropdownItem | null;
+  vhtName: string;
+  vhtTelephone: string;
   
   // caregiverContact
   caregiverName: string;
@@ -100,10 +100,10 @@ const initialPatientData: PatientData = {
   sickYoungInfant: false,
 
   // vht referral information
-  village: null,
+  village: '',
   subvillage: '',
-  vhtName: null,
-  vhtTelephone: null,
+  vhtName: '',
+  vhtTelephone: '',
 
   // caregiver info
   caregiverName: '',
