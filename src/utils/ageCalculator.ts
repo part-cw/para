@@ -53,7 +53,6 @@ export class AgeCalculator {
             return age;
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
             const age = Number(approxAge.trim())
-            console.log(age, typeof(age))
 
             if (!age) {
                 throw new Error('Approximate age is not a valid number.')

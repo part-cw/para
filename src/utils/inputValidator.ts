@@ -163,7 +163,7 @@ export function isValidPhoneNumber(input: string): boolean {
         }
 
         const numValue = parseFloat(trimmed);
-        
+
         // Check if it's a valid number (not NaN)
         if (isNaN(numValue)) {
             return false;
@@ -219,6 +219,19 @@ export function isValidPhoneNumber(input: string): boolean {
 
         return true;
     }
+
+    export function validateApproxAge(input: string): boolean {
+        if (!input || !input.trim()) {
+            return false; // Required field
+        }
+                
+        // Check if it's a valid number format
+        if (!isValidNumericFormat(input, 0, MAX_PATIENT_AGE)) {
+            return false;
+        }
+
+        return true;
+    };
 
 
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
