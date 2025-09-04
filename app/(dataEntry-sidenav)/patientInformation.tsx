@@ -364,7 +364,6 @@ export default function PatientInformationScreen() {
                                     isRequired={true}
                                     right={<TextInput.Affix text="years old" />}
                                     customValidator={validateApproxAge}
-                                    customErrorMessage={`Age must be between 0 and ${MAX_PATIENT_AGE} years`}
                                     showErrorOnTyping={true} 
                                     onBlur={() => {
                                         // Only format if the value is valid
