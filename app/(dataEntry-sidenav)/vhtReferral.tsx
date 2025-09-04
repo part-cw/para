@@ -49,12 +49,12 @@ export default function VHTReferralScreen() {
     // handle village selection change
     // if village and/or telephone user added - should render entire vht list
     useEffect(() => {        
-        const isUserAddedVillage = !!addedVillages.find(v => v.value === village?.value);
-        const isUserAddedNumber = !!addedNumbers.find(n => n.value === vhtTelephone?.value);
+        const isUserAddedVillage = !!addedVillages.find(v => v.value === village);
+        const isUserAddedNumber = !!addedNumbers.find(n => n.value === vhtTelephone);
         
         const filteredVHTs = (isUserAddedVillage && !vhtTelephone) || (isUserAddedNumber && !village)
             ? getVhtDropdownItems(allData)
-            : filterVHTs(allData, village?.value, vhtTelephone?.value);
+            : filterVHTs(allData, village, vhtTelephone);
         
         // TODO if isUserAddedNumber && selectedVillage && !isUserAddedVillage -- filter vht by village ??
         // if isUserAddedVillage && selectedNumber $$ !isUserAddedNumer -- filter vht by tel ??
@@ -70,19 +70,19 @@ export default function VHTReferralScreen() {
 
         // Auto-select VHT if only one option AND no VHT currently selected
         if (filteredVHTs.length === 1 && !vhtName) {
-            updatePatientData({vhtName: filteredVHTs[0]})
+            updatePatientData({vhtName: filteredVHTs[0].value})
         }
     }, [village, vhtTelephone]) // selected valyes
 
     // handle vht selection change
     useEffect(() => {
         // TODO add logic for user added tel and vht and whether villages should be filterd??
-        const filteredVillages = filterVillages(allData, vhtName?.value, vhtTelephone?.value)
+        const filteredVillages = filterVillages(allData, vhtName, vhtTelephone)
         setVillages(filteredVillages)
 
         // Auto-select village if only one option AND no village currently selected
         if (filteredVillages.length === 1 && !village) {
-            updatePatientData({village: filteredVillages[0]})
+            updatePatientData({village: filteredVillages[0].value})
             // setSelectedVillage(filteredVillages[0])
         }
 
@@ -96,22 +96,22 @@ export default function VHTReferralScreen() {
     // handle telephone filtering with village and vht selection change
     // if vht selected from list tel and village will be auto filtered
     useEffect(() => {
-        const isUserAddedVillage = !!addedVillages.find(v => v.value === village?.value);
-        const isUserAddedVht = !!addedVHTs.find(v => v.value === vhtName?.value);
+        const isUserAddedVillage = !!addedVillages.find(v => v.value === village);
+        const isUserAddedVht = !!addedVHTs.find(v => v.value === vhtName);
         
         // TODO - check conditional
         // if vht selected from list, tel auto filtered
         // if village user added and vht use added -- show all?
         const filteredNumbers = (isUserAddedVillage && !vhtTelephone)
             ? getTelephoneDropdownItems(allData)
-            : filterTelephoneNumbers(allData, vhtName?.value, village?.value);
+            : filterTelephoneNumbers(allData, vhtName, village);
 
                 
         setTelNumbers(filteredNumbers)
 
         // tel autopopulates if only option
         if (filteredNumbers.length === 1 && !vhtTelephone) {
-            updatePatientData({vhtTelephone: filteredNumbers[0]})
+            updatePatientData({vhtTelephone: filteredNumbers[0].value})
         }
 
         // TODO - clear tel selection if no longer valid for selected village/vht
@@ -150,27 +150,27 @@ export default function VHTReferralScreen() {
     // Handle village selection - check for cleared selection
     const handleVillageSelect = (selectedVillage: DropdownItem) => {
         if (selectedVillage.value === '') {
-            updatePatientData({village: null})
+            updatePatientData({village: ''})
         } else {
-            updatePatientData({village: selectedVillage})
+            updatePatientData({village: selectedVillage.value})
         }
     };
 
     // Handle VHT selection - check for cleared selection
     const handleVHTSelect = (vht: DropdownItem) => {
         if (vht.value === '') {
-            updatePatientData({vhtName: null})
+            updatePatientData({vhtName: ''})
         } else {
-            updatePatientData({vhtName: vht})
+            updatePatientData({vhtName: vht.value})
         }
     };
 
     // Handle tel number selection - check for cleared selection
     const handleTelSelect = (tel: DropdownItem) => {
         if (tel.value === '') {
-            updatePatientData({vhtTelephone: null})
+            updatePatientData({vhtTelephone: ''})
         } else {
-            updatePatientData({vhtTelephone: tel})
+            updatePatientData({vhtTelephone: tel.value})
         }
     }
 
@@ -193,10 +193,10 @@ export default function VHTReferralScreen() {
 
     const clearSelections = () => {
         updatePatientData({
-            village: null,
+            village: '',
             subvillage: '',
-            vhtName: null,
-            vhtTelephone: null
+            vhtName: '',
+            vhtTelephone: ''
         })
     };
 
@@ -237,7 +237,7 @@ export default function VHTReferralScreen() {
                                 placeholder='Search or enter village name'
                                 onSelect={handleVillageSelect}
                                 onAddItem={handleAddVillage}
-                                value={village?.value || ''}
+                                value={village || ''}
                             />
                             <TextInput 
                                 label="Subvillage" // TODO - make sure subvillage is optional
@@ -267,7 +267,7 @@ export default function VHTReferralScreen() {
                                 placeholder='Search or enter VHT name'
                                 onSelect={handleVHTSelect}
                                 onAddItem={handleAddVHT}
-                                value={vhtName?.value || ''}
+                                value={vhtName || ''}
                             />
                             <SearchableDropdown
                                 data={allNumbers}
@@ -275,7 +275,7 @@ export default function VHTReferralScreen() {
                                 placeholder='Search or enter VHT telephone number'
                                 onSelect={handleTelSelect}
                                 onAddItem={handleAddTel}
-                                value={vhtTelephone?.value || ''}
+                                value={vhtTelephone || ''}
                                 validator={validatePhoneNumber}
                                 formatter={(value) => formatPhoneNumber(value)}
                                 showError={true}

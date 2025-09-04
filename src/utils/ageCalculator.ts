@@ -7,6 +7,8 @@
 //  * TODO for model calculation - round to 1 decimal place
 
 import { DropdownItem } from "../components/SearchableDropdown";
+import { MAX_PATIENT_AGE } from "../config";
+import { ageRangeErrorMessage, isValidAge } from "./inputValidator";
 
 export class AgeCalculator {
 
@@ -27,12 +29,16 @@ export class AgeCalculator {
         birthMonth: DropdownItem|null, 
         approxAge: string
     ): number {
-
         if (dob && !birthYear && !birthMonth && !approxAge) {
             const age = this.getAgeInYearsFromDOB(dob)
             if (age < 0) {
                 throw new Error("DOB cannot be in the future");
             }
+            
+            if (age > MAX_PATIENT_AGE) {
+                throw new Error(ageRangeErrorMessage)
+            }
+           
             return age;
         } else if (birthYear && birthMonth && !dob && !approxAge) {
             const newDob = this.createDob(birthYear, birthMonth)
@@ -40,13 +46,18 @@ export class AgeCalculator {
             if (age < 0) {
                 throw new Error("DOB (calculated from birth year/month) cannot be in the future")
             }
+            
+            if (age > MAX_PATIENT_AGE) {
+                throw new Error(ageRangeErrorMessage)
+            }
+            
             return age;
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
-            const parsed = Number(approxAge);
-            
-            if (isNaN(parsed)) {
-                throw new Error("Approximate age is not a valid number.");
+            if(!isValidAge(Number(approxAge.trim()))) {
+                throw new Error(ageRangeErrorMessage)
             }
+            
+            const parsed = Number(approxAge);
             return parsed
         } 
 
@@ -58,7 +69,7 @@ export class AgeCalculator {
      * @param dob entered DOB or created from birthYear and birthMonth
      * @returns age in days from DOB and now
      */
-    private static getAgeInDaysFromDob(dob: Date): number {
+    static getAgeInDaysFromDob(dob: Date): number {
         const now = new Date();
         const diffTime = now.getTime() - dob.getTime(); // time is ms
         const diffDays = diffTime / this.msPerDay;
@@ -76,7 +87,9 @@ export class AgeCalculator {
 
         // Average 365.25 days/year. Source: https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
         // TODO - use 31557600 seconds per year instead? -- from old PARA
-        return  (diffDays / 365.25)
+        const diffYears = diffDays / 365.25
+        
+        return  diffYears
     }
 
     /**
@@ -85,7 +98,7 @@ export class AgeCalculator {
      * @param birthMonth entered manually - assume valid input
      * @returns creates DOB in Date formate. Assumes birth date is 15th of birth year
      */
-    private static createDob(birthYear: string, birthMonth: DropdownItem): Date {
+    static createDob(birthYear: string, birthMonth: DropdownItem): Date {
         console.log('making new dob...')
         const birthMonthIndex = this.monthToIndex(birthMonth)
         const dob = new Date(Number(birthYear), birthMonthIndex, 15) // TODO - what if curr date before the 15th:??
@@ -115,7 +128,7 @@ export class AgeCalculator {
      * @param age can be age in months or years
      * @returns rounds age to 1 decimal place
      */
-    private static roundAge(age: number): number {
+    static roundAge(age: number): number {
         return Math.round(age * 10) / 10;
     }
 
@@ -126,7 +139,7 @@ export class AgeCalculator {
      * @returns converts DOB or age in years into age in months, unrounded. 
      * Assume params are never both null - either dob or years must be defined
      */
-    static getAgeInMonths(dob: Date | null, years: number | null): number {
+    static getAgeInMonths(dob: Date | null, years?: number | null): number {
         let months: number = 0;
 
         if (dob) {

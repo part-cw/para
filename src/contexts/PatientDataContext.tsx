@@ -44,13 +44,13 @@ export interface PatientData {
   sepsis: DropdownItem | null;
   meningitis: DropdownItem | null;
   malnutritionStatus: string;
-  sickYoungInfant: boolean | null;
+  sickYoungInfant: boolean;
   
   // vhtReferral info
-  village: DropdownItem | null;
+  village: string;
   subvillage: string;
-  vhtName: DropdownItem | null;
-  vhtTelephone: DropdownItem | null;
+  vhtName: string;
+  vhtTelephone: string;
   
   // caregiverContact
   caregiverName: string;
@@ -97,13 +97,13 @@ const initialPatientData: PatientData = {
   sepsis: null,
   meningitis: null,
   malnutritionStatus: '',
-  sickYoungInfant: null, // TODO - change to false?
+  sickYoungInfant: false,
 
   // vht referral information
-  village: null,
+  village: '',
   subvillage: '',
-  vhtName: null,
-  vhtTelephone: null,
+  vhtName: '',
+  vhtTelephone: '',
 
   // caregiver info
   caregiverName: '',
