@@ -2,7 +2,6 @@
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { DropdownItem } from '../components/SearchableDropdown';
 
 // Define your data structure based on all screens
 export interface PatientData {
@@ -19,7 +18,7 @@ export interface PatientData {
   isYearMonthUnknown: boolean;
   dob: Date | null;
   birthYear: string;
-  birthMonth: DropdownItem | null;
+  birthMonth: string;
   approxAge: string;
   
   // Admission Clinical Data
@@ -30,19 +29,19 @@ export interface PatientData {
   rrate: string;
   spo2: string;
   heartRate: string;
-  lastHospitalized: DropdownItem | null;
-  eyeMovement: DropdownItem | null;
-  motorResponse: DropdownItem | null;
-  verbalResponse: DropdownItem | null;
+  lastHospitalized: string;
+  eyeMovement: string;
+  motorResponse: string;
+  verbalResponse: string;
 
   // Medical Conditions
-  anaemia: DropdownItem | null;
-  pneumonia: DropdownItem | null;
-  chronicIllness: DropdownItem | null;
-  acuteDiarrhea: DropdownItem | null;
-  malaria: DropdownItem | null;
-  sepsis: DropdownItem | null;
-  meningitis: DropdownItem | null;
+  anaemia: string;
+  pneumonia: string;
+  chronicIllness: string;
+  acuteDiarrhea: string;
+  malaria: string;
+  sepsis: string;
+  meningitis: string;
   malnutritionStatus: string;
   sickYoungInfant: boolean;
   
@@ -72,7 +71,7 @@ const initialPatientData: PatientData = {
   isYearMonthUnknown: false,
   dob: null,
   birthYear: '',
-  birthMonth: null,
+  birthMonth: '',
   approxAge: '',
 
   // admission clinical data
@@ -83,19 +82,19 @@ const initialPatientData: PatientData = {
   rrate: '',
   spo2: '',
   heartRate: '',
-  lastHospitalized: null,
-  eyeMovement: null,
-  motorResponse: null,
-  verbalResponse: null,
+  lastHospitalized: '',
+  eyeMovement: '',
+  motorResponse: '',
+  verbalResponse: '',
 
   // medical conditions
-  anaemia: null,
-  pneumonia: null,
-  chronicIllness: null,
-  acuteDiarrhea: null,
-  malaria: null,
-  sepsis: null,
-  meningitis: null,
+  anaemia: '',
+  pneumonia: '',
+  chronicIllness: '',
+  acuteDiarrhea: '',
+  malaria: '',
+  sepsis: '',
+  meningitis: '',
   malnutritionStatus: '',
   sickYoungInfant: false,
 

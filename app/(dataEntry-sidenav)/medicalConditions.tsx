@@ -105,16 +105,16 @@ export default function MedicalConditionsScreen() {
                     data={diagnosisOptions} 
                     label={'Pneumonia'}
                     placeholder='select option below' 
-                    onSelect={(value) => updatePatientData({ pneumonia: value })}
-                    value={pneumonia?.key}
+                    onSelect={(item) => updatePatientData({ pneumonia: item.key })}
+                    value={pneumonia}
                     search={false}
                 />
                 <SearchableDropdown 
                     data={diagnosisOptions} 
                     label={'Severe anaemia'}
                     placeholder='select option below' 
-                    onSelect={(value) => updatePatientData({ anaemia: value })}
-                    value={anaemia?.key}
+                    onSelect={(item) => updatePatientData({ anaemia: item.key })}
+                    value={anaemia}
                     search={false}
                 />
 
@@ -124,8 +124,8 @@ export default function MedicalConditionsScreen() {
                             data={diagnosisOptions} 
                             label={'Chronic illnesses'}
                             placeholder='select option below' 
-                            onSelect={(value) => updatePatientData({ chronicIllness: value })}
-                            value={chronicIllness?.key}
+                            onSelect={(item) => updatePatientData({ chronicIllness: item.key })}
+                            value={chronicIllness}
                             search={false}
                         />
                     </View>
@@ -143,33 +143,33 @@ export default function MedicalConditionsScreen() {
                 <SearchableDropdown 
                     label = {'Acute diarrhea'}
                     data = {simplifiedOptions}
-                    value = {acuteDiarrhea?.key}
+                    value = {acuteDiarrhea}
                     placeholder='select option below'
-                    onSelect={(value) => updatePatientData({ acuteDiarrhea: value })}
+                    onSelect={(item) => updatePatientData({ acuteDiarrhea: item.key })}
                     search={false}
                 />
                 <SearchableDropdown 
                     label = {'Malaria'}
                     data = {diagnosisOptions}
-                    value = {malaria?.key}
+                    value = {malaria}
                     placeholder='select option below' 
-                    onSelect={(value) => updatePatientData({ malaria: value })}
+                    onSelect={(item) => updatePatientData({ malaria: item.key })}
                     search={false}
                 />
                 <SearchableDropdown 
                     label = {'Sepsis'}
                     data = {diagnosisOptions}
-                    value = {sepsis?.key}
+                    value = {sepsis}
                     placeholder='select option below' 
-                    onSelect = {(value) => updatePatientData({ sepsis: value })}
+                    onSelect = {(item) => updatePatientData({ sepsis: item.key })}
                     search={false}
                 />
                 <SearchableDropdown 
                     label = {'Meningitis/Encephalitis'}
                     data = {diagnosisOptions}
-                    value = {meningitis?.key}
+                    value = {meningitis}
                     placeholder='select option below' 
-                    onSelect = {(value) => updatePatientData({ meningitis: value })}
+                    onSelect = {(item) => updatePatientData({ meningitis: item.key })}
                     search={false}
                 />
 

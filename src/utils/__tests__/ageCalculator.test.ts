@@ -15,16 +15,16 @@ describe('AgeCalculator', () => {
 
   describe('monthToIndex', () => {
     it('should map month keys to correct indices', () => {
-      expect(AgeCalculator.__test.monthToIndex({ key: 'Jan', value: 'January' })).toBe(0);
-      expect(AgeCalculator.__test.monthToIndex({ key: 'Dec', value: 'December' })).toBe(11);
-      expect(AgeCalculator.__test.monthToIndex({ key: 'Invalid', value: 'January' })).toBe(-1);
+      expect(AgeCalculator.__test.monthToIndex('January')).toBe(0);
+      expect(AgeCalculator.__test.monthToIndex('December')).toBe(11);
+      expect(AgeCalculator.__test.monthToIndex('Test')).toBe(-1);
     });
   });
 
   describe('createDob', () => {    
     const expectedDate = new Date(2020, 1, 15)
     it('should create correct Date from year and month', () => {
-      const dob = AgeCalculator.__test.createDob('2020', { key: 'Feb', value: 'February' });
+      const dob = AgeCalculator.__test.createDob('2020', 'February');
       expect(dob.toISOString()).toBe(expectedDate.toISOString());
     });
   });
@@ -34,7 +34,7 @@ describe('AgeCalculator', () => {
     const validDob = new Date('2022-08-26')
 
     it('should calculate from dob only', () => {
-      const age = AgeCalculator.calculateAgeInYears(validDob, '', null, '');
+      const age = AgeCalculator.calculateAgeInYears(validDob, '', '', '');
       expect(age).toBeCloseTo(3, 1);
     });
 
@@ -42,20 +42,20 @@ describe('AgeCalculator', () => {
       const age = AgeCalculator.calculateAgeInYears(
         null,
         '2020',
-        { key: 'Aug', value: 'August' },
+        'August',
         ''
       );
       expect(age).toBeCloseTo(5, 1);
     });
 
     it('should calculate from approxAge string', () => {
-      const age = AgeCalculator.calculateAgeInYears(null, '', null, '3.7');
+      const age = AgeCalculator.calculateAgeInYears(null, '', '', '3.7');
       expect(age).toBe(3.7);
     });
 
     it('should throw an error when only birth year provided', () => {
         try {
-            AgeCalculator.calculateAgeInYears(null, '2025', null, '');
+            AgeCalculator.calculateAgeInYears(null, '2025', '', '');
             // If no error is thrown, fail the test explicitly
             fail('Expected error to be thrown but none was.');
         } catch (e) {
@@ -68,7 +68,7 @@ describe('AgeCalculator', () => {
 
     it('should throw an error when dob and birth year provided', () => {
         try {
-            AgeCalculator.calculateAgeInYears(validDob, '2025', null, '');
+            AgeCalculator.calculateAgeInYears(validDob, '2025', '', '');
             // If no error is thrown, fail the test explicitly
             fail('Expected error to be thrown but none was.');
         } catch (e) {
@@ -81,7 +81,7 @@ describe('AgeCalculator', () => {
 
     it('should throw an error when birth year and approx age provided', () => {
         try {
-            AgeCalculator.calculateAgeInYears(null, '2025', null, '3.5');
+            AgeCalculator.calculateAgeInYears(null, '2025', '', '3.5');
             // If no error is thrown, fail the test explicitly
             fail('Expected error to be thrown but none was.');
         } catch (e) {
@@ -94,7 +94,7 @@ describe('AgeCalculator', () => {
 
     it('should throw an error when all inputs are empty or invalid', () => {
         try {
-            AgeCalculator.calculateAgeInYears(null, '', null, '');
+            AgeCalculator.calculateAgeInYears(null, '', '', '');
             // If no error is thrown, fail the test explicitly
             fail('Expected error to be thrown but none was.');
         } catch (e) {
@@ -107,7 +107,7 @@ describe('AgeCalculator', () => {
 
     it('should throw an error when invalid approx age entered', () => {
         try {
-            AgeCalculator.calculateAgeInYears(null, '', null, '3.7a');
+            AgeCalculator.calculateAgeInYears(null, '', '', '3.7a');
             // If no error is thrown, fail the test explicitly
             fail('Expected error to be thrown but none was.');
         } catch (e) {
@@ -121,7 +121,7 @@ describe('AgeCalculator', () => {
     it('should throw an error when future DOB from datepicker', () => {
         const dob = new Date('2025-08-27T00:00:00Z')
         try {
-            AgeCalculator.calculateAgeInYears(dob, '', null, '');
+            AgeCalculator.calculateAgeInYears(dob, '', '', '');
             // If no error is thrown, fail the test explicitly
             fail('Expected error to be thrown but none was.');
         } catch (e) {
@@ -134,7 +134,7 @@ describe('AgeCalculator', () => {
 
     it('should throw an error when future DOB from birth year and month', () => {
         const year = '2025'
-        const month = {key: 'Sep', value: 'September'}
+        const month = 'September'
         try {
             AgeCalculator.calculateAgeInYears(null, year, month, '');
             // If no error is thrown, fail the test explicitly

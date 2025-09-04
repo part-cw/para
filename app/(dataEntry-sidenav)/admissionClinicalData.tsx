@@ -5,7 +5,7 @@ import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextI
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
@@ -14,12 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
-
-    // TODO - fix setuseState and handlePress ??
-    const [expanded, setExpanded] = useState(false);
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
-
-    const handlePress = () => setExpanded(!expanded);
 
     // Local state for form validation and UI
     const {
@@ -85,14 +80,15 @@ export default function AdmissionClinicalDataScreen() {
                         <List.Accordion
                             title="Health History"
                             titleStyle={Styles.accordionListTitle}
-                            left={props => <List.Icon {...props} icon="history" />}>
+                            left={props => <List.Icon {...props} icon="history" />}
+                        >
                             <View style={Styles.accordionContentWrapper}>
                                 <SearchableDropdown 
                                     data={hospitalizationOptions} 
                                     label={'Last Hopitalized (required)'}
                                     placeholder='select option below' 
-                                    onSelect={(value) => updatePatientData({ lastHospitalized: value })}
-                                    value={lastHospitalized?.value}
+                                    onSelect={(item) => updatePatientData({ lastHospitalized: item.value })}
+                                    value={lastHospitalized}
                                     search={false}
                                 />
                                 <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
@@ -110,9 +106,10 @@ export default function AdmissionClinicalDataScreen() {
                     {/* Vital Signs Accordion */}
                     <View style={Styles.accordionListWrapper}>
                         <List.Accordion
-                        title="Body Measurements & Vitals"
-                        titleStyle={Styles.accordionListTitle}
-                        left={props => <List.Icon {...props} icon="heart-pulse" />}>
+                            title="Body Measurements & Vitals"
+                            titleStyle={Styles.accordionListTitle}
+                            left={props => <List.Icon {...props} icon="heart-pulse" />}
+                        >
                             <View style={Styles.accordionContentWrapper}>
                                 {/* TODO - add custom validator and custom messge for each of the inputs */}
                                 <ValidatedTextInput 
@@ -209,8 +206,7 @@ export default function AdmissionClinicalDataScreen() {
                             title="Blantyre Coma Scale"
                             titleStyle={Styles.accordionListTitle}
                             left={props => <List.Icon {...props} icon="head-cog-outline" />}
-                            expanded={expanded}
-                            onPress={handlePress}>
+                        >
                             <View style={Styles.accordionContentWrapper}>
                                 <Text style={{fontStyle: 'normal'}}>{bcsGeneralInfo}</Text>
                                 <Text style={[Styles.required, {fontStyle: 'italic', marginBottom: 8}]}>**All fields required**</Text>
@@ -222,8 +218,8 @@ export default function AdmissionClinicalDataScreen() {
                                             data={eyeMovementOptions} 
                                             label={'Eye movement'}
                                             placeholder='select option below' 
-                                            onSelect={(value) => updatePatientData({ eyeMovement: value })}
-                                            value={eyeMovement?.value}
+                                            onSelect={(item) => updatePatientData({ eyeMovement: item.value })}
+                                            value={eyeMovement}
                                             search={false}
                                         />
                                     </View>
@@ -242,8 +238,8 @@ export default function AdmissionClinicalDataScreen() {
                                                 data={motorResponseOptions} 
                                                 label={'Best motor response'}
                                                 placeholder='select option below' 
-                                                onSelect={(value) => updatePatientData({ motorResponse: value })}
-                                                value={motorResponse?.value}
+                                                onSelect={(item) => updatePatientData({ motorResponse: item.value})}
+                                                value={motorResponse}
                                                 search={false}
                                             />
                                         </View>
@@ -262,8 +258,8 @@ export default function AdmissionClinicalDataScreen() {
                                             data={verbalResponseOptions} 
                                             label={'Verbal response'}
                                             placeholder='select option below' 
-                                            onSelect={(value) => updatePatientData({ verbalResponse: value })}
-                                            value={verbalResponse?.value}
+                                            onSelect={(item) => updatePatientData({ verbalResponse: item.value })}
+                                            value={verbalResponse}
                                             search={false}
                                         />
                                     </View>

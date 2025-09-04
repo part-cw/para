@@ -1,12 +1,13 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
-import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
+import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
+import { MAX_PATIENT_AGE } from '@/src/config';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
-import { formatNumericInput, isValidYearInput, yearErrorMessage } from '@/src/utils/inputValidator';
+import { formatNumericInput, isValidYearInput, validateApproxAge, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -70,7 +71,6 @@ export default function PatientInformationScreen() {
     const validateAge = () => {
         try {
             const age = AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge);
-            console.log('setting calculatedAge to', age)
             setCalculatedAge(age);
             setAgeValidationError(''); // Clear error if validation passes
             return true;
@@ -89,7 +89,7 @@ export default function PatientInformationScreen() {
             updatePatientData({
                 dob: selectedDate,
                 birthYear: '',
-                birthMonth: null,
+                birthMonth: '',
                 approxAge: '',
                 sickYoungInfant: isYoungInfant
             })
@@ -105,25 +105,37 @@ export default function PatientInformationScreen() {
 
     const handleApproxAgeChange = (value: string) => {
         // multiply years by 365.25 days/year
-        let ageInDays = Number(value) * 365.25
-        ageInDays = AgeCalculator.roundAge(ageInDays);
-        const isYoungInfant = ageInDays < 28;
+        // let ageInDays = Number(value) * 365.25
+        // ageInDays = AgeCalculator.roundAge(ageInDays);
+        // const isYoungInfant = ageInDays < 28;
 
-        let enteredAge = value;
-        if (Number(value) < 0) {
-            enteredAge = ''
-        }
+        // let enteredAge = value;
+        // if (Number(value) < 0) {
+        //     enteredAge = ''
+        // }
 
+        // Check if value is valid before calculating sickYoungInfant
         updatePatientData({ 
-            approxAge: enteredAge,
-            sickYoungInfant: isYoungInfant 
+            approxAge: value,
+            sickYoungInfant: (() => {
+                // Check if value is valid before calculating sickYoungInfant
+                const numericValue = parseFloat(value.trim())
+                if (isNaN(numericValue) || numericValue < 0 || numericValue > MAX_PATIENT_AGE) {
+                    // Don't update sickYoungInfant for invalid values, keep current state
+                    return patientData.sickYoungInfant;
+                }
+
+                const ageInDays = numericValue * 365.25;
+                const roundedAgeInDays = AgeCalculator.roundAge(ageInDays);
+                return roundedAgeInDays < 28;
+            })()
         })
 
         // Clear age validation error when approx age changes
         setAgeValidationError('');
     }
 
-    const handleYearMonthChange = (year: string, month: DropdownItem | null) => {
+    const handleYearMonthChange = (year: string, month: string | undefined) => {
         let isYoungInfant
         if (year && month) {
             const dob = AgeCalculator.createDob(year, month)
@@ -145,6 +157,13 @@ export default function PatientInformationScreen() {
     useEffect(() => {
         // Only validate if we have some age information
         if (dob || (birthYear && birthMonth) || approxAge) {
+            // TODO - uncomment below code? to test later
+            // if (approxAge && !validateApproxAge(approxAge)) {
+            //     setAgeValidationError('Please enter a valid age');
+            //     setCalculatedAge(null);
+            //     return;
+            // }
+            
             // Use setTimeout to avoid validation during rapid state changes
             const timeoutId = setTimeout(() => {
                 validateAge();
@@ -204,7 +223,6 @@ export default function PatientInformationScreen() {
                         padding: 20,
                     }} 
                     automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'} // true only in iOS
-                    keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >
                     {/* Patient ID Section */}
@@ -261,7 +279,7 @@ export default function PatientInformationScreen() {
                                         // reset and clear all othe fields when dob unknown checked
                                         isYearMonthUnknown: false,
                                         birthYear: '',
-                                        birthMonth: null,
+                                        birthMonth: '',
                                         approxAge: ''
                                     })
                                 })
@@ -269,7 +287,7 @@ export default function PatientInformationScreen() {
                             }}
                     />  
                     {
-                        !isDOBUnknown
+                        (!isDOBUnknown || isUnderSixMonths)
                         ?
                         // TODO - DatePicker not supported on web - use regular TextInput if Platform.OS === 'web'
                         <>
@@ -304,7 +322,7 @@ export default function PatientInformationScreen() {
                                     updatePatientData({
                                         isYearMonthUnknown: newVal,
                                         birthYear: '',
-                                        birthMonth: null,
+                                        birthMonth: '',
                                         ...(newVal ? {} : {
                                             dob: null,
                                             approxAge: ''
@@ -331,8 +349,8 @@ export default function PatientInformationScreen() {
                                         data={months} 
                                         label={'Birth Month'}
                                         placeholder="Search for or select patient's birth month" 
-                                        onSelect={(value) => handleYearMonthChange(patientData.birthYear, value)}
-                                        value={birthMonth?.value}
+                                        onSelect={(item) => handleYearMonthChange(patientData.birthYear, item.value)}
+                                        value={birthMonth}
                                         search={true}
                                         style={{marginTop: 10}}
                                     />
@@ -345,7 +363,14 @@ export default function PatientInformationScreen() {
                                     inputType={INPUT_TYPES.NUMERIC}
                                     isRequired={true}
                                     right={<TextInput.Affix text="years old" />}
-                                    onBlur={() => handleApproxAgeChange(formatNumericInput(approxAge))}
+                                    customValidator={validateApproxAge}
+                                    showErrorOnTyping={true} 
+                                    onBlur={() => {
+                                        // Only format if the value is valid
+                                        if (validateApproxAge(approxAge)) {
+                                            handleApproxAgeChange(formatNumericInput(approxAge));
+                                        }
+                                    }}
                                 />
                             }       
                         </>
