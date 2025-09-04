@@ -287,7 +287,7 @@ export default function PatientInformationScreen() {
                             }}
                     />  
                     {
-                        !isDOBUnknown
+                        (!isDOBUnknown || isUnderSixMonths)
                         ?
                         // TODO - DatePicker not supported on web - use regular TextInput if Platform.OS === 'web'
                         <>

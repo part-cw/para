@@ -66,7 +66,6 @@ export class AgeCalculator {
             return parsed
         } 
 
-        // TODO handle if 'now' is same year/month as entered, but now.date is before dob.date, which is autoset to 15
         throw new Error("No valid age information provided. Please supply DOB, birth year/month, or approximate age.");
     }
 
