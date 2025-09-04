@@ -270,7 +270,7 @@ export default function ReviewScreen() {
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
-                            <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized?.value || 'Not provided'} />
+                            <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
                             <InfoRow label="HIV Status" value={patientData.hivStatus} />
                             
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
@@ -282,9 +282,9 @@ export default function ReviewScreen() {
                             <InfoRow label="Heart Rate" value={patientData.heartRate ? `${patientData.heartRate} beats per min` : 'Not provided'} />
                             
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                            <InfoRow label="Eye movement" value={patientData.eyeMovement?.value || 'Not provided'} />
-                            <InfoRow label="Best motor response" value={patientData.motorResponse?.value || 'Not provided'} />
-                            <InfoRow label="Best verbal response" value={patientData.verbalResponse?.value || 'Not provided'} />
+                            <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
+                            <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
+                            <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
                         </View>
                     </List.Accordion>
                 </View>
@@ -297,13 +297,13 @@ export default function ReviewScreen() {
                       onPress={() => handleAccordionPress('medicalConditions')}
                     >
                         <View style={Styles.accordionContentWrapper}>
-                            <InfoRow label="Pneumonia" value={patientData.pneumonia?.value || 'Not provided'} />
-                            <InfoRow label="Severe anaemia" value={patientData.anaemia?.value || 'Not provided'} />
-                            <InfoRow label="Chronic Illnesses" value={patientData.chronicIllness?.value || 'Not provided'} />
-                            <InfoRow label="Acute diarrhea" value={patientData.acuteDiarrhea?.value || 'Not provided'} />
-                            <InfoRow label="Malaria" value={patientData.malaria?.value ||'Not provided' } />
-                            <InfoRow label="Sepsis" value={patientData.sepsis?.value || 'Not provided'} />
-                            <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis?.value || 'Not provided'} />
+                            <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
+                            <InfoRow label="Severe anaemia" value={patientData.anaemia || 'Not provided'} />
+                            <InfoRow label="Chronic Illnesses" value={patientData.chronicIllness || 'Not provided'} />
+                            <InfoRow label="Acute diarrhea" value={patientData.acuteDiarrhea || 'Not provided'} />
+                            <InfoRow label="Malaria" value={patientData.malaria ||'Not provided' } />
+                            <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
+                            <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis || 'Not provided'} />
                         </View>
                     </List.Accordion>
                 </View>
