@@ -104,7 +104,7 @@ export class AgeCalculator {
      */
     static createDob(birthYear: string, birthMonth: string): Date {
         const birthMonthIndex = this.monthToIndex(birthMonth)
-        const dob = new Date(Number(birthYear), birthMonthIndex, 15) // TODO - what if curr date before the 15th:??
+        const dob = new Date(Number(birthYear), birthMonthIndex, 15)
         return dob
     }
 
