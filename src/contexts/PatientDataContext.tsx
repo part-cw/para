@@ -2,7 +2,6 @@
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { DropdownItem } from '../components/SearchableDropdown';
 
 // Define your data structure based on all screens
 export interface PatientData {
@@ -19,7 +18,7 @@ export interface PatientData {
   isYearMonthUnknown: boolean;
   dob: Date | null;
   birthYear: string;
-  birthMonth: DropdownItem | null;
+  birthMonth: string;
   approxAge: string;
   
   // Admission Clinical Data
@@ -72,7 +71,7 @@ const initialPatientData: PatientData = {
   isYearMonthUnknown: false,
   dob: null,
   birthYear: '',
-  birthMonth: null,
+  birthMonth: '',
   approxAge: '',
 
   // admission clinical data

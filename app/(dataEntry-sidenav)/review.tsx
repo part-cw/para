@@ -178,7 +178,7 @@ export default function ReviewScreen() {
         if (patientData.dob) {
             return formatDate(patientData.dob);
         } else if (patientData.birthYear && patientData.birthMonth) {
-            return `${patientData.birthMonth.value} ${patientData.birthYear}`;
+            return `${patientData.birthMonth} ${patientData.birthYear}`;
         } else if (patientData.approxAge) {
             return `${patientData.approxAge} years old`;
         }

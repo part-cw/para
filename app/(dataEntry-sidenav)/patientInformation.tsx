@@ -1,7 +1,7 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
-import SearchableDropdown, { DropdownItem } from '@/src/components/SearchableDropdown';
+import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
@@ -70,7 +70,6 @@ export default function PatientInformationScreen() {
     const validateAge = () => {
         try {
             const age = AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge);
-            console.log('setting calculatedAge to', age)
             setCalculatedAge(age);
             setAgeValidationError(''); // Clear error if validation passes
             return true;
@@ -89,7 +88,7 @@ export default function PatientInformationScreen() {
             updatePatientData({
                 dob: selectedDate,
                 birthYear: '',
-                birthMonth: null,
+                birthMonth: '',
                 approxAge: '',
                 sickYoungInfant: isYoungInfant
             })
@@ -123,7 +122,7 @@ export default function PatientInformationScreen() {
         setAgeValidationError('');
     }
 
-    const handleYearMonthChange = (year: string, month: DropdownItem | null) => {
+    const handleYearMonthChange = (year: string, month: string | undefined) => {
         let isYoungInfant
         if (year && month) {
             const dob = AgeCalculator.createDob(year, month)
@@ -261,7 +260,7 @@ export default function PatientInformationScreen() {
                                         // reset and clear all othe fields when dob unknown checked
                                         isYearMonthUnknown: false,
                                         birthYear: '',
-                                        birthMonth: null,
+                                        birthMonth: '',
                                         approxAge: ''
                                     })
                                 })
@@ -304,7 +303,7 @@ export default function PatientInformationScreen() {
                                     updatePatientData({
                                         isYearMonthUnknown: newVal,
                                         birthYear: '',
-                                        birthMonth: null,
+                                        birthMonth: '',
                                         ...(newVal ? {} : {
                                             dob: null,
                                             approxAge: ''
@@ -331,8 +330,8 @@ export default function PatientInformationScreen() {
                                         data={months} 
                                         label={'Birth Month'}
                                         placeholder="Search for or select patient's birth month" 
-                                        onSelect={(value) => handleYearMonthChange(patientData.birthYear, value)}
-                                        value={birthMonth?.value}
+                                        onSelect={(item) => handleYearMonthChange(patientData.birthYear, item.value)}
+                                        value={birthMonth}
                                         search={true}
                                         style={{marginTop: 10}}
                                     />

@@ -6,7 +6,6 @@
 //  * TODO used for WAZ score calculations -- take floor (use months completed)
 //  * TODO for model calculation - round to 1 decimal place
 
-import { DropdownItem } from "../components/SearchableDropdown";
 import { MAX_PATIENT_AGE } from "../config";
 import { ageRangeErrorMessage, isValidAge } from "./inputValidator";
 
@@ -26,7 +25,7 @@ export class AgeCalculator {
     static calculateAgeInYears(
         dob: Date|null, 
         birthYear: string, 
-        birthMonth: DropdownItem|null, 
+        birthMonth: string, 
         approxAge: string
     ): number {
         if (dob && !birthYear && !birthMonth && !approxAge) {
@@ -53,7 +52,14 @@ export class AgeCalculator {
             
             return age;
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
-            if(!isValidAge(Number(approxAge.trim()))) {
+            const age = Number(approxAge.trim())
+            console.log(age, typeof(age))
+
+            if (!age) {
+                throw new Error('Approximate age is not a valid number.')
+            }
+
+            if(!isValidAge(age)) {
                 throw new Error(ageRangeErrorMessage)
             }
             
@@ -98,30 +104,29 @@ export class AgeCalculator {
      * @param birthMonth entered manually - assume valid input
      * @returns creates DOB in Date formate. Assumes birth date is 15th of birth year
      */
-    static createDob(birthYear: string, birthMonth: DropdownItem): Date {
-        console.log('making new dob...')
+    static createDob(birthYear: string, birthMonth: string): Date {
         const birthMonthIndex = this.monthToIndex(birthMonth)
         const dob = new Date(Number(birthYear), birthMonthIndex, 15) // TODO - what if curr date before the 15th:??
         return dob
     }
 
-    private static monthToIndex(month: DropdownItem): number {
+    private static monthToIndex(month: string): number {
         const monthMap: Record<string, number> = {
-            Jan: 0,
-            Feb: 1,
-            Mar: 2,
-            Apr: 3,
+            January: 0,
+            February: 1,
+            March: 2,
+            April: 3,
             May: 4,
-            Jun: 5,
-            Jul: 6,
-            Aug: 7,
-            Sep: 8,
-            Oct: 9,
-            Nov: 10,
-            Dec: 11,
+            June: 5,
+            July: 6,
+            August: 7,
+            September: 8,
+            October: 9,
+            November: 10,
+            December: 11,
         };
 
-        return monthMap[month.key] ?? -1; // -1 if not found
+        return monthMap[month] ?? -1; // -1 if not found
     }
 
     /**
