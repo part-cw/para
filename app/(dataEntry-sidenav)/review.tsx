@@ -51,9 +51,7 @@ export default function ReviewScreen() {
                 const fieldValue = patientData[fieldName as keyof typeof patientData];
 
                 // Check if field is empty or null
-                if (!fieldValue || 
-                    (typeof fieldValue === 'string' && fieldValue.trim() === '') ||
-                    (fieldValue === null)) {
+                if (!fieldValue) {
                     missingFields.push(displayNames[fieldName] || fieldName); // if no display name, push fieldName
                 }
             }
@@ -81,6 +79,47 @@ export default function ReviewScreen() {
                 if (!hasValidOption){
                     // TODO - hardcode message for now - only age info has 'oneof'. In the future we may want to create a more dynamic message
                     missingFields.push('Age information')
+                }
+            }
+
+            // check conditionally required fields
+            if (section.conditionalRequired) {
+                if (section.sectionName === 'admissionClinicalData') {
+                    // add missing required clinical data fields for 0-6 mo patients
+                    if (patientData.isUnderSixMonths) {
+                        const underSixMonthsFields = section.conditionalRequired.underSixMonths || []
+                        
+                        for (const fieldName of underSixMonthsFields) {
+                            const fieldValue = patientData[fieldName as keyof typeof patientData]
+                            if (!fieldValue) {
+                                 missingFields.push(displayNames[fieldName] || fieldName);
+                            }
+                        }
+                    } else {
+                         // add missing required clinical data fields for 6-60 mo patients
+                        const overSixMonthsFields = section.conditionalRequired.sixMonthsAndOver || []
+                        
+                        for (const fieldName of overSixMonthsFields) {
+                            const fieldValue = patientData[fieldName as keyof typeof patientData]
+                            if (!fieldValue) {
+                                 missingFields.push(displayNames[fieldName] || fieldName);
+                            }
+                        }
+                    }
+                }
+
+                if (section.sectionName === 'caregiverContact') {
+                    // Check if telephone is provided, then confirmTelephone is required
+                    if (patientData.caregiverTel && patientData.caregiverTel.trim() !== '') {
+                        const hasTelephoneFields = section.conditionalRequired.hasTelephone || [];
+                        
+                        for (const fieldName of hasTelephoneFields) {
+                            const fieldValue = patientData[fieldName as keyof typeof patientData];
+                            if (!fieldValue) {
+                                missingFields.push(displayNames[fieldName] || fieldName);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -268,24 +307,41 @@ export default function ReviewScreen() {
                       left={props => <CustomAccordionIcon sectionId="admissionClinicalData" />}
                       onPress={() => handleAccordionPress('admissionClinicalData')}
                     >
-                        <View style={Styles.accordionContentWrapper}>
-                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
-                            <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
-                            <InfoRow label="HIV Status" value={patientData.hivStatus} />
-                            
-                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
-                            <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                            <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
-                            <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
-                            <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
-                            <InfoRow label="SpO2" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
-                            {/* <InfoRow label="Heart Rate" value={patientData.heartRate ? `${patientData.heartRate} beats per min` : 'Not provided'} /> */}
-                            
-                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                            <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
-                            <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
-                            <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
-                        </View>
+                        {
+                            patientData.isUnderSixMonths
+                            ?
+                             <View style={Styles.accordionContentWrapper}>
+                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
+                                <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
+                                <InfoRow label="Jaundice" value={patientData.bulgingFontanelle} />
+                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle} />
+                                <InfoRow label="Feeding well?" value={patientData.feedingStatus} />
+                                
+                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
+                                <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
+                                <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                                <InfoRow label="SpO₂" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
+                            </View>
+                            :
+                            <View style={Styles.accordionContentWrapper}>
+                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
+                                <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
+                                <InfoRow label="HIV Status" value={patientData.hivStatus} />
+                                
+                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
+                                <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
+                                <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                                <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
+                                <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
+                                <InfoRow label="SpO2" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
+                                {/* <InfoRow label="Heart Rate" value={patientData.heartRate ? `${patientData.heartRate} beats per min` : 'Not provided'} /> */}
+                                
+                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
+                                <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
+                                <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
+                                <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
+                            </View>
+                        }
                     </List.Accordion>
                 </View>
 

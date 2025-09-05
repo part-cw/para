@@ -1,10 +1,10 @@
     
  
   /**
- * Patient form validation schema with age-conditional requirements
+ * Patient form validation schema with conditional requirements
  * 'required' and 'oneOf' are fields that must be filled
  * 'optional' are fields that are NOT required
- * 'conditionalRequired' are fields required based on age group
+ * 'conditionalRequired' are fields required based on given condition
  * Section name must match keys in displayNames.ts
  */
 
@@ -51,6 +51,9 @@ export const patientFormSchema = [
     {
         sectionName: 'caregiverContact',
         required: ['caregiverName'],
-        optional: ['telephone', 'confirmTelephone']
+        optional: ['telephone', 'isCaregiversPhone', 'sendReminders'],
+        conditionalRequired: {
+            hasTelephone: ['confirmTel'] // if telephone entered, must confirm
+        }
     }
 ]

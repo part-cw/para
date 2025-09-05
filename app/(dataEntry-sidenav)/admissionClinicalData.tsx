@@ -141,7 +141,8 @@ export default function AdmissionClinicalDataScreen() {
                                         search={false}
                                     />
 
-                                    <Text style={Styles.accordionSubheading}>{displayNames['feedingStatus']}<Text style={Styles.required}>*</Text></Text>
+                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Feeding Status <Text style={Styles.required}>*</Text></Text>
+                                    <Text>{displayNames['feedingStatusQuestion']}</Text>
                                     <RadioButtonGroup 
                                         options={[
                                             { label: 'Yes', value: 'yes'},

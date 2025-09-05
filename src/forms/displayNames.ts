@@ -29,7 +29,8 @@ export const displayNames: Record<string, string> = {
     illnessDuration: 'Duration of present illness',
     jaundice: 'Jaundice',
     bulgingFontanelle: 'Bulging Fontanelle',
-    feedingStatus: 'Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)?',
+    feedingStatus: 'Feeding Status',
+    feedingStatusQuestion: 'Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)?',
 
     // AdmissionClinical Data (all ages)
     muac: 'MUAC',
@@ -56,7 +57,7 @@ export const displayNames: Record<string, string> = {
     vhtTelephone: 'VHT Telephone',
 
     // caregiverContact
-    caregiverContact: 'Caregiver Contact',
+    caregiverContact: 'Caregiver Contact Information',
     caregiverName: 'Name of Head of Family',
     caregiverTel: 'Telephone',
     confirmTel: 'Confirm Telephone',
