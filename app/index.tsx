@@ -17,10 +17,21 @@ export default function Index() {
                 icon= 'plus'
                 mode="elevated" 
                 onPress={() => {
-                  router.push('../(dataEntry-sidenav)/patientInformation')
+                  router.push('/(dataEntry-sidenav)/patientInformation')
                   }}>
             Add Patient
-          </Button>
+        </Button>
+
+        <Button style={[{ alignSelf: 'center' }, {marginTop: 10}]}
+                buttonColor={colors.primary} 
+                textColor={colors.onPrimary} 
+                icon= 'account-group'
+                mode="elevated" 
+                onPress={() => {
+                  router.push('/patientRecords')
+                  }}>
+            Patient Records
+        </Button>
       </View>
     </>
   );

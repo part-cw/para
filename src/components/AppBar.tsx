@@ -10,7 +10,19 @@ export default function AppBar() {
 
   // get current route
   const pathname = usePathname();
-  const isHome = pathname === '/';
+  const isHome = (pathname === '/');
+
+  const dataEntryRoutes = [
+    '/patientInformation',
+    '/admissionClinicalData',
+    '/medicalConditions',
+    '/vhtReferral',
+    '/caregiverContact',
+    '/review'
+  ]
+  
+  const isDataEntryScreen = dataEntryRoutes.includes(pathname);
+  const dataWarningMessage = 'Are you sure you want to go home before submitting patient record? All data will be lost.'
 
   return (
     <Appbar.Header 
@@ -32,20 +44,20 @@ export default function AppBar() {
             icon= 'home'
             mode="elevated" 
             onPress={() => {
-              // TODO - switch warning depending on which screen we're currently on. current message for data entry screens
-              if (Platform.OS === 'web') {
-                if (window.confirm("Are you sure you want to go home before submitting patient record? All data will be lost.")) {
-                  router.push('/')
-                }
+              if (isDataEntryScreen) {
+                if (Platform.OS === 'web') {
+                  if (window.confirm(dataWarningMessage)) {
+                    router.push('/')
+                  }
+                } else {
+                  Alert.alert("Warning", dataWarningMessage,
+                    [{ text: "Cancel", style: "cancel" },
+                     { text: "OK", onPress: () => router.push('/') }]
+                  );
+                } 
               } else {
-                Alert.alert(
-                  "Warning",
-                  "Are you sure you want to go home before submitting patient record? All data will be lost.",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "OK", onPress: () => router.push('/') }
-                  ]
-                );
+                // no alert if not in data entry screen
+                router.push('/')
               }
             }}
           >
