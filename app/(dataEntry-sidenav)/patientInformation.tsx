@@ -27,7 +27,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function PatientInformationScreen() {
     const { height } = useWindowDimensions();
 
-    const { patientData, updatePatientData, getPreviewPatientId, startAdmission, isDataLoaded } = usePatientData();
+    const { patientData, updatePatientData, getPreviewPatientId, startAdmission, handleAgeChange, isDataLoaded } = usePatientData();
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [ageValidationError, setAgeValidationError] = useState<string>('');
@@ -265,9 +265,15 @@ export default function PatientInformationScreen() {
 
                     {/* Age Section */}
                     <Text style={Styles.sectionHeader}>Age <Text style={Styles.required}>*</Text></Text>
-                    <Checkbox label={'Patient is less than 6 months old'} 
-                            checked={isUnderSixMonths} 
-                            onChange={() => updatePatientData({isUnderSixMonths: !isUnderSixMonths})}/> 
+                    <Checkbox 
+                        label={'Patient is less than 6 months old'} 
+                        checked={isUnderSixMonths} 
+                        onChange={() => {
+                            const newValue = !isUnderSixMonths
+                            updatePatientData({isUnderSixMonths: newValue})
+                            handleAgeChange(newValue)
+                        }}
+                    /> 
                     <Checkbox label={'Exact date of birth (DOB) unknown'} 
                             checked={isDOBUnknown} 
                             onChange={() => {

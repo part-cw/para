@@ -14,19 +14,27 @@ export const displayNames: Record<string, string> = {
     isDOBUnknown: 'Exact date of birth (DOB) unknown',
     isYearMonthUnknown: 'Birth year and month unknown',
     
-    // Admission Clinical Data
+    // Admission Clinical Data (6-60 months)
     admissionClinicalData: 'Admission Clincial Data',
     lastHospitalized: 'Last Hospitalized',
     hivStatus: 'HIV Status',
-    muac: 'MUAC',
-    spo2: 'SpO₂',
-    weight: 'Weight',
     temperature: 'Temperature',
     rrate: 'Respiratory Rate',
     heartRate: 'Heart Rate',
     eyeMovement: 'Eye movement',
     motorResponse: 'Best motor response',
     verbalResponse: 'Verbal response',
+
+    // Admission Clinical Data (0-60 months)
+    illnessDuration: 'Duration of present illness',
+    jaundice: 'Jaundice',
+    bulgingFontanelle: 'Bulging Fontanelle',
+    feedingStatus: 'Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)?',
+
+    // AdmissionClinical Data (all ages)
+    muac: 'MUAC',
+    spo2: 'SpO₂',
+    weight: 'Weight',
 
     // Medical Conditions
     medicalConditions: 'Medical Conditions',

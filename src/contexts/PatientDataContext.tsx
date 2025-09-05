@@ -21,18 +21,25 @@ export interface PatientData {
   birthMonth: string;
   approxAge: string;
   
-  // Admission Clinical Data
-  hivStatus: string;
+  // Admission Clinical Data (all ages)
   weight: string;
   muac: string;
+  spo2: string;
+ 
+  // Admission Clinical Data (6-60 months only)
+  hivStatus: string;
   temperature: string;
   rrate: string;
-  spo2: string;
-  heartRate: string;
   lastHospitalized: string;
   eyeMovement: string;
   motorResponse: string;
   verbalResponse: string;
+
+  // Admission Clinical Data (0-6 months only)
+  illnessDuration: string;
+  jaundice: string;
+  bulgingFontanelle: string; // TODO - change to boolean?
+  feedingStatus: string; // TODO - change to boolean?
 
   // Medical Conditions
   anaemia: string;
@@ -74,18 +81,25 @@ const initialPatientData: PatientData = {
   birthMonth: '',
   approxAge: '',
 
-  // admission clinical data
-  hivStatus: '',
+  // admission clinical data (all)
   weight: '',
   muac: '',
+  spo2: '',
+  
+  // Admission Clinical Data (6-60 months only)
+  lastHospitalized: '',
+  hivStatus: '',
   temperature: '',
   rrate: '',
-  spo2: '',
-  heartRate: '',
-  lastHospitalized: '',
   eyeMovement: '',
   motorResponse: '',
   verbalResponse: '',
+
+  // Admission Clinical Data (0-6 months only)
+  illnessDuration: '',
+  jaundice: '',
+  bulgingFontanelle: '', // TODO - change to boolean?
+  feedingStatus: '', // TODO - change to boolean?
 
   // medical conditions
   anaemia: '',
@@ -120,6 +134,7 @@ interface PatientDataContextType {
   getPreviewPatientId: () => Promise<string>;
   startAdmission: () => void;
   isDataLoaded: boolean;
+  handleAgeChange: (isUnderSixMonths: boolean) => void;
 }
 
 const PatientDataContext = createContext<PatientDataContextType | undefined>(undefined);
@@ -164,6 +179,33 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       console.log('🔄 Auto-saved patient data:', JSON.stringify(updates, null, 2));
     } catch (error) {
       console.error('Error auto-saving data:', error);
+    }
+  };
+
+  const handleAgeChange = async (isUnderSixMonths: boolean) => {
+    if (isUnderSixMonths) {
+      // Clear 6-60 months specific fields
+      const updates = {
+        isUnderSixMonths,
+        hivStatus: '',
+        temperature: '',
+        rrate: '',
+        lastHospitalized: '',
+        eyeMovement: '',
+        motorResponse: '',
+        verbalResponse: '',
+      };
+      await updatePatientData(updates);
+    } else {
+      // Clear 0-6 months specific fields
+      const updates = {
+        isUnderSixMonths,
+        illnessDuration: '',
+        jaundice: '',
+        bulgingFontanelle: '',
+        feedingStatus: '',
+      };
+      await updatePatientData(updates);
     }
   };
 
@@ -258,6 +300,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         getPreviewPatientId,
         startAdmission,
         isDataLoaded,
+        handleAgeChange
         // getAllSubmittedPatients,
         // clearAllSubmittedPatients,
         // getTempPatientData,
