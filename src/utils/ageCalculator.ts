@@ -149,7 +149,7 @@ export class AgeCalculator {
             const ageDays = this.getAgeInDaysFromDob(dob)
             months = ageDays / 30.44 // days per month = 30.44
         } else if (years) {
-            months = years / 12 // 12 months in a year
+            months = years * 12 // 12 months in a year
         }
   
         return months;
