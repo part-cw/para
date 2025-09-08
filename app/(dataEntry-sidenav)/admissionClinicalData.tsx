@@ -4,6 +4,7 @@ import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
+import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { validateMuac } from '@/src/utils/clinicalVariableValidator';
@@ -15,14 +16,19 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+
 // TODO - add height field
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
-    const [validationErrors, setValidationErrors] = useState<string[]>([]);
-    const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
+    const { setValidationErrors, getScreenErrors } = useValidation();
+
+    // const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const validationErrors = getScreenErrors('admissionClinicalData')
     const hasValidationErrors = validationErrors.length > 0;
+
+    const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
 
     const {
         // common fields
@@ -122,7 +128,7 @@ export default function AdmissionClinicalDataScreen() {
 
     useEffect(() => {
         const errors = validateAllFields();
-        setValidationErrors(errors);
+        setValidationErrors('admissionClinicalData', errors);
     }, [
         weight, muac, spo2, 
         illnessDuration, jaundice, bulgingFontanelle, feedingStatus,
@@ -130,6 +136,16 @@ export default function AdmissionClinicalDataScreen() {
         eyeMovement, motorResponse, verbalResponse,
         isUnderSixMonths
     ]);
+
+     // Clear errors when component unmounts or navigates away
+    useEffect(() => {
+        return () => {
+            // Only clear if no errors exist
+            if (validateAllFields().length === 0) {
+                setValidationErrors('admissionClinicalData', []);
+            }
+        };
+    }, []);
 
 
     const durationOptions = [
