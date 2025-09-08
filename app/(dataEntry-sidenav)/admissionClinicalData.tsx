@@ -15,11 +15,13 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// TODO - add height field
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
     const hasValidationErrors = validationErrors.length > 0;
 
     const {
@@ -47,6 +49,7 @@ export default function AdmissionClinicalDataScreen() {
         isUnderSixMonths
     } = patientData
 
+    // TODO add more detailed validation for all fields
     const validateAllFields = () => {
         const errors: string[] = [];
         
@@ -127,7 +130,6 @@ export default function AdmissionClinicalDataScreen() {
         eyeMovement, motorResponse, verbalResponse,
         isUnderSixMonths
     ]);
-
 
 
     const durationOptions = [
@@ -492,14 +494,22 @@ export default function AdmissionClinicalDataScreen() {
             </ScrollView>
 
             {/* Display error summary*/}
-            <ValidationSummary errors={validationErrors} />
+            { showErrorSummary &&
+                <ValidationSummary errors={validationErrors} />
+            }
 
             <PaginationControls
                 showPrevious={true}
                 showNext={true}
                 onPrevious={() => router.back()}
-                onNext={() => router.push('/(dataEntry-sidenav)/medicalConditions')}
-                disabledNext={hasValidationErrors}
+                onNext={() => {
+                    if (hasValidationErrors) {
+                      setShowErrorSummary(true)
+                    } else {
+                        setShowErrorSummary(false)
+                        router.push('/(dataEntry-sidenav)/medicalConditions')}
+                    }
+                }
             />
         </SafeAreaView>
     );

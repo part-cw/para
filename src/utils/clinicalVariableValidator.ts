@@ -1,5 +1,8 @@
 import { isValidNumericFormat } from "./inputValidator";
 
+//  * TODO used for WAZ score calculations -- take floor (use months completed)
+//  * TODO for model calculation - round to 1 decimal place
+
 export function validateMuac(input: string): { isValid: boolean; errorMessage: string } {
     if (!isValidNumericFormat(input)){
         return { isValid: false, errorMessage: 'Invalid numeric input' };
