@@ -495,7 +495,7 @@ export default function AdmissionClinicalDataScreen() {
 
             {/* Display error summary*/}
             { showErrorSummary &&
-                <ValidationSummary errors={validationErrors} />
+                <ValidationSummary errors={validationErrors}/>
             }
 
             <PaginationControls

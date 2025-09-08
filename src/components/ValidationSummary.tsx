@@ -1,7 +1,7 @@
 // ValidationSummary.tsx - Reusable validation summary component
 import React from 'react';
 import { StyleProp, Text, TextStyle, View, ViewStyle } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { Icon, useTheme } from 'react-native-paper';
 
 interface ValidationSummaryProps {
   errors: string[];
@@ -37,28 +37,28 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
           backgroundColor: '#ffebee',
           borderColor: '#f44336',
           textColor: '#d32f2f',
-          icon: '⚠️'
+          icon: 'alert'
         };
       case 'warning':
         return {
           backgroundColor: '#fff3e0',
           borderColor: '#ff9800',
           textColor: '#e65100',
-          icon: '⚠️'
+          icon: 'alert-circle'
         };
       case 'info':
         return {
           backgroundColor: '#e3f2fd',
           borderColor: '#2196f3',
           textColor: '#0d47a1',
-          icon: 'ℹ️'
+          icon: 'information'
         };
       default:
         return {
           backgroundColor: '#ffebee',
           borderColor: '#f44336',
           textColor: '#d32f2f',
-          icon: '⚠️'
+          icon: 'alert-circle'
         };
     }
   };
@@ -100,12 +100,16 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
     <View style={[defaultContainerStyle, containerStyle]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
         {showIcon && (
-          <Text style={{ fontSize: 16, marginRight: 8 }}>
-            {variantColors.icon}
-          </Text>
+            <View style={[{ marginRight: 8 }, {marginBottom: 5}]}>
+                <Icon 
+                    source={variantColors.icon}
+                    size={20}
+                    color={variantColors.textColor}
+                />
+            </View>
         )}
         <Text style={[defaultTitleStyle, titleStyle]}>
-          {title}
+            {title}
         </Text>
       </View>
       {errors.map((error, index) => (
