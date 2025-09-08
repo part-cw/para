@@ -136,7 +136,7 @@ export function isValidPhoneNumber(input: string): boolean {
     /**
      * Age-specific validation (positive integers only) - must be 0-5.5 years old
      */
-    export function isValidAge(input: number): boolean {
+    export function isValidAgeRange(input: number): boolean {
         // const age = Number(input.trim());
         return input >= 0 && input <= MAX_PATIENT_AGE;
     }

@@ -7,7 +7,7 @@
 //  * TODO for model calculation - round to 1 decimal place
 
 import { MAX_PATIENT_AGE } from "../config";
-import { ageRangeErrorMessage, isValidAge } from "./inputValidator";
+import { ageRangeErrorMessage, isValidAgeRange } from "./inputValidator";
 
 export class AgeCalculator {
 
@@ -58,7 +58,7 @@ export class AgeCalculator {
                 throw new Error('Approximate age is not a valid number.')
             }
 
-            if(!isValidAge(age)) {
+            if(!isValidAgeRange(age)) {
                 throw new Error(ageRangeErrorMessage)
             }
             
