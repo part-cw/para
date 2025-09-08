@@ -32,7 +32,6 @@ export default function PatientInformationScreen() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [ageValidationError, setAgeValidationError] = useState<string>('');
     const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
-    // const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     // Local state for form validation and UI
     const {
@@ -48,23 +47,6 @@ export default function PatientInformationScreen() {
         birthMonth,
         approxAge,
     } = patientData;
-
-    // Keyboard event listeners -- TODO - remove?
-    // useEffect(() => {
-    //     if (Platform.OS === 'android') {
-    //         const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (e) => {
-    //             setKeyboardHeight(e.endCoordinates.height);
-    //         });
-    //         const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-    //             setKeyboardHeight(0);
-    //         });
-
-    //         return () => {
-    //             keyboardDidShowListener?.remove();
-    //             keyboardDidHideListener?.remove();
-    //         };
-    //     }
-    // }, []);
 
     const ageLessThanSixMonthsError = 'Entered age is less than 6 months. Check off "patient is less than 6 months old" or enter new DOB'
     const ageGreaterThanSixMonthsError = 'Entered age is more than 6 months. Enter new DOB or unselct "...less than 6 months..." option'
@@ -148,16 +130,6 @@ export default function PatientInformationScreen() {
     };
 
     const handleApproxAgeChange = (value: string) => {
-        // multiply years by 365.25 days/year
-        // let ageInDays = Number(value) * 365.25
-        // ageInDays = AgeCalculator.roundAge(ageInDays);
-        // const isYoungInfant = ageInDays < 28;
-
-        // let enteredAge = value;
-        // if (Number(value) < 0) {
-        //     enteredAge = ''
-        // }
-
         // Check if value is valid before calculating sickYoungInfant
         updatePatientData({ 
             approxAge: value,
@@ -201,13 +173,6 @@ export default function PatientInformationScreen() {
     useEffect(() => {
         // Only validate if we have some age information
         if (dob || (birthYear && birthMonth) || approxAge) {
-            // TODO - uncomment below code? to test later
-            // if (approxAge && !validateApproxAge(approxAge)) {
-            //     setAgeValidationError('Please enter a valid age');
-            //     setCalculatedAge(null);
-            //     return;
-            // }
-            
             // Use setTimeout to avoid validation during rapid state changes
             const timeoutId = setTimeout(() => {
                 validateAge();
