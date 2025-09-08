@@ -2,11 +2,14 @@ import PaginationControls from '@/src/components/PaginationControls';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
+import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { validateMuac } from '@/src/utils/clinicalVariableValidator';
+import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
@@ -16,6 +19,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const hasValidationErrors = validationErrors.length > 0;
 
     const {
         // common fields
@@ -41,6 +46,89 @@ export default function AdmissionClinicalDataScreen() {
         // Age indicator
         isUnderSixMonths
     } = patientData
+
+    const validateAllFields = () => {
+        const errors: string[] = [];
+        
+        // Common validations for both age groups
+        if (!weight || !isValidNumericFormat(weight)) {
+            errors.push('Weight is required and must be a valid number');
+        }
+        
+        if (!muac) {
+            errors.push('MUAC is required');
+        } else {
+            const muacValidation = validateMuac(muac);
+            if (!muacValidation.isValid) {
+                errors.push(muacValidation.errorMessage);
+            }
+        }
+        
+        if (!spo2 || !isValidNumericFormat(spo2)) {
+            errors.push('SpO₂ is required and must be a valid number');
+        } else {
+            const spo2Value = Number(spo2);
+            if (spo2Value < 0 || spo2Value > 100) {
+                errors.push('SpO₂ must be between 0 and 100');
+            }
+        }
+        
+        if (isUnderSixMonths) {
+            // Validations for 0-6 months
+            if (!illnessDuration) {
+                errors.push('Illness duration is required');
+            }
+            if (!jaundice) {
+                errors.push('Jaundice status is required');
+            }
+            if (!bulgingFontanelle) {
+                errors.push('Bulging fontanelle status is required');
+            }
+            if (!feedingStatus) {
+                errors.push('Feeding status is required');
+            }
+        } else {
+            // Validations for 6-60 months
+            if (!hivStatus) {
+                errors.push('HIV status is required');
+            }
+            if (!lastHospitalized) {
+                errors.push('Last hospitalized is required');
+            }
+            if (!temperature || !isValidNumericFormat(temperature)) {
+                errors.push('Temperature is required and must be a valid number');
+            }
+            if (!rrate || !isValidNumericFormat(rrate)) {
+                errors.push('Respiratory rate is required and must be a valid number');
+            }
+            
+            // Blantyre Coma Scale validations
+            if (!eyeMovement) {
+                errors.push('Eye movement assessment is required');
+            }
+            if (!motorResponse) {
+                errors.push('Motor response assessment is required');
+            }
+            if (!verbalResponse) {
+                errors.push('Verbal response assessment is required');
+            }
+        }
+        
+        return errors;
+    };
+
+    useEffect(() => {
+        const errors = validateAllFields();
+        setValidationErrors(errors);
+    }, [
+        weight, muac, spo2, 
+        illnessDuration, jaundice, bulgingFontanelle, feedingStatus,
+        hivStatus, lastHospitalized, temperature, rrate,
+        eyeMovement, motorResponse, verbalResponse,
+        isUnderSixMonths
+    ]);
+
+
 
     const durationOptions = [
         { value: 'Less than 48 hours', key: '<48h' },
@@ -177,6 +265,7 @@ export default function AdmissionClinicalDataScreen() {
                                             onChangeText={(value) => updatePatientData({ muac: value })}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
+                                            showErrorOnTyping={true}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -260,6 +349,8 @@ export default function AdmissionClinicalDataScreen() {
                                             onChangeText={(value) => updatePatientData({ muac: value })}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
+                                            customValidator={(value) => validateMuac(value).isValid}
+                                            customErrorMessage={validateMuac(muac).errorMessage}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -399,11 +490,16 @@ export default function AdmissionClinicalDataScreen() {
                     </List.Section>
                 }
             </ScrollView>
+
+            {/* Display error summary*/}
+            <ValidationSummary errors={validationErrors} />
+
             <PaginationControls
                 showPrevious={true}
                 showNext={true}
                 onPrevious={() => router.back()}
                 onNext={() => router.push('/(dataEntry-sidenav)/medicalConditions')}
+                disabledNext={hasValidationErrors}
             />
         </SafeAreaView>
     );

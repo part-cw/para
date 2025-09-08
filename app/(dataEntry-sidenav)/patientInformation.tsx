@@ -23,6 +23,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// TODO refactor error hanbdling to be more like admissionClinicalData
 
 export default function PatientInformationScreen() {
     const { height } = useWindowDimensions();
