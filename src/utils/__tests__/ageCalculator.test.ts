@@ -157,7 +157,8 @@ describe('AgeCalculator', () => {
 
     it('should calculate age in months from years', () => {
       const months = AgeCalculator.getAgeInMonths(null, 3);
-      expect(months).toBeCloseTo(0.25, 1); // 3 / 12 = 0.25
+      const expected = 3*12
+      expect(months).toBe(expected);
     });
   });
 
