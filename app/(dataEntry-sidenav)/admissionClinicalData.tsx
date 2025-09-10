@@ -408,7 +408,9 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
-                                    {showMuacStatusBar && <NutritionStatusBar/>}
+                                    { showMuacStatusBar && 
+                                        <NutritionStatusBar title='MUAC Nutrional Status' content=''/>
+                                    }
                                     
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}
@@ -490,7 +492,7 @@ export default function AdmissionClinicalDataScreen() {
                                             icon="information-outline"
                                             size={20}
                                             iconColor={colors.primary}
-                                            onPress={() => {alert(eyeMovementInfo)}} // TODO - change to tooltip
+                                            onPress={() => {alert(eyeMovementInfo)}}
                                         />
                                     </View>
 
