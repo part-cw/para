@@ -104,3 +104,32 @@ export function calculateWAZ(age: number, sex: string): number {
     // look up in JSON
     return 0; //stub
 }
+
+export function validateRespiratoryRange(input: string): ValidationResult {
+    const rrate = Number(input)
+
+    const rrateConfig = config.find(c => c.variable === "rrate");
+    if (!rrateConfig) {
+        throw new Error("Respiratory rate config not found in model_input_ranges.json");
+    }
+
+    const { hardMin, hardMax, softMin, softMax } = rrateConfig;
+
+    if ((hardMin && rrate < hardMin) || (hardMax && rrate > hardMax)) {
+        return { 
+            isValid: false, 
+            errorMessage: `Respiratory rate is outside the valid range of ${hardMin} to ${hardMax} bpm. Enter a new value.`,
+            warningMessage: '' 
+        };
+    }
+
+    if ((softMin && rrate < softMin) || (softMax && rrate > softMax)) {
+        return { 
+            isValid: false, 
+            errorMessage: '',
+            warningMessage: `Respiratory is outside the normal range of ${softMin} to ${softMax} bpm. Are you sure this is correct?` 
+        };
+    }
+
+    return { isValid: true, errorMessage: '', warningMessage: '' };
+}

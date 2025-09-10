@@ -26,6 +26,20 @@
     "hardMax": 45,
     "softMin": 34,
     "softMax": null
+  },
+  {
+    "variable": "rrate",
+    "hardMin": 6,
+    "hardMax": 100,
+    "softMin": 10,
+    "softMax": 60
+  },
+   {
+    "variable": "spo2",
+    "hardMin": 30,
+    "hardMax": 100,
+    "softMin": null,
+    "softMax": null
   }
 ]
 

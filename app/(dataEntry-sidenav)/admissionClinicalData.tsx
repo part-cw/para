@@ -8,7 +8,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { getMuacStatus, validateMuac, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
+import { getMuacStatus, validateMuac, validateRespiratoryRange, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -123,6 +123,12 @@ export default function AdmissionClinicalDataScreen() {
 
             if (!rrate || !isValidNumericFormat(rrate)) {
                 errors.push('Respiratory rate is required and must be a valid number');
+            } else {
+                const rrateValidation = validateRespiratoryRange(rrate)
+                if (!rrateValidation.isValid) {
+                    rrateValidation.errorMessage && errors.push(rrateValidation.errorMessage)
+                    rrateValidation.warningMessage && warnings.push(rrateValidation.warningMessage)
+                }
             }
             
             // Blantyre Coma Scale validations
@@ -442,7 +448,10 @@ export default function AdmissionClinicalDataScreen() {
                                         value={rrate} 
                                         onChangeText={(value) => updatePatientData({ rrate: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
-                                        isRequired={true} 
+                                        isRequired={true}
+                                        customValidator={(value) => validateRespiratoryRange(value).isValid}
+                                        customErrorMessage={validateRespiratoryRange(rrate).errorMessage }
+                                        customWarningMessage={validateRespiratoryRange(rrate).warningMessage} 
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     <Button style={{ alignSelf: 'center'}}
