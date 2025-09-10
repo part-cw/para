@@ -8,7 +8,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { validateMuac, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
+import { getMuacStatus, validateMuac, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -16,7 +16,6 @@ import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 
 
 export default function AdmissionClinicalDataScreen() {  
@@ -31,10 +30,6 @@ export default function AdmissionClinicalDataScreen() {
     const hasValidationWarnings = validationWarnings.length > 0;
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
-    const showMuacStatusBar = true // TODO set this properly
-
-    console.log('validation errors', validationErrors, validationErrors.length)
-    console.log('validation warnings', validationWarnings)
 
     const {
         // common fields
@@ -322,6 +317,11 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
+                                    <NutritionStatusBar 
+                                        title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                        content=''
+                                        variant={getMuacStatus(isUnderSixMonths, muac)}
+                                    />
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
@@ -408,9 +408,11 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
-                                    { showMuacStatusBar && 
-                                        <NutritionStatusBar title='MUAC Nutrional Status' content=''/>
-                                    }
+                                    <NutritionStatusBar 
+                                        title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                        content=''
+                                        variant={getMuacStatus(isUnderSixMonths, muac)}
+                                    />
                                     
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}

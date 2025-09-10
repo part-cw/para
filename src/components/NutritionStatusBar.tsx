@@ -7,7 +7,7 @@ interface NutritionStatusProps {
   containerStyle?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
   textStyle?: StyleProp<TextStyle>;
-  variant?: 'severe' | 'moderate' | 'normal';
+  variant?: string | 'severe' | 'moderate' | 'good' | 'invalid';
 }
 
 const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
@@ -16,7 +16,7 @@ const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
   containerStyle,
   titleStyle,
   textStyle: textStyle,
-  variant = 'normal',
+  variant = 'good',
 }) => {
 
 
@@ -37,7 +37,7 @@ const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
           borderColor: '#ff9800',       // #ff9800
           textColor: '#e65100',         // #e65100
         };
-      case 'normal':
+      case 'good':
         return {
           backgroundColor: '#e8f5e9',   // #e8f5e9
           borderColor: '#4caf50',       // #4caf50
@@ -57,7 +57,7 @@ const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
   const defaultContainerStyle: ViewStyle = {
     backgroundColor: variantColors.backgroundColor,
     padding: 8,
-    // marginTop: -5,
+    marginTop: -10,
     marginBottom: 8,
     borderRadius: 8,
     borderLeftWidth: 4,
@@ -88,6 +88,8 @@ const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
 
 
  return (
+    (variant !== 'invalid')
+    ? 
     <View style={[defaultContainerStyle, containerStyle]}>
         
         {title &&
@@ -106,6 +108,8 @@ const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
             </View>
         }
     </View>
+    :
+    null
   );
 };
 

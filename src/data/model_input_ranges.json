@@ -21,23 +21,6 @@
     ]
   },
   {
-    "variable": "waz",
-    "rules": [
-      {
-        "isUnderSixMonths": true,
-        "severe": { },
-        "moderateRange": { },
-        "normalRange": { }
-      },
-      {
-        "isUnderSixMonths": false,
-        "severe": { },
-        "moderate": { },
-        "normal": { }
-      }
-    ]
-  },
-  {
     "variable": "temperature",
     "hardMin": 30,
     "hardMax": 45,

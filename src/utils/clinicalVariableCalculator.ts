@@ -2,7 +2,7 @@
 //  * TODO used for WAZ score calculations -- take floor (use months completed)
 //  * TODO for model calculation - round to 1 decimal place
 
-import ranges from '../data/model_input_ranges.json';
+import config from '../data/model_input_ranges.json';
 
 type ValidationResult = {
   isValid: boolean;
@@ -15,7 +15,7 @@ export function validateMuac(input: string): ValidationResult {
     const muac = Number(input)
 
     // Find the config for MUAC
-    const muacConfig = ranges.find(r => r.variable === "muac");
+    const muacConfig = config.find(r => r.variable === "muac");
     if (!muacConfig) {
         throw new Error("MUAC config not found in model_input_ranges.json");
     }
@@ -53,7 +53,7 @@ export function validateMuac(input: string): ValidationResult {
 export function validateTemperatureRange(input: string): ValidationResult {
     const temperature = Number(input)
 
-    const tempConfig = ranges.find(r => r.variable === "temperature");
+    const tempConfig = config.find(r => r.variable === "temperature");
     if (!tempConfig) {
         throw new Error("Temperature config not found in model_input_ranges.json");
     }
@@ -77,6 +77,26 @@ export function validateTemperatureRange(input: string): ValidationResult {
     }
 
     return { isValid: true, errorMessage: '', warningMessage: '' };
+}
+
+export function getMuacStatus(isUnderSixMonths: boolean, muacString: string): string {
+    const muacConfig = config.find(c => c.variable === "muac");
+    if (!muacConfig) {
+        throw new Error("MUAC config not found in model_input_ranges.json");
+    }
+
+    // find rules that apply to patient's age range (under 6 months vs 6 months+)
+    const rules = muacConfig.rules?.find(r => r.isUnderSixMonths === isUnderSixMonths)
+    if (!rules) {
+        throw new Error ("Could not find rules for MUAC")
+    }
+
+    const muac = Number(muacString);
+    if (muac >= rules.severe.min && muac <= rules.severe.max) return "severe";
+    if (muac >= rules.moderate.min && muac <= rules.moderate.max) return "moderate";
+    if (muac >= rules.normal.min && muac <= rules.normal.max) return "good";
+
+    return 'invalid';
 }
 
 export function calculateWAZ(age: number, sex: string): number {

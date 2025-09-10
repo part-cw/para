@@ -93,8 +93,6 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   };
 
   const { validator, formatter, errorMessage, warningMessage } = getValidatorAndFormatter();
-  console.log('validatedTextInput errorMessage', errorMessage)
-  console.log('validatedTextInput warningMessage', warningMessage)
 
   const isValid = validator(value);
 
