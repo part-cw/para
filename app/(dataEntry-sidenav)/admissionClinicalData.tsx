@@ -1,3 +1,4 @@
+import NutritionStatusBar from '@/src/components/NutritionStatusBar';
 import PaginationControls from '@/src/components/PaginationControls';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
@@ -30,6 +31,7 @@ export default function AdmissionClinicalDataScreen() {
     const hasValidationWarnings = validationWarnings.length > 0;
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
+    const showMuacStatusBar = true // TODO set this properly
 
     console.log('validation errors', validationErrors, validationErrors.length)
     console.log('validation warnings', validationWarnings)
@@ -307,7 +309,7 @@ export default function AdmissionClinicalDataScreen() {
                                             showErrorOnTyping={true}
                                             customValidator={(value) => validateMuac(value).isValid}
                                             customErrorMessage={validateMuac(muac).errorMessage }
-                                            customWarningMessage={validateMuac(muac).warningMessage}
+                                            // customWarningMessage={validateMuac(muac).warningMessage}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -393,8 +395,8 @@ export default function AdmissionClinicalDataScreen() {
                                             isRequired={true} 
                                             customValidator={(value) => validateMuac(value).isValid}
                                             customErrorMessage={validateMuac(muac).errorMessage }
-                                            customWarningMessage={validateMuac(muac).warningMessage}
-                                            style={[Styles.accordionTextInput, { flex: 1 }]}
+                                            // customWarningMessage={validateMuac(muac).warningMessage}
+                                            style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
                                         <IconButton
@@ -406,6 +408,8 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
+                                    {showMuacStatusBar && <NutritionStatusBar/>}
+                                    
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}
                                         value={temperature} 
@@ -541,7 +545,7 @@ export default function AdmissionClinicalDataScreen() {
                 <ValidationSummary 
                     errors={validationErrors}
                     variant='error'
-                    title= 'ERROR: Please fix errors below:'
+                    title= 'ALERT: Fix Errors Below'
                 />
             }
 
