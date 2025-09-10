@@ -7,7 +7,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { validateMuac } from '@/src/utils/clinicalVariableValidator';
+import { validateMuac, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -17,18 +17,22 @@ import { Button, IconButton, List, TextInput, useTheme } from 'react-native-pape
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO - add height field
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
-    const { setValidationErrors, getScreenErrors } = useValidation();
+    const { setValidationErrors, setValidationWarnings, getScreenErrors, getScreenWarnings } = useValidation();
 
-    // const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const validationErrors = getScreenErrors('admissionClinicalData')
     const hasValidationErrors = validationErrors.length > 0;
 
+    const validationWarnings = getScreenWarnings('admissionClinicalData');
+    const hasValidationWarnings = validationWarnings.length > 0;
+
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
+
+    console.log('validation errors', validationErrors, validationErrors.length)
+    console.log('validation warnings', validationWarnings)
 
     const {
         // common fields
@@ -58,18 +62,20 @@ export default function AdmissionClinicalDataScreen() {
     // TODO add more detailed validation for all fields
     const validateAllFields = () => {
         const errors: string[] = [];
+        const warnings: string[] = [];
         
         // Common validations for both age groups
         if (!weight || !isValidNumericFormat(weight)) {
             errors.push('Weight is required and must be a valid number');
         }
         
-        if (!muac) {
-            errors.push('MUAC is required');
+        if (!muac || !isValidNumericFormat(muac)){
+            errors.push('MUAC is required and must be a valid number');
         } else {
             const muacValidation = validateMuac(muac);
             if (!muacValidation.isValid) {
-                errors.push(muacValidation.errorMessage);
+                muacValidation.errorMessage && errors.push(muacValidation.errorMessage);
+                muacValidation.warningMessage && warnings.push(muacValidation.warningMessage)
             }
         }
         
@@ -77,8 +83,9 @@ export default function AdmissionClinicalDataScreen() {
             errors.push('SpO₂ is required and must be a valid number');
         } else {
             const spo2Value = Number(spo2);
-            if (spo2Value < 0 || spo2Value > 100) {
-                errors.push('SpO₂ must be between 0 and 100');
+            // TODO do this check in clinicalVariableCalculator
+            if (spo2Value < 30 || spo2Value > 100) {
+                errors.push('SpO₂ must be between 30 and 100');
             }
         }
         
@@ -101,12 +108,22 @@ export default function AdmissionClinicalDataScreen() {
             if (!hivStatus) {
                 errors.push('HIV status is required');
             }
+
             if (!lastHospitalized) {
                 errors.push('Last hospitalized is required');
             }
+
             if (!temperature || !isValidNumericFormat(temperature)) {
                 errors.push('Temperature is required and must be a valid number');
+            } else {
+                const tempValidation = validateTemperatureRange(temperature);
+                if (!tempValidation.isValid) {
+                    tempValidation.errorMessage && errors.push(tempValidation.errorMessage);
+                    tempValidation.warningMessage && warnings.push(tempValidation.warningMessage)
+                }
             }
+
+
             if (!rrate || !isValidNumericFormat(rrate)) {
                 errors.push('Respiratory rate is required and must be a valid number');
             }
@@ -123,12 +140,13 @@ export default function AdmissionClinicalDataScreen() {
             }
         }
         
-        return errors;
+        return {errors: errors, warnings: warnings}
     };
 
     useEffect(() => {
-        const errors = validateAllFields();
-        setValidationErrors('admissionClinicalData', errors);
+        const messages = validateAllFields();
+        setValidationErrors('admissionClinicalData', messages.errors);
+        setValidationWarnings('admissionClinicalData', messages.warnings);
     }, [
         weight, muac, spo2, 
         illnessDuration, jaundice, bulgingFontanelle, feedingStatus,
@@ -141,8 +159,11 @@ export default function AdmissionClinicalDataScreen() {
     useEffect(() => {
         return () => {
             // Only clear if no errors exist
-            if (validateAllFields().length === 0) {
+            if (validateAllFields().errors.length === 0) {
                 setValidationErrors('admissionClinicalData', []);
+            }
+            if (validateAllFields().warnings.length === 0) {
+                setValidationWarnings('admissionClinicalData', []);
             }
         };
     }, []);
@@ -284,6 +305,9 @@ export default function AdmissionClinicalDataScreen() {
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
+                                            customValidator={(value) => validateMuac(value).isValid}
+                                            customErrorMessage={validateMuac(muac).errorMessage }
+                                            customWarningMessage={validateMuac(muac).warningMessage}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -368,7 +392,8 @@ export default function AdmissionClinicalDataScreen() {
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             customValidator={(value) => validateMuac(value).isValid}
-                                            customErrorMessage={validateMuac(muac).errorMessage}
+                                            customErrorMessage={validateMuac(muac).errorMessage }
+                                            customWarningMessage={validateMuac(muac).warningMessage}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -387,6 +412,8 @@ export default function AdmissionClinicalDataScreen() {
                                         onChangeText={(value) => updatePatientData({ temperature: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateTemperatureRange(value).isValid}
+                                        customErrorMessage={validateTemperatureRange(temperature).errorMessage}
                                         right={<TextInput.Affix text="°C" />}                             
                                     />
 
@@ -479,7 +506,7 @@ export default function AdmissionClinicalDataScreen() {
                                                 icon="information-outline"
                                                 size={20}
                                                 iconColor={colors.primary}
-                                                onPress={() => {alert(motorResponseInfo)}} // TODO - change to tooltip
+                                                onPress={() => {alert(motorResponseInfo)}}
                                             />
                                     </View>
                                     
@@ -511,7 +538,19 @@ export default function AdmissionClinicalDataScreen() {
 
             {/* Display error summary*/}
             { showErrorSummary &&
-                <ValidationSummary errors={validationErrors}/>
+                <ValidationSummary 
+                    errors={validationErrors}
+                    variant='error'
+                    title= 'ERROR: Please fix errors below:'
+                />
+            }
+
+             { hasValidationWarnings &&
+                <ValidationSummary 
+                errors={validationWarnings}
+                variant='warning'
+                title='WARNING: Data Outside Normal Range'
+                />
             }
 
             <PaginationControls

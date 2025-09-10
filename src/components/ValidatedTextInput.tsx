@@ -30,6 +30,7 @@ interface ValidatedInputProps extends Omit<TextInputProps, 'value' | 'onChangeTe
   inputType?: InputType;
   customValidator?: ((input: string) => boolean) | null;
   customErrorMessage?: string;
+  customWarningMessage?: string;
   minValue?: number | null;
   maxValue?: number | null;
   showErrorOnTyping?: boolean;
@@ -43,6 +44,7 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   inputType = INPUT_TYPES.TEXT,
   customValidator = null,
   customErrorMessage = '',
+  customWarningMessage = '',
   minValue = null,
   maxValue = null,
   showErrorOnTyping = false,
@@ -57,7 +59,8 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
       return {
         validator: customValidator,
         formatter: (val: string) => val.trim(),
-        errorMessage: customErrorMessage || 'Invalid input'
+        errorMessage: customErrorMessage || undefined, //'Invalid input'
+        warningMessage: customWarningMessage
       };
     }
 
@@ -89,13 +92,18 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
     }
   };
 
-  const { validator, formatter, errorMessage } = getValidatorAndFormatter();
-  
+  const { validator, formatter, errorMessage, warningMessage } = getValidatorAndFormatter();
+  console.log('validatedTextInput errorMessage', errorMessage)
+  console.log('validatedTextInput warningMessage', warningMessage)
+
   const isValid = validator(value);
-  // const shouldShowError = hasBlurred && !isValid && (isRequired || value.length > 0);
 
   // Flexible error display logic
   const shouldShowError = (() => {
+    if (!errorMessage) {
+      return false;
+    }
+
     // Never show error for empty optional fields
     if (!isRequired && !value.length) {
       return false;
@@ -107,6 +115,30 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
     }
     
     // For optional fields with content, show error based on showErrorOnTyping setting
+    if (value.length > 0) {
+      return showErrorOnTyping ? !isValid : (hasBlurred && !isValid);
+    }
+    
+    return false;
+  })();
+
+    // Flexible error display logic
+  const shouldShowWarning = (() => {
+    if (!warningMessage) {
+      return false;
+    }
+    
+    // Never show warning for empty optional fields
+    if (!isRequired && !value.length) {
+      return false;
+    }
+    
+    // For required fields, only show warning after blur or if there's invalid content
+    if (isRequired) {
+      return (hasBlurred && !isValid) || (value.length > 0 && !isValid && showErrorOnTyping);
+    }
+    
+    // For optional fields with content, show warning based on showErrorOnTyping setting
     if (value.length > 0) {
       return showErrorOnTyping ? !isValid : (hasBlurred && !isValid);
     }
@@ -160,6 +192,10 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
       />
       {shouldShowError && (
         <Text style={Styles.errorText}>{errorMessage}</Text>
+      )}
+
+      {shouldShowWarning&& (
+        <Text style={Styles.warningText}>{warningMessage}</Text>
       )}
     </View>
   );

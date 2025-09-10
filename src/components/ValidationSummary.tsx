@@ -1,7 +1,7 @@
 // ValidationSummary.tsx - Reusable validation summary component
-import React from 'react';
-import { StyleProp, Text, TextStyle, View, ViewStyle } from 'react-native';
-import { Icon, useTheme } from 'react-native-paper';
+import React, { useState } from 'react';
+import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Icon } from 'react-native-paper';
 
 interface ValidationSummaryProps {
   errors: string[];
@@ -11,6 +11,7 @@ interface ValidationSummaryProps {
   titleStyle?: StyleProp<TextStyle>;
   errorTextStyle?: StyleProp<TextStyle>;
   variant?: 'error' | 'warning' | 'info';
+  initiallyExpanded?: boolean;
 }
 
 const ValidationSummary: React.FC<ValidationSummaryProps> = ({
@@ -20,9 +21,11 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
   containerStyle,
   titleStyle,
   errorTextStyle,
-  variant = 'error'
+  variant = 'error',
+  initiallyExpanded = false
 }) => {
-  const { colors } = useTheme();
+  const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
+
 
   // Don't render if no errors
   if (!errors || errors.length === 0) {
@@ -37,14 +40,14 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
           backgroundColor: '#ffebee',
           borderColor: '#f44336',
           textColor: '#d32f2f',
-          icon: 'alert'
+          icon: 'alert-circle'
         };
       case 'warning':
         return {
           backgroundColor: '#fff3e0',
           borderColor: '#ff9800',
           textColor: '#e65100',
-          icon: 'alert-circle'
+          icon: 'alert'
         };
       case 'info':
         return {
@@ -68,7 +71,10 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
   const defaultContainerStyle: ViewStyle = {
     backgroundColor: variantColors.backgroundColor,
     padding: 16,
-    margin: 16,
+    marginLeft: 16,
+    marginRight: 16,
+    marginBottom: 8,
+    marginTop: 3,
     borderRadius: 8,
     borderLeftWidth: 4,
     borderLeftColor: variantColors.borderColor,
@@ -86,7 +92,7 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
     color: variantColors.textColor,
     fontWeight: 'bold',
     fontSize: 16,
-    marginBottom: 8,
+    marginBottom: 5,
   };
 
   const defaultErrorTextStyle: TextStyle = {
@@ -96,27 +102,49 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
     marginBottom: 4,
   };
 
-  return (
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+ return (
     <View style={[defaultContainerStyle, containerStyle]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        {showIcon && (
-            <View style={[{ marginRight: 8 }, {marginBottom: 5}]}>
-                <Icon 
-                    source={variantColors.icon}
-                    size={20}
-                    color={variantColors.textColor}
-                />
+      <TouchableOpacity 
+        onPress={toggleExpanded}
+        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'  }}
+        activeOpacity={0.7}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+          {showIcon && (
+            <View style={{ marginRight: 5 }}>
+              <Icon 
+                source={variantColors.icon}
+                size={20}
+                color={variantColors.textColor}
+              />
             </View>
-        )}
-        <Text style={[defaultTitleStyle, titleStyle]}>
+          )}
+          <Text style={[defaultTitleStyle, titleStyle]}>
             {title}
-        </Text>
-      </View>
-      {errors.map((error, index) => (
-        <Text key={index} style={[defaultErrorTextStyle, errorTextStyle]}>
-          • {error}
-        </Text>
-      ))}
+          </Text>
+        </View>
+
+        <Icon 
+          source={isExpanded ? 'chevron-up' : 'chevron-down'}
+          size={24}
+          color={variantColors.textColor}
+        />
+      </TouchableOpacity>
+      
+      {isExpanded && (
+        <View style={{ marginTop: 8 }}>
+          {errors.map((error, index) => (
+            (error.trim() !== '') &&
+            <Text key={index} style={[defaultErrorTextStyle, errorTextStyle]}>
+              • {error}
+            </Text>
+          ))}
+        </View>
+      )}
     </View>
   );
 };

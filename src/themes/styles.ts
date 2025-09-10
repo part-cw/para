@@ -128,4 +128,12 @@ export const GlobalStyles = StyleSheet.create({
         marginLeft: 12,
         lineHeight: 16,
     },
+
+    warningText: {
+        color: '#e65100',
+        fontSize: 12,
+        marginBottom: 10,
+        marginLeft: 12,
+        lineHeight: 16,
+    },
 })
