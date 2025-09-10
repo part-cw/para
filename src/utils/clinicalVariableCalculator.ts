@@ -133,3 +133,24 @@ export function validateRespiratoryRange(input: string): ValidationResult {
 
     return { isValid: true, errorMessage: '', warningMessage: '' };
 }
+
+export function validateOxygenSaturationRange(input: string): ValidationResult {
+    const spo2 = Number(input)
+
+    const spo2Config = config.find(c => c.variable === "spo2");
+    if (!spo2Config) {
+        throw new Error("SpO2 config not found in model_input_ranges.json");
+    }
+
+    const { hardMin, hardMax } = spo2Config;
+
+    if ((hardMin && spo2 < hardMin) || (hardMax && spo2 > hardMax)) {
+        return { 
+            isValid: false, 
+            errorMessage: `SpO₂ must be between ${hardMin}-${hardMax}%. Enter a new value.`,
+            warningMessage: '' 
+        };
+    }
+
+    return { isValid: true, errorMessage: '', warningMessage: '' };
+}

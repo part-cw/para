@@ -8,7 +8,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { getMuacStatus, validateMuac, validateRespiratoryRange, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
+import { getMuacStatus, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -79,10 +79,9 @@ export default function AdmissionClinicalDataScreen() {
         if (!spo2 || !isValidNumericFormat(spo2)) {
             errors.push('SpO₂ is required and must be a valid number');
         } else {
-            const spo2Value = Number(spo2);
-            // TODO do this check in clinicalVariableCalculator
-            if (spo2Value < 30 || spo2Value > 100) {
-                errors.push('SpO₂ must be between 30 and 100');
+            const spo2Validation= validateOxygenSaturationRange(spo2);
+            if (!spo2Validation.isValid) {
+                spo2Validation.errorMessage && errors.push(spo2Validation.errorMessage);
             }
         }
         
@@ -334,7 +333,9 @@ export default function AdmissionClinicalDataScreen() {
                                         value={spo2} 
                                         onChangeText={(value) => updatePatientData({ spo2: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
-                                        isRequired={true} 
+                                        isRequired={true}
+                                        customValidator={(value) => validateOxygenSaturationRange(value).isValid}
+                                        customErrorMessage={validateOxygenSaturationRange(spo2).errorMessage } 
                                         right={<TextInput.Affix text="%" />}                             
                                     />
                                 </View>
@@ -469,6 +470,8 @@ export default function AdmissionClinicalDataScreen() {
                                         onChangeText={(value) => updatePatientData({ spo2: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateOxygenSaturationRange(value).isValid}
+                                        customErrorMessage={validateOxygenSaturationRange(spo2).errorMessage } 
                                         right={<TextInput.Affix text="%" />}                             
                                     />
                                 </View>
