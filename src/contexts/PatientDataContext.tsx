@@ -19,10 +19,12 @@ export interface PatientData {
   dob: Date | null;
   birthYear: string;
   birthMonth: string;
-  approxAge: string;
+  approxAgeInYears: string;
+  ageInMonths: number | null;
   
   // Admission Clinical Data (all ages)
   weight: string;
+  waz: number | null;
   muac: string;
   spo2: string;
  
@@ -79,10 +81,12 @@ const initialPatientData: PatientData = {
   dob: null,
   birthYear: '',
   birthMonth: '',
-  approxAge: '',
+  approxAgeInYears: '',
+  ageInMonths: null,
 
   // admission clinical data (all)
   weight: '',
+  waz: null,
   muac: '',
   spo2: '',
   

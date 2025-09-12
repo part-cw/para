@@ -34,6 +34,7 @@ export default function AdmissionClinicalDataScreen() {
     const {
         // common fields
         weight,
+        waz,
         muac,
         spo2,
 
@@ -52,8 +53,9 @@ export default function AdmissionClinicalDataScreen() {
         motorResponse,
         verbalResponse,
 
-        // Age indicator
-        isUnderSixMonths
+        // other necessary info
+        isUnderSixMonths,
+        sex
     } = patientData
 
     // TODO add more detailed validation for all fields

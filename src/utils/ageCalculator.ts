@@ -108,6 +108,11 @@ export class AgeCalculator {
         return dob
     }
 
+    /**
+     * 
+     * 0-indexed month to num mapping; matches new Date().getMonth indexing
+     *
+     */
     private static monthToIndex(month: string): number {
         const monthMap: Record<string, number> = {
             January: 0,
@@ -138,18 +143,44 @@ export class AgeCalculator {
     /**
      * 
      * @param dob entered DOB or created from birthYear and birthMonth; null if unavailabe 
-     * @param years raw, unrounded approximate age in years. Used if only have approxAge; null if dob available
-     * @returns converts DOB or age in years into age in months, unrounded. 
-     * Assume params are never both null - either dob or years must be defined
+     * @param approxAge raw, unrounded approximate age in years. Used if only have approxAge; null if dob available
+     * @param birthYear
+     * @param birthMonth 
+     * @returns age in months, unrounded. 
+     * Assumes of one don OR (birthYearn and birthMonth) OR approx age are available and validated
      */
-    static getAgeInMonths(dob: Date | null, years?: number | null): number {
+    static calculateAgeInMonths(dob: Date | null, birthYear: string, birthMonth: string, approxAge: string): number {
         let months: number = 0;
 
-        if (dob) {
+        if (dob && !birthYear && !birthMonth && !approxAge) {
+            console.log('!!! age from dob')
             const ageDays = this.getAgeInDaysFromDob(dob)
-            months = ageDays / 30.44 // days per month = 30.44
-        } else if (years) {
-            months = years * 12 // 12 months in a year
+            months = ageDays / 30.44 // avg days per month = 30.44
+        } else if (birthYear && birthMonth && !dob && !approxAge) {
+            console.log('!!! age from year/month')
+            const newDob = this.createDob(birthYear, birthMonth)
+            const ageDays = this.getAgeInDaysFromDob(newDob)
+            months = ageDays / 30.44
+
+            // TODO - delete? this calculates months completed - alwayrs returns a round number
+            // const now = new Date()
+            // let diffMonths = now.getMonth() - this.monthToIndex(birthMonth)
+            // let diffYears = now.getFullYear() - Number(birthYear)
+
+            // if (diffMonths < 0) {
+            //     diffYears--;
+            //     diffMonths+12;
+            // }
+
+            // console.log(now.getMonth(), 'this month')
+            // console.log(diffMonths, 'diffMonths')
+            // console.log(diffYears, 'diffYears')
+            // months = diffMonths + (diffYears * 12)
+            
+        } else if (approxAge && !dob && !birthMonth && !birthYear) {
+            console.log('age from approx age')
+            const yearsNum = Number(approxAge.trim())
+            months = yearsNum * 12 // 12 months in a year
         }
   
         return months;
@@ -194,7 +225,7 @@ export class AgeCalculator {
         monthToIndex: AgeCalculator.monthToIndex,
         createDob: AgeCalculator.createDob,
         getAgeInYearsFromDOB: AgeCalculator.getAgeInYearsFromDOB,
-        getAgeInMonths: AgeCalculator.getAgeInMonths
+        getAgeInMonths: AgeCalculator.calculateAgeInMonths
     };
 
 }
