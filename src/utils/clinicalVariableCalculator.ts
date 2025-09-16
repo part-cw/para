@@ -104,7 +104,6 @@ export function getMuacStatus(isUnderSixMonths: boolean, muacString: string): st
 // TODO -- add more checks -- any max/min values?? 
 export function validateWeight(weight: string): ValidationResult {
     const weightNum = parseFloat(weight.trim())
-    console.log('validating weight...', weightNum)
 
     if (!weight || !weightNum) {
         return {
@@ -115,7 +114,6 @@ export function validateWeight(weight: string): ValidationResult {
     }
 
     if (weightNum < 0) {
-        console.log('!!here')
         return {
             isValid: false,
             errorMessage: 'Weight cannot be negative. Enter a new value',
@@ -138,7 +136,8 @@ export function calculateWAZ(months: number, sex: string, weight: number): numbe
     // take floor of age in months
     const roundedMonth = Math.floor(months)
     console.log('calculating waz...')
-    console.log('months', roundedMonth)
+    console.log('original months', months)
+    console.log('rounded months', roundedMonth)
     console.log('sex', sex)
     console.log('weight', weight)
 
@@ -152,13 +151,14 @@ export function calculateWAZ(months: number, sex: string, weight: number): numbe
 
     // throw error if data not found
     if (!data) throw new Error (`Growth standard for ${roundedMonth} month ${sex} not found`)
-
+    
+    console.log('data', data)
     // calculate waz score if growth standard data found
     const l = data.L
     const m = data.M
     const s = data.S
 
-    const zScore = (((weight / m)^l) - 1) / (l * s)
+    const zScore = (((weight / m)**l) - 1) / (l * s)
     console.log('zscore', zScore)
     return zScore;
 }
@@ -169,7 +169,6 @@ export function calculateWAZ(months: number, sex: string, weight: number): numbe
  * @returns maps waz to nutritional status (normal, moderate, severe) or returns 'invalid'
  */
 export function getWazNutritionalStatus(waz: number): string {
-    console.log('getting nutritional status..')
     if (waz >= -2) return "normal"
     if ((waz < -2) && (waz >= -3)) return "moderate"
     if (waz < -3) return "severe"

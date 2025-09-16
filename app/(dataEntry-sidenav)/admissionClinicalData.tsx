@@ -57,7 +57,8 @@ export default function AdmissionClinicalDataScreen() {
         // other necessary info
         isUnderSixMonths,
         sex,
-        ageInMonths
+        ageInMonths,
+        malnutritionStatus
     } = patientData
 
     const validateAllFields = () => {
@@ -189,6 +190,20 @@ export default function AdmissionClinicalDataScreen() {
         }
 
     }, [weight])
+
+    
+    // TODO
+    const setMalnutritionStatus = () => {
+        if ((waz || waz !== null) && muac) {
+            const wazStatus = getWazNutritionalStatus(waz)
+            const muacStatus = getMuacStatus(isUnderSixMonths, muac)
+
+
+            // options: normal, moderate, severe
+            // map options to index --> higher number = more severe
+            // compare waz and status
+        }
+    }
 
 
     const durationOptions = [
@@ -326,7 +341,7 @@ export default function AdmissionClinicalDataScreen() {
                                     {!validateWeight(weight).errorMessage && waz !== null &&
                                         <NutritionStatusBar 
                                             title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
-                                            content={`z-score = ${waz.toFixed(3)}`}
+                                            content={`z-score = ${waz.toFixed(2)}`}
                                             variant={getWazNutritionalStatus(waz as number) || 'invalid'}
                                         />
                                     }

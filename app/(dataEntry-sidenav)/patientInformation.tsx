@@ -47,7 +47,6 @@ export default function PatientInformationScreen() {
         birthYear,
         birthMonth,
         approxAgeInYears: approxAge,
-        ageInMonths // TODO calc and store age in months here -- pass it on to necessessary screens
     } = patientData;
 
     const ageLessThanSixMonthsError = 'Entered age is less than 6 months. Check off "patient is less than 6 months old" or enter new DOB'

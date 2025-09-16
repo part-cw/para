@@ -74,7 +74,9 @@ export class AgeCalculator {
      * @returns age in days from DOB and now
      */
     static getAgeInDaysFromDob(dob: Date): number {
-        const now = new Date();
+        let now = new Date(); 
+        now.setHours(0,0,0,0) // set time to midnight
+        
         const diffTime = now.getTime() - dob.getTime(); // time is ms
         const diffDays = diffTime / this.msPerDay;
         
@@ -90,8 +92,8 @@ export class AgeCalculator {
         const diffDays = this.getAgeInDaysFromDob(dob)
 
         // Average 365.25 days/year. Source: https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
-        // TODO - use 31557600 seconds per year instead? -- from old PARA
-        const diffYears = diffDays / 365.25
+        // but using 365.28 instead to be consistent withy 30.44 days/per month
+        const diffYears = diffDays / 365.28
         
         return  diffYears
     }
@@ -162,7 +164,7 @@ export class AgeCalculator {
             
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
             const yearsNum = Number(approxAge.trim())
-            months = yearsNum * 12 // 12 months in a year
+            months = yearsNum * 12
         }
   
         return months;
