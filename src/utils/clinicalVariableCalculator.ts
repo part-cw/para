@@ -3,6 +3,8 @@
 //  * TODO for model calculation - round to 1 decimal place
 
 import config from '../data/model_input_ranges.json';
+import waz_female from '../data/wazscore_female.json';
+import waz_male from '../data/wazscore_male.json';
 
 type ValidationResult = {
   isValid: boolean;
@@ -94,15 +96,86 @@ export function getMuacStatus(isUnderSixMonths: boolean, muacString: string): st
     const muac = Number(muacString);
     if (muac >= rules.severe.min && muac <= rules.severe.max) return "severe";
     if (muac >= rules.moderate.min && muac <= rules.moderate.max) return "moderate";
-    if (muac >= rules.normal.min && muac <= rules.normal.max) return "good";
+    if (muac >= rules.normal.min && muac <= rules.normal.max) return "normal";
 
     return 'invalid';
 }
 
-export function calculateWAZ(age: number, sex: string): number {
+// TODO -- add more checks -- any max/min values?? 
+export function validateWeight(weight: string): ValidationResult {
+    const weightNum = parseFloat(weight.trim())
+    console.log('validating weight...', weightNum)
+
+    if (!weight || !weightNum) {
+        return {
+            isValid: false,
+            errorMessage: 'Weight is required and must be a valid number',
+            warningMessage: ''
+        } 
+    }
+
+    if (weightNum < 0) {
+        console.log('!!here')
+        return {
+            isValid: false,
+            errorMessage: 'Weight cannot be negative. Enter a new value',
+            warningMessage: ''
+        } 
+    }
+
+    // no errors
+    return {isValid: true, errorMessage: '', warningMessage: ''};
+}
+
+/**
+ * 
+ * @param months unrounded age in months
+ * @param sex male or female
+ * @param weight validated weight in kg
+ * @returns 
+ */
+export function calculateWAZ(months: number, sex: string, weight: number): number {
     // take floor of age in months
-    // look up in JSON
-    return 0; //stub
+    const roundedMonth = Math.floor(months)
+    console.log('calculating waz...')
+    console.log('months', roundedMonth)
+    console.log('sex', sex)
+    console.log('weight', weight)
+
+    // look up sex-specifc growth standard for given age (in months)
+    let data;
+    if (sex.toLowerCase() === 'male') {
+        data = waz_male.find(d => d.Month === roundedMonth)
+    } else {
+        data = waz_female.find(d => d.Month === roundedMonth)
+    }
+
+    // throw error if data not found
+    if (!data) throw new Error (`Growth standard for ${roundedMonth} month ${sex} not found`)
+
+    // calculate waz score if growth standard data found
+    const l = data.L
+    const m = data.M
+    const s = data.S
+
+    const zScore = (((weight / m)^l) - 1) / (l * s)
+    console.log('zscore', zScore)
+    return zScore;
+}
+
+/**
+ * 
+ * @param waz 
+ * @returns maps waz to nutritional status (normal, moderate, severe) or returns 'invalid'
+ */
+export function getWazNutritionalStatus(waz: number): string {
+    console.log('getting nutritional status..')
+    if (waz >= -2) return "normal"
+    if ((waz < -2) && (waz >= -3)) return "moderate"
+    if (waz < -3) return "severe"
+    
+    // default
+    return 'invalid'
 }
 
 export function validateRespiratoryRange(input: string): ValidationResult {

@@ -147,38 +147,20 @@ export class AgeCalculator {
      * @param birthYear
      * @param birthMonth 
      * @returns age in months, unrounded. 
-     * Assumes of one don OR (birthYearn and birthMonth) OR approx age are available and validated
+     * Assumes one of dob OR (birthYear and birthMonth) OR approx age are available and validated
      */
     static calculateAgeInMonths(dob: Date | null, birthYear: string, birthMonth: string, approxAge: string): number {
         let months: number = 0;
 
         if (dob && !birthYear && !birthMonth && !approxAge) {
-            console.log('!!! age from dob')
             const ageDays = this.getAgeInDaysFromDob(dob)
             months = ageDays / 30.44 // avg days per month = 30.44
         } else if (birthYear && birthMonth && !dob && !approxAge) {
-            console.log('!!! age from year/month')
             const newDob = this.createDob(birthYear, birthMonth)
             const ageDays = this.getAgeInDaysFromDob(newDob)
             months = ageDays / 30.44
-
-            // TODO - delete? this calculates months completed - alwayrs returns a round number
-            // const now = new Date()
-            // let diffMonths = now.getMonth() - this.monthToIndex(birthMonth)
-            // let diffYears = now.getFullYear() - Number(birthYear)
-
-            // if (diffMonths < 0) {
-            //     diffYears--;
-            //     diffMonths+12;
-            // }
-
-            // console.log(now.getMonth(), 'this month')
-            // console.log(diffMonths, 'diffMonths')
-            // console.log(diffYears, 'diffYears')
-            // months = diffMonths + (diffYears * 12)
             
         } else if (approxAge && !dob && !birthMonth && !birthYear) {
-            console.log('age from approx age')
             const yearsNum = Number(approxAge.trim())
             months = yearsNum * 12 // 12 months in a year
         }

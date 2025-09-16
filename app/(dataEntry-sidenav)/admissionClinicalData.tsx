@@ -8,7 +8,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { getMuacStatus, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange } from '@/src/utils/clinicalVariableCalculator';
+import { calculateWAZ, getMuacStatus, getWazNutritionalStatus, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -17,6 +17,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// TODO -- add popup if values outside normal physiological range
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
@@ -55,10 +56,10 @@ export default function AdmissionClinicalDataScreen() {
 
         // other necessary info
         isUnderSixMonths,
-        sex
+        sex,
+        ageInMonths
     } = patientData
 
-    // TODO add more detailed validation for all fields
     const validateAllFields = () => {
         const errors: string[] = [];
         const warnings: string[] = [];
@@ -66,6 +67,12 @@ export default function AdmissionClinicalDataScreen() {
         // Common validations for both age groups
         if (!weight || !isValidNumericFormat(weight)) {
             errors.push('Weight is required and must be a valid number');
+        } else {
+            const weightValidation = validateWeight(weight)
+            if (!weightValidation.isValid) {
+                weightValidation.errorMessage && errors.push(weightValidation.errorMessage);
+                weightValidation.warningMessage && warnings.push(weightValidation.warningMessage)
+            }
         }
         
         if (!muac || !isValidNumericFormat(muac)){
@@ -172,6 +179,17 @@ export default function AdmissionClinicalDataScreen() {
         };
     }, []);
 
+    // handle WAZ calculation on weight change
+    useEffect(() => {
+        if (validateWeight(weight).isValid) {
+            console.log('weight valid...caluclating waz')
+            updatePatientData({waz: calculateWAZ(ageInMonths as number, sex, parseFloat(weight))})
+        } else {
+            updatePatientData({waz: null})
+        }
+
+    }, [weight])
+
 
     const durationOptions = [
         { value: 'Less than 48 hours', key: '<48h' },
@@ -225,7 +243,7 @@ export default function AdmissionClinicalDataScreen() {
             </SafeAreaView>
         );
     }
-    
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -292,15 +310,26 @@ export default function AdmissionClinicalDataScreen() {
                                 left={props => <List.Icon {...props} icon="heart-pulse" />}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO - add custom validator and custom messge for each of the inputs */}
                                     <ValidatedTextInput 
                                         label={'Weight (required)'}
                                         value={weight} 
-                                        onChangeText={(value) => updatePatientData({ weight: value })}
+                                        onChangeText={(value) => updatePatientData({ weight: value})}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateWeight(value).isValid}
+                                        customErrorMessage={validateWeight(weight).errorMessage}
+                                        showErrorOnTyping={true}
                                         right={<TextInput.Affix text="kg" />}                             
                                     />
+
+                                    {/* If no error and waz calculated, show nutrition status bar */}
+                                    {!validateWeight(weight).errorMessage && waz !== null &&
+                                        <NutritionStatusBar 
+                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
+                                            content={`z-score = ${waz.toFixed(3)}`}
+                                            variant={getWazNutritionalStatus(waz as number) || 'invalid'}
+                                        />
+                                    }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
@@ -386,15 +415,26 @@ export default function AdmissionClinicalDataScreen() {
                                 left={props => <List.Icon {...props} icon="heart-pulse" />}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO - add custom validator and custom messge for each of the inputs */}
                                     <ValidatedTextInput 
                                         label={'Weight (required)'}
                                         value={weight} 
-                                        onChangeText={(value) => updatePatientData({ weight: value })}
+                                        onChangeText={(value) => updatePatientData({ weight: value})}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateWeight(value).isValid}
+                                        customErrorMessage={validateWeight(weight).errorMessage}
+                                        showErrorOnTyping={true}
                                         right={<TextInput.Affix text="kg" />}                             
                                     />
+
+                                    {/* If no error and waz calculated, show nutrition status bar */}
+                                    {!validateWeight(weight).errorMessage && waz !== null &&
+                                        <NutritionStatusBar 
+                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
+                                            content={`z-score = ${waz.toFixed(3)}`}
+                                            variant={getWazNutritionalStatus(waz as number) || 'invalid'}
+                                        />
+                                    }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
@@ -431,6 +471,7 @@ export default function AdmissionClinicalDataScreen() {
                                         isRequired={true} 
                                         customValidator={(value) => validateTemperatureRange(value).isValid}
                                         customErrorMessage={validateTemperatureRange(temperature).errorMessage}
+                                        customWarningMessage={validateTemperatureRange(temperature).warningMessage}
                                         right={<TextInput.Affix text="°C" />}                             
                                     />
 
@@ -548,7 +589,7 @@ export default function AdmissionClinicalDataScreen() {
                                         <IconButton
                                             icon="information-outline"
                                             size={20}
-                                            iconColor='#FFFF'
+                                            iconColor='white'
                                         />
                                     </View>
                                 </View>
