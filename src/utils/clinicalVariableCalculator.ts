@@ -1,5 +1,4 @@
 
-//  * TODO used for WAZ score calculations -- take floor (use months completed)
 //  * TODO for model calculation - round to 1 decimal place
 
 import config from '../data/model_input_ranges.json';
