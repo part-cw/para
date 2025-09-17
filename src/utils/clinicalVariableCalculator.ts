@@ -246,5 +246,5 @@ export function indexToNutritionStatus(index: number): string {
         2: 'severe',
     };
 
-    return indexMap[index] ?? 'invalid'; // -1 if not found
+    return indexMap[index] ?? 'invalid'; // invalid if not found
 }

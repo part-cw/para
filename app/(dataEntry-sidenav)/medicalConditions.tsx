@@ -15,8 +15,6 @@ export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
 
-    // TODO - measure malnutrition status and if sickYoungInfant (must be <28 days old)
-
     const {
         anaemia,
         pneumonia,
@@ -68,7 +66,7 @@ export default function MedicalConditionsScreen() {
                     <TextInput 
                         label="Malnutrition Status" 
                         mode="flat" 
-                        value={`${formatText(malnutritionStatus)}`}
+                        value={`${malnutritionStatus && formatText(malnutritionStatus)}`}
                         style={{flex: 1}}
                         disabled />
                     <IconButton
@@ -93,8 +91,6 @@ export default function MedicalConditionsScreen() {
                         size={20}
                         iconColor={colors.primary}
                         onPress={() => {
-                        // TODO - use tooltip instead of alert message
-                        // tooltip package: https://www.npmjs.com/package/react-native-walkthrough-tooltip
                         alert("Applies to infants less than 28 days old. \nAutomatically determined based on patient's age");
                         }}
                     />
@@ -133,8 +129,6 @@ export default function MedicalConditionsScreen() {
                         size={20}
                         iconColor={colors.primary}
                         onPress={() => {
-                        // TODO - use tooltip instead of alert message
-                        // tooltip package: https://www.npmjs.com/package/react-native-walkthrough-tooltip
                         alert('Chronic illnesses include genetic/congenital diseases, sickle cell anemia, HIV, and TB');
                         }}
                     />
