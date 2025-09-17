@@ -2,6 +2,7 @@ import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { formatText } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
@@ -67,7 +68,7 @@ export default function MedicalConditionsScreen() {
                     <TextInput 
                         label="Malnutrition Status" 
                         mode="flat" 
-                        value="eg Severe Malnutrition - from WAZ"
+                        value={`${formatText(malnutritionStatus)}`}
                         style={{flex: 1}}
                         disabled />
                     <IconButton
@@ -75,9 +76,7 @@ export default function MedicalConditionsScreen() {
                         size={20}
                         iconColor={colors.primary}
                         onPress={() => {
-                        // TODO - use tooltip instead of alert message
-                        // tooltip package: https://www.npmjs.com/package/react-native-walkthrough-tooltip
-                        alert('Malnutrition status is based on WAZ scores calculated from body weight entered on the previous page');
+                        alert('Malnutrition status is assessed using both MUAC and WAZ (calculated on the previous page). The more severe of the two results is applied.');
                         }}
                     />
                 </View>

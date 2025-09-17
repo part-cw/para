@@ -145,12 +145,14 @@ export function calculateWAZ(months: number, sex: string, weight: number): numbe
     let data;
     if (sex.toLowerCase() === 'male') {
         data = waz_male.find(d => d.Month === roundedMonth)
-    } else {
+    } else if (sex.toLowerCase() === 'female'){
         data = waz_female.find(d => d.Month === roundedMonth)
+    } else {
+        throw new Error ('Missing patient sex')
     }
 
     // throw error if data not found
-    if (!data) throw new Error (`Growth standard for ${roundedMonth} month ${sex} not found`)
+    if (!data) throw new Error (`Growth standard for ${roundedMonth} month old ${sex} not found`)
     
     console.log('data', data)
     // calculate waz score if growth standard data found
@@ -225,4 +227,24 @@ export function validateOxygenSaturationRange(input: string): ValidationResult {
     }
 
     return { isValid: true, errorMessage: '', warningMessage: '' };
+}
+
+export function nutritionStatusToIndex(status: string): number {
+    const statusMap: Record<string, number> = {
+        normal: 0,
+        moderate: 1,
+        severe: 2,
+    };
+
+    return statusMap[status] ?? -1; // -1 if not found
+}
+
+export function indexToNutritionStatus(index: number): string {
+    const indexMap: Record<number, string> = {
+        0: 'normal',
+        1: 'moderate',
+        2: 'severe',
+    };
+
+    return indexMap[index] ?? 'invalid'; // -1 if not found
 }

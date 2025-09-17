@@ -8,7 +8,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { calculateWAZ, getMuacStatus, getWazNutritionalStatus, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
+import { calculateWAZ, getMuacStatus, getWazNutritionalStatus, indexToNutritionStatus, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -183,7 +183,6 @@ export default function AdmissionClinicalDataScreen() {
     // handle WAZ calculation on weight change
     useEffect(() => {
         if (validateWeight(weight).isValid) {
-            console.log('weight valid...caluclating waz')
             updatePatientData({waz: calculateWAZ(ageInMonths as number, sex, parseFloat(weight))})
         } else {
             updatePatientData({waz: null})
@@ -191,19 +190,35 @@ export default function AdmissionClinicalDataScreen() {
 
     }, [weight])
 
+    // handles changes in waz and muac - updates malnutrtion status accordingly
+    useEffect(() => {
+        setMalnutritionStatus()
+    }, [waz, muac])
     
-    // TODO
     const setMalnutritionStatus = () => {
         if ((waz || waz !== null) && muac) {
             const wazStatus = getWazNutritionalStatus(waz)
             const muacStatus = getMuacStatus(isUnderSixMonths, muac)
 
+            const wazNutritionIndex = nutritionStatusToIndex(wazStatus)
+            const muacNutritionIndex = nutritionStatusToIndex(muacStatus)
 
-            // options: normal, moderate, severe
-            // map options to index --> higher number = more severe
-            // compare waz and status
+            const malnutritionIndex = 
+                (wazNutritionIndex > muacNutritionIndex) 
+                ? wazNutritionIndex
+                : muacNutritionIndex
+                
+            updatePatientData({
+                malnutritionStatus: indexToNutritionStatus(malnutritionIndex)
+            })
+        } else {
+           updatePatientData({
+                malnutritionStatus: undefined
+            }) 
         }
     }
+
+    console.log('malnutritionStatus', malnutritionStatus)
 
 
     const durationOptions = [
