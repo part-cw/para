@@ -337,9 +337,9 @@ export default function ReviewScreen() {
                                 {/* <InfoRow label="Heart Rate" value={patientData.heartRate ? `${patientData.heartRate} beats per min` : 'Not provided'} /> */}
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                                <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
-                                <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
-                                <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
+                                <InfoRow label="Eye movement" value={patientData.eyeMovement?.value || 'Not provided'} />
+                                <InfoRow label="Best motor response" value={patientData.motorResponse?.value || 'Not provided'} />
+                                <InfoRow label="Best verbal response" value={patientData.verbalResponse?.value || 'Not provided'} />
                             </View>
                         }
                     </List.Accordion>
