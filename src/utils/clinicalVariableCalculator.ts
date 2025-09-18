@@ -134,11 +134,6 @@ export function validateWeight(weight: string): ValidationResult {
 export function calculateWAZ(months: number, sex: string, weight: number): number {
     // take floor of age in months
     const roundedMonth = Math.floor(months)
-    console.log('calculating waz...')
-    console.log('original months', months)
-    console.log('rounded months', roundedMonth)
-    console.log('sex', sex)
-    console.log('weight', weight)
 
     // look up sex-specifc growth standard for given age (in months)
     let data;
@@ -153,14 +148,12 @@ export function calculateWAZ(months: number, sex: string, weight: number): numbe
     // throw error if data not found
     if (!data) throw new Error (`Growth standard for ${roundedMonth} month old ${sex} not found`)
     
-    console.log('data', data)
     // calculate waz score if growth standard data found
     const l = data.L
     const m = data.M
     const s = data.S
 
     const zScore = (((weight / m)**l) - 1) / (l * s)
-    console.log('zscore', zScore)
     return zScore;
 }
 

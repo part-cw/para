@@ -2,6 +2,7 @@
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { DropdownItem } from '../components/SearchableDropdown';
 
 // Define your data structure based on all screens
 export interface PatientData {
@@ -33,9 +34,10 @@ export interface PatientData {
   temperature: string;
   rrate: string;
   lastHospitalized: string;
-  eyeMovement: string;
-  motorResponse: string;
-  verbalResponse: string;
+  eyeMovement: DropdownItem | null;
+  motorResponse: DropdownItem | null;
+  verbalResponse: DropdownItem | null;
+  bcsScore: number | null;
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: string;
@@ -95,9 +97,10 @@ const initialPatientData: PatientData = {
   hivStatus: '',
   temperature: '',
   rrate: '',
-  eyeMovement: '',
-  motorResponse: '',
-  verbalResponse: '',
+  eyeMovement: null,
+  motorResponse: null,
+  verbalResponse: null,
+  bcsScore: null,
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: '',
@@ -195,9 +198,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         temperature: '',
         rrate: '',
         lastHospitalized: '',
-        eyeMovement: '',
-        motorResponse: '',
-        verbalResponse: '',
+        eyeMovement: null,
+        motorResponse: null,
+        verbalResponse: null,
       };
       await updatePatientData(updates);
     } else {

@@ -32,6 +32,12 @@ export default function AdmissionClinicalDataScreen() {
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
 
+    // For BCS calcualtions
+    const [eyeScore, setEyeScore] = useState<number | null>(null)
+    const [motorScore, setMotorScore] = useState<number | null>(null)
+    const [verbalScore, setVerbalScore] = useState<number | null>(null)
+    // const [bcsScore, setBcsScore] = useState<number | null>(null)
+
     const {
         // common fields
         weight,
@@ -53,6 +59,7 @@ export default function AdmissionClinicalDataScreen() {
         eyeMovement,
         motorResponse,
         verbalResponse,
+        bcsScore,
 
         // other necessary info
         isUnderSixMonths,
@@ -194,6 +201,26 @@ export default function AdmissionClinicalDataScreen() {
     useEffect(() => {
         setMalnutritionStatus()
     }, [waz, muac])
+
+    // handle changes in BCS selections and updates scores accordingly
+    useEffect(() => {
+        // if options selected, set scores
+        eyeMovement?.value ? setEyeScore(Number(eyeMovement.key)) : setEyeScore(null)
+        motorResponse?.value ? setMotorScore(Number(motorResponse.key)) : setMotorScore(null)
+        verbalResponse?.value ? setVerbalScore(Number(verbalResponse.key)) : setVerbalScore(null)
+
+        if (eyeScore !== null && motorScore !== null && verbalScore !==null) {
+            const score = eyeScore + motorScore + verbalScore
+            updatePatientData({bcsScore: score})
+        } else {
+            updatePatientData({bcsScore: null})
+        }
+
+    }, [eyeMovement, motorResponse, verbalResponse, eyeScore, verbalScore, motorScore])
+
+    console.log(eyeScore, motorScore, verbalScore)
+    console.log(eyeMovement, motorResponse, verbalResponse)
+    console.log('bcs score', bcsScore)
     
     const setMalnutritionStatus = () => {
         if ((waz || waz !== null) && muac) {
@@ -243,22 +270,20 @@ export default function AdmissionClinicalDataScreen() {
     { value: 'More than 1 year ago', key: '>1y' }];
 
     const eyeMovementOptions = [
-        {value: 'Watches or follows', key: 'watches'},
-        {value: 'Fails to watch or follow', key: 'fails'}
+        {value: 'Watches or follows', key: '1'},
+        {value: 'Fails to watch or follow', key: '0'}
     ]
 
     const motorResponseOptions = [
-        {value: 'Normal behavior observed', key: 'normal'},
-        {value: 'Localizes painful stimulus', key: 'localize'},
-        {value: 'Withdraws from painful stimulus', key: 'withdraw'},
-        {value: 'No resonse/inappropriate response', key: 'no-response'}
+        {value: 'Localizes painful stimulus', key: "2"},
+        {value: 'Withdraws limb from painful stimulus', key: '1'},
+        {value: 'No response/inappropriate response', key: '0'}
     ]
 
     const verbalResponseOptions = [
-        {value: 'Normal behavior observed', key: 'normal'},
-        {value: 'Cries appropriately', key: 'cries'},
-        {value: 'Moan or abnormal cry', key: 'moan'},
-        {value: 'No vocal response', key: 'no-response'}
+        {value: 'Cries appropriately with pain (or speaks if verbal)', key: '2'},
+        {value: 'Moan or abnormal cry with pain', key: '1'},
+        {value: 'No vocal response to pain', key: '0'}
     ]
 
     const bcsGeneralInfo = "Fully conscious children score 5 (have appropriate eye movement, motor response, and verbal response). Children who are unresponsive to painful stimuli score 0."
@@ -570,8 +595,10 @@ export default function AdmissionClinicalDataScreen() {
                                                 data={eyeMovementOptions} 
                                                 label={'Eye movement'}
                                                 placeholder='select option below' 
-                                                onSelect={(item) => updatePatientData({ eyeMovement: item.value })}
-                                                value={eyeMovement}
+                                                onSelect={(item) => {
+                                                    updatePatientData({ eyeMovement: item})
+                                                }}
+                                                value={eyeMovement?.value}
                                                 search={false}
                                             />
                                         </View>
@@ -590,8 +617,10 @@ export default function AdmissionClinicalDataScreen() {
                                                     data={motorResponseOptions} 
                                                     label={'Best motor response'}
                                                     placeholder='select option below' 
-                                                    onSelect={(item) => updatePatientData({ motorResponse: item.value})}
-                                                    value={motorResponse}
+                                                    onSelect={(item) => {
+                                                        updatePatientData({ motorResponse: item})
+                                                    }}
+                                                    value={motorResponse?.value}
                                                     search={false}
                                                 />
                                             </View>
@@ -610,8 +639,10 @@ export default function AdmissionClinicalDataScreen() {
                                                 data={verbalResponseOptions} 
                                                 label={'Verbal response'}
                                                 placeholder='select option below' 
-                                                onSelect={(item) => updatePatientData({ verbalResponse: item.value })}
-                                                value={verbalResponse}
+                                                onSelect={(item) => {
+                                                    updatePatientData({ verbalResponse: item})
+                                                }}
+                                                value={verbalResponse?.value}
                                                 search={false}
                                             />
                                         </View>
@@ -622,6 +653,10 @@ export default function AdmissionClinicalDataScreen() {
                                             iconColor='white'
                                         />
                                     </View>
+                                    { bcsScore !== null && eyeMovement?.value && motorResponse?.value && verbalResponse?.value &&
+                                        <NutritionStatusBar title={`Calculated BCS score = ${bcsScore}`}/>
+                                    }
+                                    
                                 </View>
                             </List.Accordion>
                         </View>

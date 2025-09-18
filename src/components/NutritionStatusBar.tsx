@@ -12,7 +12,7 @@ interface NutritionStatusProps {
 
 const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
   title = "Nutrition Status",
-  content = 'optional content',
+  content,
   containerStyle,
   titleStyle,
   textStyle: textStyle,
