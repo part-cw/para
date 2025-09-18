@@ -685,7 +685,7 @@ export default function AdmissionClinicalDataScreen() {
                 <ValidationSummary 
                 errors={validationWarnings}
                 variant='warning'
-                title='WARNING: Data Outside Normal Range'
+                title='WARNING: Data Outside Expected Range'
                 />
             }
 
