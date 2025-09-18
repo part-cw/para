@@ -193,7 +193,7 @@ export function validateRespiratoryRange(input: string): ValidationResult {
         return { 
             isValid: false, 
             errorMessage: '',
-            warningMessage: `Respiratory is outside the normal range of ${softMin} to ${softMax} bpm. Are you sure this is correct?` 
+            warningMessage: `Respiratory rate is outside the normal range of ${softMin} to ${softMax} bpm. Are you sure this is correct?` 
         };
     }
 

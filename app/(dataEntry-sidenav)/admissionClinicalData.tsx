@@ -18,7 +18,6 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// TODO -- add popup if values outside normal physiological range
 // TODO Add rrate link on button press
 
 export default function AdmissionClinicalDataScreen() {  
@@ -33,6 +32,7 @@ export default function AdmissionClinicalDataScreen() {
     const hasValidationWarnings = validationWarnings.length > 0;
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
+    const [showMuacStatusBar, setShowMuacStatusBar] = useState<boolean>(false)
 
     // For BCS calcualtions
     const [eyeScore, setEyeScore] = useState<number | null>(null)
@@ -160,6 +160,7 @@ export default function AdmissionClinicalDataScreen() {
             }
         }
         
+        console.log('warnings', warnings)
         return {errors: errors, warnings: warnings}
     };
 
@@ -218,10 +219,6 @@ export default function AdmissionClinicalDataScreen() {
         }
 
     }, [eyeMovement, motorResponse, verbalResponse, eyeScore, verbalScore, motorScore])
-
-    console.log(eyeScore, motorScore, verbalScore)
-    console.log(eyeMovement, motorResponse, verbalResponse)
-    console.log('bcs score', bcsScore)
     
     const setMalnutritionStatus = () => {
         if ((waz || waz !== null) && muac) {
@@ -246,8 +243,125 @@ export default function AdmissionClinicalDataScreen() {
         }
     }
 
-    console.log('malnutritionStatus', malnutritionStatus)
+    const handleMuacBlur = () => {
+        const warning = validateMuac(muac).warningMessage;
 
+        if (!warning) {
+            setShowMuacStatusBar(true);
+            return;
+        }
+
+        if (Platform.OS === 'web') {
+            // Web: use confirm to mimic Cancel / OK
+            const confirmResult = window.confirm(
+                `Data Outside Physiological Range\n\n${warning}\n\nPress OK to continue, Cancel to clear value.`
+            );
+
+            if (confirmResult) {
+                // ok
+                setShowMuacStatusBar(true);
+            } else {
+                // Cancel
+                updatePatientData({ muac: '' });
+                setShowMuacStatusBar(false);
+            }
+        } else {
+            // Mobile (iOS/Android)
+            Alert.alert(
+                'Data Outside Physiological Range',
+                warning,
+                [
+                    {
+                        text: 'Cancel',
+                        onPress: () => {
+                            updatePatientData({ muac: '' });
+                            setShowMuacStatusBar(false);
+                    }},
+                    {
+                        text: 'Yes',
+                        style: 'cancel',
+                        onPress: () => setShowMuacStatusBar(true),
+                    },
+                ]
+            );
+        }
+    };
+
+    const handleTemperatureBlur = () => {
+        const warning = validateTemperatureRange(temperature).warningMessage;
+        
+        if (!warning) return;
+
+        if (Platform.OS === 'web') {
+            // Web: use confirm to mimic Cancel / OK
+            const confirmResult = window.confirm(
+                `Data Outside Physiological Range\n\n${warning}\n\nPress OK to continue, Cancel to clear value.`
+            );
+
+            if (confirmResult) {
+                // ok
+                return;
+            } else {
+                // Cancel
+                updatePatientData({ temperature: '' });
+            }
+        } else {
+            // Mobile (iOS/Android)
+            Alert.alert(
+                'Data Outside Physiological Range',
+                warning,
+                [
+                    {
+                        text: 'Cancel',
+                        onPress: () => {
+                            updatePatientData({ temperature: '' });
+                    }},
+                    {
+                        text: 'Yes',
+                        style: 'cancel',
+                    },
+                ]
+            );
+        }
+    };
+
+      const handleRrateBlur = () => {
+        const warning = validateRespiratoryRange(rrate).warningMessage;
+        
+        if (!warning) return;
+
+        if (Platform.OS === 'web') {
+            // Web: use confirm to mimic Cancel / OK
+            const confirmResult = window.confirm(
+                `Data Outside Physiological Range\n\n${warning}\n\nPress OK to continue, Cancel to clear value.`
+            );
+
+            if (confirmResult) {
+                // ok
+                return;
+            } else {
+                // Cancel
+                updatePatientData({ temperature: '' });
+            }
+        } else {
+            // Mobile (iOS/Android)
+            Alert.alert(
+                'Data Outside Physiological Range',
+                warning,
+                [
+                    {
+                        text: 'Cancel',
+                        onPress: () => {
+                            updatePatientData({ temperature: '' });
+                    }},
+                    {
+                        text: 'Yes',
+                        style: 'cancel',
+                    },
+                ]
+            );
+        }
+    };
 
     const durationOptions = [
         { value: 'Less than 48 hours', key: '<48h' },
@@ -386,13 +500,16 @@ export default function AdmissionClinicalDataScreen() {
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
                                             value={muac} 
-                                            onChangeText={(value) => updatePatientData({ muac: value })}
+                                            onChangeText={(value) => {
+                                                updatePatientData({ muac: value })
+                                                setShowMuacStatusBar(false)
+                                            }}
+                                            onBlur={handleMuacBlur}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
                                             customValidator={(value) => validateMuac(value).isValid}
                                             customErrorMessage={validateMuac(muac).errorMessage }
-                                            // customWarningMessage={validateMuac(muac).warningMessage}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -405,11 +522,13 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
-                                    <NutritionStatusBar 
-                                        title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
-                                        content=''
-                                        variant={getMuacStatus(isUnderSixMonths, muac)}
-                                    />
+                                    {showMuacStatusBar &&
+                                        <NutritionStatusBar 
+                                            title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                            content=''
+                                            variant={getMuacStatus(isUnderSixMonths, muac)}
+                                        />
+                                    }
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
@@ -491,12 +610,15 @@ export default function AdmissionClinicalDataScreen() {
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
                                             value={muac} 
-                                            onChangeText={(value) => updatePatientData({ muac: value })}
+                                            onChangeText={(value) => {
+                                                updatePatientData({ muac: value })
+                                                setShowMuacStatusBar(false)
+                                            }}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             customValidator={(value) => validateMuac(value).isValid}
                                             customErrorMessage={validateMuac(muac).errorMessage }
-                                            // customWarningMessage={validateMuac(muac).warningMessage}
+                                            onBlur={handleMuacBlur}
                                             style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -505,19 +627,17 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                                if (Platform.OS !== 'web') {
-                                                    Alert.alert('Info', muacInfo);
-                                                } else {
-                                                    alert(muacInfo)
-                                                }
+                                                Platform.OS !== 'web' ? Alert.alert('Info', muacInfo) : alert(muacInfo)
                                             }}
                                         />
                                     </View>
-                                    <NutritionStatusBar 
-                                        title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
-                                        content=''
-                                        variant={getMuacStatus(isUnderSixMonths, muac)}
-                                    />
+                                    { showMuacStatusBar &&
+                                        <NutritionStatusBar 
+                                            title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                            content=''
+                                            variant={getMuacStatus(isUnderSixMonths, muac)}
+                                        />
+                                    }
                                     
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}
@@ -527,7 +647,7 @@ export default function AdmissionClinicalDataScreen() {
                                         isRequired={true} 
                                         customValidator={(value) => validateTemperatureRange(value).isValid}
                                         customErrorMessage={validateTemperatureRange(temperature).errorMessage}
-                                        customWarningMessage={validateTemperatureRange(temperature).warningMessage}
+                                        onBlur={handleTemperatureBlur}
                                         right={<TextInput.Affix text="°C" />}                             
                                     />
 
@@ -555,7 +675,7 @@ export default function AdmissionClinicalDataScreen() {
                                         isRequired={true}
                                         customValidator={(value) => validateRespiratoryRange(value).isValid}
                                         customErrorMessage={validateRespiratoryRange(rrate).errorMessage }
-                                        customWarningMessage={validateRespiratoryRange(rrate).warningMessage} 
+                                        onBlur={handleRrateBlur}
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     <Button style={{ alignSelf: 'center'}}
