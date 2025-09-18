@@ -7,17 +7,19 @@ import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
+import { bcsGeneralInfo, eyeMovementInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { calculateWAZ, getMuacStatus, getWazNutritionalStatus, indexToNutritionStatus, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Platform, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO -- add popup if values outside normal physiological range
+// TODO Add rrate link on button press
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
@@ -36,7 +38,6 @@ export default function AdmissionClinicalDataScreen() {
     const [eyeScore, setEyeScore] = useState<number | null>(null)
     const [motorScore, setMotorScore] = useState<number | null>(null)
     const [verbalScore, setVerbalScore] = useState<number | null>(null)
-    // const [bcsScore, setBcsScore] = useState<number | null>(null)
 
     const {
         // common fields
@@ -286,10 +287,6 @@ export default function AdmissionClinicalDataScreen() {
         {value: 'No vocal response to pain', key: '0'}
     ]
 
-    const bcsGeneralInfo = "Fully conscious children score 5 (have appropriate eye movement, motor response, and verbal response). Children who are unresponsive to painful stimuli score 0."
-    const eyeMovementInfo =  "Have the caregiver put a toy or bright object in front of the child, and see if they are able to follow it with their eyes";
-    const motorResponseInfo = "Response to pain should be assessed with firm nailbed pressure or pinch";
-
     // Don't render until data is loaded
     if (!isDataLoaded) {
         return (
@@ -404,7 +401,7 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                            alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions');
+                                                (Platform.OS !== 'web') ? Alert.alert('Info', muacInfo) : alert(muacInfo)
                                             }}
                                         />
                                     </View>
@@ -486,7 +483,7 @@ export default function AdmissionClinicalDataScreen() {
                                     {!validateWeight(weight).errorMessage && waz !== null &&
                                         <NutritionStatusBar 
                                             title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
-                                            content={`z-score = ${waz.toFixed(3)}`}
+                                            content={`z-score = ${waz.toFixed(2)}`}
                                             variant={getWazNutritionalStatus(waz as number) || 'invalid'}
                                         />
                                     }
@@ -508,7 +505,11 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                            alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions');
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Info', muacInfo);
+                                                } else {
+                                                    alert(muacInfo)
+                                                }
                                             }}
                                         />
                                     </View>
@@ -537,7 +538,11 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                            alert('Manually count breaths per minute, or measure from the RRate app by clicking "Record from RRate" button');
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Instructions', rrateButtonInfo)
+                                                } else {
+                                                    alert(rrateButtonInfo)
+                                                }
                                             }}
                                         />
                                     </View>
@@ -577,7 +582,6 @@ export default function AdmissionClinicalDataScreen() {
                         </View>
                         
                         {/* Blantyre Coma Scale Accordion for patients 6-60 months*/}
-                        {/* TODO - add BCS score card & required flag */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Blantyre Coma Scale"
@@ -606,7 +610,9 @@ export default function AdmissionClinicalDataScreen() {
                                             icon="information-outline"
                                             size={20}
                                             iconColor={colors.primary}
-                                            onPress={() => {alert(eyeMovementInfo)}}
+                                            onPress={() => {
+                                                Platform.OS !== 'web' ? Alert.alert('Instructions', eyeMovementInfo) : alert(eyeMovementInfo)
+                                            }}
                                         />
                                     </View>
 
@@ -628,7 +634,9 @@ export default function AdmissionClinicalDataScreen() {
                                                 icon="information-outline"
                                                 size={20}
                                                 iconColor={colors.primary}
-                                                onPress={() => {alert(motorResponseInfo)}}
+                                                onPress={() => {
+                                                    Platform.OS !== 'web' ? Alert.alert('Instructions', motorResponseInfo) : alert(motorResponseInfo)
+                                                }}
                                             />
                                     </View>
                                     
