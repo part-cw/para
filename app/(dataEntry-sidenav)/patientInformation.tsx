@@ -46,7 +46,8 @@ export default function PatientInformationScreen() {
         dob,
         birthYear,
         birthMonth,
-        approxAge,
+        approxAgeInYears: approxAge,
+        ageInMonths
     } = patientData;
 
     const ageLessThanSixMonthsError = 'Entered age is less than 6 months. Check off "patient is less than 6 months old" or enter new DOB'
@@ -68,6 +69,10 @@ export default function PatientInformationScreen() {
                 setCalculatedAge(null)
                 return false;
             }
+
+            updatePatientData({
+                ageInMonths: AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge)
+            })
 
             setCalculatedAge(age);
             setAgeValidationError(''); // Clear error if validation passes
@@ -117,7 +122,7 @@ export default function PatientInformationScreen() {
                 dob: selectedDate,
                 birthYear: '',
                 birthMonth: '',
-                approxAge: '',
+                approxAgeInYears: '',
                 sickYoungInfant: isYoungInfant
             })
 
@@ -133,7 +138,7 @@ export default function PatientInformationScreen() {
     const handleApproxAgeChange = (value: string) => {
         // Check if value is valid before calculating sickYoungInfant
         updatePatientData({ 
-            approxAge: value,
+            approxAgeInYears: value,
             sickYoungInfant: (() => {
                 // Check if value is valid before calculating sickYoungInfant
                 const numericValue = parseFloat(value.trim())
@@ -297,7 +302,7 @@ export default function PatientInformationScreen() {
                                         isYearMonthUnknown: false,
                                         birthYear: '',
                                         birthMonth: '',
-                                        approxAge: ''
+                                        approxAgeInYears: ''
                                     })
                                 })
                                 setAgeValidationError(''); // clear error when toggling
@@ -342,7 +347,7 @@ export default function PatientInformationScreen() {
                                         birthMonth: '',
                                         ...(newVal ? {} : {
                                             dob: null,
-                                            approxAge: ''
+                                            approxAgeInYears: ''
                                         })
                                     });
                                     setAgeValidationError(''); // Clear error when toggling

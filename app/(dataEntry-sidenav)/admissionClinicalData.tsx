@@ -1,3 +1,4 @@
+import NutritionStatusBar from '@/src/components/NutritionStatusBar';
 import PaginationControls from '@/src/components/PaginationControls';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
@@ -6,33 +7,42 @@ import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
+import { bcsGeneralInfo, eyeMovementInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { validateMuac } from '@/src/utils/clinicalVariableValidator';
+import { calculateWAZ, getMuacStatus, getWazNutritionalStatus, indexToNutritionStatus, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Platform, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
-// TODO - add height field
+// TODO -- add popup if values outside normal physiological range
+// TODO Add rrate link on button press
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
-    const { setValidationErrors, getScreenErrors } = useValidation();
+    const { setValidationErrors, setValidationWarnings, getScreenErrors, getScreenWarnings } = useValidation();
 
-    // const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const validationErrors = getScreenErrors('admissionClinicalData')
     const hasValidationErrors = validationErrors.length > 0;
 
+    const validationWarnings = getScreenWarnings('admissionClinicalData');
+    const hasValidationWarnings = validationWarnings.length > 0;
+
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
+
+    // For BCS calcualtions
+    const [eyeScore, setEyeScore] = useState<number | null>(null)
+    const [motorScore, setMotorScore] = useState<number | null>(null)
+    const [verbalScore, setVerbalScore] = useState<number | null>(null)
 
     const {
         // common fields
         weight,
+        waz,
         muac,
         spo2,
 
@@ -50,35 +60,46 @@ export default function AdmissionClinicalDataScreen() {
         eyeMovement,
         motorResponse,
         verbalResponse,
+        bcsScore,
 
-        // Age indicator
-        isUnderSixMonths
+        // other necessary info
+        isUnderSixMonths,
+        sex,
+        ageInMonths,
+        malnutritionStatus
     } = patientData
 
-    // TODO add more detailed validation for all fields
     const validateAllFields = () => {
         const errors: string[] = [];
+        const warnings: string[] = [];
         
         // Common validations for both age groups
         if (!weight || !isValidNumericFormat(weight)) {
             errors.push('Weight is required and must be a valid number');
+        } else {
+            const weightValidation = validateWeight(weight)
+            if (!weightValidation.isValid) {
+                weightValidation.errorMessage && errors.push(weightValidation.errorMessage);
+                weightValidation.warningMessage && warnings.push(weightValidation.warningMessage)
+            }
         }
         
-        if (!muac) {
-            errors.push('MUAC is required');
+        if (!muac || !isValidNumericFormat(muac)){
+            errors.push('MUAC is required and must be a valid number');
         } else {
             const muacValidation = validateMuac(muac);
             if (!muacValidation.isValid) {
-                errors.push(muacValidation.errorMessage);
+                muacValidation.errorMessage && errors.push(muacValidation.errorMessage);
+                muacValidation.warningMessage && warnings.push(muacValidation.warningMessage)
             }
         }
         
         if (!spo2 || !isValidNumericFormat(spo2)) {
             errors.push('SpO₂ is required and must be a valid number');
         } else {
-            const spo2Value = Number(spo2);
-            if (spo2Value < 0 || spo2Value > 100) {
-                errors.push('SpO₂ must be between 0 and 100');
+            const spo2Validation= validateOxygenSaturationRange(spo2);
+            if (!spo2Validation.isValid) {
+                spo2Validation.errorMessage && errors.push(spo2Validation.errorMessage);
             }
         }
         
@@ -101,14 +122,30 @@ export default function AdmissionClinicalDataScreen() {
             if (!hivStatus) {
                 errors.push('HIV status is required');
             }
+
             if (!lastHospitalized) {
                 errors.push('Last hospitalized is required');
             }
+
             if (!temperature || !isValidNumericFormat(temperature)) {
                 errors.push('Temperature is required and must be a valid number');
+            } else {
+                const tempValidation = validateTemperatureRange(temperature);
+                if (!tempValidation.isValid) {
+                    tempValidation.errorMessage && errors.push(tempValidation.errorMessage);
+                    tempValidation.warningMessage && warnings.push(tempValidation.warningMessage)
+                }
             }
+
+
             if (!rrate || !isValidNumericFormat(rrate)) {
                 errors.push('Respiratory rate is required and must be a valid number');
+            } else {
+                const rrateValidation = validateRespiratoryRange(rrate)
+                if (!rrateValidation.isValid) {
+                    rrateValidation.errorMessage && errors.push(rrateValidation.errorMessage)
+                    rrateValidation.warningMessage && warnings.push(rrateValidation.warningMessage)
+                }
             }
             
             // Blantyre Coma Scale validations
@@ -123,12 +160,13 @@ export default function AdmissionClinicalDataScreen() {
             }
         }
         
-        return errors;
+        return {errors: errors, warnings: warnings}
     };
 
     useEffect(() => {
-        const errors = validateAllFields();
-        setValidationErrors('admissionClinicalData', errors);
+        const messages = validateAllFields();
+        setValidationErrors('admissionClinicalData', messages.errors);
+        setValidationWarnings('admissionClinicalData', messages.warnings);
     }, [
         weight, muac, spo2, 
         illnessDuration, jaundice, bulgingFontanelle, feedingStatus,
@@ -141,11 +179,74 @@ export default function AdmissionClinicalDataScreen() {
     useEffect(() => {
         return () => {
             // Only clear if no errors exist
-            if (validateAllFields().length === 0) {
+            if (validateAllFields().errors.length === 0) {
                 setValidationErrors('admissionClinicalData', []);
+            }
+            if (validateAllFields().warnings.length === 0) {
+                setValidationWarnings('admissionClinicalData', []);
             }
         };
     }, []);
+
+    // handle WAZ calculation on weight change
+    useEffect(() => {
+        if (validateWeight(weight).isValid) {
+            updatePatientData({waz: calculateWAZ(ageInMonths as number, sex, parseFloat(weight))})
+        } else {
+            updatePatientData({waz: null})
+        }
+
+    }, [weight])
+
+    // handles changes in waz and muac - updates malnutrtion status accordingly
+    useEffect(() => {
+        setMalnutritionStatus()
+    }, [waz, muac])
+
+    // handle changes in BCS selections and updates scores accordingly
+    useEffect(() => {
+        // if options selected, set scores
+        eyeMovement?.value ? setEyeScore(Number(eyeMovement.key)) : setEyeScore(null)
+        motorResponse?.value ? setMotorScore(Number(motorResponse.key)) : setMotorScore(null)
+        verbalResponse?.value ? setVerbalScore(Number(verbalResponse.key)) : setVerbalScore(null)
+
+        if (eyeScore !== null && motorScore !== null && verbalScore !==null) {
+            const score = eyeScore + motorScore + verbalScore
+            updatePatientData({bcsScore: score})
+        } else {
+            updatePatientData({bcsScore: null})
+        }
+
+    }, [eyeMovement, motorResponse, verbalResponse, eyeScore, verbalScore, motorScore])
+
+    console.log(eyeScore, motorScore, verbalScore)
+    console.log(eyeMovement, motorResponse, verbalResponse)
+    console.log('bcs score', bcsScore)
+    
+    const setMalnutritionStatus = () => {
+        if ((waz || waz !== null) && muac) {
+            const wazStatus = getWazNutritionalStatus(waz)
+            const muacStatus = getMuacStatus(isUnderSixMonths, muac)
+
+            const wazNutritionIndex = nutritionStatusToIndex(wazStatus)
+            const muacNutritionIndex = nutritionStatusToIndex(muacStatus)
+
+            const malnutritionIndex = 
+                (wazNutritionIndex > muacNutritionIndex) 
+                ? wazNutritionIndex
+                : muacNutritionIndex
+                
+            updatePatientData({
+                malnutritionStatus: indexToNutritionStatus(malnutritionIndex)
+            })
+        } else {
+           updatePatientData({
+                malnutritionStatus: undefined
+            }) 
+        }
+    }
+
+    console.log('malnutritionStatus', malnutritionStatus)
 
 
     const durationOptions = [
@@ -170,27 +271,21 @@ export default function AdmissionClinicalDataScreen() {
     { value: 'More than 1 year ago', key: '>1y' }];
 
     const eyeMovementOptions = [
-        {value: 'Watches or follows', key: 'watches'},
-        {value: 'Fails to watch or follow', key: 'fails'}
+        {value: 'Watches or follows', key: '1'},
+        {value: 'Fails to watch or follow', key: '0'}
     ]
 
     const motorResponseOptions = [
-        {value: 'Normal behavior observed', key: 'normal'},
-        {value: 'Localizes painful stimulus', key: 'localize'},
-        {value: 'Withdraws from painful stimulus', key: 'withdraw'},
-        {value: 'No resonse/inappropriate response', key: 'no-response'}
+        {value: 'Localizes painful stimulus', key: "2"},
+        {value: 'Withdraws limb from painful stimulus', key: '1'},
+        {value: 'No response/inappropriate response', key: '0'}
     ]
 
     const verbalResponseOptions = [
-        {value: 'Normal behavior observed', key: 'normal'},
-        {value: 'Cries appropriately', key: 'cries'},
-        {value: 'Moan or abnormal cry', key: 'moan'},
-        {value: 'No vocal response', key: 'no-response'}
+        {value: 'Cries appropriately with pain (or speaks if verbal)', key: '2'},
+        {value: 'Moan or abnormal cry with pain', key: '1'},
+        {value: 'No vocal response to pain', key: '0'}
     ]
-
-    const bcsGeneralInfo = "Fully conscious children score 5 (have appropriate eye movement, motor response, and verbal response). Children who are unresponsive to painful stimuli score 0."
-    const eyeMovementInfo =  "Have the caregiver put a toy or bright object in front of the child, and see if they are able to follow it with their eyes";
-    const motorResponseInfo = "Response to pain should be assessed with firm nailbed pressure or pinch";
 
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -200,7 +295,7 @@ export default function AdmissionClinicalDataScreen() {
             </SafeAreaView>
         );
     }
-    
+
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -267,15 +362,26 @@ export default function AdmissionClinicalDataScreen() {
                                 left={props => <List.Icon {...props} icon="heart-pulse" />}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO - add custom validator and custom messge for each of the inputs */}
                                     <ValidatedTextInput 
                                         label={'Weight (required)'}
                                         value={weight} 
-                                        onChangeText={(value) => updatePatientData({ weight: value })}
+                                        onChangeText={(value) => updatePatientData({ weight: value})}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateWeight(value).isValid}
+                                        customErrorMessage={validateWeight(weight).errorMessage}
+                                        showErrorOnTyping={true}
                                         right={<TextInput.Affix text="kg" />}                             
                                     />
+
+                                    {/* If no error and waz calculated, show nutrition status bar */}
+                                    {!validateWeight(weight).errorMessage && waz !== null &&
+                                        <NutritionStatusBar 
+                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
+                                            content={`z-score = ${waz.toFixed(2)}`}
+                                            variant={getWazNutritionalStatus(waz as number) || 'invalid'}
+                                        />
+                                    }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
@@ -284,6 +390,9 @@ export default function AdmissionClinicalDataScreen() {
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
+                                            customValidator={(value) => validateMuac(value).isValid}
+                                            customErrorMessage={validateMuac(muac).errorMessage }
+                                            // customWarningMessage={validateMuac(muac).warningMessage}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -292,17 +401,24 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                            alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions');
+                                                (Platform.OS !== 'web') ? Alert.alert('Info', muacInfo) : alert(muacInfo)
                                             }}
                                         />
                                     </View>
+                                    <NutritionStatusBar 
+                                        title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                        content=''
+                                        variant={getMuacStatus(isUnderSixMonths, muac)}
+                                    />
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
                                         value={spo2} 
                                         onChangeText={(value) => updatePatientData({ spo2: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
-                                        isRequired={true} 
+                                        isRequired={true}
+                                        customValidator={(value) => validateOxygenSaturationRange(value).isValid}
+                                        customErrorMessage={validateOxygenSaturationRange(spo2).errorMessage } 
                                         right={<TextInput.Affix text="%" />}                             
                                     />
                                 </View>
@@ -351,15 +467,26 @@ export default function AdmissionClinicalDataScreen() {
                                 left={props => <List.Icon {...props} icon="heart-pulse" />}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO - add custom validator and custom messge for each of the inputs */}
                                     <ValidatedTextInput 
                                         label={'Weight (required)'}
                                         value={weight} 
-                                        onChangeText={(value) => updatePatientData({ weight: value })}
+                                        onChangeText={(value) => updatePatientData({ weight: value})}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateWeight(value).isValid}
+                                        customErrorMessage={validateWeight(weight).errorMessage}
+                                        showErrorOnTyping={true}
                                         right={<TextInput.Affix text="kg" />}                             
                                     />
+
+                                    {/* If no error and waz calculated, show nutrition status bar */}
+                                    {!validateWeight(weight).errorMessage && waz !== null &&
+                                        <NutritionStatusBar 
+                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
+                                            content={`z-score = ${waz.toFixed(2)}`}
+                                            variant={getWazNutritionalStatus(waz as number) || 'invalid'}
+                                        />
+                                    }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
@@ -368,8 +495,9 @@ export default function AdmissionClinicalDataScreen() {
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             customValidator={(value) => validateMuac(value).isValid}
-                                            customErrorMessage={validateMuac(muac).errorMessage}
-                                            style={[Styles.accordionTextInput, { flex: 1 }]}
+                                            customErrorMessage={validateMuac(muac).errorMessage }
+                                            // customWarningMessage={validateMuac(muac).warningMessage}
+                                            style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
                                         <IconButton
@@ -377,16 +505,29 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                            alert('MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions');
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Info', muacInfo);
+                                                } else {
+                                                    alert(muacInfo)
+                                                }
                                             }}
                                         />
                                     </View>
+                                    <NutritionStatusBar 
+                                        title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                        content=''
+                                        variant={getMuacStatus(isUnderSixMonths, muac)}
+                                    />
+                                    
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}
                                         value={temperature} 
                                         onChangeText={(value) => updatePatientData({ temperature: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateTemperatureRange(value).isValid}
+                                        customErrorMessage={validateTemperatureRange(temperature).errorMessage}
+                                        customWarningMessage={validateTemperatureRange(temperature).warningMessage}
                                         right={<TextInput.Affix text="°C" />}                             
                                     />
 
@@ -397,7 +538,11 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                            alert('Manually count breaths per minute, or measure from the RRate app by clicking "Record from RRate" button');
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Instructions', rrateButtonInfo)
+                                                } else {
+                                                    alert(rrateButtonInfo)
+                                                }
                                             }}
                                         />
                                     </View>
@@ -407,7 +552,10 @@ export default function AdmissionClinicalDataScreen() {
                                         value={rrate} 
                                         onChangeText={(value) => updatePatientData({ rrate: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
-                                        isRequired={true} 
+                                        isRequired={true}
+                                        customValidator={(value) => validateRespiratoryRange(value).isValid}
+                                        customErrorMessage={validateRespiratoryRange(rrate).errorMessage }
+                                        customWarningMessage={validateRespiratoryRange(rrate).warningMessage} 
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     <Button style={{ alignSelf: 'center'}}
@@ -425,6 +573,8 @@ export default function AdmissionClinicalDataScreen() {
                                         onChangeText={(value) => updatePatientData({ spo2: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
+                                        customValidator={(value) => validateOxygenSaturationRange(value).isValid}
+                                        customErrorMessage={validateOxygenSaturationRange(spo2).errorMessage } 
                                         right={<TextInput.Affix text="%" />}                             
                                     />
                                 </View>
@@ -432,7 +582,6 @@ export default function AdmissionClinicalDataScreen() {
                         </View>
                         
                         {/* Blantyre Coma Scale Accordion for patients 6-60 months*/}
-                        {/* TODO - add BCS score card & required flag */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Blantyre Coma Scale"
@@ -450,8 +599,10 @@ export default function AdmissionClinicalDataScreen() {
                                                 data={eyeMovementOptions} 
                                                 label={'Eye movement'}
                                                 placeholder='select option below' 
-                                                onSelect={(item) => updatePatientData({ eyeMovement: item.value })}
-                                                value={eyeMovement}
+                                                onSelect={(item) => {
+                                                    updatePatientData({ eyeMovement: item})
+                                                }}
+                                                value={eyeMovement?.value}
                                                 search={false}
                                             />
                                         </View>
@@ -459,7 +610,9 @@ export default function AdmissionClinicalDataScreen() {
                                             icon="information-outline"
                                             size={20}
                                             iconColor={colors.primary}
-                                            onPress={() => {alert(eyeMovementInfo)}} // TODO - change to tooltip
+                                            onPress={() => {
+                                                Platform.OS !== 'web' ? Alert.alert('Instructions', eyeMovementInfo) : alert(eyeMovementInfo)
+                                            }}
                                         />
                                     </View>
 
@@ -470,8 +623,10 @@ export default function AdmissionClinicalDataScreen() {
                                                     data={motorResponseOptions} 
                                                     label={'Best motor response'}
                                                     placeholder='select option below' 
-                                                    onSelect={(item) => updatePatientData({ motorResponse: item.value})}
-                                                    value={motorResponse}
+                                                    onSelect={(item) => {
+                                                        updatePatientData({ motorResponse: item})
+                                                    }}
+                                                    value={motorResponse?.value}
                                                     search={false}
                                                 />
                                             </View>
@@ -479,7 +634,9 @@ export default function AdmissionClinicalDataScreen() {
                                                 icon="information-outline"
                                                 size={20}
                                                 iconColor={colors.primary}
-                                                onPress={() => {alert(motorResponseInfo)}} // TODO - change to tooltip
+                                                onPress={() => {
+                                                    Platform.OS !== 'web' ? Alert.alert('Instructions', motorResponseInfo) : alert(motorResponseInfo)
+                                                }}
                                             />
                                     </View>
                                     
@@ -490,8 +647,10 @@ export default function AdmissionClinicalDataScreen() {
                                                 data={verbalResponseOptions} 
                                                 label={'Verbal response'}
                                                 placeholder='select option below' 
-                                                onSelect={(item) => updatePatientData({ verbalResponse: item.value })}
-                                                value={verbalResponse}
+                                                onSelect={(item) => {
+                                                    updatePatientData({ verbalResponse: item})
+                                                }}
+                                                value={verbalResponse?.value}
                                                 search={false}
                                             />
                                         </View>
@@ -499,9 +658,13 @@ export default function AdmissionClinicalDataScreen() {
                                         <IconButton
                                             icon="information-outline"
                                             size={20}
-                                            iconColor='#FFFF'
+                                            iconColor='white'
                                         />
                                     </View>
+                                    { bcsScore !== null && eyeMovement?.value && motorResponse?.value && verbalResponse?.value &&
+                                        <NutritionStatusBar title={`Calculated BCS score = ${bcsScore}`}/>
+                                    }
+                                    
                                 </View>
                             </List.Accordion>
                         </View>
@@ -511,7 +674,19 @@ export default function AdmissionClinicalDataScreen() {
 
             {/* Display error summary*/}
             { showErrorSummary &&
-                <ValidationSummary errors={validationErrors}/>
+                <ValidationSummary 
+                    errors={validationErrors}
+                    variant='error'
+                    title= 'ALERT: Fix Errors Below'
+                />
+            }
+
+             { hasValidationWarnings &&
+                <ValidationSummary 
+                errors={validationWarnings}
+                variant='warning'
+                title='WARNING: Data Outside Expected Range'
+                />
             }
 
             <PaginationControls

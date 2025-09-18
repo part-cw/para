@@ -74,7 +74,9 @@ export class AgeCalculator {
      * @returns age in days from DOB and now
      */
     static getAgeInDaysFromDob(dob: Date): number {
-        const now = new Date();
+        let now = new Date(); 
+        now.setHours(0,0,0,0) // set time to midnight
+        
         const diffTime = now.getTime() - dob.getTime(); // time is ms
         const diffDays = diffTime / this.msPerDay;
         
@@ -90,8 +92,8 @@ export class AgeCalculator {
         const diffDays = this.getAgeInDaysFromDob(dob)
 
         // Average 365.25 days/year. Source: https://www.grc.nasa.gov/www/k-12/Numbers/Math/Mathematical_Thinking/calendar_calculations.htm
-        // TODO - use 31557600 seconds per year instead? -- from old PARA
-        const diffYears = diffDays / 365.25
+        // but using 365.28 instead to be consistent withy 30.44 days/per month
+        const diffYears = diffDays / 365.28
         
         return  diffYears
     }
@@ -108,6 +110,11 @@ export class AgeCalculator {
         return dob
     }
 
+    /**
+     * 
+     * 0-indexed month to num mapping; matches new Date().getMonth indexing
+     *
+     */
     private static monthToIndex(month: string): number {
         const monthMap: Record<string, number> = {
             January: 0,
@@ -138,18 +145,26 @@ export class AgeCalculator {
     /**
      * 
      * @param dob entered DOB or created from birthYear and birthMonth; null if unavailabe 
-     * @param years raw, unrounded approximate age in years. Used if only have approxAge; null if dob available
-     * @returns converts DOB or age in years into age in months, unrounded. 
-     * Assume params are never both null - either dob or years must be defined
+     * @param approxAge raw, unrounded approximate age in years. Used if only have approxAge; null if dob available
+     * @param birthYear
+     * @param birthMonth 
+     * @returns age in months, unrounded. 
+     * Assumes one of dob OR (birthYear and birthMonth) OR approx age are available and validated
      */
-    static getAgeInMonths(dob: Date | null, years?: number | null): number {
+    static calculateAgeInMonths(dob: Date | null, birthYear: string, birthMonth: string, approxAge: string): number {
         let months: number = 0;
 
-        if (dob) {
+        if (dob && !birthYear && !birthMonth && !approxAge) {
             const ageDays = this.getAgeInDaysFromDob(dob)
-            months = ageDays / 30.44 // days per month = 30.44
-        } else if (years) {
-            months = years * 12 // 12 months in a year
+            months = ageDays / 30.44 // avg days per month = 30.44
+        } else if (birthYear && birthMonth && !dob && !approxAge) {
+            const newDob = this.createDob(birthYear, birthMonth)
+            const ageDays = this.getAgeInDaysFromDob(newDob)
+            months = ageDays / 30.44
+            
+        } else if (approxAge && !dob && !birthMonth && !birthYear) {
+            const yearsNum = Number(approxAge.trim())
+            months = yearsNum * 12
         }
   
         return months;
@@ -194,7 +209,7 @@ export class AgeCalculator {
         monthToIndex: AgeCalculator.monthToIndex,
         createDob: AgeCalculator.createDob,
         getAgeInYearsFromDOB: AgeCalculator.getAgeInYearsFromDOB,
-        getAgeInMonths: AgeCalculator.getAgeInMonths
+        getAgeInMonths: AgeCalculator.calculateAgeInMonths
     };
 
 }

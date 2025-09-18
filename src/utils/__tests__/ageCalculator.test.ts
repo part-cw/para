@@ -151,14 +151,29 @@ describe('AgeCalculator', () => {
   describe('getAgeInMonths', () => {
     it('should calculate age in months from dob', () => {
       const dob = new Date('2023-08-26');
-      const months = AgeCalculator.getAgeInMonths(dob, null);
+      const months = AgeCalculator.calculateAgeInMonths(dob, '', '', '');
       expect(months).toBeCloseTo(24, 1); // ~24 months
     });
 
     it('should calculate age in months from years', () => {
-      const months = AgeCalculator.getAgeInMonths(null, 3);
+      const months = AgeCalculator.calculateAgeInMonths(null, '', '', '3');
       const expected = 3*12
       expect(months).toBe(expected);
+    });
+
+    it('should calculate approx age in months from yob and mob', () => {
+      // current date set to Aug 26 2025
+      const months = AgeCalculator.calculateAgeInMonths(null, '2025', 'July', '');
+      expect(months).toBeGreaterThan(1)
+      expect(months).toBeLessThan(2);
+    });
+
+    it('should be close to whole number if current date is 15th', () => {
+      const newDate = new Date('2025-08-15T00:00:00Z')
+      jest.setSystemTime(newDate);
+
+      const months = AgeCalculator.calculateAgeInMonths(null, '2025', 'July', '');
+      expect(months).toBeCloseTo(1, 1)
     });
   });
 
