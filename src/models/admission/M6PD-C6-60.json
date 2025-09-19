@@ -1,0 +1,94 @@
+{
+    "modelName": "M6PD-C6-60",
+    "usageTime": "admission",
+    "isUnderSixMonths": true,
+    "inputType": "clinical",
+    "inputs": [
+        {
+            "name": "waz",
+            "displayName": "WAZ",
+            "description": "weight-for-age z-score",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "contraints": "TODO - add normal, mod, severe mappings",
+            "dependencies": ["weight"]
+        },
+        {
+            "name": "muac",
+            "displayName": "MUAC",
+            "description": "Mid-upper arm circumfrence in mm",
+            "type": "float",
+            "units": "mm",
+            "required": true,
+            "contraints": "TODO -- add min/max"
+        },
+        {
+            "name": "spo2",
+            "displayName": "SpO₂",
+            "description": "Oxygen saturation",
+            "type": "float",
+            "units": "percent",
+            "required": true,
+            "contraints": "TODO"
+        },
+        {
+            "name": "lastHospitalized",
+            "displayName": "Last Hospitalized",
+            "description": "Time since last admission",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "contraints": "TODO"
+        },
+        {
+            "name": "bcsScore",
+            "displayName": "Abnormal BCS",
+            "description": "",
+            "type": "integer",
+            "units": null,
+            "required": true,
+            "dependencies": ["eyeMovement", "motorResponse", "verbalResponse"]
+        },
+          {
+            "name": "temperature",
+            "displayName": "Temperature",
+            "description": "Patient's temperature at admission time in degrees Celcius",
+            "type": "float",
+            "units": "°C",
+            "required": true
+        },
+        {
+            "name": "hivStatus",
+            "displayName": "HIV Status",
+            "description": "The patient's HIV status",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "contraints": {
+                "oneOf": [
+                    {"positive": "TODO"},
+                    {"negative": ""},
+                    {"unknown": ""}
+                ]
+            }
+        },
+        {
+            "name": "temperatureSquared",
+            "displayName": "Temperature squared",
+            "description": "Patient's temperature at admission sqaured",
+            "type": "float",
+            "units": "°C",
+            "required": true
+        },
+        {
+            "name": "ageRrate",
+            "displayName": "Age x Respiratory Rate",
+            "description": "Patient's age in months mulitplied respiratory rate",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["rrate", "ageInMonths"]
+        }
+    ]
+}

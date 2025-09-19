@@ -52,7 +52,7 @@
             "displayName": "SpO₂",
             "description": "Oxygen saturation",
             "type": "float",
-            "units": null,
+            "units": "percent",
             "required": true,
             "contraints": "TODO"
         },
