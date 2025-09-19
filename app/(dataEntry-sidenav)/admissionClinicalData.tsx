@@ -504,7 +504,7 @@ export default function AdmissionClinicalDataScreen() {
                                                 updatePatientData({ muac: value })
                                                 setShowMuacStatusBar(false)
                                             }}
-                                            onBlur={handleMuacBlur}
+                                            onBlurExternal={handleMuacBlur}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
@@ -618,7 +618,7 @@ export default function AdmissionClinicalDataScreen() {
                                             isRequired={true} 
                                             customValidator={(value) => validateMuac(value).isValid}
                                             customErrorMessage={validateMuac(muac).errorMessage }
-                                            onBlur={handleMuacBlur}
+                                            onBlurExternal={handleMuacBlur}
                                             style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -647,7 +647,7 @@ export default function AdmissionClinicalDataScreen() {
                                         isRequired={true} 
                                         customValidator={(value) => validateTemperatureRange(value).isValid}
                                         customErrorMessage={validateTemperatureRange(temperature).errorMessage}
-                                        onBlur={handleTemperatureBlur}
+                                        onBlurExternal={handleTemperatureBlur}
                                         right={<TextInput.Affix text="°C" />}                             
                                     />
 
@@ -675,7 +675,7 @@ export default function AdmissionClinicalDataScreen() {
                                         isRequired={true}
                                         customValidator={(value) => validateRespiratoryRange(value).isValid}
                                         customErrorMessage={validateRespiratoryRange(rrate).errorMessage }
-                                        onBlur={handleRrateBlur}
+                                        onBlurExternal={handleRrateBlur}
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     <Button style={{ alignSelf: 'center'}}

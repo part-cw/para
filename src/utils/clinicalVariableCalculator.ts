@@ -1,9 +1,9 @@
 
 //  * TODO for model calculation - round to 1 decimal place
 
-import config from '../data/model_input_ranges.json';
 import waz_female from '../data/wazscore_female.json';
 import waz_male from '../data/wazscore_male.json';
+import config from '../models/model_input_ranges.json';
 
 type ValidationResult = {
   isValid: boolean;
