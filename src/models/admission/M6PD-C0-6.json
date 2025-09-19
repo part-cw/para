@@ -1,0 +1,91 @@
+{
+    "modelName": "M6PD-C0-6",
+    "usageTime": "admission",
+    "isUnderSixMonths": true,
+    "inputType": "clinical",
+    "inputs": [
+        {
+            "name": "waz",
+            "displayName": "WAZ",
+            "description": "weight-for-age z-score",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "contraints": "TODO - add normal, mod, severe mappings",
+            "dependencies": ["weight"]
+        },
+        {
+            "name": "muac",
+            "displayName": "MUAC",
+            "description": "Mid-upper arm circumfrence in mm",
+            "type": "float",
+            "units": "mm",
+            "required": true,
+            "contraints": "TODO -- add min/max"
+        },
+        {
+            "name": "feedingStatus",
+            "displayName": "Feeding Status",
+            "description": "Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "contraints": {
+                "oneOf": [
+                    {"yes": "The child is sucking well when breastfeeding"},
+                    {"no": "The child is not sucking well when breastfeeding" },
+                    {"unsure": "It is not known if the child is sucking well when breastfeeding"}
+                ]
+            }
+        },
+        {
+            "name": "ageJaundice",
+            "displayName": null,
+            "description": "age x jaundice",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "dependencies": ["ageInMonths", "jaundice"]
+        },
+        {
+            "name": "spo2",
+            "displayName": "SpO₂",
+            "description": "Oxygen saturation",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "contraints": "TODO"
+        },
+        {
+            "name": "illnessDuration",
+            "displayName": "Duration of present illness",
+            "description": "The duration of the present illness at the time of admission",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "contraints": {
+                "oneOf": [
+                    {},
+                    {},
+                    {},
+                    {}
+                ]
+            }
+        },
+        {
+            "name": "bulgingFontanelle",
+            "displayName": "Bulging Fontanelle",
+            "description": "Does the child have bulging fontanelle at admission",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "contraints": {
+                "oneOf": [
+                    {"yes": "The child had bulging fontanelle at admission"},
+                    {"no": "The child did not have bulging fontanelle at admission"},
+                    {"unsure": "It is not known if the child had bulging fontanelle at admission"}
+                ]
+            }
+        }
+    ]
+}
