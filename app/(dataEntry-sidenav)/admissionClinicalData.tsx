@@ -366,7 +366,7 @@ export default function AdmissionClinicalDataScreen() {
     const durationOptions = [
         { value: 'Less than 48 hours', key: '<48h' },
         { value: '48 hours to 7 days', key: '48h-7d' },
-        { value: '7 days to 1 month', key: '7d-1mo' },
+        { value: '8 days to 1 month', key: '8d-1mo' },
         { value: 'More than 1 month', key: '>1mo' }
     ];
     

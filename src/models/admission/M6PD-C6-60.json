@@ -1,8 +1,18 @@
 {
     "modelName": "M6PD-C6-60",
+    "humanReadableName": "",
+    "description": "",
     "usageTime": "admission",
     "isUnderSixMonths": true,
     "inputType": "clinical",
+     "riskThresholds": {
+        "low": 0,
+        "moderate": 2,
+        "high": 5,
+        "veryHigh": 10
+    },
+    "rawScoreOffset": "...TODO",
+    "intercept": -3.243,
     "inputs": [
         {
             "name": "waz",
@@ -11,7 +21,7 @@
             "type": "float",
             "units": null,
             "required": true,
-            "contraints": "TODO - add normal, mod, severe mappings",
+            "coefficient": -0.177,
             "dependencies": ["weight"]
         },
         {
@@ -21,7 +31,7 @@
             "type": "float",
             "units": "mm",
             "required": true,
-            "contraints": "TODO -- add min/max"
+            "coefficient": -0.411
         },
         {
             "name": "spo2",
@@ -30,7 +40,16 @@
             "type": "float",
             "units": "percent",
             "required": true,
-            "contraints": "TODO"
+            "coefficient": -0.186
+        },
+        {
+            "name": "ageInMonths",
+            "displayName": "Age",
+            "description": "Patient's age in months, rounded",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "coefficient": 0.029
         },
         {
             "name": "lastHospitalized",
@@ -39,7 +58,39 @@
             "type": "string",
             "units": null,
             "required": true,
-            "contraints": "TODO"
+            "contraints": {
+                "oneOf": [
+                    {
+                        "value": "<7d",
+                        "description": "less than 7 days ago",
+                        "coefficient": 0.083
+                    },
+                    {
+                        "value": "7d-1m",
+                        "description": "7 days to 1 month ago",
+                        "coefficient": 0.142
+                    },
+                    {
+                        "value": "1m-1y",
+                        "description":"1 month to 1 year ago",
+                        "coefficient": 0.030
+                    },
+                    {
+                        "value": ">1y",
+                        "description": "more than 1 year ago",
+                        "coefficient": -0.081
+                    }
+                ]
+            }
+        },
+        {
+            "name": "rrate",
+            "displayName": "Respiratory Rate",
+            "description": "Respiratory rate at admission",
+            "type": "integer",
+            "units": "bpm",
+            "required": true,
+            "coefficient": 0.054
         },
         {
             "name": "bcsScore",
@@ -48,6 +99,7 @@
             "type": "integer",
             "units": null,
             "required": true,
+            "coefficient": 0.156,
             "dependencies": ["eyeMovement", "motorResponse", "verbalResponse"]
         },
           {
@@ -56,22 +108,8 @@
             "description": "Patient's temperature at admission time in degrees Celcius",
             "type": "float",
             "units": "°C",
-            "required": true
-        },
-        {
-            "name": "hivStatus",
-            "displayName": "HIV Status",
-            "description": "The patient's HIV status",
-            "type": "string",
-            "units": null,
             "required": true,
-            "contraints": {
-                "oneOf": [
-                    {"positive": "TODO"},
-                    {"negative": ""},
-                    {"unknown": ""}
-                ]
-            }
+            "coefficient": -0.123
         },
         {
             "name": "temperatureSquared",
@@ -79,7 +117,41 @@
             "description": "Patient's temperature at admission sqaured",
             "type": "float",
             "units": "°C",
-            "required": true
+            "required": true,
+            "coefficient": -0.116
+        },
+        {
+            "name": "hivStatus",
+            "displayName": "HIV Status",
+            "description": "The patient's HIV status",
+            "type": "boolean",
+            "units": null,
+            "required": true,
+            "contraints": {
+                "oneOf": [
+                    {
+                        "value": true,
+                        "description": "child is HIV+",
+                        "coefficient": 0.127
+                    },
+                    {
+                        "value": false,
+                        "description": "child is not HIV+"
+                    }
+                ]
+            }
+        }
+    ],
+    "interactions": [
+        {
+            "name": "ageMuac",
+            "displayName": "Age x MUAC",
+            "description": "Patient's age in months mulitplied MUAC",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["muac", "ageInMonths"],
+            "coefficient": 0.016
         },
         {
             "name": "ageRrate",
@@ -88,7 +160,11 @@
             "type": "float",
             "units": null,
             "required": true,
-            "dependencies": ["rrate", "ageInMonths"]
+            "dependencies": ["rrate", "ageInMonths"],
+            "coefficient": 0.106
+        },
+        {
+            "name": "..TODO -- add reamining interactions" 
         }
     ]
 }
