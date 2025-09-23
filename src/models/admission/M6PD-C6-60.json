@@ -1,0 +1,293 @@
+{
+    "modelName": "M6PD-C6-60",
+    "humanReadableName": "Smart Discharges Uganda Model 6-60C",
+    "description": "The 3rd-most preferred model for Uganda, 6-60 months old from the pool of clinical variables",
+    "usageTime": "admission",
+    "isUnderSixMonths": true,
+    "inputType": "clinical",
+     "riskThresholds": {
+        "low": 0,
+        "moderate": 2,
+        "high": 5,
+        "veryHigh": 10
+    },
+    "rawScoreOffset": -3.24305951649588,
+    "inputs": [
+        {
+            "name": "waz",
+            "displayName": "WAZ",
+            "description": "The weight-for-age z-score (WAZ) of the child, based on the child's sex, age, and weight",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["weight", "ageInMonths", "sex"],
+            "coefficient": -0.176664802876441,
+            "mean": -1.29270335809903,
+            "standardDeviation": 1.70490215800172
+            
+        },
+        {
+            "name": "muac",
+            "displayName": "MUAC",
+            "description": "Mid-upper arm circumfrence in mm",
+            "type": "float",
+            "units": "mm",
+            "required": true,
+            "coefficient": -0.411336501692933,
+            "mean": 139.252380952381,
+            "standardDeviation": 16.0800528137268
+        },
+        {
+            "name": "spo2",
+            "displayName": "SpO₂",
+            "description": "Oxygen saturation",
+            "type": "float",
+            "units": "percent",
+            "required": true,
+            "coefficient": -0.18622818587905,
+            "mean": 94.2447204968944,
+            "standardDeviation": 6.47042334080947
+        },
+        {
+            "name": "ageInMonths",
+            "displayName": "Age",
+            "description": "Calculated age (in months, unrounded) of the child based on date of birth",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "coefficient": 0.0293010938880448,
+            "mean": 21.68049,
+            "standardDeviation": 13.70271
+        },
+        {
+            "name": "lastHospitalized",
+            "displayName": "Last Hospitalized",
+            "description": "Time since last admission",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "contraints": {
+                "oneOf": [
+                    {
+                        "value": "<7d",
+                        "description": "less than 7 days ago",
+                        "coefficient": 0.0830222515025929,
+                        "mean": 0.0395445134575569,
+                        "standardDeviation": 0.19490667010038
+                    },
+                    {
+                        "value": "7d-1mo",
+                        "description": "7 days to 1 month ago",
+                        "coefficient": 0.141973119954243,
+                        "mean": 0.082815734989648,
+                        "standardDeviation": 0.275632034479257
+                    },
+                    {
+                        "value": "1mo-1y",
+                        "description":"1 month to 1 year ago",
+                        "coefficient": 0.0296742231370671,
+                        "mean": 0.24472049689441,
+                        "standardDeviation": 0.429965871658695
+                    },
+                    {
+                        "value": ">1y",
+                        "description": "more than 1 year ago",
+                        "coefficient": -0.081301614260118,
+                        "mean": 0.0826086956521739,
+                        "standardDeviation": 0.275318347874769 
+                    }
+                ]
+            }
+        },
+        {
+            "name": "rrate",
+            "displayName": "Respiratory Rate",
+            "description": "The patient's respitarory rate in beats per minute",
+            "type": "integer",
+            "units": "bpm",
+            "required": true,
+            "coefficient": 0.0535527564406269,
+            "mean": 48.0724637681159,
+            "standardDeviation": 15.6631331953531
+        },
+        {
+            "name": "abnormalBCS",
+            "displayName": "Abnormal BCS",
+            "description": "Whether the child qualifies as abnormal on the Blanture Coma Scale (BCS) as determined by the responses to eye movement, motor response, and verbal response",
+            "type": "boolean",
+            "units": null,
+            "required": true,
+            "dependencies": ["bcsScore"],
+            "contraints":{
+                "oneOf": [
+                    {
+                        "value": true,
+                        "description": "Child has bcsScore < 5",
+                        "coefficient": 0.156278320973061,
+                        "mean": 0.084472049689441,
+                        "standardDeviation": 0.2781232416193
+                    },
+                    {
+                        "value": false,
+                        "description": "Child has bcsScore = 5"
+                    }
+                ]
+            }
+        },
+          {
+            "name": "temperature",
+            "displayName": "Temperature",
+            "description": "The temperature of the child in degrees Celcius (C)",
+            "type": "float",
+            "units": "°C",
+            "required": true,
+            "coefficient": -0.122776474878867,
+            "mean": 37.7493271221532,
+            "standardDeviation": 1.16362878767576
+        },
+        {
+            "name": "temperatureSquared",
+            "displayName": "Temperature squared",
+            "description": "The square of the temperature of the child in degrees Celcius (C)",
+            "type": "float",
+            "units": "°C",
+            "required": true,
+            "coefficient": -0.11589194105857,
+            "mean": 1426.36544979296,
+            "standardDeviation": 88.2784455728296
+        },
+        {
+            "name": "hivStatus",
+            "displayName": "HIV Status",
+            "description": "Whether the child's HIV status is positive",
+            "type": "boolean",
+            "units": null,
+            "required": true,
+            "contraints": {
+                "oneOf": [
+                    {
+                        "value": true,
+                        "description": "child is HIV+",
+                        "coefficient": 0.126617920341138,
+                        "mean": 0.0298136645962733,
+                        "standardDeviation": 0.17009056356318
+                    },
+                    {
+                        "value": false,
+                        "description": "child is not HIV+"
+                    }
+                ]
+            }
+        }
+    ],
+    "interactions": [
+        {
+            "name": "ageMuac",
+            "displayName": "Age x MUAC",
+            "description": "Age interaction with Mid-upper arm circumference",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["muac", "ageInMonths"],
+            "coefficient": 0.01634256177762,
+            "mean": 3105.68119806456,
+            "standardDeviation": 2147.39398953648
+        },
+        {
+            "name": "ageOxygen",
+            "displayName": "Age x SpO₂",
+            "description": "Age interaction with Oyxgen saturation",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["spo2", "ageInMonths"],
+            "coefficient": 0.0108191861065529,
+            "mean": 2052.48068080642,
+            "standardDeviation": 1317.36341087785
+        },
+        {
+            "name": "ageAbnormalBcs",
+            "displayName": "Age x Abnormal BCS",
+            "description": "Age interaction with Abnormal BCS",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["abnormalBCS", "ageInMonths"],
+            "coefficient": -0.0501996960782557,
+            "mean": 2.03354683467865,
+            "standardDeviation": 8.03141908397769
+        },
+        {
+            "name": "ageRrate",
+            "displayName": "Age x Respiratory Rate",
+            "description": "Age interaction with Respiratory rate",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["rrate", "ageInMonths"],
+            "coefficient": 0.106396248312435,
+            "mean": 989.760671623608,
+            "standardDeviation": 651.698260089369
+        },
+        {
+            "name": "ageHivPositive",
+            "displayName": "Age x HIV+",
+            "description": "Age interaction with HIV positive",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["hivStatus", "ageInMonths"],
+            "coefficient": -0.0213671243176617,
+            "mean": 0.660361744912319,
+            "standardDeviation": 4.54354876034153
+        },
+        {
+            "name": "ageHospitalizedUnderSevenDays",
+            "displayName": "Age in months x Last hospitalization less than 7 days ago",
+            "description" : "Age interaction with Last hospitalization less than 7 days ago",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["ageInMonths", "lastHospitalized", "<7d"],
+            "coefficient": 0.0261069259775735,
+            "mean": 0.934105415757909,
+            "standardDeviation": 5.53005241532526
+        },
+        {
+            "name": "ageHospitalizedSevenDaysToOneMonth",
+            "displayName": "Age in months x Last hospitalization 7 days to 1 month ago",
+            "description" : "Age interaction with Last hospitalization 7 days to 1 month ago",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["ageInMonths", "lastHospitalized", "7d-1m"],
+            "coefficient": 0.0232372758950781,
+            "mean": 1.68836757772414,
+            "standardDeviation": 6.77588270170648
+        },
+        {
+            "name": "ageHospitalizedOneMonthToOneYear",
+            "displayName": "Age in months x Last hospitalization 1 month - 1 year ago",
+            "description" : "Age interaction with Last hospitalization 1 month to 1 year ago",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["ageInMonths", "lastHospitalized", "1m-1y"],
+            "coefficient": 0.0858658207108999,
+            "mean": 5.52683548662683,
+            "standardDeviation": 11.7224453431259
+        },
+        {
+            "name": "ageHospitalizedOverOneYear",
+            "displayName": "Age in months x Last hospitalization more than 1 year ago",
+            "description" : "Age interaction with Last hospitalization more than 1 year ago",
+            "type": "float",
+            "units": null,
+            "required": true,
+            "dependencies": ["ageInMonths", "lastHospitalized", ">1y"],
+            "coefficient": -0.0118773973443354,
+            "mean": 2.86128287865418,
+            "standardDeviation": 10.2807628495974
+        }
+    ]
+}

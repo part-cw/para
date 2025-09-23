@@ -38,6 +38,7 @@ export interface PatientData {
   motorResponse: DropdownItem | null;
   verbalResponse: DropdownItem | null;
   bcsScore: number | null;
+  abnormalBCS: boolean | null;
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: string;
@@ -101,6 +102,7 @@ const initialPatientData: PatientData = {
   motorResponse: null,
   verbalResponse: null,
   bcsScore: null,
+  abnormalBCS: null,
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: '',

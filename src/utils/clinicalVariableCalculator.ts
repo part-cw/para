@@ -1,9 +1,9 @@
 
 //  * TODO for model calculation - round to 1 decimal place
 
-import config from '../data/model_input_ranges.json';
 import waz_female from '../data/wazscore_female.json';
 import waz_male from '../data/wazscore_male.json';
+import config from '../models/model_input_ranges.json';
 
 type ValidationResult = {
   isValid: boolean;
@@ -240,3 +240,44 @@ export function indexToNutritionStatus(index: number): string {
 
     return indexMap[index] ?? 'invalid'; // invalid if not found
 }
+
+/**
+ * 
+ * @param score value in range of  [0, 5]
+ * @returns true if score = 5, else false
+ */
+export function isAbnormalBcs(score: number): boolean {
+    if (score > 5 || score < 0) throw Error(abnormalBcsErrorMessage)
+    return (score < 5);
+}
+
+/**
+ * 
+ * @param eyeScore integer value between [0,1]
+ * @param motorScore integer value between [0,2]
+ * @param verbalScore integer value between [0,2]
+ * @returns sum of all observed scores; integer value between [0,5]
+ */
+export function calculateBcsScore(eyeScore: number, motorScore: number, verbalScore: number): number {
+    if (eyeScore < 0 || eyeScore > 1) throw Error ('invalid eye movement score')
+    if (motorScore < 0 || motorScore > 2) throw Error ('invalid motor response score')
+    if (verbalScore < 0 || verbalScore > 2) throw Error ('invalid verbal response score')
+
+    return (eyeScore + motorScore + verbalScore)
+}
+
+export function mapBcsScoreToVariant(score: number): string {
+    const bcsMap: Record<number, string> = {
+        0: 'severe',
+        1: 'severe',
+        2: 'severe',
+        3: 'severe',
+        4: 'severe',
+        5: 'normal'
+    }
+
+    return bcsMap[score] ?? 'invalid'
+}
+
+// Error messages
+export const abnormalBcsErrorMessage = 'Invalid BCS score. Must be integer value from 0 to 5'

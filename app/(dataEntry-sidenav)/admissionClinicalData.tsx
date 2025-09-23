@@ -9,7 +9,7 @@ import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { bcsGeneralInfo, eyeMovementInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { calculateWAZ, getMuacStatus, getWazNutritionalStatus, indexToNutritionStatus, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
+import { calculateBcsScore, calculateWAZ, getMuacStatus, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -61,6 +61,7 @@ export default function AdmissionClinicalDataScreen() {
         motorResponse,
         verbalResponse,
         bcsScore,
+        abnormalBCS,
 
         // other necessary info
         isUnderSixMonths,
@@ -212,10 +213,16 @@ export default function AdmissionClinicalDataScreen() {
         verbalResponse?.value ? setVerbalScore(Number(verbalResponse.key)) : setVerbalScore(null)
 
         if (eyeScore !== null && motorScore !== null && verbalScore !==null) {
-            const score = eyeScore + motorScore + verbalScore
-            updatePatientData({bcsScore: score})
+            const score = calculateBcsScore(eyeScore, motorScore, verbalScore)
+            updatePatientData({
+                bcsScore: score,
+                abnormalBCS: isAbnormalBcs(score)
+            })
         } else {
-            updatePatientData({bcsScore: null})
+            updatePatientData({
+                bcsScore: null,
+                abnormalBCS: null
+            })
         }
 
     }, [eyeMovement, motorResponse, verbalResponse, eyeScore, verbalScore, motorScore])
@@ -380,8 +387,8 @@ export default function AdmissionClinicalDataScreen() {
     const hospitalizationOptions = [
     { value: 'Never', key: 'never' },
     { value: 'Less than 7 days ago', key: '<7d' },
-    { value: '7 days to 1 month ago', key: '7d-1m' },
-    { value: '1 month to 1 year ago', key: '1m-1y' },
+    { value: '7 days to 1 month ago', key: '7d-1mo' },
+    { value: '1 month to 1 year ago', key: '1mo-1y' },
     { value: 'More than 1 year ago', key: '>1y' }];
 
     const eyeMovementOptions = [
@@ -390,13 +397,15 @@ export default function AdmissionClinicalDataScreen() {
     ]
 
     const motorResponseOptions = [
-        {value: 'Localizes painful stimulus', key: "2"},
+        // {value: 'Normal behaviour observed', key: '2'},
+        {value: 'Normal behaviour or localizes painful stimulus', key: "2"},
         {value: 'Withdraws limb from painful stimulus', key: '1'},
         {value: 'No response/inappropriate response', key: '0'}
     ]
 
     const verbalResponseOptions = [
-        {value: 'Cries appropriately with pain (or speaks if verbal)', key: '2'},
+        // {value: 'Normal behaviour observed', key: '2'},
+        {value: 'Normal behaviour or cries appropriately with pain (or speaks if verbal)', key: '2'},
         {value: 'Moan or abnormal cry with pain', key: '1'},
         {value: 'No vocal response to pain', key: '0'}
     ]
@@ -504,7 +513,7 @@ export default function AdmissionClinicalDataScreen() {
                                                 updatePatientData({ muac: value })
                                                 setShowMuacStatusBar(false)
                                             }}
-                                            onBlur={handleMuacBlur}
+                                            onBlurExternal={handleMuacBlur}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
@@ -618,7 +627,7 @@ export default function AdmissionClinicalDataScreen() {
                                             isRequired={true} 
                                             customValidator={(value) => validateMuac(value).isValid}
                                             customErrorMessage={validateMuac(muac).errorMessage }
-                                            onBlur={handleMuacBlur}
+                                            onBlurExternal={handleMuacBlur}
                                             style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -647,7 +656,7 @@ export default function AdmissionClinicalDataScreen() {
                                         isRequired={true} 
                                         customValidator={(value) => validateTemperatureRange(value).isValid}
                                         customErrorMessage={validateTemperatureRange(temperature).errorMessage}
-                                        onBlur={handleTemperatureBlur}
+                                        onBlurExternal={handleTemperatureBlur}
                                         right={<TextInput.Affix text="°C" />}                             
                                     />
 
@@ -675,7 +684,7 @@ export default function AdmissionClinicalDataScreen() {
                                         isRequired={true}
                                         customValidator={(value) => validateRespiratoryRange(value).isValid}
                                         customErrorMessage={validateRespiratoryRange(rrate).errorMessage }
-                                        onBlur={handleRrateBlur}
+                                        onBlurExternal={handleRrateBlur}
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     <Button style={{ alignSelf: 'center'}}
@@ -782,7 +791,11 @@ export default function AdmissionClinicalDataScreen() {
                                         />
                                     </View>
                                     { bcsScore !== null && eyeMovement?.value && motorResponse?.value && verbalResponse?.value &&
-                                        <NutritionStatusBar title={`Calculated BCS score = ${bcsScore}`}/>
+                                        <NutritionStatusBar 
+                                            title={`BCS Status: ${abnormalBCS ? 'ABNORMAL' : 'NORMAL'}`}
+                                            content={`calculated BCS score = ${bcsScore}`}
+                                            variant={mapBcsScoreToVariant(bcsScore)}
+                                        />
                                     }
                                     
                                 </View>

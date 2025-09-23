@@ -34,6 +34,7 @@ interface ValidatedInputProps extends Omit<TextInputProps, 'value' | 'onChangeTe
   minValue?: number | null;
   maxValue?: number | null;
   showErrorOnTyping?: boolean;
+  onBlurExternal?: () => void;
 }
 
 const ValidatedTextInput: React.FC<ValidatedInputProps> = ({ 
@@ -49,6 +50,7 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   maxValue = null,
   showErrorOnTyping = false,
   style,
+  onBlurExternal,
   ...props 
 }) => {
   const [hasBlurred, setHasBlurred] = useState(false);
@@ -148,6 +150,10 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
     setHasBlurred(true);
     if (onChangeText && value) {
       onChangeText(formatter(value));
+    }
+
+    if (onBlurExternal) {
+        onBlurExternal();
     }
   };
 
