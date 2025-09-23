@@ -792,7 +792,8 @@ export default function AdmissionClinicalDataScreen() {
                                     </View>
                                     { bcsScore !== null && eyeMovement?.value && motorResponse?.value && verbalResponse?.value &&
                                         <NutritionStatusBar 
-                                            title={`${abnormalBCS ? 'ABNORMAL:' : 'NORMAL:'} BCS score = ${bcsScore}`}
+                                            title={`BCS Status: ${abnormalBCS ? 'ABNORMAL' : 'NORMAL'}`}
+                                            content={`calculated BCS score = ${bcsScore}`}
                                             variant={mapBcsScoreToVariant(bcsScore)}
                                         />
                                     }
