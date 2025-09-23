@@ -50,7 +50,7 @@ export default function AdmissionClinicalDataScreen() {
         illnessDuration,
         jaundice,
         bulgingFontanelle,
-        feedingStatus,
+        feedingWell: feedingStatus,
 
         //6-60 months
         hivStatus,
@@ -471,8 +471,8 @@ export default function AdmissionClinicalDataScreen() {
                                         options={[
                                             { label: 'Yes', value: 'yes'},
                                             { label: 'No', value: 'no'},]} 
-                                        selected={feedingStatus} 
-                                        onSelect={(value) => updatePatientData({ feedingStatus: value })}/>
+                                        selected={feedingStatus ? 'yes' : 'no'} 
+                                        onSelect={(value) => updatePatientData({ feedingWell: value === 'yes' })}/>
                                 </View>
                             </List.Accordion>
                         </View>

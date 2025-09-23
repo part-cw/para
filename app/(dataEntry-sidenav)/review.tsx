@@ -315,7 +315,7 @@ export default function ReviewScreen() {
                                 <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
                                 <InfoRow label="Jaundice" value={patientData.bulgingFontanelle} />
                                 <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle} />
-                                <InfoRow label="Feeding well?" value={patientData.feedingStatus} />
+                                <InfoRow label="Feeding well?" value={patientData.feedingWell ? 'Yes': 'No'} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />

@@ -44,7 +44,7 @@ export interface PatientData {
   illnessDuration: string;
   jaundice: string;
   bulgingFontanelle: string; // TODO - change to boolean?
-  feedingStatus: string; // TODO - change to boolean?
+  feedingWell: boolean | null;
 
   // Medical Conditions
   anaemia: string;
@@ -108,7 +108,7 @@ const initialPatientData: PatientData = {
   illnessDuration: '',
   jaundice: '',
   bulgingFontanelle: '', // TODO - change to boolean?
-  feedingStatus: '', // TODO - change to boolean?
+  feedingWell: null,
 
   // medical conditions
   anaemia: '',

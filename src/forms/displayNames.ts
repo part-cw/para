@@ -29,7 +29,7 @@ export const displayNames: Record<string, string> = {
     illnessDuration: 'Duration of present illness',
     jaundice: 'Jaundice',
     bulgingFontanelle: 'Bulging Fontanelle',
-    feedingStatus: 'Feeding Status',
+    feedingWell: 'Feeding Status',
     feedingStatusQuestion: 'Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)?',
 
     // AdmissionClinical Data (all ages)
