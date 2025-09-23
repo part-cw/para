@@ -13,6 +13,7 @@ export interface ModelVariable {
     standardDeviation?: number;
     oneOf?: Array<{
         value: any;
+        numericValue?: number;
         description: string;
         coefficient?: number;
         mean?: number;
@@ -72,6 +73,7 @@ export abstract class ModelStrategy {
 
     // main function that calculates risk level
     public calculateRisk(patientData: PatientData): RiskPrediction {
+        // 0. start with raw score of 0
         // 1. for each interaction of this model, getAgeInteractionValue
         // 2. scaleNumericValues all variables and interaction values of this.model
         // 3. calculateRawScore

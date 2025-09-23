@@ -27,7 +27,7 @@ export const displayNames: Record<string, string> = {
 
     // Admission Clinical Data (0-60 months)
     illnessDuration: 'Duration of present illness',
-    jaundice: 'Jaundice',
+    neonatalJaundice: 'Neonatal Jaundice',
     bulgingFontanelle: 'Bulging Fontanelle',
     feedingWell: 'Feeding Status',
     feedingStatusQuestion: 'Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)?',

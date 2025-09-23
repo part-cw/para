@@ -7,7 +7,7 @@ import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
-import { bcsGeneralInfo, eyeMovementInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
+import { bcsGeneralInfo, eyeMovementInfo, jaundiceInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { calculateBcsScore, calculateWAZ, getMuacStatus, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
@@ -48,7 +48,7 @@ export default function AdmissionClinicalDataScreen() {
 
         //0-6months
         illnessDuration,
-        jaundice,
+        neonatalJaundice: jaundice,
         bulgingFontanelle,
         feedingWell: feedingStatus,
 
@@ -67,6 +67,7 @@ export default function AdmissionClinicalDataScreen() {
         isUnderSixMonths,
         sex,
         ageInMonths,
+        isNeonate,
         malnutritionStatus
     } = patientData
 
@@ -109,7 +110,7 @@ export default function AdmissionClinicalDataScreen() {
             if (!illnessDuration) {
                 errors.push('Illness duration is required');
             }
-            if (!jaundice) {
+            if (isNeonate && !jaundice) {
                 errors.push('Jaundice status is required');
             }
             if (!bulgingFontanelle) {
@@ -226,6 +227,11 @@ export default function AdmissionClinicalDataScreen() {
         }
 
     }, [eyeMovement, motorResponse, verbalResponse, eyeScore, verbalScore, motorScore])
+
+    // handle changes to isNeonate; resets jaundice selection if changes made to age
+    useEffect(() => {
+        if (!isNeonate) updatePatientData({neonatalJaundice: ''})
+    }, [isNeonate])
     
     const setMalnutritionStatus = () => {
         if ((waz || waz !== null) && muac) {
@@ -443,19 +449,32 @@ export default function AdmissionClinicalDataScreen() {
                                         search={false}
                                     />
 
-                                    <SearchableDropdown 
-                                        data={[
-                                            { value: 'Yes', key: 'yes'},
-                                            { value: 'No', key: 'no'},
-                                            { value: "Unsure", key: "unsure"}
-                                        ]} 
-                                        label={'Jaundice (required)'}
-                                        placeholder='select option below' 
-                                        onSelect={(item) => updatePatientData({ jaundice: item.value })}
-                                        value={jaundice}
-                                        search={false}
-                                    />
+                                    {isNeonate &&
+                                        <View style={{flexDirection:'row', alignItems: 'center'}}>
+                                            <SearchableDropdown 
+                                                data={[
+                                                    { value: 'Yes', key: 'yes'},
+                                                    { value: 'No', key: 'no'},
+                                                    { value: "Unsure", key: "unsure"}
+                                                ]} 
+                                                label={'Neonatal Jaundice (required)'}
+                                                placeholder='select option below' 
+                                                onSelect={(item) => updatePatientData({ neonatalJaundice: item.value })}
+                                                value={jaundice}
+                                                search={false}
+                                            />
+                                            <IconButton
+                                                icon="help-circle-outline"
+                                                size={20}
+                                                iconColor={colors.primary}
+                                                onPress={() => {
+                                                    Platform.OS !== 'web' ? Alert.alert('Info', jaundiceInfo) : alert(jaundiceInfo)
+                                                }}
+                                            />
+                                        </View>
+                                    }
 
+                                    {/* TODO - replace dropdown with yes/no radio buttons */}
                                     <SearchableDropdown 
                                         data={simplifiedOptions} 
                                         label={'Bulging Fontanelle (required)'}

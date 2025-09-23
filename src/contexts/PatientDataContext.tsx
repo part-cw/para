@@ -22,6 +22,7 @@ export interface PatientData {
   birthMonth: string;
   approxAgeInYears: string;
   ageInMonths: number | null;
+  isNeonate: boolean | null;
   
   // Admission Clinical Data (all ages)
   weight: string;
@@ -42,8 +43,8 @@ export interface PatientData {
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: string;
-  jaundice: string;
-  bulgingFontanelle: string; // TODO - change to boolean?
+  neonatalJaundice: string;
+  bulgingFontanelle: string; // TODO - change to boolean
   feedingWell: boolean | null;
 
   // Medical Conditions
@@ -86,6 +87,7 @@ const initialPatientData: PatientData = {
   birthMonth: '',
   approxAgeInYears: '',
   ageInMonths: null,
+  isNeonate: null,
 
   // admission clinical data (all)
   weight: '',
@@ -106,7 +108,7 @@ const initialPatientData: PatientData = {
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: '',
-  jaundice: '',
+  neonatalJaundice: '',
   bulgingFontanelle: '', // TODO - change to boolean?
   feedingWell: null,
 

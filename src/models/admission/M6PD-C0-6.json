@@ -122,25 +122,32 @@
             "name": "bulgingFontanelle",
             "displayName": "Bulging Fontanelle",
             "description": "Whether the child had bulging fontanelle at admission",
-            "type": "boolean",
+            "type": "string",
             "units": null,
             "required": true,
             "oneOf": [
                 {
-                    "value": true,
+                    "value": "Yes",
+                    "numericVal": 1,
                     "description": "child has bulging fontanelle",
                     "coefficient": 0.133602879186761,
                     "mean": 0.0394147506718423,
                     "standardDeviation": 0.194608675839138
                 },
                 {
-                    "value": false,
+                    "value": "No",
+                    "numericVal": 0,
                     "description": "child does not have bulging fontanelle"
+                },
+                {
+                    "value": "Unsure",
+                    "numericVal": 0,
+                    "description": "practitioner is unsure of whether the child has bulging fontanelle"
                 }
             ]
         },
          {
-            "name": "jaundice",
+            "name": "neonatalJaundice",
             "displayName": "Neonatal jaundice",
             "description": "Whether the child is less than 30 days old and had evidence of jaundice at time of admission",
             "type": "boolean",
