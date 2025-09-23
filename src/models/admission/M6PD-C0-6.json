@@ -150,20 +150,32 @@
             "name": "neonatalJaundice",
             "displayName": "Neonatal jaundice",
             "description": "Whether the child is less than 30 days old and had evidence of jaundice at time of admission",
-            "type": "boolean",
+            "type": "string",
             "units": null,
             "required": true,
             "oneOf": [
                 {
-                    "value": true,
+                    "value": "Yes",
+                    "numericVal": 1,
                     "description": "child has neonatal jaundice",
                     "coefficient": 0,
                     "mean": 0.0791280979396835,
                     "standardDeviation": 0.269978899816029
                 },
                 {
-                    "value": false,
+                    "value": "No",
+                    "numericVal": 0,
                     "description": "child does not have neonatal jaundice"
+                },
+                {
+                    "value": "Unsure",
+                    "numericVal": 0,
+                    "description": "the user is unsure of whether the child has jaundice"
+                },
+                {
+                    "value": "",
+                    "numericVal": 0,
+                    "description": "the child is not a neonate"
                 }
             ]
         }

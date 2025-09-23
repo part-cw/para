@@ -1,5 +1,5 @@
 
-export const jaundiceInfo = 'Whether the child less than 30 days old has evidence of jaundice at time of admission.\n\nAge is automatically calculated based on data entered in "Patient Information" page'
+export const jaundiceInfo = 'Whether the child has evidence of jaundice at time of admission.\n\nApplies only to infants less than 30 days old.'
 export const muacInfo = 'MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions'
 export const rrateButtonInfo = 'Manually count breaths per minute, or measure from the RRate app by clicking "Record from RRate" button'
 
