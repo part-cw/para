@@ -66,38 +66,36 @@
             "type": "string",
             "units": null,
             "required": true,
-            "contraints": {
-                "oneOf": [
-                    {
-                        "value": "<7d",
-                        "description": "less than 7 days ago",
-                        "coefficient": 0.0830222515025929,
-                        "mean": 0.0395445134575569,
-                        "standardDeviation": 0.19490667010038
-                    },
-                    {
-                        "value": "7d-1mo",
-                        "description": "7 days to 1 month ago",
-                        "coefficient": 0.141973119954243,
-                        "mean": 0.082815734989648,
-                        "standardDeviation": 0.275632034479257
-                    },
-                    {
-                        "value": "1mo-1y",
-                        "description":"1 month to 1 year ago",
-                        "coefficient": 0.0296742231370671,
-                        "mean": 0.24472049689441,
-                        "standardDeviation": 0.429965871658695
-                    },
-                    {
-                        "value": ">1y",
-                        "description": "more than 1 year ago",
-                        "coefficient": -0.081301614260118,
-                        "mean": 0.0826086956521739,
-                        "standardDeviation": 0.275318347874769 
-                    }
-                ]
-            }
+            "oneOf": [
+                {
+                    "value": "<7d",
+                    "description": "less than 7 days ago",
+                    "coefficient": 0.0830222515025929,
+                    "mean": 0.0395445134575569,
+                    "standardDeviation": 0.19490667010038
+                },
+                {
+                    "value": "7d-1mo",
+                    "description": "7 days to 1 month ago",
+                    "coefficient": 0.141973119954243,
+                    "mean": 0.082815734989648,
+                    "standardDeviation": 0.275632034479257
+                },
+                {
+                    "value": "1mo-1y",
+                    "description":"1 month to 1 year ago",
+                    "coefficient": 0.0296742231370671,
+                    "mean": 0.24472049689441,
+                    "standardDeviation": 0.429965871658695
+                },
+                {
+                    "value": ">1y",
+                    "description": "more than 1 year ago",
+                    "coefficient": -0.081301614260118,
+                    "mean": 0.0826086956521739,
+                    "standardDeviation": 0.275318347874769 
+                }
+            ]
         },
         {
             "name": "rrate",
@@ -118,21 +116,19 @@
             "units": null,
             "required": true,
             "dependencies": ["bcsScore"],
-            "contraints":{
-                "oneOf": [
-                    {
-                        "value": true,
-                        "description": "Child has bcsScore < 5",
-                        "coefficient": 0.156278320973061,
-                        "mean": 0.084472049689441,
-                        "standardDeviation": 0.2781232416193
-                    },
-                    {
-                        "value": false,
-                        "description": "Child has bcsScore = 5"
-                    }
-                ]
-            }
+            "oneOf": [
+                {
+                    "value": true,
+                    "description": "Child has bcsScore < 5",
+                    "coefficient": 0.156278320973061,
+                    "mean": 0.084472049689441,
+                    "standardDeviation": 0.2781232416193
+                },
+                {
+                    "value": false,
+                    "description": "Child has bcsScore = 5"
+                }
+            ]
         },
           {
             "name": "temperature",
@@ -163,21 +159,19 @@
             "type": "boolean",
             "units": null,
             "required": true,
-            "contraints": {
-                "oneOf": [
-                    {
-                        "value": true,
-                        "description": "child is HIV+",
-                        "coefficient": 0.126617920341138,
-                        "mean": 0.0298136645962733,
-                        "standardDeviation": 0.17009056356318
-                    },
-                    {
-                        "value": false,
-                        "description": "child is not HIV+"
-                    }
-                ]
-            }
+            "oneOf": [
+                {
+                    "value": true,
+                    "description": "child is HIV+",
+                    "coefficient": 0.126617920341138,
+                    "mean": 0.0298136645962733,
+                    "standardDeviation": 0.17009056356318
+                },
+                {
+                    "value": false,
+                    "description": "child is not HIV+"
+                }
+            ]
         }
     ],
     "interactions": [

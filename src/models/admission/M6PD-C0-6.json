@@ -75,39 +75,37 @@
             "type": "string",
             "units": null,
             "required": true,
-            "contraints": {
-                "oneOf": [
-                    {
-                        "value": "<48h",
-                        "label": "less than 48 hours",
-                        "description": "Whether the child's duration of present illness is less than 48 hours"
-                    },
-                    {
-                        "value": "48h-7d",
-                        "label": "48 hours to 7 days",
-                        "description":" Whether the child's duration of present illness is between 48 hours and 7 days",
-                        "coefficient": 0.0229704278750671,
-                        "mean": 0.593908629441624,
-                        "standardDeviation": 0.491175331936256
-                    },
-                    {
-                        "value": "7d-1mo",
-                        "label": "7 days to 1 month",
-                        "description": "Whether the child's duration of present illness is between 7 days and 1 month",
-                        "coefficient": 0.194421172744823,
-                        "mean": 0.10241863242759,
-                        "standardDeviation": 0.303243324842165
-                    },
-                    {
-                        "value": ">1mo",
-                        "label": "more than 1 month",
-                        "description": "Whether the child's duration of present illness is more than 1 month",
-                        "coefficient": 0.0683878968750476,
-                        "mean": 0.0179157957599283,
-                        "standardDeviation": 0.132665275580327
-                    }
-                ]
-            }
+            "oneOf": [
+                {
+                    "value": "<48h",
+                    "label": "less than 48 hours",
+                    "description": "Whether the child's duration of present illness is less than 48 hours"
+                },
+                {
+                    "value": "48h-7d",
+                    "label": "48 hours to 7 days",
+                    "description":" Whether the child's duration of present illness is between 48 hours and 7 days",
+                    "coefficient": 0.0229704278750671,
+                    "mean": 0.593908629441624,
+                    "standardDeviation": 0.491175331936256
+                },
+                {
+                    "value": "7d-1mo",
+                    "label": "7 days to 1 month",
+                    "description": "Whether the child's duration of present illness is between 7 days and 1 month",
+                    "coefficient": 0.194421172744823,
+                    "mean": 0.10241863242759,
+                    "standardDeviation": 0.303243324842165
+                },
+                {
+                    "value": ">1mo",
+                    "label": "more than 1 month",
+                    "description": "Whether the child's duration of present illness is more than 1 month",
+                    "coefficient": 0.0683878968750476,
+                    "mean": 0.0179157957599283,
+                    "standardDeviation": 0.132665275580327
+                }
+            ]
         },
         {
             "name": "ageInMonths",
@@ -127,8 +125,7 @@
             "type": "boolean",
             "units": null,
             "required": true,
-            "contraints": {
-               "oneOf": [
+            "oneOf": [
                 {
                     "value": true,
                     "description": "child has bulging fontanelle",
@@ -141,7 +138,6 @@
                     "description": "child does not have bulging fontanelle"
                 }
             ]
-            }
         },
          {
             "name": "jaundice",
@@ -150,8 +146,7 @@
             "type": "boolean",
             "units": null,
             "required": true,
-            "contraints": {
-               "oneOf": [
+            "oneOf": [
                 {
                     "value": true,
                     "description": "child has neonatal jaundice",
@@ -164,7 +159,6 @@
                     "description": "child does not have neonatal jaundice"
                 }
             ]
-            }
         }
     ],
     "interactions": [
