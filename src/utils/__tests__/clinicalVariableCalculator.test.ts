@@ -11,7 +11,7 @@ import {
   validateWeight
 } from '../clinicalVariableCalculator';
 
-import config from '../../data/model_input_ranges.json';
+import config from '../../models/model_input_ranges.json';
 
 describe('Integration tests with real config', () => {
   it('muac config should exist', () => {

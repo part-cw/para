@@ -240,3 +240,30 @@ export function indexToNutritionStatus(index: number): string {
 
     return indexMap[index] ?? 'invalid'; // invalid if not found
 }
+
+/**
+ * 
+ * @param score value in range of  [0, 5]
+ * @returns true if score = 5, else false
+ */
+export function isAbnormalBcs(score: number): boolean {
+    console.log('abnormal bcs?', score<5)
+    return (score < 5);
+}
+
+export function calculateBcsScore(eyeScore: number, motorScore: number, verbalScore: number): number {
+    return (eyeScore + motorScore + verbalScore)
+}
+
+export function mapBcsScoreToVariant(score: number): string {
+    const bcsMap: Record<number, string> = {
+        0: 'severe',
+        1: 'severe',
+        2: 'severe',
+        3: 'severe',
+        4: 'severe',
+        5: 'normal'
+    }
+
+    return bcsMap[score] ?? 'invalid'
+}

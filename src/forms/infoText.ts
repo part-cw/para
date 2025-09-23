@@ -4,4 +4,4 @@ export const rrateButtonInfo = 'Manually count breaths per minute, or measure fr
 
 export const bcsGeneralInfo = "Fully conscious children score 5 (have appropriate eye movement, motor response, and verbal response). Children who are unresponsive to painful stimuli score 0."
 export const eyeMovementInfo =  "Have the caregiver put a toy or bright object in front of the child, and see if they are able to follow it with their eyes";
-export const motorResponseInfo = "Response to pain should be assessed with firm nailbed pressure or pinch";
+export const motorResponseInfo = "Normal behaviour =  patient shows normal motor behavior (moving intentionally, reaching, or walking/running) and does not require testing with painful stimulus.\n\nResponse to pain should be assessed with firm nailbed pressure or pinch";
