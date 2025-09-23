@@ -247,7 +247,7 @@ export function indexToNutritionStatus(index: number): string {
  * @returns true if score = 5, else false
  */
 export function isAbnormalBcs(score: number): boolean {
-    console.log('abnormal bcs?', score<5)
+    if (score > 5 || score < 0) throw Error(abnormalBcsErrorMessage)
     return (score < 5);
 }
 
@@ -256,7 +256,7 @@ export function isAbnormalBcs(score: number): boolean {
  * @param eyeScore integer value between [0,1]
  * @param motorScore integer value between [0,2]
  * @param verbalScore integer value between [0,2]
- * @returns sum of all observed scorel integer value between [0,5]
+ * @returns sum of all observed scores; integer value between [0,5]
  */
 export function calculateBcsScore(eyeScore: number, motorScore: number, verbalScore: number): number {
     if (eyeScore < 0 || eyeScore > 1) throw Error ('invalid eye movement score')
@@ -278,3 +278,6 @@ export function mapBcsScoreToVariant(score: number): string {
 
     return bcsMap[score] ?? 'invalid'
 }
+
+// Error messages
+export const abnormalBcsErrorMessage = 'Invalid BCS score. Must be integer value from 0 to 5'
