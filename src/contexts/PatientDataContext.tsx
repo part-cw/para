@@ -212,9 +212,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const updates = {
         isUnderSixMonths,
         illnessDuration: '',
-        jaundice: '',
+        neonatalJaundice: '',
         bulgingFontanelle: '',
-        feedingStatus: '',
+        feedingWell: null,
       };
       await updatePatientData(updates);
     }
