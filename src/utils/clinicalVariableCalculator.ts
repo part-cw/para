@@ -251,7 +251,18 @@ export function isAbnormalBcs(score: number): boolean {
     return (score < 5);
 }
 
+/**
+ * 
+ * @param eyeScore integer value between [0,1]
+ * @param motorScore integer value between [0,2]
+ * @param verbalScore integer value between [0,2]
+ * @returns sum of all observed scorel integer value between [0,5]
+ */
 export function calculateBcsScore(eyeScore: number, motorScore: number, verbalScore: number): number {
+    if (eyeScore < 0 || eyeScore > 1) throw Error ('invalid eye movement score')
+    if (motorScore < 0 || motorScore > 2) throw Error ('invalid motor response score')
+    if (verbalScore < 0 || verbalScore > 2) throw Error ('invalid verbal response score')
+
     return (eyeScore + motorScore + verbalScore)
 }
 

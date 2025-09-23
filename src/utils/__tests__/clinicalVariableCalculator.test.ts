@@ -1,4 +1,5 @@
 import {
+  calculateBcsScore,
   calculateWAZ,
   getMuacStatus,
   getWazNutritionalStatus,
@@ -99,4 +100,84 @@ describe('Integration tests with real config', () => {
     expect(nutritionStatusToIndex('invalid')).toBe(-1);
     expect(indexToNutritionStatus(999)).toBe('invalid');
   });
+
+  it('calculateBcsScore correctly given valid inputs', () => {
+    expect(calculateBcsScore(0,0,0)).toBe(0)
+    expect(calculateBcsScore(1,1,1)).toBe(3)
+    expect(calculateBcsScore(1,2,2)).toBe(5)
+  });
+
+  it('calculateBcsScore throws error for eye scores > 1', () => {
+    try {
+      calculateBcsScore(2, 2, 2);
+      fail('Expected error to be thrown but none was')
+    } catch (e) {
+      const err = e as Error;
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toBeDefined();
+      expect(err.message).toBe("invalid eye movement score");
+    }
+  });
+
+  it('calculateBcsScore throws error for eye scores < 0', () => {
+    try {
+      calculateBcsScore(-1, 2, 2);
+      fail('Expected error to be thrown but none was')
+    } catch (e) {
+      const err = e as Error;
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toBeDefined();
+      expect(err.message).toBe("invalid eye movement score");
+    }
+  });
+
+  it('calculateBcsScore throws error for invalid motor reponse score > 2', () => {
+    try {
+      calculateBcsScore(1, 3, 2);
+      fail('Expected error to be thrown but none was')
+    } catch (e) {
+      const err = e as Error;
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toBeDefined();
+      expect(err.message).toBe("invalid motor response score");
+    }
+  });
+
+  it('calculateBcsScore throws error for motor response scores < 0', () => {
+    try {
+      calculateBcsScore(1, -1, 2);
+      fail('Expected error to be thrown but none was')
+    } catch (e) {
+      const err = e as Error;
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toBeDefined();
+      expect(err.message).toBe("invalid motor response score");
+    }
+  });
+
+  it('calculateBcsScore throws error for invalid verbal reponse score > 2', () => {
+    try {
+      calculateBcsScore(1, 2, 3);
+      fail('Expected error to be thrown but none was')
+    } catch (e) {
+      const err = e as Error;
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toBeDefined();
+      expect(err.message).toBe("invalid verbal response score");
+    }
+  });
+
+  it('calculateBcsScore throws error for invalid verbal reponse score < 0', () => {
+    try {
+      calculateBcsScore(1, 2, -1);
+      fail('Expected error to be thrown but none was')
+    } catch (e) {
+      const err = e as Error;
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toBeDefined();
+      expect(err.message).toBe("invalid verbal response score");
+    }
+  });
+
+
 });
