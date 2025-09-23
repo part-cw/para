@@ -1,28 +1,29 @@
 {
     "modelName": "M6PD-C0-6",
-    "humanReadableName": "...TODO",
-    "description": "...TODO",
+    "humanReadableName": "Smart Discharges Uganda Model 0-6C",
+    "description": "The 2nd-most preferred model for Uganda, under 6 months old from the pool of clinical variables",
     "usageTime": "admission",
     "isUnderSixMonths": true,
     "inputType": "clinical",
     "riskThresholds": {
-        "low": 0,
-        "moderate": 2,
+        "moderate": 0,
         "high": 5,
         "veryHigh": 10
     },
-    "rawScoreOffset": "...TODO",
-    "intercept": -2.760,
+    "rawScoreOffset": -2.76035586009634,
     "variables": [
         {
             "name": "waz",
             "displayName": "WAZ",
-            "description": "weight-for-age z-score",
+            "description": "The weight-for-age z-score (WAZ) of the child, based on the child's sex, age, and weight",
             "type": "float",
             "units": null,
             "required": true,
-            "coefficient": -0.344,
-            "dependencies": ["weight"]
+            "dependencies": ["weight", "sex", "ageInMonths"],
+            "coefficient": -0.343508455700622,
+            "mean": -1.0665724101886,
+            "standardDeviation": 1.97003720818148
+            
         },
         {
             "name": "muac",
@@ -31,7 +32,9 @@
             "type": "float",
             "units": "mm",
             "required": true,
-            "coefficient": -0.295
+            "coefficient": -0.295047813053899,
+            "mean": 113.728874290833,
+            "standardDeviation": 17.714446596961
         },
         {
             "name": "feedingStatus",
@@ -44,7 +47,9 @@
                 {
                     "value": true,
                     "description": "sucking well when breastfeeding, or feeding well if not breastfed",
-                    "coefficient": -0.248 
+                    "coefficient": -0.248355512098236,
+                    "mean": 0.585846521349657,
+                    "standardDeviation": 0.492648804946814
                 },
                 {
                     "value": false,
@@ -59,7 +64,9 @@
             "type": "float",
             "units": "percent",
             "required": true,
-            "coefficient": -0.165
+            "coefficient": -0.164944973026338,
+            "mean": 93.8124813377128,
+            "standardDeviation": 6.81515280313017
         },
         {
             "name": "illnessDuration",
@@ -71,19 +78,33 @@
             "contraints": {
                 "oneOf": [
                     {
-                        "value": "less than 48 hours"
+                        "value": "<48h",
+                        "label": "less than 48 hours",
+                        "description": "Whether the child's duration of present illness is less than 48 hours"
                     },
                     {
-                        "value": "48 hours to 7 days",
-                        "coefficient": 0.023
+                        "value": "48h-7d",
+                        "label": "48 hours to 7 days",
+                        "description":" Whether the child's duration of present illness is between 48 hours and 7 days",
+                        "coefficient": 0.0229704278750671,
+                        "mean": 0.593908629441624,
+                        "standardDeviation": 0.491175331936256
                     },
                     {
-                        "value": "8 days to 1 month",
-                        "coefficient": 0.194
+                        "value": "7d-1mo",
+                        "label": "7 days to 1 month",
+                        "description": "Whether the child's duration of present illness is between 7 days and 1 month",
+                        "coefficient": 0.194421172744823,
+                        "mean": 0.10241863242759,
+                        "standardDeviation": 0.303243324842165
                     },
                     {
-                        "value": "more than 1 month",
-                        "coefficient": 0.068
+                        "value": ">1mo",
+                        "label": "more than 1 month",
+                        "description": "Whether the child's duration of present illness is more than 1 month",
+                        "coefficient": 0.0683878968750476,
+                        "mean": 0.0179157957599283,
+                        "standardDeviation": 0.132665275580327
                     }
                 ]
             }
@@ -91,16 +112,18 @@
         {
             "name": "ageInMonths",
             "displayName": "Age",
-            "description": "Patient's age in months, rounded",
+            "description": "Calculated age (in months, unrounded) of the child based on date of birth",
             "type": "float",
             "units": null,
             "required": true,
-            "coefficient": 0.068
+            "coefficient": 0.0683208167614119,
+            "mean": 2.13329352045387,
+            "standardDeviation": 1.84920934478956
         },
         {
             "name": "bulgingFontanelle",
             "displayName": "Bulging Fontanelle",
-            "description": "Does the child have bulging fontanelle at admission",
+            "description": "Whether the child had bulging fontanelle at admission",
             "type": "boolean",
             "units": null,
             "required": true,
@@ -109,11 +132,36 @@
                 {
                     "value": true,
                     "description": "child has bulging fontanelle",
-                    "coefficient": 0.134 
+                    "coefficient": 0.133602879186761,
+                    "mean": 0.0394147506718423,
+                    "standardDeviation": 0.194608675839138
                 },
                 {
                     "value": false,
                     "description": "child does not have bulging fontanelle"
+                }
+            ]
+            }
+        },
+         {
+            "name": "jaundice",
+            "displayName": "Neonatal jaundice",
+            "description": "Whether the child is less than 30 days old and had evidence of jaundice at time of admission",
+            "type": "boolean",
+            "units": null,
+            "required": true,
+            "contraints": {
+               "oneOf": [
+                {
+                    "value": true,
+                    "description": "child has neonatal jaundice",
+                    "coefficient": 0,
+                    "mean": 0.0791280979396835,
+                    "standardDeviation": 0.269978899816029
+                },
+                {
+                    "value": false,
+                    "description": "child does not have neonatal jaundice"
                 }
             ]
             }
@@ -123,42 +171,50 @@
         {
             "name": "ageJaundice",
             "displayName": "age x jaundice",
-            "description": "age x jaundice",
+            "description": "Age interaction with Neonatal jaundice",
             "type": "float",
             "units": null,
             "required": true,
             "dependencies": ["ageInMonths", "jaundice"],
-            "coefficient": 0.101
+            "coefficient": 0.101347812742224,
+            "mean": 0.0193789190803225,
+            "standardDeviation": 0.0908481017090391
         },
         {
             "name": "ageWaz",
             "displayName": "age x weight for age z-score",
-            "description": "age x weight for age z-score",
+            "description": "Age interaction with Weight-for-age z-score",
             "type": "float",
             "units": null,
             "required": true,
             "dependencies": ["ageInMonths", "waz"],
-            "coefficient": -0.054
+            "coefficient": -0.0544205795452042,
+            "mean": -2.63291890119547,
+            "standardDeviation": 6.43937313609226
         },
         {
             "name": "ageFeedingStatus",
             "displayName": "age x sucking well when breastfeeding",
-            "description": "age x sucking well when breastfeeding",
+            "description": "Age interaction with Sucking or feeding well",
             "type": "float",
             "units": null,
             "required": true,
             "dependencies": ["ageInMonths", "feedingStatus"],
-            "coefficient": 0.023
+            "coefficient": 0.0229977012576528,
+            "mean": 1.28244252015527,
+            "standardDeviation": 1.75979148631993
         },
         {
             "name": "ageIllnessDuration",
             "displayName": "age x duration of present illness, 48 hours to 7 days",
-            "description": "age x duration of present illness, 48 hours to 7 days",
+            "description": "Age interaction with Duration of present illness 48 hours to 7 days",
             "type": "float",
             "units": null,
             "required": true,
             "dependencies": ["ageInMonths", "illnessDuration", "48 hours to 7 days"],
-            "coefficient": 0.060
+            "coefficient": 0.059761858027538,
+            "mean": 1.40292624664079,
+            "standardDeviation": 1.82529283773414
         }
     ] 
 }
