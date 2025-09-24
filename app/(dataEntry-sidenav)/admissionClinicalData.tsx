@@ -234,7 +234,7 @@ export default function AdmissionClinicalDataScreen() {
     }, [isNeonate])
     
     const setMalnutritionStatus = () => {
-        if ((waz || waz !== null) && muac) {
+        if ((waz != null) && muac) { // TODO double check this
             const wazStatus = getWazNutritionalStatus(waz)
             const muacStatus = getMuacStatus(isUnderSixMonths, muac)
 
@@ -338,7 +338,7 @@ export default function AdmissionClinicalDataScreen() {
         }
     };
 
-      const handleRrateBlur = () => {
+      const handleRrateBlur = () => {30
         const warning = validateRespiratoryRange(rrate).warningMessage;
         
         if (!warning) return;
@@ -354,7 +354,7 @@ export default function AdmissionClinicalDataScreen() {
                 return;
             } else {
                 // Cancel
-                updatePatientData({ temperature: '' });
+                updatePatientData({ rrate: '' });
             }
         } else {
             // Mobile (iOS/Android)
@@ -365,7 +365,7 @@ export default function AdmissionClinicalDataScreen() {
                     {
                         text: 'Cancel',
                         onPress: () => {
-                            updatePatientData({ temperature: '' });
+                            updatePatientData({ rrate: '' });
                     }},
                     {
                         text: 'Yes',
@@ -588,7 +588,7 @@ export default function AdmissionClinicalDataScreen() {
                                 <View style={Styles.accordionContentWrapper}>
                                     <SearchableDropdown 
                                         data={hospitalizationOptions} 
-                                        label={'Last Hopitalized (required)'}
+                                        label={'Last Hospitalized (required)'}
                                         placeholder='select option below' 
                                         onSelect={(item) => updatePatientData({ lastHospitalized: item.value })}
                                         value={lastHospitalized}
