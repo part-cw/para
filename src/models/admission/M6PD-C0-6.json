@@ -16,7 +16,7 @@
             "name": "waz",
             "displayName": "WAZ",
             "description": "The weight-for-age z-score (WAZ) of the child, based on the child's sex, age, and weight",
-            "type": "float",
+            "type": "number",
             "units": null,
             "required": true,
             "dependencies": ["weight", "sex", "ageInMonths"],
@@ -29,7 +29,7 @@
             "name": "muac",
             "displayName": "MUAC",
             "description": "Mid-upper arm circumfrence in mm",
-            "type": "float",
+            "type": "number",
             "units": "mm",
             "required": true,
             "coefficient": -0.295047813053899,
@@ -61,7 +61,7 @@
             "name": "spo2",
             "displayName": "SpO₂",
             "description": "Oxygen saturation",
-            "type": "float",
+            "type": "number",
             "units": "percent",
             "required": true,
             "coefficient": -0.164944973026338,
@@ -111,7 +111,7 @@
             "name": "ageInMonths",
             "displayName": "Age",
             "description": "Calculated age (in months, unrounded) of the child based on date of birth",
-            "type": "float",
+            "type": "number",
             "units": null,
             "required": true,
             "coefficient": 0.0683208167614119,
@@ -153,6 +153,7 @@
             "type": "string",
             "units": null,
             "required": true,
+            "dependencies": ["isNeonate"],
             "oneOf": [
                 {
                     "value": "Yes",
@@ -180,15 +181,15 @@
             ]
         }
     ],
-    "interactions": [
+    "ageInteractions": [
         {
             "name": "ageJaundice",
             "displayName": "age x jaundice",
             "description": "Age interaction with Neonatal jaundice",
-            "type": "float",
+            "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "jaundice"],
+            "dependencies": "neonatalJaundice",
             "coefficient": 0.101347812742224,
             "mean": 0.0193789190803225,
             "standardDeviation": 0.0908481017090391
@@ -197,22 +198,22 @@
             "name": "ageWaz",
             "displayName": "age x weight for age z-score",
             "description": "Age interaction with Weight-for-age z-score",
-            "type": "float",
+            "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "waz"],
+            "dependencies": "waz",
             "coefficient": -0.0544205795452042,
             "mean": -2.63291890119547,
             "standardDeviation": 6.43937313609226
         },
         {
-            "name": "ageFeedingStatus",
+            "name": "ageFeedingWell",
             "displayName": "age x sucking well when breastfeeding",
             "description": "Age interaction with Sucking or feeding well",
-            "type": "float",
+            "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "feedingStatus"],
+            "dependencies": "feedingWell",
             "coefficient": 0.0229977012576528,
             "mean": 1.28244252015527,
             "standardDeviation": 1.75979148631993
@@ -221,10 +222,10 @@
             "name": "ageIllnessDuration",
             "displayName": "age x duration of present illness, 48 hours to 7 days",
             "description": "Age interaction with Duration of present illness 48 hours to 7 days",
-            "type": "float",
+            "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "illnessDuration", "48 hours to 7 days"],
+            "dependencies": {"illnessDuration": "48h-7d"},
             "coefficient": 0.059761858027538,
             "mean": 1.40292624664079,
             "standardDeviation": 1.82529283773414

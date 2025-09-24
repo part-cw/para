@@ -1,71 +1,12 @@
 import { PatientData } from "../contexts/PatientDataContext";
-
-export interface ModelVariable {
-    name: string;
-    displayName: string;
-    description: string;
-    type: 'float' | 'boolean' | 'string';
-    units: string | null;
-    required: boolean;
-    dependencies?: string[];
-    coefficient?: number;
-    mean?: number;
-    standardDeviation?: number;
-    oneOf?: Array<{
-        value: any;
-        numericValue?: number;
-        description: string;
-        coefficient?: number;
-        mean?: number;
-        standardDeviation?: number;
-    }>;
-}
-
-export interface ModelInteraction {
-    name: string;
-    displayName: string;
-    description: string;
-    type: 'float';
-    units: string | null;
-    required: boolean;
-    dependencies: string[];
-    coefficient: number;
-    mean: number;
-    standardDeviation: number;
-}
-
-export interface RiskModel {
-    modelName: string;
-    humanReadableName: string;
-    description: string;
-    usageTime: 'admission' | 'discharge';
-    isUnderSixMonths: boolean;
-    inputType: 'clinical' | string;
-    riskThresholds: {
-        low?: number;
-        moderate: number;
-        high: number;
-        veryHigh: number;
-    };
-    rawScoreOffset: number;
-    variables: ModelVariable[];
-    interactions?: ModelInteraction[];
-}
-
-export interface RiskPrediction {
-    rawScore?: number;
-    scaledScore?: number;
-    finalScore: number;
-    riskLevel: 'low' | 'moderate' | 'high' | 'veryHigh';
-    // missingVariables: string[];
-    model: string;
-}
+import { ModelVariable, RiskModel, RiskPrediction } from "./types";
 
 /**
  * calculates risk scores
  */
 export abstract class ModelStrategy {
     protected model: RiskModel;
+    // private age: number;
 
     constructor(model: RiskModel) {
         this.model = model;
@@ -73,58 +14,159 @@ export abstract class ModelStrategy {
 
     // main function that calculates risk level
     public calculateRisk(patientData: PatientData): RiskPrediction {
-        // 0. start with raw score of 0
-        // 1. for each interaction of this model, getAgeInteractionValue
-        // 2. scaleNumericValues all variables and interaction values of this.model
-        // 3. calculateRawScore
-        // 4. calculateScaledScore
-        // 5. calculateFinalScore: multiply scaled score by 100 and round to two decimal places
-        // 6. getRiskCatgory
+        // round age to nearest 10th
+        const age = patientData.ageInMonths && Math.round(patientData.ageInMonths *10)/10
 
-        return { // stub
-            rawScore: 0,
-            scaledScore: 0,
-            finalScore: 0,
-            riskLevel: 'low',
-            model: ''
+        // 1-3. calculateRawScore -- includes scaling values and adding offset
+        const rawScore = this.calculateRawScore(patientData)
+        
+        // 4-5. calculate scaledScore, then calculateFinalScore:multiply scaled score by 100 and round to two decimal places
+        const riskScore = this.convertToRiskScore(rawScore)
+
+        // 6. getRiskCatgory
+        const riskLevel = this.getRiskLevel(riskScore)
+
+        return {
+            rawScore,
+            riskScore,
+            riskLevel,
+            model: this.model.modelName
         }
     }
 
+    protected calculateRawScore(patientData: PatientData): number {
+        let score = this.model.rawScoreOffset;
 
-    private getAgeInteractionValue(age: number, val: number): number {
+        // process main variables and add to score -- scale each variable and multiply by coefficient 
+        for (const variable of this.model.variables) {
+            // const scaledValue = this.scaleNumericValues(variable, patientData)
+            const contribution = this.calculateVariableContribution(variable, patientData)
+            score += contribution;
+        }
+
+        // process interactions, if present
+        if (this.model.ageInteractions) {
+            // for (const interaction of this.model.ageInteractions) {
+            //     const scaledValue = this.scaleNumericValues(interaction, patientData)
+            //     const contribution = this.calculateVariableContribution(scaledValue, patientData)
+            //     score += contribution;
+            // }
+        }
+        
+        return score;
+    }
+
+
+    /**
+     * 
+     * @param variable 
+     * @param patientData 
+     * @returns caluclates contribution of scaled variable value based on variable type. 
+     */
+    protected calculateVariableContribution(variable: ModelVariable, patientData: PatientData): number {
+        // scaled = (numeric val - mean) / standard deviation
+        const value = patientData[variable.name]
+        if (value === null || value === undefined) return 0;      
+
+        // Handle different variable types
+        if (variable.type === 'boolean') {
+            return this.handleBooleanVariable(variable, value);
+        } else if (variable.type === 'number' && variable.coefficient !== undefined) {
+            return this.handleNumericVariable(variable, value);
+        } // else if (variable.type === 'string' && variable.contraints?.oneOf) {
+        //  return this.handleContinuousVariable(variable, value);
+        // }
+
         return 0;
     }
 
-    private scaleNumericValues(variable: ModelInteraction | ModelVariable): number {
+    /**
+     * 
+     * @param variable 
+     * @param value 
+     * scales boolean variables and multiplies by coefficient
+     */
+    protected handleBooleanVariable(variable: ModelVariable, value: any): number {
+        // TODO
+        throw new Error("Method not implemented.");
+    }
+
+     /**
+     * 
+     * @param variable 
+     * @param value 
+     * scales numeric variables and multiplies by coefficient
+     */
+    protected handleNumericVariable(variable: ModelVariable, value: number): number {
+        const mean = variable.mean
+        const sd = variable.standardDeviation
+        const coeff = variable.coefficient || 0
+
+        // scale value if mean and sd given
+        const scaledVal = (mean && sd) ? (value - mean) / sd : value
+        
+        // multiply by coefficient
+        const contribution = scaledVal * coeff
+
+        return contribution;
+    }    
+
+    protected getAgeInteractionValue(age: number, val: number): number {
+        // ultiple value (or numeric value or boolean) by numeric value for ageInMonths (rounded to 1 decimal)
+        let dependencyStrings: string[] = []
+        let dependencyObjects: {}[]
+        const interactions = this.model.ageInteractions
+
+        // if (interactions) {
+        //     for (const item of interactions) {
+        //         if (typeof(item.dependencies === 'string')) {
+        //             dependencyStrings.push(item.dependencies)
+        //         }
+        
+        //     }
+        // }
+
         return 0;
     }
 
-    private calculateRawScore(patientData: PatientData): number {
-        // multiply scaled val by coefficient. Add results to raw score
-        // add raw score offset
-        return 0;
-    }
-
-    private calculateScaledScore(rawScore: number): number {
+    protected convertToRiskScore(rawScore: number): number {
         // scaled score = 1/(1 + exp(-r))
-        // where r = raw score and exp(-r)means number e = 2.718... raised to the power -r
-        return 0;
+        const scaledScore = 1 / (1 + Math.exp(-rawScore))
+
+        // convert to percentage [scaled*100] and round to nearest 2 decimal places [Math.round(percentage*100)/100]
+        const finalScore = Math.round(scaledScore * 10000) / 100
+        return finalScore;
     }
 
-    private calculateFinalScore(scaledScore: number): number {
-        //  multiply scaled score by 100 and round to two decimal places
-        return 0;
-    }
 
-    private getRiskCategory(finalScore: number): string {
-        // compare final score to low, mod, high, very high thresholds
-        return '';
+    protected getRiskLevel(riskScore: number): string {
+        // TODO double check if errors should be thrown
+        if (riskScore < 0) throw Error('Risk score cannot be negative')
+        if (riskScore > 100) throw Error('Risk score cannot be more than 100%')
+        
+        // store 'low' threshold if it exists in model
+        let low
+        if (this.model.riskThresholds.low != null) {
+            low = this.model.riskThresholds.low
+        }
+
+        // store other thresholds
+        const moderate = this.model.riskThresholds.moderate
+        const high = this.model.riskThresholds.high
+        const veryHigh = this.model.riskThresholds.veryHigh
+
+        if (riskScore >= veryHigh) return 'Very High'
+        if (riskScore >= high) return 'High'
+        if (riskScore >= moderate) return 'Moderate'
+
+        // default to lowest available risk level if not mod to very high
+        return (low != null) ? 'Low' : 'Moderate';
     }
         
     // calculation steps
     // 1. start with raw score of 0
     // 2. if age-interactions: calculatate age interaction value.
-    //      -- multiple value (or numeric value or boolean) by numeric value for ageInMonths (rounded to 1 decimal)
+    //      -- multiply value (or numeric value or boolean) by numeric value for ageInMonths (rounded to 1 decimal)
     // 3. scale numeric values
     //      scaled val = (numeric value - mean)/standardDeviation
     // 4. multiply scaled val by coefficient. Add results to raw score
@@ -133,6 +175,227 @@ export abstract class ModelStrategy {
     //      scaled score = 1/(1 + exp(-r))
     //      where r = raw score and exp(-r)means number e = 2.718... raised to the power -r
     // 7. multiply scaled score by 100 and round to two decimal places
-
-
 }
+
+
+
+export { RiskPrediction };
+// // src/models/ModelStrategy.ts
+// import { PatientData } from '../contexts/PatientDataContext';
+
+// export abstract class ModelStrategy {
+//   protected model: RiskModel;
+
+//   constructor(model: RiskModel) {
+//     this.model = model;
+//   }
+
+//   // Main method to calculate risk
+//   public calculateRisk(patientData: PatientData): RiskPrediction {
+//     const missingVariables = this.validateRequiredData(patientData);
+    
+//     if (missingVariables.length > 0) {
+//       return {
+//         rawScore: 0,
+//         riskLevel: 'low',
+//         riskScore: 0,
+//         missingVariables,
+//         model: this.model.modelName
+//       };
+//     }
+
+//     const rawScore = this.calculateRawScore(patientData);
+//     const riskLevel = this.determineRiskLevel(rawScore);
+//     const riskScore = this.convertToRiskScore(rawScore);
+
+//     return {
+//       rawScore,
+//       riskLevel,
+//       riskScore,
+//       missingVariables: [],
+//       model: this.model.modelName
+//     };
+//   }
+
+//   private calculateRawScore(patientData: PatientData): number {
+//     let score = this.model.rawScoreOffset;
+
+//     // Process main variables
+//     for (const variable of this.model.variables) {
+//       const contribution = this.calculateVariableContribution(variable, patientData);
+//       score += contribution;
+//     }
+
+//     // Process interactions
+//     for (const interaction of this.model.interactions) {
+//       const contribution = this.calculateInteractionContribution(interaction, patientData);
+//       score += contribution;
+//     }
+
+//     return score;
+//   }
+
+//   private calculateVariableContribution(variable: ModelVariable, patientData: PatientData): number {
+//     const value = this.getPatientValue(variable.name, patientData);
+    
+//     if (value === null || value === undefined) {
+//       return 0;
+//     }
+
+//     // Handle different variable types
+//     if (variable.type === 'boolean') {
+//       return this.handleBooleanVariable(variable, value);
+//     } else if (variable.type === 'string' && variable.contraints?.oneOf) {
+//       return this.handleCategoricalVariable(variable, value);
+//     } else if (variable.type === 'float' && variable.coefficient !== undefined) {
+//       return this.handleContinuousVariable(variable, value);
+//     }
+
+//     return 0;
+//   }
+
+//   private handleBooleanVariable(variable: ModelVariable, value: any): number {
+//     const boolValue = this.convertToBoolean(value);
+    
+//     if (variable.oneOf) {
+//       const option = variable.oneOf.find(opt => opt.value === boolValue);
+//       return option?.coefficient || 0;
+//     } else if (variable.contraints?.oneOf) {
+//       const option = variable.contraints.oneOf.find(opt => opt.value === boolValue);
+//       return option?.coefficient || 0;
+//     }
+    
+//     return 0;
+//   }
+
+//   private handleCategoricalVariable(variable: ModelVariable, value: any): number {
+//     if (!variable.contraints?.oneOf) return 0;
+    
+//     const option = variable.contraints.oneOf.find(opt => opt.value === value);
+//     return option?.coefficient || 0;
+//   }
+
+//   private handleContinuousVariable(variable: ModelVariable, value: any): number {
+//     const numValue = parseFloat(value);
+//     if (isNaN(numValue)) return 0;
+    
+//     // Standardize the value: (value - mean) / std_dev
+//     const standardized = (numValue - (variable.mean || 0)) / (variable.standardDeviation || 1);
+//     return standardized * (variable.coefficient || 0);
+//   }
+
+//   private calculateInteractionContribution(interaction: ModelInteraction, patientData: PatientData): number {
+//     // Handle special interaction calculations
+//     switch (interaction.name) {
+//       case 'ageJaundice':
+//         return this.calculateAgeJaundiceInteraction(interaction, patientData);
+//       case 'ageWaz':
+//         return this.calculateAgeWazInteraction(interaction, patientData);
+//       case 'ageFeedingStatus':
+//         return this.calculateAgeFeedingStatusInteraction(interaction, patientData);
+//       case 'ageIllnessDuration':
+//         return this.calculateAgeIllnessDurationInteraction(interaction, patientData);
+//       default:
+//         return 0;
+//     }
+//   }
+
+//   private calculateAgeJaundiceInteraction(interaction: ModelInteraction, patientData: PatientData): number {
+//     const age = patientData.ageInMonths || 0;
+//     const jaundice = this.convertToBoolean(patientData.jaundice);
+//     const interactionValue = age * (jaundice ? 1 : 0);
+    
+//     const standardized = (interactionValue - interaction.mean) / interaction.standardDeviation;
+//     return standardized * interaction.coefficient;
+//   }
+
+//   private calculateAgeWazInteraction(interaction: ModelInteraction, patientData: PatientData): number {
+//     const age = patientData.ageInMonths || 0;
+//     const waz = patientData.waz || 0;
+//     const interactionValue = age * waz;
+    
+//     const standardized = (interactionValue - interaction.mean) / interaction.standardDeviation;
+//     return standardized * interaction.coefficient;
+//   }
+
+//   private calculateAgeFeedingStatusInteraction(interaction: ModelInteraction, patientData: PatientData): number {
+//     const age = patientData.ageInMonths || 0;
+//     const feedingWell = this.convertToBoolean(patientData.feedingStatus);
+//     const interactionValue = age * (feedingWell ? 1 : 0);
+    
+//     const standardized = (interactionValue - interaction.mean) / interaction.standardDeviation;
+//     return standardized * interaction.coefficient;
+//   }
+
+//   private calculateAgeIllnessDurationInteraction(interaction: ModelInteraction, patientData: PatientData): number {
+//     const age = patientData.ageInMonths || 0;
+//     const is48hTo7d = patientData.illnessDuration === '48h-7d';
+//     const interactionValue = age * (is48hTo7d ? 1 : 0);
+    
+//     const standardized = (interactionValue - interaction.mean) / interaction.standardDeviation;
+//     return standardized * interaction.coefficient;
+//   }
+
+//   private determineRiskLevel(rawScore: number): 'low' | 'moderate' | 'high' | 'veryHigh' {
+//     const { moderate, high, veryHigh } = this.model.riskThresholds;
+    
+//     if (rawScore >= veryHigh) return 'veryHigh';
+//     if (rawScore >= high) return 'high';
+//     if (rawScore >= moderate) return 'moderate';
+//     return 'low';
+//   }
+
+//   private convertToRiskScore(rawScore: number): number {
+//     // Convert raw score to probability using logistic function
+//     // P = 1 / (1 + e^(-rawScore))
+//     const probability = 1 / (1 + Math.exp(-rawScore));
+//     return Math.round(probability * 100); // Convert to percentage
+//   }
+
+//   private validateRequiredData(patientData: PatientData): string[] {
+//     const missing: string[] = [];
+    
+//     for (const variable of this.model.variables) {
+//       if (variable.required) {
+//         const value = this.getPatientValue(variable.name, patientData);
+//         if (value === null || value === undefined || value === '') {
+//           missing.push(variable.displayName);
+//         }
+//       }
+//     }
+    
+//     return missing;
+//   }
+
+//   private getPatientValue(variableName: string, patientData: PatientData): any {
+//     // Map model variable names to patient data properties
+//     const mapping: { [key: string]: keyof PatientData } = {
+//       'waz': 'waz',
+//       'muac': 'muac',
+//       'feedingStatus': 'feedingStatus',
+//       'spo2': 'spo2',
+//       'illnessDuration': 'illnessDuration',
+//       'ageInMonths': 'ageInMonths',
+//       'bulgingFontanelle': 'bulgingFontanelle',
+//       'jaundice': 'jaundice',
+//       'hivStatus': 'hivStatus',
+//       'temperature': 'temperature',
+//       'rrate': 'rrate',
+//       'lastHospitalized': 'lastHospitalized',
+//       'weight': 'weight',
+//       // Add other mappings as needed
+//     };
+
+//     const propertyName = mapping[variableName];
+//     return propertyName ? patientData[propertyName] : null;
+//   }
+
+//   private convertToBoolean(value: any): boolean {
+//     if (typeof value === 'boolean') return value;
+//     if (typeof value === 'string') {
+//       const lower = value.toLowerCase();
+//       return lower === 'true' || lower === 'yes' || lower === '1';
+//     }
+//     return Boolean(value);
+//   }
+// }
