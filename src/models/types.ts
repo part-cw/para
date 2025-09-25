@@ -5,6 +5,15 @@ export interface ModelContext {
   usageTime: 'admission' | 'discharge' | string;
 }
 
+export interface Option {
+    value: any;
+    numericValue?: number;
+    description: string;
+    coefficient?: number;
+    mean?: number;
+    standardDeviation?: number;
+}
+
 export interface ModelVariable {
     name: keyof PatientData;
     displayName: string;
@@ -16,14 +25,7 @@ export interface ModelVariable {
     coefficient?: number;
     mean?: number;
     standardDeviation?: number;
-    oneOf?: Array<{
-        value: any;
-        numericValue?: number;
-        description: string;
-        coefficient?: number;
-        mean?: number;
-        standardDeviation?: number;
-    }>;
+    oneOf?: Array<Option>;
 }
 
 export interface ModelInteraction {
