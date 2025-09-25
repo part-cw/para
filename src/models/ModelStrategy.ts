@@ -1,5 +1,5 @@
 import { PatientData } from "../contexts/PatientDataContext";
-import { ModelVariable, RiskModel, RiskPrediction } from "./types";
+import { ModelInteraction, ModelVariable, RiskModel, RiskPrediction } from "./types";
 
 /**
  * calculates risk scores
@@ -39,38 +39,36 @@ export abstract class ModelStrategy {
 
         // process main variables and add to score -- scale each variable and multiply by coefficient 
         for (const variable of this.model.variables) {
-            const contribution = this.calculateScaledVariableContribution(variable, patientData)
-            score += contribution;
+            const numericValue = this.getNumericValue(variable, patientData)
+            const contribution = this.calculateScaledVariableContribution(variable, numericValue)
+            score += contribution;         
         }
 
-        // process interactions, if present
+        // process interactions, if present and add scaled contribution to score
         if (this.model.ageInteractions) {
-            // for (const interaction of this.model.ageInteractions) {
-            //     const scaledValue = this.scaleNumericValues(interaction, patientData)
-            //     const contribution = this.calculateVariableContribution(scaledValue, patientData)
+            for (const interaction of this.model.ageInteractions) {
+            //     const contribution = this.calculateScaledInteractionContribution(interaction, patientData)
             //     score += contribution;
-            // }
+            }
         }
         
         return score;
     }
 
-
     /**
      * 
-     * @param variable 
+     * @param variable any type
      * @param patientData 
-     * @returns calculates contribution of scaled variable value based on variable type. 
+     * @returns stored numeric value of variable - handles all types
      */
-    protected calculateScaledVariableContribution(variable: ModelVariable, patientData: PatientData): number {
+    protected getNumericValue(variable: ModelVariable, patientData: PatientData): number {
         const value = patientData[variable.name]
-        if (value === null || value === undefined) return 0;      
+        if (value === null || value === undefined) return 0; // TODO check this is correct 
 
-        // Handle different variable types -- return scaled contribution
         if (variable.type === 'boolean') {
-            return this.handleBooleanVariable(variable, value);
+            return this.handleBooleanVariable(value);
         } else if (variable.type === 'number' && variable.coefficient !== undefined) {
-            return this.handleNumericVariable(variable, value);
+            return this.handleNumericVariable(value);
         } else if (variable.type === 'string' && variable?.oneOf) {
             return this.handleCategoricalVariable(variable, value)
         }
@@ -81,44 +79,82 @@ export abstract class ModelStrategy {
     /**
      * 
      * @param variable 
-     * @param value 
-     * scales boolean variables and multiplies by coefficient
+     * @param patientData 
+     * @returns calculates contribution of scaled variable 
      */
-    protected handleBooleanVariable(variable: ModelVariable, value: any): number {
-        const boolValue = this.convertToBoolean(value)
-        // if value of variable is false, variable has no contribution - return 0
-        if (!boolValue) return 0;
-
-        // if value is true, numValue = 1, otherwise 0
-        const numValue = boolValue ? 1 : 0
+    protected calculateScaledVariableContribution(variable: ModelVariable, value: number): number {
         const mean = variable.mean || 0
         const stdDev = variable.standardDeviation || 1
         const coeff = variable.coefficient || 0
 
-        const scaledVal = this.scaleValue(numValue, mean, stdDev)
+        const scaledVal = (value - mean) / stdDev 
         return scaledVal * coeff;
     }
 
     /**
      * 
      * @param variable 
-     * @param value numeric value in either string or number format
-     * scales numeric variables and multiplies by coefficient
-     */
-    protected handleNumericVariable(variable: ModelVariable, value: any): number {
-        const mean = variable.mean || 0
-        const stdDev = variable.standardDeviation || 1
-        const coeff = variable.coefficient || 0
+     * @param patientData 
+     * calculates contribution of scaled age interaction value based on variable type. 
+     */ 
+    protected calculateScaledInteractionContribution(variable: ModelInteraction, patientData: PatientData): number {
+        if (patientData.ageInMonths === null) throw Error('Age not found')
+        
+        // calc age in months rounded to 1 decimal place
+        const age = Math.round(patientData.ageInMonths * 10) /10
+        
+        // 2. find dependency
+        const interaction = variable.dependency
 
-        let numValue: number
+        // 3. get stored value of that variable -- depends on type:
+        // if typeof(interaction) === string -->  value = patientData[interaction]
+        // interaction.type === ?
+            // handle boolean types -- if true numeric = 1
+            // handle numeric type -- numValue = value
+            // hadnle string
+
+        // if typeof(dependecy) === object --> find key; stringValue = patientData[key]
+        // if value at dependency[key] === patientData[key]; numericValue = 1 else return 0
+        
+        // 4. calucalte ageInteractionValue = age in moujnths rounded * value   
+
+
+
+        // else throw Error('unhandled dependency type')
+
+        return 0;
+    }
+
+    /**
+     * 
+     * @param value boolean (true/false), or string ('true'/'false', 'yes'/'no', '0'/'1', 'positive'/'negative')
+     * @returns scaled variable contribution -- scales boolean variables and multiplies by coefficient
+     */
+    protected handleBooleanVariable(value: any): number {
+        const boolValue = this.convertToBoolean(value)
+        // if value of variable is false, variable has no contribution - return 0
+        if (!boolValue) return 0;
+
+        // if value is true, numValue = 1, otherwise 0
+        const numValue = boolValue ? 1 : 0
+        return numValue
+    }
+
+    /**
+     * 
+     * @param variable 
+     * @param value numeric value in either string or number format
+     * @returns scaled variable contribution - scales numeric variables and multiplies by coefficient
+     */
+    protected handleNumericVariable(value: any): number {
         if (typeof(value) === 'string') {
-            numValue = parseFloat(value) // need this because some variables in patientData stored as string (eg. weight)
-        } else {
-            numValue = value
+            // need this because some variables in patientData stored as string (eg. weight)
+            return parseFloat(value) 
+        } else if (typeof(value) === 'number') {
+            return value
         }
 
-        const scaledVal = this.scaleValue(numValue, mean, stdDev)
-        return scaledVal * coeff;
+        throw Error('invalud value type - must be number or string')
     }
     
     // TODO -- must test
@@ -137,13 +173,8 @@ export abstract class ModelStrategy {
             return 0;
         }
 
-        const numValue = 1
-        const mean = option.mean || 0
-        const stdDev = option.standardDeviation || 1
-        const coeff = option.coefficient || 0
-
-        const scaledVal = this.scaleValue(numValue, mean, stdDev)
-        return scaledVal * coeff
+        // return numeric value of 1 if this option selected and has coeff, mean and standard dev
+        return 1;
     }
 
     protected getAgeInteractionValue(age: number, val: number): number {
@@ -162,11 +193,6 @@ export abstract class ModelStrategy {
         // }
 
         return 0;
-    }
-
-    // scale value if mean and sd given: (value - mean) / stdDev,
-    protected scaleValue(val: number, mean: number, stdDev: number): number {
-        return (val - mean) / stdDev 
     }
 
     protected convertToRiskScore(rawScore: number): number {
