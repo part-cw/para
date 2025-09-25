@@ -126,7 +126,7 @@
             "type": "boolean",
             "units": null,
             "required": true,
-            "dependencies": ["isNeonate"],
+            "dependencies": "isNeonate",
             "coefficient": 0,
             "mean": 0.0791280979396835,
             "standardDeviation": 0.269978899816029
@@ -140,7 +140,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": "neonatalJaundice",
+            "dependency": "neonatalJaundice",
+            "dependencyType": "boolean",
             "coefficient": 0.101347812742224,
             "mean": 0.0193789190803225,
             "standardDeviation": 0.0908481017090391
@@ -152,7 +153,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": "waz",
+            "dependency": "waz",
+            "dependencyType": "number",
             "coefficient": -0.0544205795452042,
             "mean": -2.63291890119547,
             "standardDeviation": 6.43937313609226
@@ -164,7 +166,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": "feedingWell",
+            "dependency": "feedingWell",
+            "dependencyType": "boolean",
             "coefficient": 0.0229977012576528,
             "mean": 1.28244252015527,
             "standardDeviation": 1.75979148631993
@@ -176,7 +179,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": {"illnessDuration": "48h-7d"},
+            "dependency": {"illnessDuration": "48h-7d"},
+            "dependencyType": "string",
             "coefficient": 0.059761858027538,
             "mean": 1.40292624664079,
             "standardDeviation": 1.82529283773414

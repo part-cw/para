@@ -33,7 +33,8 @@ export interface ModelInteraction {
     type: string;
     units: string | null;
     required: boolean;
-    dependencies: string | {}
+    dependency: string | {};
+    dependencyType: string;
     coefficient: number;
     mean: number;
     standardDeviation: number;
