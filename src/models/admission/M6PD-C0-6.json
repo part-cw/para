@@ -45,20 +45,7 @@
             "required": true,
             "coefficient": -0.248355512098236,
             "mean": 0.585846521349657,
-            "standardDeviation": 0.492648804946814,
-            "oneOf": [
-                {
-                    "value": true,
-                    "description": "sucking well when breastfeeding, or feeding well if not breastfed",
-                    "coefficient": -0.248355512098236,
-                    "mean": 0.585846521349657,
-                    "standardDeviation": 0.492648804946814
-                },
-                {
-                    "value": false,
-                    "description": "not sucking well when breastfeeding, or not feeding well if not breastfed"
-                }
-            ]
+            "standardDeviation": 0.492648804946814
         },
         {
             "name": "spo2",
@@ -130,20 +117,7 @@
             "required": true,
             "coefficient": 0.133602879186761,
             "mean": 0.0394147506718423,
-            "standardDeviation": 0.194608675839138,
-            "oneOf": [
-                {
-                    "value": true,
-                    "description": "child has bulging fontanelle",
-                    "coefficient": 0.133602879186761,
-                    "mean": 0.0394147506718423,
-                    "standardDeviation": 0.194608675839138
-                },
-                {
-                    "value": false,
-                    "description": "child does not have bulging fontanelle"
-                }
-            ]
+            "standardDeviation": 0.194608675839138
         },
          {
             "name": "neonatalJaundice",
@@ -155,20 +129,7 @@
             "dependencies": ["isNeonate"],
             "coefficient": 0,
             "mean": 0.0791280979396835,
-            "standardDeviation": 0.269978899816029,
-            "oneOf": [
-                {
-                    "value": true,
-                    "description": "child has neonatal jaundice",
-                    "coefficient": 0,
-                    "mean": 0.0791280979396835,
-                    "standardDeviation": 0.269978899816029
-                },
-                {
-                    "value": false,
-                    "description": "child does not have neonatal jaundice"
-                }
-            ]
+            "standardDeviation": 0.269978899816029
         }
     ],
     "ageInteractions": [

@@ -121,9 +121,29 @@ export abstract class ModelStrategy {
         return scaledVal * coeff;
     }
     
+    // TODO -- must test
     protected handleCategoricalVariable(variable: ModelVariable, value: any): number {
-        // TODO
-        throw new Error("Method not implemented.");
+        if (!variable.oneOf) throw Error ('options not provided in model JSON')
+
+        const optionArray = variable.oneOf
+        const option = optionArray.find(opt => opt.value.trim().toLowerCase() === value.trim().toLowerCase())
+
+        if (!option) throw Error(`${value} not listed as an option in model JSON`)
+        
+        // if option has no listed coefficient, mean and standard deviation, then it has no contribution to score
+        if (option.coefficient === undefined && 
+            option.mean === undefined && 
+            option.standardDeviation && undefined) {
+            return 0;
+        }
+
+        const numValue = 1
+        const mean = option.mean || 0
+        const stdDev = option.standardDeviation || 1
+        const coeff = option.coefficient || 0
+
+        const scaledVal = this.scaleValue(numValue, mean, stdDev)
+        return scaledVal * coeff
     }
 
     protected getAgeInteractionValue(age: number, val: number): number {
