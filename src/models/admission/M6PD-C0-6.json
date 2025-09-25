@@ -39,10 +39,13 @@
         {
             "name": "feedingWell",
             "displayName": "Feeding Status",
-            "description": "Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)",
+            "description": "Whether the child is sucking well when breastfeeding (or feeding well if the child is not being breasfed). If true value = 1, else value = 0",
             "type": "boolean",
             "units": null,
             "required": true,
+            "coefficient": -0.248355512098236,
+            "mean": 0.585846521349657,
+            "standardDeviation": 0.492648804946814,
             "oneOf": [
                 {
                     "value": true,
@@ -121,14 +124,16 @@
         {
             "name": "bulgingFontanelle",
             "displayName": "Bulging Fontanelle",
-            "description": "Whether the child had bulging fontanelle at admission",
+            "description": "Whether the child had bulging fontanelle at admission. If true, value = 1",
             "type": "boolean",
             "units": null,
             "required": true,
+            "coefficient": 0.133602879186761,
+            "mean": 0.0394147506718423,
+            "standardDeviation": 0.194608675839138,
             "oneOf": [
                 {
                     "value": true,
-                    "numericVal": 1,
                     "description": "child has bulging fontanelle",
                     "coefficient": 0.133602879186761,
                     "mean": 0.0394147506718423,
@@ -136,7 +141,6 @@
                 },
                 {
                     "value": false,
-                    "numericVal": 0,
                     "description": "child does not have bulging fontanelle"
                 }
             ]
@@ -144,15 +148,17 @@
          {
             "name": "neonatalJaundice",
             "displayName": "Neonatal jaundice",
-            "description": "Whether the child is less than 30 days old and had evidence of jaundice at time of admission",
+            "description": "Whether the child is less than 30 days old and had evidence of jaundice at time of admission. If true, value = 1",
             "type": "boolean",
             "units": null,
             "required": true,
             "dependencies": ["isNeonate"],
+            "coefficient": 0,
+            "mean": 0.0791280979396835,
+            "standardDeviation": 0.269978899816029,
             "oneOf": [
                 {
                     "value": true,
-                    "numericVal": 1,
                     "description": "child has neonatal jaundice",
                     "coefficient": 0,
                     "mean": 0.0791280979396835,
@@ -160,7 +166,6 @@
                 },
                 {
                     "value": false,
-                    "numericVal": 0,
                     "description": "child does not have neonatal jaundice"
                 }
             ]

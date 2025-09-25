@@ -85,11 +85,21 @@ export abstract class ModelStrategy {
      * scales boolean variables and multiplies by coefficient
      */
     protected handleBooleanVariable(variable: ModelVariable, value: any): number {
-        // TODO
-        throw new Error("Method not implemented.");
+        const boolValue = this.convertToBoolean(value)
+        // if value of variable is false, variable has no contribution - return 0
+        if (!boolValue) return 0;
+
+        // if value is true, numValue = 1, otherwise 0
+        const numValue = boolValue ? 1 : 0
+        const mean = variable.mean || 0
+        const stdDev = variable.standardDeviation || 1
+        const coeff = variable.coefficient || 0
+
+        const scaledVal = this.scaleValue(numValue, mean, stdDev)
+        return scaledVal * coeff;
     }
 
-     /**
+    /**
      * 
      * @param variable 
      * @param value numeric value in either string or number format
@@ -107,8 +117,7 @@ export abstract class ModelStrategy {
             numValue = value
         }
 
-        // scale value if mean and sd given: (numValue - mean) / stdDev,
-        const scaledVal = (numValue - mean) / stdDev
+        const scaledVal = this.scaleValue(numValue, mean, stdDev)
         return scaledVal * coeff;
     }
     
@@ -135,6 +144,11 @@ export abstract class ModelStrategy {
         return 0;
     }
 
+    // scale value if mean and sd given: (value - mean) / stdDev,
+    protected scaleValue(val: number, mean: number, stdDev: number): number {
+        return (val - mean) / stdDev 
+    }
+
     protected convertToRiskScore(rawScore: number): number {
         // scaled score = 1/(1 + exp(-r))
         const scaledScore = 1 / (1 + Math.exp(-rawScore))
@@ -152,7 +166,7 @@ export abstract class ModelStrategy {
         
         // store 'low' threshold if it exists in model
         let low
-        if (this.model.riskThresholds.low != null) {
+        if (this.model.riskThresholds.low != null) { // TODO check that this condition is ok
             low = this.model.riskThresholds.low
         }
 
@@ -168,6 +182,18 @@ export abstract class ModelStrategy {
         // default to lowest available risk level if not mod to very high
         return (low != null) ? 'Low' : 'Moderate';
     }
+
+    private convertToBoolean(value: any): boolean {
+        if (typeof value === 'boolean') return value;
+        
+        if (typeof value === 'string') {
+            const lower = value.toLowerCase();
+            return lower === 'true' || lower === 'yes' || lower === '1' || lower === 'positive';
+        }
+
+        return Boolean(value);
+    }
+}
         
     // calculation steps
     // 1. start with raw score of 0
@@ -181,7 +207,6 @@ export abstract class ModelStrategy {
     //      scaled score = 1/(1 + exp(-r))
     //      where r = raw score and exp(-r)means number e = 2.718... raised to the power -r
     // 7. multiply scaled score by 100 and round to two decimal places
-}
 
 
 // // src/models/ModelStrategy.ts
