@@ -41,6 +41,7 @@ export default function ReviewScreen() {
     }, [patientData])
 
     const validateRequiredFields = () => {
+        console.log('validating required fields...')
         const missingSectionFields: { [key: string]: string[] } = {};
 
         for (const section of patientFormSchema) {
@@ -51,12 +52,12 @@ export default function ReviewScreen() {
                 const fieldValue = patientData[fieldName as keyof typeof patientData];
 
                 // Check if field is empty or null
-                if (!fieldValue) {
+                if (isEmptyField(fieldValue)) {
                     missingFields.push(displayNames[fieldName] || fieldName); // if no display name, push fieldName
                 }
             }
 
-            // check optional fields
+            // check optional and 'oneof' fields
             if (section.oneOf) {
                 let hasValidOption = false;
  
@@ -65,9 +66,7 @@ export default function ReviewScreen() {
                     const allFieldsFilled = option.every(fieldName => {
                         const fieldValue = patientData[fieldName as keyof typeof patientData]
                         // true if field value not empty string or null
-                        return fieldValue &&
-                               !(typeof fieldValue === 'string' && fieldValue.trim() === '') &&
-                               fieldValue !== null
+                        return !isEmptyField(fieldValue)
                     })
 
                     if (allFieldsFilled) {
@@ -91,7 +90,16 @@ export default function ReviewScreen() {
                         
                         for (const fieldName of underSixMonthsFields) {
                             const fieldValue = patientData[fieldName as keyof typeof patientData]
-                            if (!fieldValue) {
+                            if (isEmptyField(fieldValue)) {
+                                 missingFields.push(displayNames[fieldName] || fieldName);
+                            }
+                        }
+                    } else if (patientData.isNeonate) {
+                        const neonateFields = section.conditionalRequired.isNeonate || []
+
+                        for (const fieldName of neonateFields) {
+                            const fieldValue = patientData[fieldName as keyof typeof patientData]
+                            if (isEmptyField(fieldValue)) {
                                  missingFields.push(displayNames[fieldName] || fieldName);
                             }
                         }
@@ -101,7 +109,7 @@ export default function ReviewScreen() {
                         
                         for (const fieldName of overSixMonthsFields) {
                             const fieldValue = patientData[fieldName as keyof typeof patientData]
-                            if (!fieldValue) {
+                            if (isEmptyField(fieldValue)) {
                                  missingFields.push(displayNames[fieldName] || fieldName);
                             }
                         }
@@ -115,7 +123,7 @@ export default function ReviewScreen() {
                         
                         for (const fieldName of hasTelephoneFields) {
                             const fieldValue = patientData[fieldName as keyof typeof patientData];
-                            if (!fieldValue) {
+                            if (isEmptyField(fieldValue)) {
                                 missingFields.push(displayNames[fieldName] || fieldName);
                             }
                         }
@@ -130,6 +138,20 @@ export default function ReviewScreen() {
         }
 
         return missingSectionFields;
+    }
+
+    const isEmptyField = (value: any): boolean => {
+        if (value === null || value === undefined) {
+            return true;
+        }
+
+        if (typeof(value) === 'string') {
+            return value.trim() === ''
+        }
+
+        // everything else (numbers, objects, arrays, booleans) -- treat as NOT empty
+        // TODO handle objects and arrays (if these types are ever added to PatientData type)
+        return false
     }
 
     const formatMissingFieldsMessage = (missingSectionFields: {[key: string]: string[]}) => {
@@ -151,6 +173,7 @@ export default function ReviewScreen() {
             setIsSubmitting(true);
         
             const missingData = validateRequiredFields();
+            console.log('missingData', missingData)
             
             function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
                 for (const item of a) {
@@ -313,8 +336,8 @@ export default function ReviewScreen() {
                              <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
                                 <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
-                                <InfoRow label="Jaundice" value={patientData.bulgingFontanelle} />
-                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle} />
+                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} />}
+                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
                                 <InfoRow label="Feeding well?" value={patientData.feedingWell ? 'Yes': 'No'} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>

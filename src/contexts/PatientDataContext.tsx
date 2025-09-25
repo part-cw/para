@@ -43,8 +43,8 @@ export interface PatientData {
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: string;
-  neonatalJaundice: string;
-  bulgingFontanelle: string; // TODO - change to boolean
+  neonatalJaundice: boolean | null;
+  bulgingFontanelle: boolean | null;
   feedingWell: boolean | null;
 
   // Medical Conditions
@@ -108,8 +108,8 @@ const initialPatientData: PatientData = {
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration: '',
-  neonatalJaundice: '',
-  bulgingFontanelle: '', // TODO - change to boolean?
+  neonatalJaundice: null,
+  bulgingFontanelle: null,
   feedingWell: null,
 
   // medical conditions
@@ -212,8 +212,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const updates = {
         isUnderSixMonths,
         illnessDuration: '',
-        neonatalJaundice: '',
-        bulgingFontanelle: '',
+        neonatalJaundice: null,
+        bulgingFontanelle: null,
         feedingWell: null,
       };
       await updatePatientData(updates);

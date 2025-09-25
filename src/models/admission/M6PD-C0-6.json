@@ -37,7 +37,7 @@
             "standardDeviation": 17.714446596961
         },
         {
-            "name": "feedingStatus",
+            "name": "feedingWell",
             "displayName": "Feeding Status",
             "description": "Is the child sucking well when breastfeeding (or feeding well if the child is not being breasfed)",
             "type": "boolean",
@@ -122,12 +122,12 @@
             "name": "bulgingFontanelle",
             "displayName": "Bulging Fontanelle",
             "description": "Whether the child had bulging fontanelle at admission",
-            "type": "string",
+            "type": "boolean",
             "units": null,
             "required": true,
             "oneOf": [
                 {
-                    "value": "Yes",
+                    "value": true,
                     "numericVal": 1,
                     "description": "child has bulging fontanelle",
                     "coefficient": 0.133602879186761,
@@ -135,14 +135,9 @@
                     "standardDeviation": 0.194608675839138
                 },
                 {
-                    "value": "No",
+                    "value": false,
                     "numericVal": 0,
                     "description": "child does not have bulging fontanelle"
-                },
-                {
-                    "value": "Unsure",
-                    "numericVal": 0,
-                    "description": "practitioner is unsure of whether the child has bulging fontanelle"
                 }
             ]
         },
@@ -150,13 +145,13 @@
             "name": "neonatalJaundice",
             "displayName": "Neonatal jaundice",
             "description": "Whether the child is less than 30 days old and had evidence of jaundice at time of admission",
-            "type": "string",
+            "type": "boolean",
             "units": null,
             "required": true,
             "dependencies": ["isNeonate"],
             "oneOf": [
                 {
-                    "value": "Yes",
+                    "value": true,
                     "numericVal": 1,
                     "description": "child has neonatal jaundice",
                     "coefficient": 0,
@@ -164,19 +159,9 @@
                     "standardDeviation": 0.269978899816029
                 },
                 {
-                    "value": "No",
+                    "value": false,
                     "numericVal": 0,
                     "description": "child does not have neonatal jaundice"
-                },
-                {
-                    "value": "Unsure",
-                    "numericVal": 0,
-                    "description": "the user is unsure of whether the child has jaundice"
-                },
-                {
-                    "value": "",
-                    "numericVal": 0,
-                    "description": "the child is not a neonate"
                 }
             ]
         }

@@ -110,13 +110,13 @@ export default function AdmissionClinicalDataScreen() {
             if (!illnessDuration) {
                 errors.push('Illness duration is required');
             }
-            if (isNeonate && !jaundice) {
+            if (isNeonate && jaundice === null) {
                 errors.push('Jaundice status is required');
             }
-            if (!bulgingFontanelle) {
+            if (bulgingFontanelle === null) {
                 errors.push('Bulging fontanelle status is required');
             }
-            if (!feedingStatus) {
+            if (feedingStatus === null) {
                 errors.push('Feeding status is required');
             }
         } else {
@@ -230,7 +230,7 @@ export default function AdmissionClinicalDataScreen() {
 
     // handle changes to isNeonate; resets jaundice selection if changes made to age
     useEffect(() => {
-        if (!isNeonate) updatePatientData({neonatalJaundice: ''})
+        if (!isNeonate) updatePatientData({neonatalJaundice: null})
     }, [isNeonate])
     
     const setMalnutritionStatus = () => {
@@ -376,6 +376,18 @@ export default function AdmissionClinicalDataScreen() {
         }
     };
 
+    const stringToBoolean = (input: string) => {
+        if (input.toLowerCase() === 'yes' || input.toLowerCase() === 'true' || parseFloat(input) === 1) {
+            return true
+        } else {
+            return false;
+        }
+    }
+
+    const booleanToString = (input: boolean) => {
+        return input ? 'yes' : 'no'
+    }
+
     const durationOptions = [
         { value: 'Less than 48 hours', key: '<48h' },
         { value: '48 hours to 7 days', key: '48h-7d' },
@@ -450,48 +462,54 @@ export default function AdmissionClinicalDataScreen() {
                                     />
 
                                     {isNeonate &&
-                                        <View style={{flexDirection:'row', alignItems: 'center'}}>
-                                            <SearchableDropdown 
-                                                data={[
-                                                    { value: 'Yes', key: 'yes'},
-                                                    { value: 'No', key: 'no'},
-                                                    { value: "Unsure", key: "unsure"}
-                                                ]} 
-                                                label={'Neonatal Jaundice (required)'}
-                                                placeholder='select option below' 
-                                                onSelect={(item) => updatePatientData({ neonatalJaundice: item.value })}
-                                                value={jaundice}
-                                                search={false}
-                                            />
-                                            <IconButton
-                                                icon="help-circle-outline"
-                                                size={20}
-                                                iconColor={colors.primary}
-                                                onPress={() => {
-                                                    Platform.OS !== 'web' ? Alert.alert('Info', jaundiceInfo) : alert(jaundiceInfo)
-                                                }}
+                                        <View>
+                                            <View style={{flexDirection:'row', alignItems: 'center'}}>
+                                                <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Neonatal Jaundice <Text style={Styles.required}>*</Text></Text>
+                                                <IconButton
+                                                    icon="help-circle-outline"
+                                                    size={20}
+                                                    iconColor={colors.primary}
+                                                    onPress={() => {
+                                                        Platform.OS !== 'web' ? Alert.alert('Neonatal Jaundice', jaundiceInfo) : alert(jaundiceInfo)
+                                                    }}
+                                                />
+                                            </View>
+                                            <Text>{displayNames['jaundiceQuestion']}</Text>
+                                            <RadioButtonGroup 
+                                                options={[
+                                                    { label: 'Yes', value: 'yes'},
+                                                    { label: 'No', value: 'no'},]} 
+                                                selected={(jaundice!== null) && booleanToString(jaundice)} 
+                                                onSelect={(value) => updatePatientData({ 
+                                                    neonatalJaundice: stringToBoolean(value) })}
                                             />
                                         </View>
                                     }
 
-                                    {/* TODO - replace dropdown with yes/no radio buttons */}
-                                    <SearchableDropdown 
-                                        data={simplifiedOptions} 
-                                        label={'Bulging Fontanelle (required)'}
-                                        placeholder='select option below' 
-                                        onSelect={(item) => updatePatientData({ bulgingFontanelle: item.value })}
-                                        value={bulgingFontanelle}
-                                        search={false}
-                                    />
-
-                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Feeding Status <Text style={Styles.required}>*</Text></Text>
-                                    <Text>{displayNames['feedingStatusQuestion']}</Text>
-                                    <RadioButtonGroup 
-                                        options={[
-                                            { label: 'Yes', value: 'yes'},
-                                            { label: 'No', value: 'no'},]} 
-                                        selected={feedingStatus ? 'yes' : 'no'} 
-                                        onSelect={(value) => updatePatientData({ feedingWell: value === 'yes' })}/>
+                                    {/* TODO FIX THE RADIO BUTTON ISSUE - IT SHOULD NOT BE AUTOSELCTED; CHANGE TYPES TO STRING? */}
+                                    <View>
+                                        <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Bulging Fontanelle <Text style={Styles.required}>*</Text></Text>
+                                        <Text>{displayNames['fontanelleQuestion']}</Text>
+                                        <RadioButtonGroup 
+                                            options={[
+                                                { label: 'Yes', value: 'yes'},
+                                                { label: 'No', value: 'no'},]} 
+                                            selected={(bulgingFontanelle !== null) && booleanToString(bulgingFontanelle)} 
+                                            onSelect={(value) => updatePatientData({ bulgingFontanelle: stringToBoolean(value) })}
+                                        />
+                                    </View>
+                                    
+                                    <View>
+                                        <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Feeding Status <Text style={Styles.required}>*</Text></Text>
+                                        <Text>{displayNames['feedingStatusQuestion']}</Text>
+                                        <RadioButtonGroup 
+                                            options={[
+                                                { label: 'Yes', value: 'yes'},
+                                                { label: 'No', value: 'no'},]} 
+                                            selected={feedingStatus !== null && booleanToString(feedingStatus)} 
+                                            onSelect={(value) => updatePatientData({ feedingWell: stringToBoolean(value) })}
+                                        />
+                                    </View>
                                 </View>
                             </List.Accordion>
                         </View>
