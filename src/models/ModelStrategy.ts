@@ -39,8 +39,7 @@ export abstract class ModelStrategy {
 
         // process main variables and add to score -- scale each variable and multiply by coefficient 
         for (const variable of this.model.variables) {
-            // const scaledValue = this.scaleNumericValues(variable, patientData)
-            const contribution = this.calculateVariableContribution(variable, patientData)
+            const contribution = this.calculateScaledVariableContribution(variable, patientData)
             score += contribution;
         }
 
@@ -61,23 +60,22 @@ export abstract class ModelStrategy {
      * 
      * @param variable 
      * @param patientData 
-     * @returns caluclates contribution of scaled variable value based on variable type. 
+     * @returns calculates contribution of scaled variable value based on variable type. 
      */
-    protected calculateVariableContribution(variable: ModelVariable, patientData: PatientData): number {
-        // scaled = (numeric val - mean) / standard deviation
+    protected calculateScaledVariableContribution(variable: ModelVariable, patientData: PatientData): number {
         const value = patientData[variable.name]
         if (value === null || value === undefined) return 0;      
 
-        // Handle different variable types
+        // Handle different variable types -- return scaled contribution
         if (variable.type === 'boolean') {
             return this.handleBooleanVariable(variable, value);
         } else if (variable.type === 'number' && variable.coefficient !== undefined) {
             return this.handleNumericVariable(variable, value);
-        } // else if (variable.type === 'string' && variable.contraints?.oneOf) {
-        //  return this.handleContinuousVariable(variable, value);
-        // }
+        } else if (variable.type === 'string' && variable?.oneOf) {
+            return this.handleCategoricalVariable(variable, value)
+        }
 
-        return 0;
+        throw Error(`Type ${variable.type} not handled`); 
     }
 
     /**
@@ -94,22 +92,30 @@ export abstract class ModelStrategy {
      /**
      * 
      * @param variable 
-     * @param value 
+     * @param value numeric value in either string or number format
      * scales numeric variables and multiplies by coefficient
      */
-    protected handleNumericVariable(variable: ModelVariable, value: number): number {
-        const mean = variable.mean
-        const sd = variable.standardDeviation
+    protected handleNumericVariable(variable: ModelVariable, value: any): number {
+        const mean = variable.mean || 0
+        const stdDev = variable.standardDeviation || 1
         const coeff = variable.coefficient || 0
 
-        // scale value if mean and sd given
-        const scaledVal = (mean && sd) ? (value - mean) / sd : value
-        
-        // multiply by coefficient
-        const contribution = scaledVal * coeff
+        let numValue: number
+        if (typeof(value) === 'string') {
+            numValue = parseFloat(value) // need this because some variables in patientData stored as string (eg. weight)
+        } else {
+            numValue = value
+        }
 
-        return contribution;
-    }    
+        // scale value if mean and sd given: (numValue - mean) / stdDev,
+        const scaledVal = (numValue - mean) / stdDev
+        return scaledVal * coeff;
+    }
+    
+    protected handleCategoricalVariable(variable: ModelVariable, value: any): number {
+        // TODO
+        throw new Error("Method not implemented.");
+    }
 
     protected getAgeInteractionValue(age: number, val: number): number {
         // ultiple value (or numeric value or boolean) by numeric value for ageInMonths (rounded to 1 decimal)
@@ -178,8 +184,6 @@ export abstract class ModelStrategy {
 }
 
 
-
-export { RiskPrediction };
 // // src/models/ModelStrategy.ts
 // import { PatientData } from '../contexts/PatientDataContext';
 
