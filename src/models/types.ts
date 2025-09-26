@@ -1,5 +1,7 @@
 import { PatientData } from "../contexts/PatientDataContext";
 
+type SingleKeyValueObject = { [key: string]: string };
+
 export interface ModelContext {
   isUnderSixMonths: boolean;
   usageTime: 'admission' | 'discharge' | string;
@@ -35,7 +37,7 @@ export interface ModelInteraction {
     type: string;
     units: string | null;
     required: boolean;
-    dependency: string | {};
+    dependency: string | SingleKeyValueObject;
     dependencyType: string;
     coefficient: number;
     mean: number;
