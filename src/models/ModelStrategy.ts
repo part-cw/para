@@ -12,17 +12,51 @@ export abstract class ModelStrategy {
         this.model = model;
     }
 
-    // main function that calculates risk level
+    /**
+     * Main function that calculates risk level
+     */
     public calculateRisk(patientData: PatientData): RiskPrediction {
-        const rawScore = this.calculateRawScore(patientData) // scales variables/interactions, multiply by coefficient, add offset         
-        const riskScore = this.convertToRiskScore(rawScore) // scale raw score and convert to percentage
-        const riskLevel = this.getRiskLevel(riskScore)
+        try {
+            this.validateRequiredData(patientData)
+            const rawScore = this.calculateRawScore(patientData) // scales variables/interactions, multiply by coefficient, add offset         
+            const riskScore = this.convertToRiskScore(rawScore) // scale raw score and convert to percentage
+            const riskLevel = this.getRiskLevel(riskScore)
 
-        return {
-            rawScore,
-            riskScore,
-            riskLevel,
-            model: this.model.modelName
+            return {
+                rawScore,
+                riskScore,
+                riskLevel,
+                model: this.model.modelName
+            }
+        } catch (err) {
+            const error = err as Error;
+            throw new Error (`Risk calculation failed for model ${this.model.modelName}: ${error.message}`)
+        }
+    }
+
+    /**
+     * Validates that all required variables are present
+     */
+    private validateRequiredData(patientData: PatientData): void {
+        const missingVariables: string[] = [];
+        
+        for (const variable of this.model.variables) {
+            if (variable.required) {
+                const value = patientData[variable.name];
+                if (value === null || value === undefined || value === '') {
+                    missingVariables.push(variable.displayName || variable.name);
+                }
+            }
+        }
+
+        if (missingVariables.length > 0) {
+            throw new Error(`Missing required variables: ${missingVariables.join(', ')}`);
+        }
+
+        // Validate age for interactions if they exist
+        const interactions = this.model.ageInteractions
+        if ((interactions && interactions.length > 0) && !patientData.ageInMonths) {
+            throw new Error('Age in months is required for models with age interactions');
         }
     }
 
