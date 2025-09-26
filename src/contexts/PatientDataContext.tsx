@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { DropdownItem } from '../components/SearchableDropdown';
 
-// Define your data structure based on all screens
+// Data structure based on all screens
 export interface PatientData {
   // Metadata
   admissionStartedAt: string | null;
