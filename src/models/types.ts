@@ -50,6 +50,7 @@ export interface RiskModel {
     description: string;
     usageTime: 'admission' | 'discharge' | string;
     isUnderSixMonths: boolean;
+    modelType: 'logistic_regression' | string;
     inputType: 'clinical' | string;
     riskThresholds: {
         low?: number;
@@ -66,6 +67,5 @@ export interface RiskPrediction {
     rawScore: number;
     riskScore: number;
     riskLevel: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
-    // missingVariables: string[];
     model: string;
 }
