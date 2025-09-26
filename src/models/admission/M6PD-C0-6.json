@@ -4,6 +4,7 @@
     "description": "The 2nd-most preferred model for Uganda, under 6 months old from the pool of clinical variables",
     "usageTime": "admission",
     "isUnderSixMonths": true,
+    "modelType": "logistic_regression",
     "inputType": "clinical",
     "riskThresholds": {
         "moderate": 0,

@@ -4,8 +4,9 @@
     "description": "The 3rd-most preferred model for Uganda, 6-60 months old from the pool of clinical variables",
     "usageTime": "admission",
     "isUnderSixMonths": true,
+    "modelType": "logistic_regression",
     "inputType": "clinical",
-     "riskThresholds": {
+    "riskThresholds": {
         "low": 0,
         "moderate": 2,
         "high": 5,
@@ -101,7 +102,7 @@
             "name": "rrate",
             "displayName": "Respiratory Rate",
             "description": "The patient's respitarory rate in beats per minute",
-            "type": "integer",
+            "type": "number",
             "units": "bpm",
             "required": true,
             "coefficient": 0.0535527564406269,
@@ -111,24 +112,14 @@
         {
             "name": "abnormalBCS",
             "displayName": "Abnormal BCS",
-            "description": "Whether the child qualifies as abnormal on the Blanture Coma Scale (BCS) as determined by the responses to eye movement, motor response, and verbal response",
+            "description": "Whether the child qualifies as abnormal on the Blanture Coma Scale (BCS) as determined by the responses to eye movement, motor response, and verbal response. If true, value = 1",
             "type": "boolean",
             "units": null,
             "required": true,
             "dependencies": ["bcsScore"],
-            "oneOf": [
-                {
-                    "value": true,
-                    "description": "Child has bcsScore < 5",
-                    "coefficient": 0.156278320973061,
-                    "mean": 0.084472049689441,
-                    "standardDeviation": 0.2781232416193
-                },
-                {
-                    "value": false,
-                    "description": "Child has bcsScore = 5"
-                }
-            ]
+            "coefficient": 0.156278320973061,
+            "mean": 0.084472049689441,
+            "standardDeviation": 0.2781232416193
         },
           {
             "name": "temperature",
@@ -189,7 +180,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["muac"],
+            "dependency": "muac",
+            "dependencyType": "number",
             "coefficient": 0.01634256177762,
             "mean": 3105.68119806456,
             "standardDeviation": 2147.39398953648
@@ -201,7 +193,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["spo2"],
+            "dependency": "spo2",
+            "dependencyType": "number",
             "coefficient": 0.0108191861065529,
             "mean": 2052.48068080642,
             "standardDeviation": 1317.36341087785
@@ -213,7 +206,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["abnormalBCS"],
+            "dependency": "abnormalBCS",
+            "dependencyType": "boolean",
             "coefficient": -0.0501996960782557,
             "mean": 2.03354683467865,
             "standardDeviation": 8.03141908397769
@@ -225,7 +219,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["rrate"],
+            "dependency": "rrate",
+            "dependencyType": "number",
             "coefficient": 0.106396248312435,
             "mean": 989.760671623608,
             "standardDeviation": 651.698260089369
@@ -237,7 +232,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["hivStatus"],
+            "dependency": {"hivStatus": "Positive"},
+            "dependencyType": "string",
             "coefficient": -0.0213671243176617,
             "mean": 0.660361744912319,
             "standardDeviation": 4.54354876034153
@@ -246,10 +242,10 @@
             "name": "ageHospitalizedUnderSevenDays",
             "displayName": "Age in months x Last hospitalization less than 7 days ago",
             "description" : "Age interaction with Last hospitalization less than 7 days ago",
-            "type": "float",
+            "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "lastHospitalized", "<7d"],
+            "dependency": ["ageInMonths", "lastHospitalized", "<7d"],
             "coefficient": 0.0261069259775735,
             "mean": 0.934105415757909,
             "standardDeviation": 5.53005241532526
@@ -261,7 +257,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "lastHospitalized", "7d-1m"],
+            "dependency": {"lastHospitalized": "7d-1mo"},
+            "dependencyType": "string",
             "coefficient": 0.0232372758950781,
             "mean": 1.68836757772414,
             "standardDeviation": 6.77588270170648
@@ -273,7 +270,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "lastHospitalized", "1m-1y"],
+            "dependency": {"lastHospitalized": "1mo-1y"},
+            "dependencyType": "string",
             "coefficient": 0.0858658207108999,
             "mean": 5.52683548662683,
             "standardDeviation": 11.7224453431259
@@ -285,7 +283,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependencies": ["ageInMonths", "lastHospitalized", ">1y"],
+            "dependency": {"lastHospitalized": ">1y"},
+            "dependencyType": "string",
             "coefficient": -0.0118773973443354,
             "mean": 2.86128287865418,
             "standardDeviation": 10.2807628495974
