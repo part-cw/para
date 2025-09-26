@@ -2,7 +2,9 @@ import { PatientData } from "../contexts/PatientDataContext";
 import { ModelInteraction, ModelVariable, RiskModel, RiskPrediction } from "./types";
 
 /**
- * calculates risk scores
+ * calculates risk scores for given models
+ * NOTE: if any other models are used, this should be further generalized 
+ *       and all LR calculation functions should move to concrete LogisticRegressionStrategy class 
  */
 export abstract class ModelStrategy {
     protected model: RiskModel;
@@ -257,5 +259,27 @@ export abstract class ModelStrategy {
      */
     protected getRoundedAge(ageInMonths: number): number {
         return Math.round(ageInMonths * 10) / 10;
+    }
+}
+
+// TODO:  move lr-specific calculations to this concrete class
+export class LogisticRegressionStrategy extends ModelStrategy {
+    constructor(model: RiskModel) {
+        if (model.modelType !== 'logistic_regression') {
+            throw new Error('LogisticRegressionStrategy only supports LR models')
+        }
+        super(model)
+    }
+}
+
+/**
+ * Factory function to create appropriate model strategy
+ */
+export function createModelStrategy(model: RiskModel): ModelStrategy {
+    switch (model.inputType) {
+        case 'logistic_regression':
+            return new LogisticRegressionStrategy(model);
+        default:
+            throw new Error(`Unsupported model type: ${model.modelType}`);
     }
 }
