@@ -13,7 +13,7 @@ type Option = {
 
 type Props = {
   options: Option[];
-  selected: string;
+  selected: string | boolean | null;
   onSelect: (value: string) => void;
 };
 

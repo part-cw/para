@@ -1,4 +1,5 @@
 
+export const jaundiceInfo = 'Applies only to infants less than 30 days old.'
 export const muacInfo = 'MUAC = Mid-upper arm circumference.\nUsed to assess malnutrition.\n\nDespite local health guidlines, this is a required field for all age groups to ensure accurate AI model predictions'
 export const rrateButtonInfo = 'Manually count breaths per minute, or measure from the RRate app by clicking "Record from RRate" button'
 

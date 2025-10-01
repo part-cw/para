@@ -71,7 +71,8 @@ export default function PatientInformationScreen() {
             }
 
             updatePatientData({
-                ageInMonths: AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge)
+                ageInMonths: AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge),
+                isNeonate: isUnderSixMonths && dob && AgeCalculator.getAgeInDaysFromDob(dob) < 30
             })
 
             setCalculatedAge(age);
