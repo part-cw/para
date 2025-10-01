@@ -105,17 +105,16 @@ export abstract class ModelStrategy {
         // handle missing, non-required variables
         if (rawValue === null || rawValue === undefined || rawValue === '') return 0; 
 
+        if (variable.type === 'string' && variable.oneOf) {
+            return this.calculateCategoricalVariableContribution(variable, rawValue)
+        }
+       
         const numericValue = this.extractNumericValue(variable, rawValue);
-        console.log('numeric value', numericValue)
-        // if (variable.type === 'boolean' && numericValue === 0) {
-        //     console.log ('boolean variable is false -- no contirbution')
-        //     return 0;
-        // }
-
         const stats = this.extractStats(variable, rawValue)
-        console.log('stats', stats)
-        
         const scaledValue = this.scaleValue(numericValue, stats.mean || 0, stats.standardDeviation || 1);
+        
+        console.log('numeric value', numericValue)
+        console.log('stats', stats)
         console.log('scaled val', scaledValue)
         console.log('contribution: ', scaledValue * (stats.coefficient || 0))
 
@@ -174,10 +173,6 @@ export abstract class ModelStrategy {
             
             case 'number':
                 return this.handleNumericValue(rawValue);
-            
-            case 'string':
-                return this.handleCategoricalValue(variable, rawValue);
-            
             default:
                 throw new Error(`Unsupported variable type: ${variable.type}`);
         }
@@ -207,15 +202,53 @@ export abstract class ModelStrategy {
         return option;
     }
 
-    
+    /**
+     * 
+     * @param variable 
+     * @param value 
+     * @returns total contribution of categorical variabls - selected options have value of 1 and nonseelctd 0
+     */
+    private calculateCategoricalVariableContribution(variable: ModelVariable, value: any): number {
+        let categoricalContribution = 0
+
+        // find contribution of selected option
+        const selected = this.getOption(variable, value)
+        const selNumeric = (selected.coefficient !== undefined) ? 1 : 0
+        const selScaled = this.scaleValue(selNumeric, selected.mean || 0, selected.standardDeviation || 1)
+        categoricalContribution += selScaled * (selected.coefficient || 0)
+
+        console.log('contribution of selected option', selected.value)
+        console.log('numval', selNumeric)
+        console.log('scaled', selScaled)
+        console.log('contribution=', selScaled * (selected.coefficient || 0))
+
+        // find contribution of non-selected options
+        const nonselected = variable.oneOf?.filter(
+            opt => opt.value.trim().toLowerCase() !== value.trim().toLowerCase())
+        
+        if (nonselected && nonselected.length > 0) {
+            for (const option of nonselected) {
+                const numVal = 0 // all unselected options have value of 0
+                const scaled = this.scaleValue(numVal, option.mean || 0, option.standardDeviation || 1)
+                categoricalContribution += scaled * (option.coefficient || 0)
+                console.log('contribution of nonselected option', option.value)
+                console.log('numval', numVal)
+                console.log('scaled', scaled)
+                console.log('contribution=', scaled * (option.coefficient || 0))
+            }
+        }
+
+        return categoricalContribution;
+    }
+
     /**
      * Handles categorical variables with oneOf options. Returns numeric value 
      */
-    protected handleCategoricalValue(variable: ModelVariable, value: any): number {
-        const option = this.getOption(variable, value)   
+    private handleCategoricalValue(variable: ModelVariable, value: any): number {
+        const selected = this.getOption(variable, value)   
 
         // If option has no coefficient, it's the reference category (0 contribution)
-        const numValue = (option.coefficient !== undefined) ? 1 : 0;
+        const numValue = (selected.coefficient !== undefined) ? 1 : 0;
         console.log('cat option', value)
         console.log('numval', numValue)
         return numValue;

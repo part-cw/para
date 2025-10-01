@@ -3,8 +3,8 @@ import { calculateWAZ } from '../../utils/clinicalVariableCalculator'
 import model from '../admission/M6PD-C0-6.json'
 import { LogisticRegressionStrategy } from '../ModelStrategy'
 import { RiskModel } from '../types'
-// import testCases from './model0-6C_testCases.json'
-import testCases from './single-test.json'
+import testCases from './model0-6C_testCases.json'
+// import testCases from './single-test.json'
 
 
 describe('LogisticRegressionStrategy', () => {

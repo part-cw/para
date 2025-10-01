@@ -1,21 +1,21 @@
 [
   [
-   {
-      "ageInMonths": 4.3,
-      "muac": 130,
-      "spo2": 96,
-      "weight": 7,
-      "sex": "Male",
+    {
+      "ageInMonths": 0.5,
+      "muac": 109,
+      "spo2": 91,
+      "weight": 3.3,
+      "sex": "Female",
       "illnessDuration": "48h-7d",
       "bulgingFontanelle": false,
-      "isNeonate": false,
+      "isNeonate": true,
       "neonatalJaundice": false,
-      "feedingWell": true
+      "feedingWell": false
     },
     {
       "modelName": "Model 0-6C",
-      "riskCategory": "Moderate",
-      "riskScore": 3.26
+      "riskCategory": "High",
+      "riskScore": 6.66
     }
   ]
 ]
