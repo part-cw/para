@@ -1,0 +1,96 @@
+[
+  [
+    {
+      "ageInMonths": 3.9,
+      "muac": 140,
+      "spo2": 82,
+      "weight": 8.05,
+      "sex": "male",
+      "illnessDuration": "<48h",
+      "bulgingFontanelle": true,
+      "isNeonate": false,
+      "feedingWell": true
+    },
+    {
+      "modelName": "M6PD-C0-6",
+      "riskCategory": "Moderate",
+      "riskScore": 4.75
+    }
+  ],
+  [
+    {
+      "ageInMonths": 0.1,
+      "muac": 94,
+      "spo2": 95,
+      "weight": 2.4,
+      "sex": "Female",
+      "illnessDuration": "<48h",
+      "bulgingFontanelle": false,
+      "isNeonate": true,
+      "neonatalJaundice": false,
+      "feedingWell": false
+    },
+    {
+      "modelName": "Model 0-6C",
+      "riskCategory": "High",
+      "riskScore": 8.99
+    }
+  ],
+  [
+    {
+      "ageInMonths": 4.3,
+      "muac": 130,
+      "spo2": 96,
+      "weight": 7,
+      "sex": "Male",
+      "illnessDuration": "48h-7d",
+      "bulgingFontanelle": false,
+      "isNeonate": false,
+      "neonatalJaundice": false,
+      "feedingWell": true
+    },
+    {
+      "modelName": "Model 0-6C",
+      "riskCategory": "Moderate",
+      "riskScore": 3.26
+    }
+  ],
+  [
+    {
+      "ageInMonths": 0.5,
+      "muac": 109,
+      "spo2": 91,
+      "weight": 3.3,
+      "sex": "Female",
+      "illnessDuration": "48h-7d",
+      "bulgingFontanelle": false,
+      "isNeonate": true,
+      "neonatalJaundice": false,
+      "feedingWell": false
+    },
+    {
+      "modelName": "Model 0-6C",
+      "riskCategory": "High",
+      "riskScore": 6.66
+    }
+  ],
+  [
+    {
+      "ageInMonths": 5.0,
+      "muac": 130,
+      "spo2": 82,
+      "weight": 5.5,
+      "sex": "Female",
+      "illnessDuration": "<48h",
+      "bulgingFontanelle": false,
+      "isNeonate": false,
+      "neonatalJaundice": false,
+      "feedingWell": false
+    },
+    {
+      "modelName": "Model 0-6C",
+      "riskCategory": "High",
+      "riskScore": 8.59
+    }
+  ]
+]

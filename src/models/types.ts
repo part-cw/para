@@ -1,4 +1,4 @@
-import { PatientData } from "../contexts/PatientDataContext";
+import { PatientData } from "../contexts/PatientData";
 
 type SingleKeyValueObject = { [key: string]: string };
 
@@ -9,7 +9,7 @@ export interface ModelContext {
 
 export interface Option {
     value: any;
-    numericValue?: number;
+    label?: string;
     description: string;
     coefficient?: number;
     mean?: number;
@@ -64,8 +64,7 @@ export interface RiskModel {
 }
 
 export interface RiskPrediction {
-    rawScore: number;
     riskScore: number;
-    riskLevel: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
+    riskCategory: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
     model: string;
 }

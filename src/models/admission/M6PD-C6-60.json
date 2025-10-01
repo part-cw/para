@@ -153,7 +153,6 @@
             "oneOf": [
                 {
                     "value": "Positive",
-                    "numericVal": 1,
                     "description": "child is HIV+",
                     "coefficient": 0.126617920341138,
                     "mean": 0.0298136645962733,
@@ -161,12 +160,10 @@
                 },
                 {
                     "value": "Negative",
-                    "numericVal": 0,
                     "description": "child is not HIV+"
                 },
                 {
                     "value": "Unknown",
-                    "numericVal": 0,
                     "description": "is is unknown whether the child is HIV+"
                 }
             ]

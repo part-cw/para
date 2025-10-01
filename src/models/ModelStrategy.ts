@@ -1,5 +1,11 @@
-import { PatientData } from "../contexts/PatientDataContext";
+import { PatientData } from "../contexts/PatientData";
 import { ModelInteraction, ModelVariable, RiskModel, RiskPrediction } from "./types";
+
+type Stats = {
+  coefficient: number
+  mean: number
+  standardDeviation: number
+}
 
 /**
  * calculates risk scores for given models
@@ -21,12 +27,15 @@ export abstract class ModelStrategy {
             this.validateRequiredData(patientData)
             const rawScore = this.calculateRawScore(patientData) // scales variables/interactions, multiply by coefficient, add offset         
             const riskScore = this.convertToRiskScore(rawScore) // scale raw score and convert to percentage
-            const riskLevel = this.getRiskLevel(riskScore)
+            const riskCategory = this.getRiskCategory(riskScore)
+
+            console.log('rawScore', rawScore)
+            console.log('riskScore', riskScore)
+            console.log('category', riskCategory)
 
             return {
-                rawScore,
                 riskScore,
-                riskLevel,
+                riskCategory,
                 model: this.model.modelName
             }
         } catch (err) {
@@ -62,6 +71,7 @@ export abstract class ModelStrategy {
     }
 
     protected calculateRawScore(patientData: PatientData): number {
+        console.log('intercept', this.model.rawScoreOffset)
         let score = this.model.rawScoreOffset;
 
         // add variable contributions
@@ -88,15 +98,28 @@ export abstract class ModelStrategy {
      * @returns  calculates contribution of a single scaled variable
      */
     protected calculateVariableContribution(variable: ModelVariable, patientData: PatientData): number {
+        console.log('calculating contribution of varibale', variable.name)
         const rawValue = patientData[variable.name]
+        console.log('rawValue', rawValue)
 
         // handle missing, non-required variables
         if (rawValue === null || rawValue === undefined || rawValue === '') return 0; 
 
         const numericValue = this.extractNumericValue(variable, rawValue);
-        const scaledValue = this.scaleValue(numericValue, variable.mean || 0, variable.standardDeviation || 1);
+        console.log('numeric value', numericValue)
+        // if (variable.type === 'boolean' && numericValue === 0) {
+        //     console.log ('boolean variable is false -- no contirbution')
+        //     return 0;
+        // }
+
+        const stats = this.extractStats(variable, rawValue)
+        console.log('stats', stats)
         
-        return scaledValue * (variable.coefficient || 0);
+        const scaledValue = this.scaleValue(numericValue, stats.mean || 0, stats.standardDeviation || 1);
+        console.log('scaled val', scaledValue)
+        console.log('contribution: ', scaledValue * (stats.coefficient || 0))
+
+        return scaledValue * (stats.coefficient || 0);
     }
 
     /**
@@ -104,12 +127,17 @@ export abstract class ModelStrategy {
      * calculates contribution of a scaled age interaction
      */ 
     protected calculateInteractionContribution(interaction: ModelInteraction, patientData: PatientData): number {
+        console.log('calcuakting interaction contribution for', interaction.name)
         const age = this.getRoundedAge(patientData.ageInMonths!);
+        console.log('rounded age', age)
+
         const dependencyValue = this.getDependencyValue(interaction, patientData);
+        console.log('dependency val', dependencyValue)
         
         const interactionValue = age * dependencyValue;
         const scaledValue = this.scaleValue(interactionValue, interaction.mean, interaction.standardDeviation);
-        
+        console.log('scaled value', scaledValue)
+        console.log('contribution', (scaledValue * interaction.coefficient))
         return scaledValue * interaction.coefficient;
     }
 
@@ -154,11 +182,21 @@ export abstract class ModelStrategy {
                 throw new Error(`Unsupported variable type: ${variable.type}`);
         }
     }
-    
-    /**
-     * Handles categorical variables with oneOf options. Returns numeric value 
-     */
-    protected handleCategoricalValue(variable: ModelVariable, value: any): number {
+
+    protected extractStats(variable: ModelVariable, rawValue: any) {
+        if (variable.type === 'string') {
+            return this.getOption(variable, rawValue)
+        }
+
+        // default for numeric and boolean values
+        return {
+            mean: variable.mean || 0,
+            standardDeviation: variable.standardDeviation || 1,
+            coefficient: variable.coefficient || 0
+        }
+    }
+
+    private getOption(variable: ModelVariable, value: any) {
         if (!variable.oneOf) throw Error (`Categorical variable ${variable.name} missing oneOf options`)
 
         const optionArray = variable.oneOf
@@ -166,8 +204,20 @@ export abstract class ModelStrategy {
 
         if (!option) throw Error(`Invalid option '${value}' for variable ${variable.name}`)
 
+        return option;
+    }
+
+    
+    /**
+     * Handles categorical variables with oneOf options. Returns numeric value 
+     */
+    protected handleCategoricalValue(variable: ModelVariable, value: any): number {
+        const option = this.getOption(variable, value)   
+
         // If option has no coefficient, it's the reference category (0 contribution)
         const numValue = (option.coefficient !== undefined) ? 1 : 0;
+        console.log('cat option', value)
+        console.log('numval', numValue)
         return numValue;
     }
 
@@ -185,7 +235,7 @@ export abstract class ModelStrategy {
     }
 
 
-    protected getRiskLevel(riskScore: number): string {
+    protected getRiskCategory(riskScore: number): string {
         // TODO double check if errors should be thrown
         if (riskScore < 0) throw Error('Risk score cannot be negative')
         if (riskScore > 100) throw Error('Risk score cannot be more than 100%')
@@ -234,6 +284,7 @@ export abstract class ModelStrategy {
      * @returns 
      */
     protected scaleValue(val: number, mean: number, sd: number): number {
+        console.log('scaling value...')
         return (val-mean) / sd
     }
 
