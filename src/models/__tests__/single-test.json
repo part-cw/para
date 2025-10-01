@@ -1,5 +1,5 @@
 [
-  [
+[
     {
       "ageInMonths": 0.5,
       "muac": 109,
@@ -13,7 +13,7 @@
       "feedingWell": false
     },
     {
-      "modelName": "Model 0-6C",
+      "modelName": "M6PD-C0-6",
       "riskCategory": "High",
       "riskScore": 6.66
     }

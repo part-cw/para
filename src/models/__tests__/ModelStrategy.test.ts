@@ -3,8 +3,8 @@ import { calculateWAZ } from '../../utils/clinicalVariableCalculator'
 import model from '../admission/M6PD-C0-6.json'
 import { LogisticRegressionStrategy } from '../ModelStrategy'
 import { RiskModel } from '../types'
-import testCases from './model0-6C_testCases.json'
-// import testCases from './single-test.json'
+// import testCases from './model0-6C_testCases.json'
+import testCases from './single-test.json'
 
 
 describe('LogisticRegressionStrategy', () => {
@@ -14,11 +14,6 @@ describe('LogisticRegressionStrategy', () => {
     const createPatientDataFromTestCase = (testCase: any): PatientData => {
         // Calculate WAZ using existing util
         const waz = calculateWAZ(testCase.ageInMonths, testCase.sex, testCase.weight)
-        console.log('age', testCase.ageInMonths)
-        console.log('age floor', Math.floor(testCase.ageInMonths))
-        console.log('sex', testCase.sex)
-        console.log('weight', testCase.weight)
-        console.log('waz', waz)
 
         return {
             ...initialPatientData,
@@ -46,7 +41,7 @@ describe('LogisticRegressionStrategy', () => {
         }
     }
 
-     describe('Reference Test Cases - Model Validation', () => {
+    describe('Reference Test Cases - Model Validation', () => {
         testCases.forEach((testCaseArray, index) => {
             const [inputData, expectedOutput] = testCaseArray
             

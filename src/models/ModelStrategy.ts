@@ -1,12 +1,6 @@
 import { PatientData } from "../contexts/PatientData";
 import { ModelInteraction, ModelVariable, RiskModel, RiskPrediction } from "./types";
 
-type Stats = {
-  coefficient: number
-  mean: number
-  standardDeviation: number
-}
-
 /**
  * calculates risk scores for given models
  * NOTE: if any other models are used, this should be further generalized 
@@ -71,7 +65,7 @@ export abstract class ModelStrategy {
     }
 
     protected calculateRawScore(patientData: PatientData): number {
-        console.log('intercept', this.model.rawScoreOffset)
+        // console.log('intercept', this.model.rawScoreOffset)
         let score = this.model.rawScoreOffset;
 
         // add variable contributions
@@ -106,6 +100,7 @@ export abstract class ModelStrategy {
         if (rawValue === null || rawValue === undefined || rawValue === '') return 0; 
 
         if (variable.type === 'string' && variable.oneOf) {
+            console.log('!!! calculating categorical contribution...')
             return this.calculateCategoricalVariableContribution(variable, rawValue)
         }
        
@@ -134,6 +129,7 @@ export abstract class ModelStrategy {
         console.log('dependency val', dependencyValue)
         
         const interactionValue = age * dependencyValue;
+        console.log('age interaction', interactionValue)
         const scaledValue = this.scaleValue(interactionValue, interaction.mean, interaction.standardDeviation);
         console.log('scaled value', scaledValue)
         console.log('contribution', (scaledValue * interaction.coefficient))
@@ -147,6 +143,8 @@ export abstract class ModelStrategy {
             // Handle object dependencies (e.g., {illnessDuration: '48h-7d'})
             const [varName, requiredValue] = Object.entries(dependency)[0]; // e.g ['illnessDuration', '48h-7d']            
             const actualVal = patientData[varName as keyof PatientData]
+            console.log('actual/stored value', actualVal)
+            console.log('required value for interaction', requiredValue)
             const doesActualMatchRequired = String(actualVal).trim().toLowerCase() === String(requiredValue).trim().toLowerCase()
             return doesActualMatchRequired ? 1 : 0;
         }
@@ -209,6 +207,7 @@ export abstract class ModelStrategy {
      * @returns total contribution of categorical variabls - selected options have value of 1 and nonseelctd 0
      */
     private calculateCategoricalVariableContribution(variable: ModelVariable, value: any): number {
+        console.log('!!!! now here!')
         let categoricalContribution = 0
 
         // find contribution of selected option
@@ -317,7 +316,6 @@ export abstract class ModelStrategy {
      * @returns 
      */
     protected scaleValue(val: number, mean: number, sd: number): number {
-        console.log('scaling value...')
         return (val-mean) / sd
     }
 

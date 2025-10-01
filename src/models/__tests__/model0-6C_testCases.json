@@ -9,6 +9,7 @@
       "illnessDuration": "<48h",
       "bulgingFontanelle": true,
       "isNeonate": false,
+      "neonatalJaundice": false,
       "feedingWell": true
     },
     {
@@ -31,7 +32,7 @@
       "feedingWell": false
     },
     {
-      "modelName": "Model 0-6C",
+      "modelName": "M6PD-C0-6",
       "riskCategory": "High",
       "riskScore": 8.99
     }
@@ -50,7 +51,7 @@
       "feedingWell": true
     },
     {
-      "modelName": "Model 0-6C",
+      "modelName": "M6PD-C0-6",
       "riskCategory": "Moderate",
       "riskScore": 3.26
     }
@@ -69,7 +70,7 @@
       "feedingWell": false
     },
     {
-      "modelName": "Model 0-6C",
+      "modelName": "M6PD-C0-6",
       "riskCategory": "High",
       "riskScore": 6.66
     }
@@ -88,7 +89,7 @@
       "feedingWell": false
     },
     {
-      "modelName": "Model 0-6C",
+      "modelName": "M6PD-C0-6",
       "riskCategory": "High",
       "riskScore": 8.59
     }
