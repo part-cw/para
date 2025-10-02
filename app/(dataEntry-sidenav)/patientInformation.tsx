@@ -117,7 +117,6 @@ export default function PatientInformationScreen() {
         if (event.type === "set" && selectedDate) {
             const ageInDays = AgeCalculator.getAgeInDaysFromDob(selectedDate);
             const isYoungInfant = ageInDays < 28; // true if < 28 days
-            console.log('!!!!...handling dob change')
             updatePatientData({
                 dob: selectedDate,
                 birthYear: '',
