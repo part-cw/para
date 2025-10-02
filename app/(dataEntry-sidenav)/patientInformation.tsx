@@ -32,7 +32,7 @@ export default function PatientInformationScreen() {
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [ageValidationError, setAgeValidationError] = useState<string>('');
-    const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
+    const [ageDisplay, setAgeDisplay] = useState<number | null>(null);
 
     // Local state for form validation and UI
     const {
@@ -56,30 +56,29 @@ export default function PatientInformationScreen() {
     // Function to validate age and set error state
     const validateAge = () => {
         try {
-            const age = AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge);
-            
-            if (age < 0.5 && !isUnderSixMonths) {
-                setAgeValidationError(ageLessThanSixMonthsError) 
-                setCalculatedAge(null)
-                return false;
-            }
-
-            if (age > 0.5 && isUnderSixMonths) {
-                setAgeValidationError(ageGreaterThanSixMonthsError) 
-                setCalculatedAge(null)
-                return false;
-            }
-
+            const age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge);
             updatePatientData({
-                ageInMonths: AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge),
+                ageInMonths: age,
                 isNeonate: isUnderSixMonths && dob && AgeCalculator.getAgeInDaysFromDob(dob) < 30
             })
 
-            setCalculatedAge(age);
+            if (age < 6 && !isUnderSixMonths) {
+                setAgeValidationError(ageLessThanSixMonthsError) 
+                setAgeDisplay(null)
+                return false;
+            }
+
+            if (age > 6 && isUnderSixMonths) {
+                setAgeValidationError(ageGreaterThanSixMonthsError) 
+                setAgeDisplay(null)
+                return false;
+            }
+
+            setAgeDisplay(age);
             setAgeValidationError(''); // Clear error if validation passes
             return true;
         } catch (error) {
-            setCalculatedAge(null);
+            setAgeDisplay(null);
             setAgeValidationError(error instanceof Error ? error.message : 'Invalid age information');
             return false;
         }
@@ -89,28 +88,28 @@ export default function PatientInformationScreen() {
         // calculate age if info available -- handles cases when checkbox checked before dob entered
         let age;
         if (dob || (birthYear && birthMonth) || approxAge) {
-            age = AgeCalculator.calculateAgeInYears(dob, birthYear, birthMonth, approxAge);
+            age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge);
         } else {
             return;
         }
         
         // Case 1: isUnderSixMonths false, entered age < 0.5 years -- INVALID
-        if (age && age < 0.5 && !newIsUnderSixMonths) {
+        if (age && age < 6 && !newIsUnderSixMonths) {
             setAgeValidationError(ageLessThanSixMonthsError)
-            setCalculatedAge(null)
+            setAgeDisplay(null)
             return;
         }
 
         // Case 2: isUnderSixMonths true, entered age >= 0.5 years -- INVALID
-        if (age && age >= 0.5 && newIsUnderSixMonths) {
+        if (age && age >= 6 && newIsUnderSixMonths) {
             setAgeValidationError(ageGreaterThanSixMonthsError)
-            setCalculatedAge(null)
+            setAgeDisplay(null)
             return
         }
 
         // All other cases -- VALID: (age<0.5 and isUnderSixMonths true; age >= 0.5 and isUnderSixMonths false)
         setAgeValidationError('') // clear error
-        age && setCalculatedAge(age)
+        age && setAgeDisplay(age)
         return;
     }
 
@@ -118,7 +117,7 @@ export default function PatientInformationScreen() {
         if (event.type === "set" && selectedDate) {
             const ageInDays = AgeCalculator.getAgeInDaysFromDob(selectedDate);
             const isYoungInfant = ageInDays < 28; // true if < 28 days
-            
+            console.log('!!!!...handling dob change')
             updatePatientData({
                 dob: selectedDate,
                 birthYear: '',
@@ -188,7 +187,7 @@ export default function PatientInformationScreen() {
             return () => clearTimeout(timeoutId);
         } else {
             setAgeValidationError('');
-            setCalculatedAge(null);
+            setAgeDisplay(null);
         }
     }, [dob, birthYear, birthMonth, approxAge]);
 
@@ -406,10 +405,10 @@ export default function PatientInformationScreen() {
 
                     {/* Display estimated age if necessary fields filled and no ageValidation error */}
                     {
-                        (dob || (birthMonth && birthYear) || approxAge) && (!ageValidationError && calculatedAge!== null)
+                        (dob || (birthMonth && birthYear) || approxAge) && (!ageValidationError && ageDisplay!== null)
                         &&
                         <Text>
-                            Estimated age: {AgeCalculator.roundAge(calculatedAge)} years old
+                            Estimated age: {AgeCalculator.formatAge(ageDisplay)} old 
                         </Text>
                     }
                 </ScrollView>
