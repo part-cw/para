@@ -1,8 +1,4 @@
-
-//  * TODO for model calculation - round to 1 decimal place
-
-import waz_female from '../data/wazscore_female.json';
-import waz_male from '../data/wazscore_male.json';
+import waz_table from '../data/waz_lookup.json';
 import config from '../models/model_input_ranges.json';
 
 type ValidationResult = {
@@ -132,21 +128,32 @@ export function validateWeight(weight: string): ValidationResult {
  * @returns 
  */
 export function calculateWAZ(months: number, sex: string, weight: number): number {
-    // take floor of age in months
-    const roundedMonth = Math.floor(months)
-
-    // look up sex-specifc growth standard for given age (in months)
     let data;
-    if (sex.toLowerCase() === 'male') {
-        data = waz_male.find(d => d.Month === roundedMonth)
-    } else if (sex.toLowerCase() === 'female'){
-        data = waz_female.find(d => d.Month === roundedMonth)
+
+    if (months < 1) {
+        const ageWeeks = (months * 30) / 7
+        const roundedWeeks = Math.round(ageWeeks)
+
+        data = waz_table.find(d => 
+            (d.Under1Month.toLowerCase() === 'yes') && 
+            (d.Sex.toLowerCase() === sex.toLowerCase()) &&
+            (d.WeekOrMonth === roundedWeeks)
+        )
+
+        if (!data) throw new Error (`Growth standard for ${roundedWeeks} week old ${sex.toLowerCase()} not found`)
+
     } else {
-        throw new Error ('Missing patient sex')
+        const roundedMonth = Math.round(months)
+
+        data = waz_table.find(d => 
+            (d.Under1Month.toLowerCase() === 'no') && 
+            (d.Sex.toLowerCase() === sex.toLowerCase()) &&
+            (d.WeekOrMonth === roundedMonth)
+        )
+
+        if (!data) throw new Error (`Growth standard for ${roundedMonth} month old ${sex.toLowerCase()} not found`)
     }
 
-    // throw error if data not found
-    if (!data) throw new Error (`Growth standard for ${roundedMonth} month old ${sex} not found`)
     
     // calculate waz score if growth standard data found
     const l = data.L

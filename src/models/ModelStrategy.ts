@@ -23,10 +23,6 @@ export abstract class ModelStrategy {
             const riskScore = this.convertToRiskScore(rawScore) // scale raw score and convert to percentage
             const riskCategory = this.getRiskCategory(riskScore)
 
-            console.log('rawScore', rawScore)
-            console.log('riskScore', riskScore)
-            console.log('category', riskCategory)
-
             return {
                 riskScore,
                 riskCategory,
@@ -65,7 +61,6 @@ export abstract class ModelStrategy {
     }
 
     protected calculateRawScore(patientData: PatientData): number {
-        // console.log('intercept', this.model.rawScoreOffset)
         let score = this.model.rawScoreOffset;
 
         // add variable contributions
@@ -92,26 +87,18 @@ export abstract class ModelStrategy {
      * @returns  calculates contribution of a single scaled variable
      */
     protected calculateVariableContribution(variable: ModelVariable, patientData: PatientData): number {
-        console.log('calculating contribution of varibale', variable.name)
         const rawValue = patientData[variable.name]
-        console.log('rawValue', rawValue)
 
         // handle missing, non-required variables
         if (rawValue === null || rawValue === undefined || rawValue === '') return 0; 
 
         if (variable.type === 'string' && variable.oneOf) {
-            console.log('!!! calculating categorical contribution...')
             return this.calculateCategoricalVariableContribution(variable, rawValue)
         }
        
         const numericValue = this.extractNumericValue(variable, rawValue);
         const stats = this.extractStats(variable, rawValue)
         const scaledValue = this.scaleValue(numericValue, stats.mean || 0, stats.standardDeviation || 1);
-        
-        console.log('numeric value', numericValue)
-        console.log('stats', stats)
-        console.log('scaled val', scaledValue)
-        console.log('contribution: ', scaledValue * (stats.coefficient || 0))
 
         return scaledValue * (stats.coefficient || 0);
     }
@@ -121,18 +108,11 @@ export abstract class ModelStrategy {
      * calculates contribution of a scaled age interaction
      */ 
     protected calculateInteractionContribution(interaction: ModelInteraction, patientData: PatientData): number {
-        console.log('calcuakting interaction contribution for', interaction.name)
         const age = this.getRoundedAge(patientData.ageInMonths!);
-        console.log('rounded age', age)
-
         const dependencyValue = this.getDependencyValue(interaction, patientData);
-        console.log('dependency val', dependencyValue)
-        
         const interactionValue = age * dependencyValue;
-        console.log('age interaction', interactionValue)
         const scaledValue = this.scaleValue(interactionValue, interaction.mean, interaction.standardDeviation);
-        console.log('scaled value', scaledValue)
-        console.log('contribution', (scaledValue * interaction.coefficient))
+        
         return scaledValue * interaction.coefficient;
     }
 
@@ -143,8 +123,6 @@ export abstract class ModelStrategy {
             // Handle object dependencies (e.g., {illnessDuration: '48h-7d'})
             const [varName, requiredValue] = Object.entries(dependency)[0]; // e.g ['illnessDuration', '48h-7d']            
             const actualVal = patientData[varName as keyof PatientData]
-            console.log('actual/stored value', actualVal)
-            console.log('required value for interaction', requiredValue)
             const doesActualMatchRequired = String(actualVal).trim().toLowerCase() === String(requiredValue).trim().toLowerCase()
             return doesActualMatchRequired ? 1 : 0;
         }
@@ -207,7 +185,6 @@ export abstract class ModelStrategy {
      * @returns total contribution of categorical variabls - selected options have value of 1 and nonseelctd 0
      */
     private calculateCategoricalVariableContribution(variable: ModelVariable, value: any): number {
-        console.log('!!!! now here!')
         let categoricalContribution = 0
 
         // find contribution of selected option
@@ -215,11 +192,6 @@ export abstract class ModelStrategy {
         const selNumeric = (selected.coefficient !== undefined) ? 1 : 0
         const selScaled = this.scaleValue(selNumeric, selected.mean || 0, selected.standardDeviation || 1)
         categoricalContribution += selScaled * (selected.coefficient || 0)
-
-        console.log('contribution of selected option', selected.value)
-        console.log('numval', selNumeric)
-        console.log('scaled', selScaled)
-        console.log('contribution=', selScaled * (selected.coefficient || 0))
 
         // find contribution of non-selected options
         const nonselected = variable.oneOf?.filter(
@@ -230,10 +202,6 @@ export abstract class ModelStrategy {
                 const numVal = 0 // all unselected options have value of 0
                 const scaled = this.scaleValue(numVal, option.mean || 0, option.standardDeviation || 1)
                 categoricalContribution += scaled * (option.coefficient || 0)
-                console.log('contribution of nonselected option', option.value)
-                console.log('numval', numVal)
-                console.log('scaled', scaled)
-                console.log('contribution=', scaled * (option.coefficient || 0))
             }
         }
 
@@ -248,8 +216,6 @@ export abstract class ModelStrategy {
 
         // If option has no coefficient, it's the reference category (0 contribution)
         const numValue = (selected.coefficient !== undefined) ? 1 : 0;
-        console.log('cat option', value)
-        console.log('numval', numValue)
         return numValue;
     }
 
