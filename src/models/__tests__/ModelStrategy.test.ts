@@ -1,6 +1,7 @@
 import { initialPatientData, PatientData } from '../../contexts/PatientData'
-import { calculateWAZ } from '../../utils/clinicalVariableCalculator'
-import model from '../admission/M6PD-C0-6.json'
+import { calculateBcsScore, calculateWAZ } from '../../utils/clinicalVariableCalculator'
+import model06 from '../admission/M6PD-C0-6.json'
+import model660 from '../admission/M6PD-C6-60.json'
 import { LogisticRegressionStrategy } from '../ModelStrategy'
 import { RiskModel } from '../types'
 import testCases_06 from './test_cases/model0-6C_testCases.json'
@@ -9,7 +10,7 @@ import testCases_660 from './test_cases/model6-60_testCases.json'
 
 describe('LogisticRegressionStrategy: 0-6C Model', () => {
     // using 0-6 clinical admission model
-    const strategy = new LogisticRegressionStrategy(model as RiskModel)
+    const strategy = new LogisticRegressionStrategy(model06 as RiskModel)
 
     const createPatientDataFromTestCase = (testCase: any): PatientData => {
         // Calculate WAZ using existing util
@@ -69,11 +70,44 @@ describe('LogisticRegressionStrategy: 0-6C Model', () => {
 
 describe('LogisticRegressionStrategy: 6-60C Model', () => {
     // using 0-6 clinical admission model
-    const strategy = new LogisticRegressionStrategy(model as RiskModel)
+    const strategy = new LogisticRegressionStrategy(model660 as RiskModel)
+
+    // options copied from admissionClinicalData.tsx
+    const eyeMovementOptions = [
+        {value: 'Watches or follows', key: '1'},
+        {value: 'Fails to watch or follow', key: '0'}
+    ]
+
+    const motorResponseOptions = [
+        {value: 'Normal behaviour observed', key: '2.0'},
+        {value: 'Localizes painful stimulus', key: "2"},
+        {value: 'Withdraws limb from painful stimulus', key: '1'},
+        {value: 'No response/inappropriate response', key: '0'}
+    ]
+
+    const verbalResponseOptions = [
+        {value: 'Normal behaviour observed', key: '2.0'},
+        {value: 'Cries appropriately with pain (or speaks if verbal)', key: '2'},
+        {value: 'Moan or abnormal cry with pain', key: '1'},
+        {value: 'No vocal response to pain', key: '0'}
+    ]
 
     const createPatientDataFromTestCase = (testCase: any): PatientData => {
-        // Calculate WAZ using existing util
+        // set up: calculate WAZ and BCS score using existing util
+        const eyeScore = eyeMovementOptions.find(opt => 
+            opt.value.toLowerCase().includes(testCase.eyeMovement.toLowerCase()))?.key || '0'
+
+        const motorScore = motorResponseOptions.find(opt => 
+            opt.value.toLowerCase().includes(testCase.motorResponse.toLowerCase()))?.key || '0'
+
+        const verbalScore = verbalResponseOptions.find(opt => 
+            opt.value.toLowerCase().includes(testCase.verbalResponse.toLowerCase()))?.key || '0'
+        
+        const bcsScore = calculateBcsScore(parseFloat(eyeScore), parseFloat(motorScore), parseFloat(verbalScore))
+        console.log('bcsscore', bcsScore)
+        
         const waz = calculateWAZ(testCase.ageInMonths, testCase.sex, testCase.weight)
+        const tempSquared = testCase.temperature * testCase.temperature 
 
         return {
             ...initialPatientData,
@@ -90,11 +124,16 @@ describe('LogisticRegressionStrategy: 6-60C Model', () => {
             spo2: testCase.spo2.toString(),
             weight: testCase.weight.toString(),
             sex: testCase.sex.toLowerCase(),
-            
-            // TODO add other 6-60 variables
-            
-            // Calculated WAZ
-            waz: waz
+            lastHospitalized: testCase.lastHospitalized.toLowerCase(),
+            hivStatus: testCase.hivStatus.toLowerCase(),
+            rrate: testCase.rrate.toString(),
+            temperature: testCase.temperature.toString(), 
+              
+            // Calculated variables
+            waz: waz,
+            bcsScore: bcsScore,
+            abnormalBCS: bcsScore < 5,
+            temperatureSquared: tempSquared
         }
     }
 

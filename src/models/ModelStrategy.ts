@@ -112,7 +112,6 @@ export abstract class ModelStrategy {
         const dependencyValue = this.getDependencyValue(interaction, patientData);
         const interactionValue = age * dependencyValue;
         const scaledValue = this.scaleValue(interactionValue, interaction.mean, interaction.standardDeviation);
-        
         return scaledValue * interaction.coefficient;
     }
 
@@ -209,17 +208,6 @@ export abstract class ModelStrategy {
     }
 
     /**
-     * Handles categorical variables with oneOf options. Returns numeric value 
-     */
-    private handleCategoricalValue(variable: ModelVariable, value: any): number {
-        const selected = this.getOption(variable, value)   
-
-        // If option has no coefficient, it's the reference category (0 contribution)
-        const numValue = (selected.coefficient !== undefined) ? 1 : 0;
-        return numValue;
-    }
-
-    /**
      * 
      * @param rawScore 
      * @returns scales raw score and converts it to percetage, rounded to the nearest 2 decimal places
@@ -234,7 +222,6 @@ export abstract class ModelStrategy {
 
 
     protected getRiskCategory(riskScore: number): string {
-        // TODO double check if errors should be thrown
         if (riskScore < 0) throw Error('Risk score cannot be negative')
         if (riskScore > 100) throw Error('Risk score cannot be more than 100%')
         

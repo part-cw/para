@@ -13,7 +13,7 @@
         "veryHigh": 10
     },
     "rawScoreOffset": -3.24305951649588,
-    "inputs": [
+    "variables": [
         {
             "name": "waz",
             "displayName": "WAZ",
@@ -68,6 +68,10 @@
             "units": null,
             "required": true,
             "oneOf": [
+                {
+                    "value": "never",
+                    "description": "Never hospitalized"
+                },
                 {
                     "value": "<7d",
                     "description": "less than 7 days ago",
@@ -147,26 +151,12 @@
             "name": "hivStatus",
             "displayName": "HIV Status",
             "description": "Whether the child's HIV status is positive",
-            "type": "string",
+            "type": "boolean",
             "units": null,
             "required": true,
-            "oneOf": [
-                {
-                    "value": "Positive",
-                    "description": "child is HIV+",
-                    "coefficient": 0.126617920341138,
-                    "mean": 0.0298136645962733,
-                    "standardDeviation": 0.17009056356318
-                },
-                {
-                    "value": "Negative",
-                    "description": "child is not HIV+"
-                },
-                {
-                    "value": "Unknown",
-                    "description": "is is unknown whether the child is HIV+"
-                }
-            ]
+            "coefficient": 0.126617920341138,
+            "mean": 0.0298136645962733,
+            "standardDeviation": 0.17009056356318
         }
     ],
     "ageInteractions": [
@@ -242,7 +232,8 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": ["ageInMonths", "lastHospitalized", "<7d"],
+            "dependency": {"lastHospitalized": "<7d"},
+            "dependencyType": "string",
             "coefficient": 0.0261069259775735,
             "mean": 0.934105415757909,
             "standardDeviation": 5.53005241532526

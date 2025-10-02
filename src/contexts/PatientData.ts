@@ -29,6 +29,7 @@ export interface PatientData {
   // Admission Clinical Data (6-60 months only)
   hivStatus: string;
   temperature: string;
+  temperatureSquared: number | null,
   rrate: string;
   lastHospitalized: string;
   eyeMovement: DropdownItem | null;
@@ -95,6 +96,7 @@ export const initialPatientData: PatientData = {
   lastHospitalized: '',
   hivStatus: '',
   temperature: '',
+  temperatureSquared: null,
   rrate: '',
   eyeMovement: null,
   motorResponse: null,

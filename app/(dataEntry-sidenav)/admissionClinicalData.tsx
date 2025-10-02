@@ -411,7 +411,7 @@ export default function AdmissionClinicalDataScreen() {
         {value: 'Normal behaviour observed', key: '2.0'},
         {value: 'Localizes painful stimulus', key: "2"},
         {value: 'Withdraws limb from painful stimulus', key: '1'},
-        {value: 'No response/inappropriate response', key: '0'}
+        {value: 'No response or inappropriate response', key: '0'}
     ]
 
     const verbalResponseOptions = [
@@ -837,7 +837,7 @@ export default function AdmissionClinicalDataScreen() {
                                     </View>
                                     { bcsScore !== null && eyeMovement?.value && motorResponse?.value && verbalResponse?.value &&
                                         <NutritionStatusBar 
-                                            title={`BCS Status: ${abnormalBCS ? 'ABNORMAL' : 'NORMAL'}`}
+                                            title={`${abnormalBCS ? 'ABNORMAL BCS' : 'NORMAL BCS'}`}
                                             content={`calculated BCS score = ${bcsScore}`}
                                             variant={mapBcsScoreToVariant(bcsScore)}
                                         />
