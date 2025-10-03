@@ -1,4 +1,6 @@
 import AppBar from "@/src/components/AppBar";
+import { PatientDataProvider } from "@/src/contexts/PatientDataContext";
+import { initializeModels } from "@/src/models/modelSelectorInstance";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
@@ -36,32 +38,39 @@ export default function RootLayout() {
 //     return null;
 //   }
 
-    useEffect(() => {
+  useEffect(() => {
+    initializeModels();
+  }, [])
+
+  useEffect(() => {
         // Prevent splash screen from auto-hiding immediately
         SplashScreen.preventAutoHideAsync();
         
         // Hide splash screen after a short delay (or immediately if you prefer)
         const hideSplash = async () => {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay, optional
-        await SplashScreen.hideAsync();
+          await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay, optional
+          await SplashScreen.hideAsync();
         };
         hideSplash();
-    }, []);
+  }, []);
 
-    const onLayoutRootView = useCallback(async () => {
+  const onLayoutRootView = useCallback(async () => {
         // No font loading, so just hide splash screen immediately on layout
         await SplashScreen.hideAsync();
-    }, []);
+  }, []);
+
 
 
   return (
       <SafeAreaProvider>
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-          <PaperProvider theme={AppTheme}>
-            <AppBar/>
-            <Stack screenOptions={{headerShown: false,}}/>
-          </PaperProvider>
-        </View>
+        <PatientDataProvider>
+          <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+            <PaperProvider theme={AppTheme}>
+              <AppBar/>
+              <Stack screenOptions={{headerShown: false,}}/>
+            </PaperProvider>
+          </View>
+        </PatientDataProvider>
       </SafeAreaProvider>
   );
 }
