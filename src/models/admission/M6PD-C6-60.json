@@ -3,7 +3,7 @@
     "humanReadableName": "Smart Discharges Uganda Model 6-60C",
     "description": "The 3rd-most preferred model for Uganda, 6-60 months old from the pool of clinical variables",
     "usageTime": "admission",
-    "isUnderSixMonths": true,
+    "isUnderSixMonths": false,
     "modelType": "logistic_regression",
     "inputType": "clinical",
     "riskThresholds": {

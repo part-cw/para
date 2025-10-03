@@ -18,7 +18,6 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// TODO Add rrate link on button press
 
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
@@ -481,7 +480,6 @@ export default function AdmissionClinicalDataScreen() {
                                         </View>
                                     }
 
-                                    {/* TODO FIX THE RADIO BUTTON ISSUE - IT SHOULD NOT BE AUTOSELCTED; CHANGE TYPES TO STRING? */}
                                     <View>
                                         <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Bulging Fontanelle <Text style={Styles.required}>*</Text></Text>
                                         <Text>{displayNames['fontanelleQuestion']}</Text>
@@ -608,7 +606,6 @@ export default function AdmissionClinicalDataScreen() {
                                         search={false}
                                     />
                                     <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
-                                    {/* TODO if HIV status unknown - add warning that can't cacl risk until pos or neg diagnisis confirmed */}
                                     <RadioButtonGroup 
                                         options={[
                                             { label: 'Positive', value: 'positive'},
@@ -617,7 +614,7 @@ export default function AdmissionClinicalDataScreen() {
                                         selected={hivStatus} 
                                         onSelect={(value) => {
                                             if (value === 'unknown') {
-                                                // TODO add 'canCalcRiskScore flag
+                                                // TODO add 'canCalcRiskScore flag that makes sure scor only calculated if all required variables filled
                                                 Platform.OS !== 'web' 
                                                     ? 
                                                     Alert.alert('Warning', hivUnknownWarning)

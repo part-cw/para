@@ -311,7 +311,7 @@ export class LogisticRegressionStrategy extends ModelStrategy {
  * Factory function to create appropriate model strategy
  */
 export function createModelStrategy(model: RiskModel): ModelStrategy {
-    switch (model.inputType) {
+    switch (model.modelType) {
         case 'logistic_regression':
             return new LogisticRegressionStrategy(model);
         default:
