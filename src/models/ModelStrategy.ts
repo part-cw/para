@@ -1,12 +1,6 @@
 import { PatientData } from "../contexts/PatientData";
 import { ModelInteraction, ModelVariable, RiskModel, RiskPrediction } from "./types";
 
-type Stats = {
-  coefficient: number
-  mean: number
-  standardDeviation: number
-}
-
 /**
  * calculates risk scores for given models
  * NOTE: if any other models are used, this should be further generalized 
@@ -28,10 +22,6 @@ export abstract class ModelStrategy {
             const rawScore = this.calculateRawScore(patientData) // scales variables/interactions, multiply by coefficient, add offset         
             const riskScore = this.convertToRiskScore(rawScore) // scale raw score and convert to percentage
             const riskCategory = this.getRiskCategory(riskScore)
-
-            console.log('rawScore', rawScore)
-            console.log('riskScore', riskScore)
-            console.log('category', riskCategory)
 
             return {
                 riskScore,
@@ -71,7 +61,6 @@ export abstract class ModelStrategy {
     }
 
     protected calculateRawScore(patientData: PatientData): number {
-        console.log('intercept', this.model.rawScoreOffset)
         let score = this.model.rawScoreOffset;
 
         // add variable contributions
@@ -98,26 +87,18 @@ export abstract class ModelStrategy {
      * @returns  calculates contribution of a single scaled variable
      */
     protected calculateVariableContribution(variable: ModelVariable, patientData: PatientData): number {
-        console.log('calculating contribution of varibale', variable.name)
         const rawValue = patientData[variable.name]
-        console.log('rawValue', rawValue)
 
         // handle missing, non-required variables
         if (rawValue === null || rawValue === undefined || rawValue === '') return 0; 
 
+        if (variable.type === 'string' && variable.oneOf) {
+            return this.calculateCategoricalVariableContribution(variable, rawValue)
+        }
+       
         const numericValue = this.extractNumericValue(variable, rawValue);
-        console.log('numeric value', numericValue)
-        // if (variable.type === 'boolean' && numericValue === 0) {
-        //     console.log ('boolean variable is false -- no contirbution')
-        //     return 0;
-        // }
-
         const stats = this.extractStats(variable, rawValue)
-        console.log('stats', stats)
-        
         const scaledValue = this.scaleValue(numericValue, stats.mean || 0, stats.standardDeviation || 1);
-        console.log('scaled val', scaledValue)
-        console.log('contribution: ', scaledValue * (stats.coefficient || 0))
 
         return scaledValue * (stats.coefficient || 0);
     }
@@ -127,17 +108,10 @@ export abstract class ModelStrategy {
      * calculates contribution of a scaled age interaction
      */ 
     protected calculateInteractionContribution(interaction: ModelInteraction, patientData: PatientData): number {
-        console.log('calcuakting interaction contribution for', interaction.name)
         const age = this.getRoundedAge(patientData.ageInMonths!);
-        console.log('rounded age', age)
-
         const dependencyValue = this.getDependencyValue(interaction, patientData);
-        console.log('dependency val', dependencyValue)
-        
         const interactionValue = age * dependencyValue;
         const scaledValue = this.scaleValue(interactionValue, interaction.mean, interaction.standardDeviation);
-        console.log('scaled value', scaledValue)
-        console.log('contribution', (scaledValue * interaction.coefficient))
         return scaledValue * interaction.coefficient;
     }
 
@@ -174,10 +148,6 @@ export abstract class ModelStrategy {
             
             case 'number':
                 return this.handleNumericValue(rawValue);
-            
-            case 'string':
-                return this.handleCategoricalValue(variable, rawValue);
-            
             default:
                 throw new Error(`Unsupported variable type: ${variable.type}`);
         }
@@ -207,18 +177,34 @@ export abstract class ModelStrategy {
         return option;
     }
 
-    
     /**
-     * Handles categorical variables with oneOf options. Returns numeric value 
+     * 
+     * @param variable 
+     * @param value 
+     * @returns total contribution of categorical variabls - selected options have value of 1 and nonseelctd 0
      */
-    protected handleCategoricalValue(variable: ModelVariable, value: any): number {
-        const option = this.getOption(variable, value)   
+    private calculateCategoricalVariableContribution(variable: ModelVariable, value: any): number {
+        let categoricalContribution = 0
 
-        // If option has no coefficient, it's the reference category (0 contribution)
-        const numValue = (option.coefficient !== undefined) ? 1 : 0;
-        console.log('cat option', value)
-        console.log('numval', numValue)
-        return numValue;
+        // find contribution of selected option
+        const selected = this.getOption(variable, value)
+        const selNumeric = (selected.coefficient !== undefined) ? 1 : 0
+        const selScaled = this.scaleValue(selNumeric, selected.mean || 0, selected.standardDeviation || 1)
+        categoricalContribution += selScaled * (selected.coefficient || 0)
+
+        // find contribution of non-selected options
+        const nonselected = variable.oneOf?.filter(
+            opt => opt.value.trim().toLowerCase() !== value.trim().toLowerCase())
+        
+        if (nonselected && nonselected.length > 0) {
+            for (const option of nonselected) {
+                const numVal = 0 // all unselected options have value of 0
+                const scaled = this.scaleValue(numVal, option.mean || 0, option.standardDeviation || 1)
+                categoricalContribution += scaled * (option.coefficient || 0)
+            }
+        }
+
+        return categoricalContribution;
     }
 
     /**
@@ -236,7 +222,6 @@ export abstract class ModelStrategy {
 
 
     protected getRiskCategory(riskScore: number): string {
-        // TODO double check if errors should be thrown
         if (riskScore < 0) throw Error('Risk score cannot be negative')
         if (riskScore > 100) throw Error('Risk score cannot be more than 100%')
         
@@ -284,7 +269,6 @@ export abstract class ModelStrategy {
      * @returns 
      */
     protected scaleValue(val: number, mean: number, sd: number): number {
-        console.log('scaling value...')
         return (val-mean) / sd
     }
 

@@ -394,13 +394,6 @@ export default function AdmissionClinicalDataScreen() {
         { value: '7 days to 1 month', key: '7d-1mo' },
         { value: 'More than 1 month', key: '>1mo' }
     ];
-    
-    const simplifiedOptions = [
-        { value: 'Yes', key: 'yes'},
-        { value: 'No', key: 'no'},
-        { value: "Unsure", key: "unsure"}
-                                        
-    ];
 
     const hospitalizationOptions = [
     { value: 'Never', key: 'never' },
@@ -415,18 +408,20 @@ export default function AdmissionClinicalDataScreen() {
     ]
 
     const motorResponseOptions = [
-        // {value: 'Normal behaviour observed', key: '2'},
-        {value: 'Normal behaviour or localizes painful stimulus', key: "2"},
+        {value: 'Normal behaviour observed', key: '2.0'},
+        {value: 'Localizes painful stimulus', key: "2"},
         {value: 'Withdraws limb from painful stimulus', key: '1'},
-        {value: 'No response/inappropriate response', key: '0'}
+        {value: 'No response or inappropriate response', key: '0'}
     ]
 
     const verbalResponseOptions = [
-        // {value: 'Normal behaviour observed', key: '2'},
-        {value: 'Normal behaviour or cries appropriately with pain (or speaks if verbal)', key: '2'},
+        {value: 'Normal behaviour observed', key: '2.0'},
+        {value: 'Cries appropriately with pain (or speaks if verbal)', key: '2'},
         {value: 'Moan or abnormal cry with pain', key: '1'},
         {value: 'No vocal response to pain', key: '0'}
     ]
+
+    const hivUnknownWarning = 'Risk scores cannot be calculated unless a positive or negative HIV diagnosis is confirmed'
 
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -613,13 +608,25 @@ export default function AdmissionClinicalDataScreen() {
                                         search={false}
                                     />
                                     <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
+                                    {/* TODO if HIV status unknown - add warning that can't cacl risk until pos or neg diagnisis confirmed */}
                                     <RadioButtonGroup 
                                         options={[
                                             { label: 'Positive', value: 'positive'},
                                             { label: 'Negative', value: 'negative'},
                                             { label: 'Unknown', value: 'unknown'}]} 
                                         selected={hivStatus} 
-                                        onSelect={(value) => updatePatientData({ hivStatus: value })}/>
+                                        onSelect={(value) => {
+                                            if (value === 'unknown') {
+                                                // TODO add 'canCalcRiskScore flag
+                                                Platform.OS !== 'web' 
+                                                    ? 
+                                                    Alert.alert('Warning', hivUnknownWarning)
+                                                    :
+                                                    alert(hivUnknownWarning)
+                                            }
+                                            updatePatientData({ hivStatus: value })
+                                        }}
+                                    />
                                 </View>
                             </List.Accordion>
                         </View>
@@ -724,6 +731,7 @@ export default function AdmissionClinicalDataScreen() {
                                         onBlurExternal={handleRrateBlur}
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
+                                    {/* TODO add url to rrate app */}
                                     <Button style={{ alignSelf: 'center'}}
                                             buttonColor={colors.primary} 
                                             textColor={colors.onPrimary} 
@@ -829,7 +837,7 @@ export default function AdmissionClinicalDataScreen() {
                                     </View>
                                     { bcsScore !== null && eyeMovement?.value && motorResponse?.value && verbalResponse?.value &&
                                         <NutritionStatusBar 
-                                            title={`BCS Status: ${abnormalBCS ? 'ABNORMAL' : 'NORMAL'}`}
+                                            title={`${abnormalBCS ? 'ABNORMAL BCS' : 'NORMAL BCS'}`}
                                             content={`calculated BCS score = ${bcsScore}`}
                                             variant={mapBcsScoreToVariant(bcsScore)}
                                         />
