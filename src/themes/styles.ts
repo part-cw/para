@@ -136,4 +136,26 @@ export const GlobalStyles = StyleSheet.create({
         marginLeft: 12,
         lineHeight: 16,
     },
+
+    pageHeaderContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    pageHeaderWrapper: {
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+    },
+    pageHeaderTitle: {
+        flex: 1,
+        textAlign: 'center',
+    },
 })

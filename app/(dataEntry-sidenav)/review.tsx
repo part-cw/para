@@ -14,7 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // TODO -- if they've previously visited this page and updated info, remove updated section from revewedSection
 export default function ReviewScreen() {
     const { colors } = useTheme()
-    const { patientData, savePatientData, clearPatientData } = usePatientData();
+    const { patientData, savePatientData } = usePatientData();
+
+
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set());
     const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -205,15 +207,28 @@ export default function ReviewScreen() {
             }
 
             // Save patient data permanently and get the final patient ID
-            const finalPatientId = await savePatientData();
+            const { patientId, riskAssessment, patientName } = await savePatientData();
+
+            // TODO calculate risk score
+            // await calculateRisk(patientData, 'admission');
+            // const finalRiskAssessment = getCurrentRiskAssessment();
+
             
             Alert.alert(
                 'Success', 
-                `Patient data has been saved successfully!\nPatient ID: ${finalPatientId}`,
+                `Patient data has been saved successfully!\nPatient ID: ${patientId}`,
                 [
                     {
                         text: 'OK',
-                        onPress: () => router.push('/') // todo - change to risk display screen
+                        onPress: () => router.push({
+                                        pathname: '/riskDisplay',
+                                        params: {
+                                            patientId: patientId,
+                                            patientName: patientName,
+                                            // Serialize the risk assessment
+                                            riskAssessment: JSON.stringify(riskAssessment)
+                                        }
+                                    })
                     }
                 ]
             );

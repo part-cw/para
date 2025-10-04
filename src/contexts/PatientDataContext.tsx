@@ -1,19 +1,29 @@
-// src/contexts/PatientDataContext.tsx
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { getModelSelectorInstance } from '../models/modelSelectorInstance';
+import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
 import { initialPatientData, PatientData } from './PatientData';
 
+// TODO ad calculate risk score logic here 
 
 interface PatientDataContextType {
   patientData: PatientData;
   updatePatientData: (updates: Partial<PatientData>) => void;
   clearPatientData: () => void;
-  savePatientData: () => Promise<string>;
+  savePatientData: () => Promise<{
+      patientId: string;
+      riskAssessment: RiskAssessment;
+      patientName: string;}>;
   getPreviewPatientId: () => Promise<string>;
   startAdmission: () => void;
   isDataLoaded: boolean;
   handleAgeChange: (isUnderSixMonths: boolean) => void;
+
+  calculateAdmissionRisk: () => RiskPrediction | null;
+  calculateDischargeRisk: () => RiskPrediction | null;
+  getCurrentRiskAssessment: () => RiskAssessment;
+  riskAssessment: RiskAssessment;
 }
 
 const PatientDataContext = createContext<PatientDataContextType | undefined>(undefined);
@@ -24,6 +34,10 @@ const SUBMITTED_DATA_KEY = 'submitted_patient_data';
 export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [patientData, setPatientData] = useState<PatientData>(initialPatientData);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
+  
+  const modelSelector = getModelSelectorInstance();
+  // TODO use hook useRiskCalcualtion instead???
 
   // Load temporary data on app start
   useEffect(() => {
@@ -97,19 +111,31 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const savePatientData = async (): Promise<string> => {
+  const savePatientData = async (): 
+    Promise<{patientId: string; riskAssessment: RiskAssessment; patientName: string;}> => {
     try {
+      // Calculate final risk assessments before saving - TODO make this work with discharge risks
+      // TODO - only calculate risk if we have all required info
+      const finalRiskAssessment: RiskAssessment = {
+        admission: calculateAdmissionRisk(),
+        // discharge: calculateDischargeRisk(),
+      };
+
       // Save to permanent storage
       const existingData = await SecureStore.getItemAsync(SUBMITTED_DATA_KEY);
       const submittedData = existingData ? JSON.parse(existingData) : [];
       
       // Generate the final patient ID using your existing generator
       const finalPatientId = await PatientIdGenerator.generatePatientId();
+
+      // Store patient name before clearing
+      const patientName = `${patientData.firstName} ${patientData.surname}`;
       
       const patientRecord = {
         ...patientData,
         patientId: finalPatientId,
         submittedAt: new Date().toISOString(),
+        riskAssessment: finalRiskAssessment
       };
       
       submittedData.push(patientRecord);
@@ -122,7 +148,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       // Clear temporary data
       await clearPatientData();
       
-      return finalPatientId;
+      // return finalPatientId;
+      return {
+        patientId: finalPatientId,
+        riskAssessment: finalRiskAssessment,
+        patientName 
+      };
     } catch (error) {
       console.error('Error saving patient data:', error);
       throw error;
@@ -137,6 +168,34 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     if (!patientData.admissionStartedAt) {
       updatePatientData({ admissionStartedAt: new Date().toISOString() });
     }
+  };
+
+  const calculateAdmissionRisk = (): RiskPrediction | null => {
+    const context: ModelContext = {
+      isUnderSixMonths: patientData.isUnderSixMonths,
+      usageTime: 'admission'
+    };
+
+    const model = modelSelector.getModel(context)
+    const strategy = model && modelSelector.getStrategy(model?.modelName)
+
+    return strategy && strategy?.calculateRisk(patientData)
+  };
+
+  const calculateDischargeRisk = (): RiskPrediction | null => {
+    const context: ModelContext = {
+      isUnderSixMonths: patientData.isUnderSixMonths,
+      usageTime: 'discharge'
+    };
+
+    const model = modelSelector.getModel(context)
+    const strategy = model && modelSelector.getStrategy(model?.modelName)
+
+    return strategy && strategy?.calculateRisk(patientData)
+  };
+
+  const getCurrentRiskAssessment = (): RiskAssessment => {
+    return riskAssessment;
   };
 
    // Debug functions for testing
@@ -179,10 +238,14 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         getPreviewPatientId,
         startAdmission,
         isDataLoaded,
-        handleAgeChange
+        handleAgeChange,
         // getAllSubmittedPatients,
         // clearAllSubmittedPatients,
         // getTempPatientData,
+        calculateAdmissionRisk,
+        calculateDischargeRisk,
+        getCurrentRiskAssessment,
+        riskAssessment
       }}
     >
       {children}
