@@ -180,7 +180,7 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": {"illnessDuration": "48h-7d"},
+            "dependency": {"illnessDuration": "48 hours to 7 days"},
             "dependencyType": "string",
             "coefficient": 0.059761858027538,
             "mean": 1.40292624664079,

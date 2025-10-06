@@ -76,6 +76,15 @@ export function validateTemperatureRange(input: string): ValidationResult {
     return { isValid: true, errorMessage: '', warningMessage: '' };
 }
 
+/**
+ * 
+ * @param input temperature as string; assume valid
+ */
+export function getTempSquared(input: string): number {
+    const temp = parseFloat(input)
+    return temp * temp
+}
+
 export function getMuacStatus(isUnderSixMonths: boolean, muacString: string): string {
     const muacConfig = config.find(c => c.variable === "muac");
     if (!muacConfig) {

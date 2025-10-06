@@ -9,7 +9,7 @@ import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { bcsGeneralInfo, eyeMovementInfo, jaundiceInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { calculateBcsScore, calculateWAZ, getMuacStatus, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
+import { calculateBcsScore, calculateWAZ, getMuacStatus, getTempSquared, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -54,6 +54,7 @@ export default function AdmissionClinicalDataScreen() {
         //6-60 months
         hivStatus,
         temperature,
+        temperatureSquared,
         rrate,
         lastHospitalized,
         eyeMovement,
@@ -315,7 +316,10 @@ export default function AdmissionClinicalDataScreen() {
                 return;
             } else {
                 // Cancel
-                updatePatientData({ temperature: '' });
+                updatePatientData({ 
+                    temperature: '',
+                    temperatureSquared: null
+                 });
             }
         } else {
             // Mobile (iOS/Android)
@@ -326,7 +330,10 @@ export default function AdmissionClinicalDataScreen() {
                     {
                         text: 'Cancel',
                         onPress: () => {
-                            updatePatientData({ temperature: '' });
+                            updatePatientData({ 
+                                temperature: '',
+                                temperatureSquared: null 
+                            });
                     }},
                     {
                         text: 'Yes',
@@ -692,7 +699,10 @@ export default function AdmissionClinicalDataScreen() {
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}
                                         value={temperature} 
-                                        onChangeText={(value) => updatePatientData({ temperature: value })}
+                                        onChangeText={(value) => updatePatientData({ 
+                                            temperature: value,
+                                            temperatureSquared: getTempSquared(value)
+                                        })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         customValidator={(value) => validateTemperatureRange(value).isValid}
