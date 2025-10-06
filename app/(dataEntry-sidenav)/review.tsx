@@ -210,9 +210,6 @@ export default function ReviewScreen() {
             const { patientId, riskAssessment, patientName } = await savePatientData();
 
             // TODO calculate risk score
-            // await calculateRisk(patientData, 'admission');
-            // const finalRiskAssessment = getCurrentRiskAssessment();
-
             
             Alert.alert(
                 'Success', 
@@ -243,12 +240,6 @@ export default function ReviewScreen() {
     const formatDate = (date: Date | null): string => {
         if (!date) return 'Not provided';
         return date.toISOString().split('T')[0];
-    };
-
-    const formatDateTime = (isoString: string | null): string => {
-        if (!isoString) return 'Not recorded';
-        const date = new Date(isoString);
-        return date.toLocaleString();
     };
 
     const formatAge = () => {
