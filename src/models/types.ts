@@ -68,3 +68,8 @@ export interface RiskPrediction {
     riskCategory: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
     model: string;
 }
+
+export interface RiskAssessment {
+  admission?: RiskPrediction | null;
+  discharge?: RiskPrediction | null;
+}

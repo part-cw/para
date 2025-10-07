@@ -1,5 +1,5 @@
 import { initialPatientData, PatientData } from '../../contexts/PatientData'
-import { calculateBcsScore, calculateWAZ } from '../../utils/clinicalVariableCalculator'
+import { calculateBcsScore, calculateWAZ, getTempSquared } from '../../utils/clinicalVariableCalculator'
 import model06 from '../admission/M6PD-C0-6.json'
 import model660 from '../admission/M6PD-C6-60.json'
 import { LogisticRegressionStrategy } from '../ModelStrategy'
@@ -107,7 +107,7 @@ describe('LogisticRegressionStrategy: 6-60C Model', () => {
         console.log('bcsscore', bcsScore)
         
         const waz = calculateWAZ(testCase.ageInMonths, testCase.sex, testCase.weight)
-        const tempSquared = testCase.temperature * testCase.temperature 
+        const tempSquared = getTempSquared(testCase.temperature)
 
         return {
             ...initialPatientData,

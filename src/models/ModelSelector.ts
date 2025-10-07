@@ -118,32 +118,3 @@ export class ModelSelector {
         return this.models.size;
     }
 }
-
-
-/**
- * Utility hook for React Native components
- */
-// export const useModelSelector = () => {
-//     const [modelManager] = useState(() => new ModelSelector());
-//     const [isLoaded, setIsLoaded] = useState(false);
-//     const [error, setError] = useState<string | null>(null);
-
-//     useEffect(() => {
-//         const loadModels = async () => {
-//             try {
-//                 await modelSelector.loadModels();
-//                 setIsLoaded(true);
-//             } catch (err) {
-//                 setError(err instanceof Error ? err.message : 'Unknown error');
-//             }
-//         };
-
-//         loadModels();
-//     }, [modelSelector]);
-
-//     return {
-//         modelManager: isLoaded ? modelSelectro : null,
-//         isLoaded,
-//         error
-//     };
-// };

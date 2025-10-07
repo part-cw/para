@@ -9,7 +9,7 @@
         "motorResponse": "Localizes painful stimulus",
         "verbalResponse": "Cries appropriately", 
         "hivStatus": "Negative",
-        "lastHospitalized": "never",
+        "lastHospitalized": "Never",
         "rrate": 48,
         "temperature": 38.3},
   {
@@ -27,7 +27,7 @@
         "motorResponse": "No response or inappropriate response",
         "verbalResponse": "Moan or abnormal cry", 
         "hivStatus": "Negative",
-        "lastHospitalized": "<7d",
+        "lastHospitalized": "Less than 7 days ago",
         "rrate": 84,
         "temperature": 37},
   {
@@ -45,7 +45,7 @@
         "motorResponse": "Localizes painful stimulus",
         "verbalResponse": "Cries appropriately", 
         "hivStatus": "Negative",
-        "lastHospitalized": "1mo-1y",
+        "lastHospitalized": "1 month to 1 year ago",
         "rrate": 58,
         "temperature": 36.8},
   {
@@ -63,7 +63,7 @@
         "motorResponse": "Localizes painful stimulus",
         "verbalResponse": "Cries appropriately", 
         "hivStatus": "Negative",
-        "lastHospitalized": "1mo-1y",
+        "lastHospitalized": "1 month to 1 year ago",
         "rrate": 37,
         "temperature": 37.1},
   {
@@ -81,7 +81,7 @@
         "motorResponse": "Localizes painful stimulus",
         "verbalResponse": "Cries appropriately", 
         "hivStatus": "Negative",
-        "lastHospitalized": "1mo-1y",
+        "lastHospitalized": "1 month to 1 year ago",
         "rrate": 42,
         "temperature": 38.2},
   {

@@ -32,6 +32,17 @@ export default function Index() {
                   }}>
             Patient Records
         </Button>
+
+        {/* TODO - delete ! for testing purposes only */}
+        <Button style={[{ alignSelf: 'center' }, {marginTop: 10}]}
+                buttonColor={colors.primary} 
+                textColor={colors.onPrimary} 
+                mode="elevated" 
+                onPress={() => {
+                  router.push('/riskDisplay')
+                  }}>
+            Risk Display
+        </Button>
       </View>
     </>
   );

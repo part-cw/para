@@ -68,12 +68,12 @@
             "required": true,
             "oneOf": [
                 {
-                    "value": "<48h",
+                    "value": "Less than 48 hours",
                     "label": "less than 48 hours",
                     "description": "Whether the child's duration of present illness is less than 48 hours"
                 },
                 {
-                    "value": "48h-7d",
+                    "value": "48 hours to 7 days",
                     "label": "48 hours to 7 days",
                     "description":" Whether the child's duration of present illness is between 48 hours and 7 days",
                     "coefficient": 0.0229704278750671,
@@ -81,7 +81,7 @@
                     "standardDeviation": 0.491175331936256
                 },
                 {
-                    "value": "7d-1mo",
+                    "value": "7 days to 1 month",
                     "label": "7 days to 1 month",
                     "description": "Whether the child's duration of present illness is between 7 days and 1 month",
                     "coefficient": 0.194421172744823,
@@ -89,7 +89,7 @@
                     "standardDeviation": 0.303243324842165
                 },
                 {
-                    "value": ">1mo",
+                    "value": "More than 1 month",
                     "label": "more than 1 month",
                     "description": "Whether the child's duration of present illness is more than 1 month",
                     "coefficient": 0.0683878968750476,
@@ -180,7 +180,7 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": {"illnessDuration": "48h-7d"},
+            "dependency": {"illnessDuration": "48 hours to 7 days"},
             "dependencyType": "string",
             "coefficient": 0.059761858027538,
             "mean": 1.40292624664079,

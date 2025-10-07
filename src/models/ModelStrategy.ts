@@ -42,6 +42,11 @@ export abstract class ModelStrategy {
         
         for (const variable of this.model.variables) {
             if (variable.required) {
+                 // handle neonatal jaundice -- TODO - do this dynamically for all conditionally required varaibles
+                if (variable.name === 'neonatalJaundice' && !patientData.isNeonate) {
+                    break;
+                }
+
                 const value = patientData[variable.name];
                 if (value === null || value === undefined || value === '') {
                     missingVariables.push(variable.displayName || variable.name);

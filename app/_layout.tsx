@@ -5,42 +5,52 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider as PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AppTheme } from "../src/themes/theme";
 
 
-
-// // TODO figure out which font variant to use exactly -- importing 700Bold and 400Regular for now
-
 // Keep splash screen visible while loading fonts
 export default function RootLayout() {
-//   const [fontsLoaded] = useFonts({
-//     Inter_400Regular,
-//     Inter_700Bold,
-//   });
 
-//   useEffect(() => {
-//     // Tell expo-splash-screen not to auto-hide yet
-//     SplashScreen.preventAutoHideAsync();
-//   }, []);
+  // TODO - initialize models properly
+    // const [modelsLoaded, setModelsLoaded] = useState(false);
+    // const [error, setError] = useState<string | null>(null);
+    useEffect(() => {
+      initializeModels();
+    }, [])
+    // useEffect(() => {
+    //     const loadModels = async () => {
+    //         try {
+    //             await initializeModels();
+    //             setModelsLoaded(true);
+    //             console.log('Models loaded successfully');
+    //         } catch (err) {
+    //             setError(err instanceof Error ? err.message : 'Failed to load models');
+    //             console.error('Model loading error:', err);
+    //         }
+    //     };
 
-  // Only hide splash when fonts are ready and layout is complete
-//   const onLayoutRootView = useCallback(async () => {
-//     if (fontsLoaded) {
-//       await new Promise(resolve => setTimeout(resolve, 5000)); // TODO: for testing only - delete later
-//       await SplashScreen.hideAsync();
-//     }
-//   }, [fontsLoaded]);
+    //     loadModels();
+    // }, []);
 
-//   // Show nothing while fonts are loading (native splash stays visible)
-//   if (!fontsLoaded) {
-//     return null;
-//   }
+    // if (error) {
+    //     return (
+    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    //             <Text>Error loading models: {error}</Text>
+    //         </View>
+    //     );
+    // }
 
-  useEffect(() => {
-    initializeModels();
-  }, [])
+    // if (!modelsLoaded) {
+    //     return (
+    //         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    //             <ActivityIndicator size="large" />
+    //             <Text>Loading risk models...</Text>
+    //         </View>
+    //     );
+    // }
 
   useEffect(() => {
         // Prevent splash screen from auto-hiding immediately
@@ -64,12 +74,14 @@ export default function RootLayout() {
   return (
       <SafeAreaProvider>
         <PatientDataProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
           <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
             <PaperProvider theme={AppTheme}>
               <AppBar/>
               <Stack screenOptions={{headerShown: false,}}/>
             </PaperProvider>
           </View>
+          </GestureHandlerRootView>
         </PatientDataProvider>
       </SafeAreaProvider>
   );

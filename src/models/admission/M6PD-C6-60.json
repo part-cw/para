@@ -69,33 +69,33 @@
             "required": true,
             "oneOf": [
                 {
-                    "value": "never",
+                    "value": "Never",
                     "description": "Never hospitalized"
                 },
                 {
-                    "value": "<7d",
-                    "description": "less than 7 days ago",
+                    "value": "Less than 7 days ago",
+                    "description": "Hospitalized less than 7 days ago",
                     "coefficient": 0.0830222515025929,
                     "mean": 0.0395445134575569,
                     "standardDeviation": 0.19490667010038
                 },
                 {
-                    "value": "7d-1mo",
-                    "description": "7 days to 1 month ago",
+                    "value": "7 days to 1 month ago",
+                    "description": "Hospitalized 7 days to 1 month ago",
                     "coefficient": 0.141973119954243,
                     "mean": 0.082815734989648,
                     "standardDeviation": 0.275632034479257
                 },
                 {
-                    "value": "1mo-1y",
-                    "description":"1 month to 1 year ago",
+                    "value": "1 month to 1 year ago",
+                    "description":"Hospitalized 1 month to 1 year ago",
                     "coefficient": 0.0296742231370671,
                     "mean": 0.24472049689441,
                     "standardDeviation": 0.429965871658695
                 },
                 {
-                    "value": ">1y",
-                    "description": "more than 1 year ago",
+                    "value": "More than 1 year ago",
+                    "description": "Hospitalized more than 1 year ago",
                     "coefficient": -0.081301614260118,
                     "mean": 0.0826086956521739,
                     "standardDeviation": 0.275318347874769 
@@ -143,6 +143,7 @@
             "type": "number",
             "units": "°C",
             "required": true,
+            "dependencies": ["temperature"],
             "coefficient": -0.11589194105857,
             "mean": 1426.36544979296,
             "standardDeviation": 88.2784455728296
@@ -232,7 +233,7 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": {"lastHospitalized": "<7d"},
+            "dependency": {"lastHospitalized": "Less than 7 days ago"},
             "dependencyType": "string",
             "coefficient": 0.0261069259775735,
             "mean": 0.934105415757909,
@@ -245,7 +246,7 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": {"lastHospitalized": "7d-1mo"},
+            "dependency": {"lastHospitalized": "7 days to 1 month ago"},
             "dependencyType": "string",
             "coefficient": 0.0232372758950781,
             "mean": 1.68836757772414,
@@ -258,7 +259,7 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": {"lastHospitalized": "1mo-1y"},
+            "dependency": {"lastHospitalized": "1 month to 1 year ago"},
             "dependencyType": "string",
             "coefficient": 0.0858658207108999,
             "mean": 5.52683548662683,
@@ -271,7 +272,7 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": {"lastHospitalized": ">1y"},
+            "dependency": {"lastHospitalized": "More than 1 year ago"},
             "dependencyType": "string",
             "coefficient": -0.0118773973443354,
             "mean": 2.86128287865418,
