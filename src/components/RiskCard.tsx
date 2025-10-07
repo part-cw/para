@@ -12,6 +12,7 @@ interface RiskCardProps {
   expandable?: boolean
   initiallyExpanded?: boolean;
   content?: string;
+  contentStyle?: StyleProp<TextStyle>;
   children?: React.ReactNode
 }
 
@@ -24,6 +25,7 @@ const RiskCard: React.FC<RiskCardProps> = ({
   expandable,
   initiallyExpanded = false,
   content,
+  contentStyle,
   children
 }) => {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
@@ -98,7 +100,7 @@ const RiskCard: React.FC<RiskCardProps> = ({
   };
 
   const defaultTextStyle: TextStyle = {
-    color: variantColors.textColor, // TODO change to black?
+    // color: variantColors.textColor, // TODO change to black?
     fontSize: 16, // TODO change to 16?
     lineHeight: 20,
     marginBottom: 4,
@@ -140,7 +142,7 @@ const RiskCard: React.FC<RiskCardProps> = ({
             </>
         }
 
-        { content && <Text> {content} </Text> }
+        { content && <Text style={defaultTextStyle}> {content} </Text> }
 
        {isExpanded && 
             <View style={{ marginTop: 8 }}>

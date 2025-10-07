@@ -142,20 +142,36 @@ export const GlobalStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 12,
+        paddingVertical: 16,
+        borderRadius: 8,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
+        shadowOffset: { width: 0, height: 2 }, // original height 1
         shadowOpacity: 0.1,
         shadowRadius: 3,
-        elevation: 3,
+        elevation: 4, //origiall 3
+
+        // new stuff
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        backgroundColor: 'white',
+        marginBottom: 0,
+        marginHorizontal: 0,
+        marginTop: 0,
+
     },
     pageHeaderWrapper: {
         paddingHorizontal: 12,
         paddingVertical: 8,
     },
     pageHeaderTitle: {
+        // original 
         flex: 1,
         textAlign: 'center',
+        
+        // new:
+        fontSize: 20,
+        fontWeight: '600',
+        // textAlign: 'left',
+        color: '#000',
     },
 })
