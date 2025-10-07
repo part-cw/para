@@ -92,7 +92,7 @@ export default function RiskDisplay() {
             {/* TODO - map conditions to profile */}
             <RiskCard
                 title='Profile A'
-                expandable={false}
+                expandable={true}
                 content='Conditions 1, 2, 3'
             >
               {/* TODO - fix children */}

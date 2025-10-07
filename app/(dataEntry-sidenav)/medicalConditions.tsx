@@ -100,7 +100,7 @@ export default function MedicalConditionsScreen() {
                     data={diagnosisOptions} 
                     label={'Pneumonia'}
                     placeholder='select option below' 
-                    onSelect={(item) => updatePatientData({ pneumonia: item.key })}
+                    onSelect={(item) => updatePatientData({ pneumonia: item.value })}
                     value={pneumonia}
                     search={false}
                 />
@@ -108,7 +108,7 @@ export default function MedicalConditionsScreen() {
                     data={diagnosisOptions} 
                     label={'Severe anaemia'}
                     placeholder='select option below' 
-                    onSelect={(item) => updatePatientData({ anaemia: item.key })}
+                    onSelect={(item) => updatePatientData({ anaemia: item.value })}
                     value={anaemia}
                     search={false}
                 />
@@ -119,7 +119,7 @@ export default function MedicalConditionsScreen() {
                             data={diagnosisOptions} 
                             label={'Chronic illnesses'}
                             placeholder='select option below' 
-                            onSelect={(item) => updatePatientData({ chronicIllness: item.key })}
+                            onSelect={(item) => updatePatientData({ chronicIllness: item.value })}
                             value={chronicIllness}
                             search={false}
                         />
@@ -138,7 +138,7 @@ export default function MedicalConditionsScreen() {
                     data = {simplifiedOptions}
                     value = {acuteDiarrhea}
                     placeholder='select option below'
-                    onSelect={(item) => updatePatientData({ acuteDiarrhea: item.key })}
+                    onSelect={(item) => updatePatientData({ acuteDiarrhea: item.value})}
                     search={false}
                 />
                 <SearchableDropdown 
@@ -146,7 +146,7 @@ export default function MedicalConditionsScreen() {
                     data = {diagnosisOptions}
                     value = {malaria}
                     placeholder='select option below' 
-                    onSelect={(item) => updatePatientData({ malaria: item.key })}
+                    onSelect={(item) => updatePatientData({ malaria: item.value })}
                     search={false}
                 />
                 <SearchableDropdown 
@@ -154,7 +154,7 @@ export default function MedicalConditionsScreen() {
                     data = {diagnosisOptions}
                     value = {sepsis}
                     placeholder='select option below' 
-                    onSelect = {(item) => updatePatientData({ sepsis: item.key })}
+                    onSelect = {(item) => updatePatientData({ sepsis: item.value })}
                     search={false}
                 />
                 <SearchableDropdown 
@@ -162,7 +162,7 @@ export default function MedicalConditionsScreen() {
                     data = {diagnosisOptions}
                     value = {meningitis}
                     placeholder='select option below' 
-                    onSelect = {(item) => updatePatientData({ meningitis: item.key })}
+                    onSelect = {(item) => updatePatientData({ meningitis: item.value })}
                     search={false}
                 />
 
