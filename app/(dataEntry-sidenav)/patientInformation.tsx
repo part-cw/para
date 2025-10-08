@@ -51,7 +51,7 @@ export default function PatientInformationScreen() {
     } = patientData;
 
     const ageLessThanSixMonthsError = 'Entered age is less than 6 months. Check off "patient is less than 6 months old" or enter new DOB'
-    const ageGreaterThanSixMonthsError = 'Entered age is more than 6 months. Enter new DOB or unselct "...less than 6 months..." option'
+    const ageGreaterThanSixMonthsError = 'Entered age is more than 6 months. Enter new DOB or deselect "...less than 6 months..." option'
 
     // Function to validate age and set error state
     const validateAge = () => {
@@ -59,7 +59,7 @@ export default function PatientInformationScreen() {
             const age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge);
             updatePatientData({
                 ageInMonths: age,
-                isNeonate: isUnderSixMonths && dob && AgeCalculator.getAgeInDaysFromDob(dob) < 30
+                isNeonate: dob && AgeCalculator.getAgeInDaysFromDob(dob) < 30
             })
 
             if (age < 6 && !isUnderSixMonths) {
