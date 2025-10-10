@@ -18,6 +18,7 @@ export const displayNames: Record<string, string> = {
     admissionClinicalData: 'Admission Clincial Data',
     lastHospitalized: 'Last Hospitalized',
     hivStatus: 'HIV Status',
+    hivQuestion: 'Is the patient known to be HIV-positive or HIV-negative?',
     temperature: 'Temperature',
     rrate: 'Respiratory Rate',
     heartRate: 'Heart Rate',
