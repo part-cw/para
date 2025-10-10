@@ -612,24 +612,14 @@ export default function AdmissionClinicalDataScreen() {
                                         value={lastHospitalized}
                                         search={false}
                                     />
-                                    <Text style={Styles.accordionSubheading}>HIV Status <Text style={Styles.required}>*</Text></Text>
+                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold', marginBottom: -5}]}>HIV Status <Text style={Styles.required}>*</Text></Text>
+                                    <Text>{displayNames['hivQuestion']}</Text>
                                     <RadioButtonGroup 
                                         options={[
                                             { label: 'Positive', value: 'positive'},
-                                            { label: 'Negative', value: 'negative'},
-                                            { label: 'Unknown', value: 'unknown'}]} 
+                                            { label: 'Negative', value: 'negative'}]} 
                                         selected={hivStatus} 
-                                        onSelect={(value) => {
-                                            if (value === 'unknown') {
-                                                // TODO add 'canCalcRiskScore flag that makes sure scor only calculated if all required variables filled
-                                                Platform.OS !== 'web' 
-                                                    ? 
-                                                    Alert.alert('Warning', hivUnknownWarning)
-                                                    :
-                                                    alert(hivUnknownWarning)
-                                            }
-                                            updatePatientData({ hivStatus: value })
-                                        }}
+                                        onSelect={(value) => {updatePatientData({ hivStatus: value })}}
                                     />
                                 </View>
                             </List.Accordion>
