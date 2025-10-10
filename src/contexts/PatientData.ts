@@ -5,12 +5,13 @@ export interface PatientData {
   // Metadata
   admissionStartedAt: string | null;
   
-  // Patient Information
+  // Patient Information (for all ages)
   surname: string;
   firstName: string;
   otherName: string;
   sex: string;
   isUnderSixMonths: boolean;
+  isNeonate: boolean | null;
   isDOBUnknown: boolean;
   isYearMonthUnknown: boolean;
   dob: Date | null;
@@ -18,7 +19,6 @@ export interface PatientData {
   birthMonth: string;
   approxAgeInYears: string;
   ageInMonths: number | null;
-  isNeonate: boolean | null;
   
   // Admission Clinical Data (all ages)
   weight: string;
