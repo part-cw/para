@@ -51,8 +51,6 @@ export const ValidationProvider: React.FC<ValidationProviderProps> = ({ children
     });
   };
 
-  // TODO add clearValidationWarnings
-
   const hasAnyValidationErrors = Object.values(validationErrors).some(errors => errors.length > 0);
 
   const getScreenErrors = (screen: string) => validationErrors[screen] || [];

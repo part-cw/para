@@ -18,7 +18,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
+// TODO - reintroduce HIV unknown
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
