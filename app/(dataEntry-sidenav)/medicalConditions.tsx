@@ -1,10 +1,12 @@
 import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
+import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
+import { useValidation } from '@/src/contexts/ValidationContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { formatText } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
@@ -14,12 +16,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
+    const { setValidationErrors , getScreenErrors } = useValidation();
+
+    const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false);
+    
+    const validationErrors = getScreenErrors('medicalConditions')
+    const hasValidationErrors = validationErrors.length > 0;
 
     const {
         anaemia,
         pneumonia,
         chronicIllness,
-        acuteDiarrhea,
+        diarrhea,
         malaria,
         sepsis,
         meningitis,
@@ -34,10 +42,31 @@ export default function MedicalConditionsScreen() {
         { value: 'Unsure', key: 'unsure'},
     ]
 
-    const simplifiedOptions = [
-        { value: 'Yes', key: 'yes'},
-        { value: 'No', key: 'no'},
+    const diarrheaOptions = [
+        { value: 'Acute diarrhea', key: 'acute'},
+        { value: 'Persistent diarrhea', key: 'persistent'},
+        { value: 'Not acute or peristent', key: 'none'}, // TODO -- what's a better label for this
     ]
+
+    const validateAllFields = () => {
+        const errors: string[] = []
+
+        if (!anaemia) errors.push('Severe anaemia is missing a diagnosis');
+        if (!pneumonia) errors.push('Pneumonia is missing a diagnosis');
+        if (!chronicIllness) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
+        if (!diarrhea) errors.push('Diarrhea is missing a diagnosis');
+        if (!malaria) errors.push('Malaria is missing a diagnosis');
+        if (!sepsis) errors.push('Sepsis is missing a diagnosis');
+        if (!meningitis) errors.push('Meningitis/encaphalitis is missing a diagnosis');
+
+        return errors;
+    }
+
+    // Find errors when relevant data changes
+    useEffect(() => {
+        const errorMessages = validateAllFields();
+        setValidationErrors('medicalConditions', errorMessages)
+    }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
     
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -134,11 +163,11 @@ export default function MedicalConditionsScreen() {
                     />
                 </View>
                 <SearchableDropdown 
-                    label = {'Acute diarrhea'}
-                    data = {simplifiedOptions}
-                    value = {acuteDiarrhea}
+                    label = {'Diarrhea'}
+                    data = {diarrheaOptions}
+                    value = {diarrhea}
                     placeholder='select option below'
-                    onSelect={(item) => updatePatientData({ acuteDiarrhea: item.value})}
+                    onSelect={(item) => updatePatientData({ diarrhea: item.value})}
                     search={false}
                 />
                 <SearchableDropdown 
@@ -167,11 +196,28 @@ export default function MedicalConditionsScreen() {
                 />
 
             </ScrollView>
+
+            {/* Display error summary*/}
+            { showErrorSummary &&
+                <ValidationSummary 
+                    errors={validationErrors}
+                    variant='error'
+                    title= 'ALERT: Fix Errors Below'
+                />
+            }
+
             <PaginationControls
                 showPrevious={true}
                 showNext={true}
                 onPrevious={() => router.push('/(dataEntry-sidenav)/admissionClinicalData')}
-                onNext={() => router.push('/(dataEntry-sidenav)/vhtReferral')}
+                onNext={() => {
+                    if (hasValidationErrors) {
+                        setShowErrorSummary(true)
+                    } else {
+                        setShowErrorSummary(false)
+                        router.push('/(dataEntry-sidenav)/vhtReferral')
+                    }
+                }}
             /> 
         </SafeAreaView>
     );

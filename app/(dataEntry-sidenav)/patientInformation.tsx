@@ -30,7 +30,7 @@ export default function PatientInformationScreen() {
     const { height } = useWindowDimensions();
 
     const { patientData, updatePatientData, getPreviewPatientId, startAdmission, handleAgeChange, isDataLoaded } = usePatientData();
-    const { setValidationErrors, getScreenErrors, getScreenWarnings } = useValidation();
+    const { setValidationErrors, getScreenErrors } = useValidation();
 
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
