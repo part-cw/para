@@ -385,7 +385,7 @@ export default function ReviewScreen() {
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.anaemia || 'Not provided'} />
                             <InfoRow label="Chronic Illnesses" value={patientData.chronicIllness || 'Not provided'} />
-                            <InfoRow label="Acute diarrhea" value={patientData.acuteDiarrhea || 'Not provided'} />
+                            <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
                             <InfoRow label="Malaria" value={patientData.malaria ||'Not provided' } />
                             <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
                             <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis || 'Not provided'} />

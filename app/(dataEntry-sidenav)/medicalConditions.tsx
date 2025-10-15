@@ -1,8 +1,10 @@
+import CheckboxGroup from '@/src/components/CheckboxGroup';
 import PaginationControls from '@/src/components/PaginationControls';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
+import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { formatText } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
@@ -17,6 +19,9 @@ export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
     const { setValidationErrors , getScreenErrors } = useValidation();
+
+    // const [isOtherSelected, setIsOtherSelected] = useState<boolean>(false)
+    const [otherCondition, setOtherCondition] = useState<string>('');
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false);
     
@@ -45,7 +50,7 @@ export default function MedicalConditionsScreen() {
     const diarrheaOptions = [
         { value: 'Acute diarrhea', key: 'acute'},
         { value: 'Persistent diarrhea', key: 'persistent'},
-        { value: 'Not acute or peristent', key: 'none'}, // TODO -- what's a better label for this
+        { value: 'Not acute or peristent', key: 'none'},
     ]
 
     const validateAllFields = () => {
@@ -53,11 +58,11 @@ export default function MedicalConditionsScreen() {
 
         if (!anaemia) errors.push('Severe anaemia is missing a diagnosis');
         if (!pneumonia) errors.push('Pneumonia is missing a diagnosis');
-        if (!chronicIllness) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
         if (!diarrhea) errors.push('Diarrhea is missing a diagnosis');
         if (!malaria) errors.push('Malaria is missing a diagnosis');
         if (!sepsis) errors.push('Sepsis is missing a diagnosis');
         if (!meningitis) errors.push('Meningitis/encaphalitis is missing a diagnosis');
+        if (chronicIllness.length === 0) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
 
         return errors;
     }
@@ -67,6 +72,62 @@ export default function MedicalConditionsScreen() {
         const errorMessages = validateAllFields();
         setValidationErrors('medicalConditions', errorMessages)
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
+
+    // Extract the "other" value from chronicIllness if it exists
+    useEffect(() => {
+        const otherEntry = chronicIllness.find(item => item.startsWith('other:'));
+        if (otherEntry) {
+            const otherText = otherEntry.replace('other:', '').trim();
+            setOtherCondition(otherText);
+        }
+    }, []);
+
+    const handleChronicIllnessChange = (selected: string[]) => {
+        // Remove any existing "other:" entries before updating
+        console.log('!!!!! inside handleChronicIllnessChange')
+        console.log('selected opts', selected)
+        console.log('otherCondition', otherCondition, typeof(otherCondition))
+        const filtered = selected.filter(item => !item.startsWith('other:'));
+        
+        // If there's an otherCondition value, add it with the "other:" prefix
+        if (otherCondition.trim()) {
+            updatePatientData({
+                chronicIllness: [...filtered, `other: ${otherCondition.trim()}`]
+            });
+        } else {
+            updatePatientData({
+                chronicIllness: filtered
+            });
+        }
+    }
+
+    const handleOtherConditionChange = (value: string) => {
+        console.log('!!!!! inside handleOtherConditionChange')
+
+        setOtherCondition(value);
+        console.log('otherCondition', otherCondition, typeof(otherCondition))
+        
+        // Update chronicIllness to include the new "other" value
+        const filtered = chronicIllness.filter(item => !item.startsWith('other'));
+        console.log('filtered', filtered)
+
+        if (value.trim()) {
+            updatePatientData({
+                chronicIllness: [...filtered, `other: ${value.trim()}`]
+            });
+        // } else if (isOtherSelected) {
+        //     // If other is selected but no condition specified, just add "other"
+        //     updatePatientData({
+        //         chronicIllness: [...filtered, `other`]
+        //     })
+        }else {
+            console.log('!!!!!!!!!! removing other: {value} from list....')
+            // If other condition value is cleared, list 'other' on it's own
+            updatePatientData({
+                chronicIllness: [...filtered, `other`]
+            });
+        }
+    }
     
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -142,26 +203,6 @@ export default function MedicalConditionsScreen() {
                     search={false}
                 />
 
-                <View style = {{flexDirection: 'row', alignItems: 'center'}}>
-                    <View style={{flex: 1}}>
-                        <SearchableDropdown 
-                            data={diagnosisOptions} 
-                            label={'Chronic illnesses'}
-                            placeholder='select option below' 
-                            onSelect={(item) => updatePatientData({ chronicIllness: item.value })}
-                            value={chronicIllness}
-                            search={false}
-                        />
-                    </View>
-                    <IconButton
-                        icon="help-circle-outline"
-                        size={20}
-                        iconColor={colors.primary}
-                        onPress={() => {
-                        alert('Chronic illnesses include genetic/congenital diseases, sickle cell anemia, HIV, and TB');
-                        }}
-                    />
-                </View>
                 <SearchableDropdown 
                     label = {'Diarrhea'}
                     data = {diarrheaOptions}
@@ -194,6 +235,24 @@ export default function MedicalConditionsScreen() {
                     onSelect = {(item) => updatePatientData({ meningitis: item.value })}
                     search={false}
                 />
+                <View style={{marginRight: 10, marginLeft: 10, marginTop: -10}}>
+                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Illnesses <Text style={Styles.required}>*</Text></Text>
+                    <Text>{displayNames['chronicIllnessQuestion']}</Text>
+                    <CheckboxGroup 
+                        options={[
+                            {label: 'HIV', value: 'hiv'},
+                            {label: 'Tuberculosis', value: 'tb'},
+                            {label: 'Sickle cell anaemia', value: 'sickelCell'},
+                            {label: 'Unsure or no chronic illnesses', value: 'none'},
+                        ]} 
+                        allowOther={true} 
+                        selected={chronicIllness} 
+                        onSelectionChange={handleChronicIllnessChange}
+                        onOtherValueChange={handleOtherConditionChange}
+                        otherValue={otherCondition}               
+                    />
+    
+                </View>`
 
             </ScrollView>
 

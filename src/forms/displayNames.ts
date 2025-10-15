@@ -45,6 +45,7 @@ export const displayNames: Record<string, string> = {
     anaemia: 'Severe anaemia',
     pneumonia: 'Pneumonia',
     chronicIllness: 'Chronic Illnesses',
+    chronicIllnessQuestion: 'Does the patient have any of the following chronic illnesses? Select all that apply:',
     acuteDiarrhea: 'Acute Diarrhea',
     malaria: 'Malaria',
     sepsis: 'Sepsis',
