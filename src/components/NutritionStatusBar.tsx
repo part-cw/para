@@ -30,9 +30,9 @@ const NutritionStatusBar: React.FC<NutritionStatusProps> = ({
         };
       case 'moderate':
         return {
-          backgroundColor: '#fff3e0',   // #fff3e0
-          borderColor: '#ff9800',       // #ff9800
-          textColor: '#e65100',         // #e65100
+          backgroundColor: 'rgb(255, 254, 224)',  //rgb(255, 254, 224)
+          borderColor: 'rgb(255, 234, 0)',        //rgb(255, 221, 0)
+          textColor: 'rgba(197, 149, 5, 0.82)',          //rgb(230, 169, 0)
         };
       case 'normal':
         return {

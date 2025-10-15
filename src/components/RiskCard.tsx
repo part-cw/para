@@ -52,7 +52,7 @@ const RiskCard: React.FC<RiskCardProps> = ({
             return {
                 backgroundColor: 'rgb(255, 254, 224)',  //rgb(255, 254, 224)
                 borderColor: 'rgb(255, 234, 0)',        //rgb(255, 221, 0)
-                textColor: 'rgb(230, 173, 0)',          //rgb(230, 169, 0)
+                textColor: 'rgba(197, 149, 5, 0.82)',          //rgb(230, 169, 0) rgba(197, 149, 5, 0.82)
             };
       case 'low':
             return {
