@@ -280,7 +280,7 @@ export default function ReviewScreen() {
         </Card>
     );
 
-    const InfoRow = ({ label, value }: { label: string; value: string }) => (
+    const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             <Text style={{ fontWeight: 'bold', flex: 1 }}>{label}:</Text>
             <Text style={{ flex: 2 }}>{value || 'Not provided'}</Text>
@@ -306,6 +306,28 @@ export default function ReviewScreen() {
         const isReviewed = reviewedSections.has(sectionId);
         const isComplete = completedSections.has(sectionId);
         return isReviewed && isComplete ? 'green' : 'orange';
+    };
+
+    const otherChronicIllnessSelected = patientData.chronicIllness.includes('other')
+
+    const formatChronicIllness = (items: string[] = []): string => {
+        if (!items || items.length === 0) return 'Not provided';
+
+        // Capitalize the first letter of each illness and normalize spacing
+        const formatted = items.map(item => {
+            const trimmed = item.trim();
+            if (!trimmed) return null;
+
+            // Capitalize only the first letter (including after "other:")
+            const formattedText =
+            trimmed.length > 0
+                ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+                : trimmed;
+
+            return `• ${formattedText}`;
+        }).filter(Boolean);
+
+        return formatted.join('\n');
     };
   
     return (
@@ -363,7 +385,6 @@ export default function ReviewScreen() {
                                 <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
                                 <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
                                 <InfoRow label="SpO2" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
-                                {/* <InfoRow label="Heart Rate" value={patientData.heartRate ? `${patientData.heartRate} beats per min` : 'Not provided'} /> */}
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
                                 <InfoRow label="Eye movement" value={patientData.eyeMovement?.value || 'Not provided'} />
@@ -384,11 +405,14 @@ export default function ReviewScreen() {
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.anaemia || 'Not provided'} />
-                            <InfoRow label="Chronic Illnesses" value={patientData.chronicIllness || 'Not provided'} />
                             <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
                             <InfoRow label="Malaria" value={patientData.malaria ||'Not provided' } />
                             <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
                             <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis || 'Not provided'} />
+                            <InfoRow label="Chronic Illnesses" value={formatChronicIllness(patientData.chronicIllness) || 'Not provided'} />
+                            {otherChronicIllnessSelected && 
+                                <InfoRow label="Other chronic illness" value={patientData.otherChronicIllness || 'Not provided'} />
+                            }
                         </View>
                     </List.Accordion>
                 </View>

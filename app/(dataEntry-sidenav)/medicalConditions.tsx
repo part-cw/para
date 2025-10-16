@@ -71,7 +71,7 @@ export default function MedicalConditionsScreen() {
         setValidationErrors('medicalConditions', errorMessages)
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
 
-    
+
     const handleChronicIllnessChange = (selected: string[]) => {
         const isOtherSelected = selected.some(item => item.startsWith('other'))
 
@@ -194,16 +194,16 @@ export default function MedicalConditionsScreen() {
                     <Text>{displayNames['chronicIllnessQuestion']}</Text>
                     <CheckboxGroup 
                         options={[
-                            {label: 'HIV', value: 'hiv'},
-                            {label: 'Tuberculosis', value: 'tb'},
-                            {label: 'Sickle cell anaemia', value: 'sickelCellAnaemia'},
-                            {label: 'Unsure or no chronic illnesses', value: 'none/unsure'},
+                            {label: 'HIV', value: 'HIV'},
+                            {label: 'Tuberculosis', value: 'Tuberculosis'},
+                            {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
+                            {label: 'Unsure or no chronic illnesses', value: 'unsure/none'},
                             {label: 'Other', value: 'other'}
                         ]} 
                         selected={chronicIllness} 
                         onSelectionChange={handleChronicIllnessChange}
                     />
-                    {chronicIllness.some(item => item.startsWith('other')) &&
+                    {chronicIllness.some(item => item.toLowerCase().startsWith('other')) &&
                         <TextInput 
                             label="Specify other illnesses (optional)" 
                             mode="outlined" 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Checkbox from './Checkbox';
 
@@ -21,8 +21,6 @@ export default function CheckboxGroup({
   onSelectionChange,
   label,
 }: Props) {
-
-  const [isOtherSelected, setIsOtherSelected] = useState<boolean>(false)
 
   const handleCheckboxToggle = (value: string) => {
     const isSelected = selected.includes(value)
