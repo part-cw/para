@@ -20,9 +20,7 @@ export default function MedicalConditionsScreen() {
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
     const { setValidationErrors , getScreenErrors } = useValidation();
 
-    // const [isOtherSelected, setIsOtherSelected] = useState<boolean>(false)
-    const [otherCondition, setOtherCondition] = useState<string>('');
-
+    const [otherIllness, setOtherIllness] = useState<string>('');
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false);
     
     const validationErrors = getScreenErrors('medicalConditions')
@@ -73,61 +71,19 @@ export default function MedicalConditionsScreen() {
         setValidationErrors('medicalConditions', errorMessages)
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
 
-    // Extract the "other" value from chronicIllness if it exists
-    useEffect(() => {
-        const otherEntry = chronicIllness.find(item => item.startsWith('other:'));
-        if (otherEntry) {
-            const otherText = otherEntry.replace('other:', '').trim();
-            setOtherCondition(otherText);
-        }
-    }, []);
+    console.log('chronicIll', chronicIllness)
+    console.log('otherillness', otherIllness)
 
     const handleChronicIllnessChange = (selected: string[]) => {
-        // Remove any existing "other:" entries before updating
-        console.log('!!!!! inside handleChronicIllnessChange')
-        console.log('selected opts', selected)
-        console.log('otherCondition', otherCondition, typeof(otherCondition))
-        const filtered = selected.filter(item => !item.startsWith('other:'));
-        
-        // If there's an otherCondition value, add it with the "other:" prefix
-        if (otherCondition.trim()) {
-            updatePatientData({
-                chronicIllness: [...filtered, `other: ${otherCondition.trim()}`]
-            });
-        } else {
-            updatePatientData({
-                chronicIllness: filtered
-            });
-        }
-    }
+        const isOtherSelected = selected.some(item => item.startsWith('other'))
 
-    const handleOtherConditionChange = (value: string) => {
-        console.log('!!!!! inside handleOtherConditionChange')
+        if (!isOtherSelected) {
+            setOtherIllness('');
+        } 
+ 
+        updatePatientData({chronicIllness: selected})
+    };
 
-        setOtherCondition(value);
-        console.log('otherCondition', otherCondition, typeof(otherCondition))
-        
-        // Update chronicIllness to include the new "other" value
-        const filtered = chronicIllness.filter(item => !item.startsWith('other'));
-        console.log('filtered', filtered)
-
-        if (value.trim()) {
-            updatePatientData({
-                chronicIllness: [...filtered, `other: ${value.trim()}`]
-            });
-        // } else if (isOtherSelected) {
-        //     // If other is selected but no condition specified, just add "other"
-        //     updatePatientData({
-        //         chronicIllness: [...filtered, `other`]
-        //     })
-        }else {
-            console.log('!!!!!!!!!! removing other: {value} from list....')
-            // If other condition value is cleared, list 'other' on it's own
-            updatePatientData({
-                chronicIllness: [...filtered, `other`]
-            });
-        }
-    }
     
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -244,15 +200,21 @@ export default function MedicalConditionsScreen() {
                             {label: 'Tuberculosis', value: 'tb'},
                             {label: 'Sickle cell anaemia', value: 'sickelCell'},
                             {label: 'Unsure or no chronic illnesses', value: 'none'},
+                            {label: 'Other', value: 'other'}
                         ]} 
-                        allowOther={true} 
                         selected={chronicIllness} 
                         onSelectionChange={handleChronicIllnessChange}
-                        onOtherValueChange={handleOtherConditionChange}
-                        otherValue={otherCondition}               
                     />
-    
-                </View>`
+                    {chronicIllness.some(item => item.startsWith('other')) &&
+                        <TextInput 
+                            label="Specify other illnesses (optional)" 
+                            mode="outlined" 
+                            style={{marginTop: -10, marginLeft: 32}}
+                            value={otherIllness}
+                            onChangeText={(value) => {setOtherIllness(value)}}
+                        />
+                    }
+                </View>
 
             </ScrollView>
 
