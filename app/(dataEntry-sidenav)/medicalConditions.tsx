@@ -20,7 +20,6 @@ export default function MedicalConditionsScreen() {
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
     const { setValidationErrors , getScreenErrors } = useValidation();
 
-    const [otherIllness, setOtherIllness] = useState<string>('');
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false);
     
     const validationErrors = getScreenErrors('medicalConditions')
@@ -35,7 +34,8 @@ export default function MedicalConditionsScreen() {
         sepsis,
         meningitis,
         malnutritionStatus,
-        sickYoungInfant
+        sickYoungInfant,
+        otherChronicIllness
     } = patientData
 
     const diagnosisOptions = [
@@ -71,14 +71,12 @@ export default function MedicalConditionsScreen() {
         setValidationErrors('medicalConditions', errorMessages)
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
 
-    console.log('chronicIll', chronicIllness)
-    console.log('otherillness', otherIllness)
-
+    
     const handleChronicIllnessChange = (selected: string[]) => {
         const isOtherSelected = selected.some(item => item.startsWith('other'))
 
         if (!isOtherSelected) {
-            setOtherIllness('');
+            updatePatientData({otherChronicIllness: ''})
         } 
  
         updatePatientData({chronicIllness: selected})
@@ -198,8 +196,8 @@ export default function MedicalConditionsScreen() {
                         options={[
                             {label: 'HIV', value: 'hiv'},
                             {label: 'Tuberculosis', value: 'tb'},
-                            {label: 'Sickle cell anaemia', value: 'sickelCell'},
-                            {label: 'Unsure or no chronic illnesses', value: 'none'},
+                            {label: 'Sickle cell anaemia', value: 'sickelCellAnaemia'},
+                            {label: 'Unsure or no chronic illnesses', value: 'none/unsure'},
                             {label: 'Other', value: 'other'}
                         ]} 
                         selected={chronicIllness} 
@@ -210,8 +208,8 @@ export default function MedicalConditionsScreen() {
                             label="Specify other illnesses (optional)" 
                             mode="outlined" 
                             style={{marginTop: -10, marginLeft: 32}}
-                            value={otherIllness}
-                            onChangeText={(value) => {setOtherIllness(value)}}
+                            value={otherChronicIllness}
+                            onChangeText={(value) => updatePatientData({otherChronicIllness: value})}
                         />
                     }
                 </View>
