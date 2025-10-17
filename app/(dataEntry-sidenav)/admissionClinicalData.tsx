@@ -617,9 +617,21 @@ export default function AdmissionClinicalDataScreen() {
                                     <RadioButtonGroup 
                                         options={[
                                             { label: 'Positive', value: 'positive'},
-                                            { label: 'Negative', value: 'negative'}]} 
+                                            { label: 'Negative', value: 'negative'},
+                                            { label: 'Unknown', value: 'unknown'}]} 
                                         selected={hivStatus} 
-                                        onSelect={(value) => {updatePatientData({ hivStatus: value })}}
+                                        onSelect={(value) => {
+                                            if (value === 'unknown') {
+                                                // TODO add 'canCalcRiskScore flag that makes sure scor only calculated if all required variables filled
+                                                Platform.OS !== 'web' 
+                                                    ? 
+                                                    Alert.alert('Warning', hivUnknownWarning)
+                                                    :
+                                                    alert(hivUnknownWarning)
+                                            }
+
+                                            updatePatientData({ hivStatus: value })
+                                        }}
                                     />
                                 </View>
                             </List.Accordion>

@@ -11,7 +11,7 @@ import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO -- if they've previously visited this page and updated info, remove updated section from revewedSection
+// TODO -- allow submit even if VHT and caregiver pages incomplete. Say 'Missing Information... are you sure you want to submit? OK or Cancel
 export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData } = usePatientData();
