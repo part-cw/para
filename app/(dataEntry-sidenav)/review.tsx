@@ -30,7 +30,7 @@ export default function ReviewScreen() {
 
     // track which sections are completed
     useEffect(() => {
-        const { requiredMissing, nonRequiredMissing } = validateFields();
+        const { requiredMissing, nonRequiredMissing } = validateSectionFields();
         const allMissingSections = { ...requiredMissing, ...nonRequiredMissing };
         // const missingSectionFields = validateRequiredFields(); // section objects
         const incompleteSections = Object.keys(allMissingSections) // display names
@@ -43,7 +43,7 @@ export default function ReviewScreen() {
         }
     }, [patientData])
 
-    const validateFields = () => {
+    const validateSectionFields = () => {
         const requiredMissing: { [key: string]: string[] } = {};
         const nonRequiredMissing: { [key: string]: string[] } = {};
 
@@ -178,7 +178,7 @@ export default function ReviewScreen() {
     };
 
     const handleSubmit = async () => {
-        const { requiredMissing, nonRequiredMissing } = validateFields();
+        const { requiredMissing, nonRequiredMissing } = validateSectionFields();
  
         function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
             for (const item of a) {

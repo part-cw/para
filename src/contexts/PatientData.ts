@@ -133,6 +133,6 @@ export const initialPatientData: PatientData = {
   caregiverName: '',
   caregiverTel: '',
   confirmTel: '',
-  isCaregiversPhone: false,
+  isCaregiversPhone: false, // TODO initialize to true? 
   sendReminders: false,
 };

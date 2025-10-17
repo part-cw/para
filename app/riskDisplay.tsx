@@ -70,9 +70,9 @@ export default function RiskDisplay() {
                 title={admission?.riskCategory.toUpperCase()}
                 variant={admission?.riskCategory.toLowerCase()}
                 content={`Risk score = ${admission?.riskScore}%`}
-                expandable={true}
+                expandable={false}
               >
-                {/* TODO - fix children */}
+                {/* TODO - fix children and set RiskCard expandable to true*/}
                 <Text>
                     Top predictors...TODO
                 </Text>
@@ -87,15 +87,16 @@ export default function RiskDisplay() {
                 </Button>
               </RiskCard>
             
-            <Text style={{fontSize: 16, fontWeight: 'bold', margin: 10}}>Risk Profile:</Text>
+            {/* <Text style={{fontSize: 16, fontWeight: 'bold', margin: 10}}>Risk Profile:</Text> */}
             
             {/* TODO - map conditions to profile */}
             <RiskCard
-                title='Profile A'
-                expandable={true}
-                content='Conditions 1, 2, 3'
+              title='Relevant Morbidities'
+              expandable={false}
+              content='Conditions 1, 2, 3'
+              containerStyle={{marginTop: 10}}
             >
-              {/* TODO - fix children */}
+              {/* TODO - fix children nd set RiskCard expandable to true*/}
               <Text>
                 Recommended careplan
               </Text>

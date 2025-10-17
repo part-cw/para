@@ -47,7 +47,8 @@ export const patientFormSchema = [
         sectionName: 'medicalConditions', 
         isRequired: true,
         requiredFields: ['anaemia', 'pneumonia', 'chronicIllness', 
-                    'diarrhea', 'malaria', 'sepsis', 'meningitis']
+                            'diarrhea', 'malaria', 'sepsis', 'meningitis'],
+        optionalFields: ['otherChronicIllness']
     },
     {
         sectionName: 'vhtReferral',
