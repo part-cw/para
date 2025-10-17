@@ -71,6 +71,13 @@ export default function MedicalConditionsScreen() {
         setValidationErrors('medicalConditions', errorMessages)
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
 
+    // autoselect 'hiv' if hivStatus is positive when page first renders 
+    useEffect(() => {
+        if (patientData.hivStatus === 'positive') {
+            console.log('here!!')
+            updatePatientData({chronicIllness: ['HIV']})
+        }
+    }, [])
 
     const handleChronicIllnessChange = (selected: string[]) => {
         const isOtherSelected = selected.some(item => item.startsWith('other'))
@@ -197,7 +204,8 @@ export default function MedicalConditionsScreen() {
                             {label: 'HIV', value: 'HIV'},
                             {label: 'Tuberculosis', value: 'Tuberculosis'},
                             {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
-                            {label: 'Unsure or no chronic illnesses', value: 'unsure/none'},
+                            {label: 'Unsure', value: 'unsure'},
+                            {label: 'None', value: 'none'},
                             {label: 'Other', value: 'other'}
                         ]} 
                         selected={chronicIllness} 

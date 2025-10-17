@@ -5,7 +5,6 @@ import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
 import { initialPatientData, PatientData } from './PatientData';
 
-// TODO ad calculate risk score logic here 
 
 interface PatientDataContextType {
   patientData: PatientData;
