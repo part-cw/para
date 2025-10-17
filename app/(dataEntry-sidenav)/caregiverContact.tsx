@@ -1,20 +1,25 @@
 import Checkbox from '@/src/components/Checkbox';
 import PaginationControls from '@/src/components/PaginationControls';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
+import ValidationSummary from '@/src/components/ValidationSummary';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { confirmPhoneErrorMessage, isValidPhoneNumber, telephoneErrorMessage } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// TODO: maybe replace alert with tooltip
+// Note: did not use ValidationContext to get screen errors becuase don't want to affect side nav
 
 export default function CaregiverContactScreen() {
     const { colors } = useTheme();
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
+    
+    const [ pageErrors, setPageErrors] = useState<string[]>([])
+    const [ showErrorSummary, setShowErrorSummary ] = useState<boolean>(false)
 
     const {
         caregiverName,
@@ -27,7 +32,27 @@ export default function CaregiverContactScreen() {
     const telephoneInfo = "If the patient's caregiver does not have a phone, enter the number of a relative or friend who lives nearby"
     const telephoneCheckboxInfo = "Do not select this option if the entered telephone number belongs to anyone other than the patient's caregiver (e.g. friend, neighbour, or other relative)"
 
-    const isSameTelephone = caregiverTel === confirmTel
+    const isSameTelephone = caregiverTel === confirmTel;
+
+    const getPageErrors = () => {
+        const errors: string[] = [];
+        
+        if (caregiverTel && !isValidPhoneNumber(caregiverTel)) {
+            errors.push(telephoneErrorMessage)
+        }
+
+        if (!isSameTelephone) {
+            errors.push(confirmPhoneErrorMessage)
+        }
+
+        return errors;
+    }
+
+    useEffect(() => {
+        const errMessages = getPageErrors()
+        setPageErrors(errMessages)
+    }, [caregiverTel, confirmTel])
+
 
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -117,13 +142,29 @@ export default function CaregiverContactScreen() {
                 </View>
 
             </ScrollView>
+        
+          {/* Display error summary*/}
+            { showErrorSummary &&
+                <ValidationSummary 
+                    errors={pageErrors}
+                    variant='error'
+                    title= 'ALERT: Fix Errors Below'
+                />
+            }
 
-        <PaginationControls
-            showPrevious={true}
-            showNext={true}
-            onPrevious={() => router.push('/(dataEntry-sidenav)/vhtReferral')}
-            onNext={() => router.push('/(dataEntry-sidenav)/review')}
-        />            
+            <PaginationControls
+                showPrevious={true}
+                showNext={true}
+                onPrevious={() => router.push('/(dataEntry-sidenav)/vhtReferral')}
+                onNext={() => {
+                    if (pageErrors.length > 0) {
+                        setShowErrorSummary(true)
+                    } else {
+                        setShowErrorSummary(false)
+                        router.push('/(dataEntry-sidenav)/review')
+                    }
+                }}
+            />            
         </SafeAreaView>
     );
 }
