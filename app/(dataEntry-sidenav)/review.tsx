@@ -11,7 +11,6 @@ import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO -- allow submit even if VHT and caregiver pages incomplete. Say 'Missing Information... are you sure you want to submit? OK or Cancel
 export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData } = usePatientData();
@@ -31,8 +30,10 @@ export default function ReviewScreen() {
 
     // track which sections are completed
     useEffect(() => {
-        const missingSectionFields = validateRequiredFields(); // section objects
-        const incompleteSections = Object.keys(missingSectionFields) // display names
+        const { requiredMissing, nonRequiredMissing } = validateFields();
+        const allMissingSections = { ...requiredMissing, ...nonRequiredMissing };
+        // const missingSectionFields = validateRequiredFields(); // section objects
+        const incompleteSections = Object.keys(allMissingSections) // display names
 
         for (const section of allSections) {
             // check that section is complete
@@ -42,15 +43,16 @@ export default function ReviewScreen() {
         }
     }, [patientData])
 
-    const validateRequiredFields = () => {
-        console.log('validating required fields...')
-        const missingSectionFields: { [key: string]: string[] } = {};
+    const validateFields = () => {
+        const requiredMissing: { [key: string]: string[] } = {};
+        const nonRequiredMissing: { [key: string]: string[] } = {};
+
 
         for (const section of patientFormSchema) {
             const missingFields: string[] = [];
 
             // check required fields
-            for (const fieldName of section.required) {
+            for (const fieldName of section.requiredFields) {
                 const fieldValue = patientData[fieldName as keyof typeof patientData];
 
                 // Check if field is empty or null
@@ -135,11 +137,16 @@ export default function ReviewScreen() {
 
             if (missingFields.length > 0) {
                 const sectionTitle = displayNames[section.sectionName]
-                missingSectionFields[sectionTitle] = missingFields;
+
+                if (section.isRequired) {
+                    requiredMissing[sectionTitle] = missingFields
+                } else {
+                    nonRequiredMissing[sectionTitle] = missingFields
+                }
             }
         }
 
-        return missingSectionFields;
+        return {requiredMissing, nonRequiredMissing};
     }
 
     const isEmptyField = (value: any): boolean => {
@@ -157,7 +164,7 @@ export default function ReviewScreen() {
     }
 
     const formatMissingFieldsMessage = (missingSectionFields: {[key: string]: string[]}) => {
-        let message = 'Please fill in:\n\n'
+        let message = 'The following information is missing:\n\n'
         
         for (const [sectionTitle, fields] of Object.entries(missingSectionFields)) {
             message += `${sectionTitle.toUpperCase()}: ${fields.join(', ')}\n\n`
@@ -171,71 +178,107 @@ export default function ReviewScreen() {
     };
 
     const handleSubmit = async () => {
+        const { requiredMissing, nonRequiredMissing } = validateFields();
+ 
+        function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
+            for (const item of a) {
+                if (!b.has(item)) return false;
+            }
+            return true;
+        }
+
+        // show error if any data is missing
+        if (Object.keys(requiredMissing).length > 0) {
+            if (Platform.OS === 'web') {
+                alert(`Missing Information. ${formatMissingFieldsMessage(requiredMissing)}`)
+                return;
+            }
+
+            Alert.alert('Missing Information', `${formatMissingFieldsMessage(requiredMissing)}`);
+            return;
+        }
+
+        // check that all sections have been reviewed
+        if (!isSubset(allSections, reviewedSections)) {
+            if (Platform.OS === 'web') {
+                alert('Unreviewed Sections\nPlease review all sections before submitting patient record')
+                return;
+            }
+
+            Alert.alert('Unreviewed Sections', `Please review all sections before submitting patient record`);
+            return;
+        }
+
+        // check if non-required sections have missing data - show confirmation
+        if (Object.keys(nonRequiredMissing).length > 0) {
+            const message = `${formatMissingFieldsMessage(nonRequiredMissing)}\n\n⚠️This information will be required at discharge. You can submit now and add it to the patient record later.\n\nSubmit anyway?`;
+            
+            if (Platform.OS === 'web') {
+                if (confirm(`Missing Information\n\n${message}`)) {
+                    await proceedWithSubmit()
+                }
+            } else {
+                Alert.alert(
+                    'Missing Information',
+                    `${message}`,
+                    [
+                        {text: 'Cancel', style: 'cancel'},
+                        {text: 'Submit', onPress: proceedWithSubmit}
+                    ]
+                )
+            }
+            return;
+        }
+
+        // All required sections complete and no missing non-required data
+        await proceedWithSubmit();
+    };
+
+    const proceedWithSubmit = async () => {
         try {
             setIsSubmitting(true);
-        
-            const missingData = validateRequiredFields();
-            console.log('missingData', missingData)
-            
-            function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
-                for (const item of a) {
-                    if (!b.has(item)) return false;
-                }
-                return true;
-            }
-    
-            // show error if any data is missing
-            if (Object.keys(missingData).length > 0) {
-                if (Platform.OS === 'web') {
-                    alert(`Missing Information. ${formatMissingFieldsMessage(missingData)}`)
-                    return;
-                }
-
-                Alert.alert('Missing Information', `${formatMissingFieldsMessage(missingData)}`);
-                return;
-            }
-
-            // check that all sections have been reviewed
-            if (!isSubset(allSections, reviewedSections)) {
-                if (Platform.OS === 'web') {
-                    alert('Unreviewed Sections\nPlease review all sections before submitting patient record')
-                    return;
-                }
-
-                Alert.alert('Unreviewed Sections', `Please review all sections before submitting patient record`);
-                return;
-            }
 
             // Save patient data permanently and get the final patient ID
             const { patientId, riskAssessment, patientName } = await savePatientData();
 
-            // TODO calculate risk score
-            
-            Alert.alert(
-                'Success', 
-                `Patient data has been saved successfully!\nPatient ID: ${patientId}`,
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => router.push({
-                                        pathname: '/riskDisplay',
-                                        params: {
-                                            patientId: patientId,
-                                            patientName: patientName,
-                                            // Serialize the risk assessment
-                                            riskAssessment: JSON.stringify(riskAssessment)
-                                        }
-                                    })
+            if (Platform.OS !== 'web') {
+                Alert.alert(
+                    'Success', 
+                    `Patient data has been saved successfully!\nPatient ID: ${patientId}`,
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => router.push({
+                                            pathname: '/riskDisplay',
+                                            params: {
+                                                patientId: patientId,
+                                                patientName: patientName,
+                                                // Serialize the risk assessment
+                                                riskAssessment: JSON.stringify(riskAssessment)
+                                            }
+                                        })
+                        }
+                    ]
+                );
+            } else {
+                alert(`Success! Patient data has been saved successfully!\nPatient ID: ${patientId}`);
+                router.push({
+                    pathname: '/riskDisplay',
+                    params: {
+                        patientId: patientId,
+                        patientName: patientName,
+                        riskAssessment: JSON.stringify(riskAssessment)
                     }
-                ]
-            );
+                });
+            }
+
         } catch (error) {
             console.error('Error submitting patient data:', error);
             Alert.alert('Error', 'Failed to save patient data. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }
 
     const formatDate = (date: Date | null): string => {
         if (!date) return 'Not provided';

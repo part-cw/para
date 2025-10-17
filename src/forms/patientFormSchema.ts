@@ -2,16 +2,18 @@
  
   /**
  * Patient form validation schema with conditional requirements
- * 'required' and 'oneOf' are fields that must be filled
- * 'optional' are fields that are NOT required
+ * 'isRequired' denotes whether the section must be filled before submission. If false then fields may be blank
+ * 'requiredField' and 'oneOf' are fields that must be filled
+ * 'optionalFields' are fields that are NOT required
  * 'conditionalRequired' are fields required based on given condition
  * Section name must match keys in displayNames.ts
  */
 
 export interface FormSection {
     sectionName: string;
-    required?: string[];
-    optional?: string[];
+    isRequired: boolean;
+    requiredFields?: string[];
+    optionalFields?: string[];
     oneOf?: string[][];
     conditionalRequired?: {
         underSixMonths?: string[];
@@ -22,17 +24,19 @@ export interface FormSection {
 export const patientFormSchema = [
     {
         sectionName: 'patientInformation', 
-        required: ['surname', 'firstName', 'sex'],
+        isRequired: true,
+        requiredFields: ['surname', 'firstName', 'sex'],
         oneOf: [
             ['dob'],
             ['birthYear', 'birthMonth'],
             ['approxAge']
         ],
-        optional: ['otherName']
+        optionalFields: ['otherName']
     },
     {
-        sectionName: 'admissionClinicalData', 
-        required: ['muac', 'weight', 'spo2'],
+        sectionName: 'admissionClinicalData',
+        isRequired: true, 
+        requiredFields: ['muac', 'weight', 'spo2'],
         conditionalRequired: {
             isNeonate: ['neonatalJaundice'],
             underSixMonths: ['illnessDuration', 'bulgingFontanelle', 'feedingWell'],
@@ -41,18 +45,21 @@ export const patientFormSchema = [
     },
     {
         sectionName: 'medicalConditions', 
-        required: ['anaemia', 'pneumonia', 'chronicIllness', 
-                    'acuteDiarrhea', 'malaria', 'sepsis', 'meningitis']
+        isRequired: true,
+        requiredFields: ['anaemia', 'pneumonia', 'chronicIllness', 
+                    'diarrhea', 'malaria', 'sepsis', 'meningitis']
     },
     {
         sectionName: 'vhtReferral',
-        required: ['village', 'vhtName', 'vhtTelephone'],
-        optional: ['subvillage']
+        isRequired: false,
+        requiredFields: ['village', 'vhtName', 'vhtTelephone'],
+        optionalFields: ['subvillage']
     },
     {
         sectionName: 'caregiverContact',
-        required: ['caregiverName'],
-        optional: ['telephone', 'isCaregiversPhone', 'sendReminders'],
+        isRequired: false,
+        requiredFields: ['caregiverName'],
+        optionalFields: ['telephone', 'isCaregiversPhone', 'sendReminders'],
         conditionalRequired: {
             hasTelephone: ['confirmTel'] // if telephone entered, must confirm
         }

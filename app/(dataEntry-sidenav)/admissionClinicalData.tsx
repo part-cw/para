@@ -68,7 +68,6 @@ export default function AdmissionClinicalDataScreen() {
         sex,
         ageInMonths,
         isNeonate,
-        malnutritionStatus
     } = patientData
 
     const validateAllFields = () => {
@@ -427,7 +426,7 @@ export default function AdmissionClinicalDataScreen() {
         {value: 'No vocal response to pain', key: '0'}
     ]
 
-    const hivUnknownWarning = 'Risk scores cannot be calculated unless a positive or negative HIV diagnosis is confirmed'
+    const hivUnknownWarning = 'Risk scores cannot be accurately calculated unless a positive or negative HIV diagnosis is confirmed.'
 
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -622,7 +621,6 @@ export default function AdmissionClinicalDataScreen() {
                                         selected={hivStatus} 
                                         onSelect={(value) => {
                                             if (value === 'unknown') {
-                                                // TODO add 'canCalcRiskScore flag that makes sure scor only calculated if all required variables filled
                                                 Platform.OS !== 'web' 
                                                     ? 
                                                     Alert.alert('Warning', hivUnknownWarning)
