@@ -47,8 +47,9 @@ export interface PatientData {
   // Medical Conditions
   anaemia: string;
   pneumonia: string;
-  chronicIllness: string;
-  acuteDiarrhea: string;
+  chronicIllness: string[];
+  otherChronicIllness: string;
+  diarrhea: string;
   malaria: string;
   sepsis: string;
   meningitis: string;
@@ -113,8 +114,9 @@ export const initialPatientData: PatientData = {
   // medical conditions
   anaemia: '',
   pneumonia: '',
-  chronicIllness: '',
-  acuteDiarrhea: '',
+  chronicIllness: [],
+  otherChronicIllness: '',
+  diarrhea: '',
   malaria: '',
   sepsis: '',
   meningitis: '',

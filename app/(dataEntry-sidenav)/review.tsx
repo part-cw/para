@@ -11,7 +11,6 @@ import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO -- if they've previously visited this page and updated info, remove updated section from revewedSection
 export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData } = usePatientData();
@@ -31,8 +30,10 @@ export default function ReviewScreen() {
 
     // track which sections are completed
     useEffect(() => {
-        const missingSectionFields = validateRequiredFields(); // section objects
-        const incompleteSections = Object.keys(missingSectionFields) // display names
+        const { requiredMissing, nonRequiredMissing } = validateFields();
+        const allMissingSections = { ...requiredMissing, ...nonRequiredMissing };
+        // const missingSectionFields = validateRequiredFields(); // section objects
+        const incompleteSections = Object.keys(allMissingSections) // display names
 
         for (const section of allSections) {
             // check that section is complete
@@ -42,15 +43,16 @@ export default function ReviewScreen() {
         }
     }, [patientData])
 
-    const validateRequiredFields = () => {
-        console.log('validating required fields...')
-        const missingSectionFields: { [key: string]: string[] } = {};
+    const validateFields = () => {
+        const requiredMissing: { [key: string]: string[] } = {};
+        const nonRequiredMissing: { [key: string]: string[] } = {};
+
 
         for (const section of patientFormSchema) {
             const missingFields: string[] = [];
 
             // check required fields
-            for (const fieldName of section.required) {
+            for (const fieldName of section.requiredFields) {
                 const fieldValue = patientData[fieldName as keyof typeof patientData];
 
                 // Check if field is empty or null
@@ -135,11 +137,16 @@ export default function ReviewScreen() {
 
             if (missingFields.length > 0) {
                 const sectionTitle = displayNames[section.sectionName]
-                missingSectionFields[sectionTitle] = missingFields;
+
+                if (section.isRequired) {
+                    requiredMissing[sectionTitle] = missingFields
+                } else {
+                    nonRequiredMissing[sectionTitle] = missingFields
+                }
             }
         }
 
-        return missingSectionFields;
+        return {requiredMissing, nonRequiredMissing};
     }
 
     const isEmptyField = (value: any): boolean => {
@@ -157,7 +164,7 @@ export default function ReviewScreen() {
     }
 
     const formatMissingFieldsMessage = (missingSectionFields: {[key: string]: string[]}) => {
-        let message = 'Please fill in:\n\n'
+        let message = 'The following information is missing:\n\n'
         
         for (const [sectionTitle, fields] of Object.entries(missingSectionFields)) {
             message += `${sectionTitle.toUpperCase()}: ${fields.join(', ')}\n\n`
@@ -171,71 +178,107 @@ export default function ReviewScreen() {
     };
 
     const handleSubmit = async () => {
+        const { requiredMissing, nonRequiredMissing } = validateFields();
+ 
+        function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
+            for (const item of a) {
+                if (!b.has(item)) return false;
+            }
+            return true;
+        }
+
+        // show error if any data is missing
+        if (Object.keys(requiredMissing).length > 0) {
+            if (Platform.OS === 'web') {
+                alert(`Missing Information. ${formatMissingFieldsMessage(requiredMissing)}`)
+                return;
+            }
+
+            Alert.alert('Missing Information', `${formatMissingFieldsMessage(requiredMissing)}`);
+            return;
+        }
+
+        // check that all sections have been reviewed
+        if (!isSubset(allSections, reviewedSections)) {
+            if (Platform.OS === 'web') {
+                alert('Unreviewed Sections\nPlease review all sections before submitting patient record')
+                return;
+            }
+
+            Alert.alert('Unreviewed Sections', `Please review all sections before submitting patient record`);
+            return;
+        }
+
+        // check if non-required sections have missing data - show confirmation
+        if (Object.keys(nonRequiredMissing).length > 0) {
+            const message = `${formatMissingFieldsMessage(nonRequiredMissing)}\n\n⚠️This information will be required at discharge. You can submit now and add it to the patient record later.\n\nSubmit anyway?`;
+            
+            if (Platform.OS === 'web') {
+                if (confirm(`Missing Information\n\n${message}`)) {
+                    await proceedWithSubmit()
+                }
+            } else {
+                Alert.alert(
+                    'Missing Information',
+                    `${message}`,
+                    [
+                        {text: 'Cancel', style: 'cancel'},
+                        {text: 'Submit', onPress: proceedWithSubmit}
+                    ]
+                )
+            }
+            return;
+        }
+
+        // All required sections complete and no missing non-required data
+        await proceedWithSubmit();
+    };
+
+    const proceedWithSubmit = async () => {
         try {
             setIsSubmitting(true);
-        
-            const missingData = validateRequiredFields();
-            console.log('missingData', missingData)
-            
-            function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
-                for (const item of a) {
-                    if (!b.has(item)) return false;
-                }
-                return true;
-            }
-    
-            // show error if any data is missing
-            if (Object.keys(missingData).length > 0) {
-                if (Platform.OS === 'web') {
-                    alert(`Missing Information. ${formatMissingFieldsMessage(missingData)}`)
-                    return;
-                }
-
-                Alert.alert('Missing Information', `${formatMissingFieldsMessage(missingData)}`);
-                return;
-            }
-
-            // check that all sections have been reviewed
-            if (!isSubset(allSections, reviewedSections)) {
-                if (Platform.OS === 'web') {
-                    alert('Unreviewed Sections\nPlease review all sections before submitting patient record')
-                    return;
-                }
-
-                Alert.alert('Unreviewed Sections', `Please review all sections before submitting patient record`);
-                return;
-            }
 
             // Save patient data permanently and get the final patient ID
             const { patientId, riskAssessment, patientName } = await savePatientData();
 
-            // TODO calculate risk score
-            
-            Alert.alert(
-                'Success', 
-                `Patient data has been saved successfully!\nPatient ID: ${patientId}`,
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => router.push({
-                                        pathname: '/riskDisplay',
-                                        params: {
-                                            patientId: patientId,
-                                            patientName: patientName,
-                                            // Serialize the risk assessment
-                                            riskAssessment: JSON.stringify(riskAssessment)
-                                        }
-                                    })
+            if (Platform.OS !== 'web') {
+                Alert.alert(
+                    'Success', 
+                    `Patient data has been saved successfully!\nPatient ID: ${patientId}`,
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => router.push({
+                                            pathname: '/riskDisplay',
+                                            params: {
+                                                patientId: patientId,
+                                                patientName: patientName,
+                                                // Serialize the risk assessment
+                                                riskAssessment: JSON.stringify(riskAssessment)
+                                            }
+                                        })
+                        }
+                    ]
+                );
+            } else {
+                alert(`Success! Patient data has been saved successfully!\nPatient ID: ${patientId}`);
+                router.push({
+                    pathname: '/riskDisplay',
+                    params: {
+                        patientId: patientId,
+                        patientName: patientName,
+                        riskAssessment: JSON.stringify(riskAssessment)
                     }
-                ]
-            );
+                });
+            }
+
         } catch (error) {
             console.error('Error submitting patient data:', error);
             Alert.alert('Error', 'Failed to save patient data. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }
 
     const formatDate = (date: Date | null): string => {
         if (!date) return 'Not provided';
@@ -280,7 +323,7 @@ export default function ReviewScreen() {
         </Card>
     );
 
-    const InfoRow = ({ label, value }: { label: string; value: string }) => (
+    const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             <Text style={{ fontWeight: 'bold', flex: 1 }}>{label}:</Text>
             <Text style={{ flex: 2 }}>{value || 'Not provided'}</Text>
@@ -306,6 +349,28 @@ export default function ReviewScreen() {
         const isReviewed = reviewedSections.has(sectionId);
         const isComplete = completedSections.has(sectionId);
         return isReviewed && isComplete ? 'green' : 'orange';
+    };
+
+    const otherChronicIllnessSelected = patientData.chronicIllness.includes('other')
+
+    const formatChronicIllness = (items: string[] = []): string => {
+        if (!items || items.length === 0) return 'Not provided';
+
+        // Capitalize the first letter of each illness and normalize spacing
+        const formatted = items.map(item => {
+            const trimmed = item.trim();
+            if (!trimmed) return null;
+
+            // Capitalize only the first letter (including after "other:")
+            const formattedText =
+            trimmed.length > 0
+                ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+                : trimmed;
+
+            return `• ${formattedText}`;
+        }).filter(Boolean);
+
+        return formatted.join('\n');
     };
   
     return (
@@ -363,7 +428,6 @@ export default function ReviewScreen() {
                                 <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
                                 <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
                                 <InfoRow label="SpO2" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
-                                {/* <InfoRow label="Heart Rate" value={patientData.heartRate ? `${patientData.heartRate} beats per min` : 'Not provided'} /> */}
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
                                 <InfoRow label="Eye movement" value={patientData.eyeMovement?.value || 'Not provided'} />
@@ -384,11 +448,14 @@ export default function ReviewScreen() {
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.anaemia || 'Not provided'} />
-                            <InfoRow label="Chronic Illnesses" value={patientData.chronicIllness || 'Not provided'} />
-                            <InfoRow label="Acute diarrhea" value={patientData.acuteDiarrhea || 'Not provided'} />
+                            <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
                             <InfoRow label="Malaria" value={patientData.malaria ||'Not provided' } />
                             <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
                             <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis || 'Not provided'} />
+                            <InfoRow label="Chronic Illnesses" value={formatChronicIllness(patientData.chronicIllness) || 'Not provided'} />
+                            {otherChronicIllnessSelected && 
+                                <InfoRow label="Other chronic illness" value={patientData.otherChronicIllness || 'Not provided'} />
+                            }
                         </View>
                     </List.Accordion>
                 </View>

@@ -18,7 +18,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
+// TODO - reintroduce HIV unknown
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
@@ -68,7 +68,6 @@ export default function AdmissionClinicalDataScreen() {
         sex,
         ageInMonths,
         isNeonate,
-        malnutritionStatus
     } = patientData
 
     const validateAllFields = () => {
@@ -427,7 +426,7 @@ export default function AdmissionClinicalDataScreen() {
         {value: 'No vocal response to pain', key: '0'}
     ]
 
-    const hivUnknownWarning = 'Risk scores cannot be calculated unless a positive or negative HIV diagnosis is confirmed'
+    const hivUnknownWarning = 'Risk scores cannot be accurately calculated unless a positive or negative HIV diagnosis is confirmed.'
 
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -617,9 +616,20 @@ export default function AdmissionClinicalDataScreen() {
                                     <RadioButtonGroup 
                                         options={[
                                             { label: 'Positive', value: 'positive'},
-                                            { label: 'Negative', value: 'negative'}]} 
+                                            { label: 'Negative', value: 'negative'},
+                                            { label: 'Unknown', value: 'unknown'}]} 
                                         selected={hivStatus} 
-                                        onSelect={(value) => {updatePatientData({ hivStatus: value })}}
+                                        onSelect={(value) => {
+                                            if (value === 'unknown') {
+                                                Platform.OS !== 'web' 
+                                                    ? 
+                                                    Alert.alert('Warning', hivUnknownWarning)
+                                                    :
+                                                    alert(hivUnknownWarning)
+                                            }
+
+                                            updatePatientData({ hivStatus: value })
+                                        }}
                                     />
                                 </View>
                             </List.Accordion>

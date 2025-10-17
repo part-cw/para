@@ -3,11 +3,13 @@ import PaginationButton from '@/src/components/PaginationButton';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
+import ValidationSummary from '@/src/components/ValidationSummary';
 import { MAX_PATIENT_AGE } from '@/src/config';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
+import { useValidation } from '@/src/contexts/ValidationContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
-import { formatNumericInput, isValidYearInput, validateApproxAge, yearErrorMessage } from '@/src/utils/inputValidator';
+import { formatNumericInput, isValidTextFormat, isValidYearInput, textErrorMessage, validateApproxAge, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -23,16 +25,20 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// TODO refactor error hanbdling to be more like admissionClinicalData
 
 export default function PatientInformationScreen() {
     const { height } = useWindowDimensions();
 
     const { patientData, updatePatientData, getPreviewPatientId, startAdmission, handleAgeChange, isDataLoaded } = usePatientData();
+    const { setValidationErrors, getScreenErrors } = useValidation();
+
     const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [ageValidationError, setAgeValidationError] = useState<string>('');
     const [ageDisplay, setAgeDisplay] = useState<number | null>(null);
+    const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
+
+    const validationErrors = getScreenErrors('patientInformation');
+    const hasValidationErrors = validationErrors.length > 0;
 
     // Local state for form validation and UI
     const {
@@ -47,70 +53,88 @@ export default function PatientInformationScreen() {
         birthYear,
         birthMonth,
         approxAgeInYears: approxAge,
-        ageInMonths
     } = patientData;
 
     const ageLessThanSixMonthsError = 'Entered age is less than 6 months. Check off "patient is less than 6 months old" or enter new DOB'
     const ageGreaterThanSixMonthsError = 'Entered age is more than 6 months. Enter new DOB or deselect "...less than 6 months..." option'
+    const ageRequiredError = 'Age information required';
 
-    // Function to validate age and set error state
-    const validateAge = () => {
-        try {
-            const age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge);
-            updatePatientData({
-                ageInMonths: age,
-                isNeonate: dob && AgeCalculator.getAgeInDaysFromDob(dob) < 30
-            })
+    const ageValidationError = validationErrors.find(err => 
+        err === ageLessThanSixMonthsError || 
+        err === ageGreaterThanSixMonthsError || 
+        err.includes('Invalid age') ||
+        err === ageRequiredError
+    ) || '';
 
-            if (age < 6 && !isUnderSixMonths) {
-                setAgeValidationError(ageLessThanSixMonthsError) 
-                setAgeDisplay(null)
-                return false;
-            }
+    const months = [
+        { value: 'January', key: 'Jan'},
+        { value: 'February', key: 'Feb'},
+        { value: 'March', key: 'Mar'},
+        { value: 'April', key: 'Apr'},
+        { value: 'May', key: 'May'},
+        { value: 'June', key: 'Jun'},
+        { value: 'July', key: 'Jul'},
+        { value: 'August', key: 'Aug'},
+        { value: 'September', key: 'Sep'},
+        { value: 'October', key: 'Oct'},
+        { value: 'November', key: 'Nov'},
+        { value: 'December', key: 'Dec'},
+    ]
 
-            if (age > 6 && isUnderSixMonths) {
-                setAgeValidationError(ageGreaterThanSixMonthsError) 
-                setAgeDisplay(null)
-                return false;
-            }
+    const validateAllFields = () => {
+        const errors: string[] = []
 
-            setAgeDisplay(age);
-            setAgeValidationError(''); // Clear error if validation passes
-            return true;
-        } catch (error) {
-            setAgeDisplay(null);
-            setAgeValidationError(error instanceof Error ? error.message : 'Invalid age information');
-            return false;
+        if (!surname) {
+            errors.push('Surname is required');
+        } else if (!isValidTextFormat(surname)){
+            errors.push(`Invalid surname. ${textErrorMessage}`)
         }
-    };
 
-    const confirmNewIsUnderSixMonthFlagValid = (newIsUnderSixMonths: boolean) => {
-        // calculate age if info available -- handles cases when checkbox checked before dob entered
-        let age;
-        if (dob || (birthYear && birthMonth) || approxAge) {
-            age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge);
+        if (!firstName) {
+            errors.push('First name is required');
+
+        } else if (!isValidTextFormat(firstName)){
+            errors.push(`Invalid first name. ${textErrorMessage}`)
+        }
+
+        if (otherName && !isValidTextFormat(otherName)){
+            errors.push(`Invalid 'other name'. ${textErrorMessage}`)
+        }
+
+        if (sex === '') {
+            errors.push(`Sex is required.`)
+        }
+
+        // Age validation
+        const hasAgeInfo = dob || (birthMonth && birthYear) || approxAge;
+        if (!hasAgeInfo) {
+            errors.push(ageRequiredError)
         } else {
-            return;
-        }
-        
-        // Case 1: isUnderSixMonths false, entered age < 0.5 years -- INVALID
-        if (age && age < 6 && !newIsUnderSixMonths) {
-            setAgeValidationError(ageLessThanSixMonthsError)
-            setAgeDisplay(null)
-            return;
+            try {
+                const age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge);
+                updatePatientData({
+                    ageInMonths: age,
+                    isNeonate: dob && AgeCalculator.getAgeInDaysFromDob(dob) < 30
+                })
+
+                if (age < 6 && !isUnderSixMonths) {
+                    errors.push(ageLessThanSixMonthsError) 
+                    setAgeDisplay(null)
+                } else if (age > 6 && isUnderSixMonths) {
+                    errors.push(ageGreaterThanSixMonthsError)
+                    setAgeDisplay(null)
+                } else {
+                    setAgeDisplay(age)
+                }
+            } catch (error) {
+                setAgeDisplay(null);
+                const errMessage = error instanceof Error ? error.message : 'Invalid age information'
+                errors.push(errMessage)
+            }
         }
 
-        // Case 2: isUnderSixMonths true, entered age >= 0.5 years -- INVALID
-        if (age && age >= 6 && newIsUnderSixMonths) {
-            setAgeValidationError(ageGreaterThanSixMonthsError)
-            setAgeDisplay(null)
-            return
-        }
 
-        // All other cases -- VALID: (age<0.5 and isUnderSixMonths true; age >= 0.5 and isUnderSixMonths false)
-        setAgeValidationError('') // clear error
-        age && setAgeDisplay(age)
-        return;
+        return errors;
     }
 
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -124,9 +148,6 @@ export default function PatientInformationScreen() {
                 approxAgeInYears: '',
                 sickYoungInfant: isYoungInfant
             })
-
-            // Clear age validation error when date changes
-            setAgeValidationError('');
         }
 
         if (Platform.OS === "android") {
@@ -151,9 +172,6 @@ export default function PatientInformationScreen() {
                 return roundedAgeInDays < 28;
             })()
         })
-
-        // Clear age validation error when approx age changes
-        setAgeValidationError('');
     }
 
     const handleYearMonthChange = (year: string, month: string | undefined) => {
@@ -169,41 +187,23 @@ export default function PatientInformationScreen() {
             birthMonth: month,
             sickYoungInfant: isYoungInfant
         })
-
-        // Clear age validation error when year/month changes
-        setAgeValidationError('');
     }
 
     // Validate age whenever relevant data changes
     useEffect(() => {
-        // Only validate if we have some age information
-        if (dob || (birthYear && birthMonth) || approxAge) {
-            // Use setTimeout to avoid validation during rapid state changes
-            const timeoutId = setTimeout(() => {
-                validateAge();
-            }, 200);
+        const errorMessages = validateAllFields();
+        setValidationErrors('patientInformation', errorMessages)
+    }, [dob, birthYear, birthMonth, approxAge, surname, firstName, otherName, sex, isUnderSixMonths]);
 
-            return () => clearTimeout(timeoutId);
-        } else {
-            setAgeValidationError('');
-            setAgeDisplay(null);
-        }
-    }, [dob, birthYear, birthMonth, approxAge]);
-
-    const months = [
-        { value: 'January', key: 'Jan'},
-        { value: 'February', key: 'Feb'},
-        { value: 'March', key: 'Mar'},
-        { value: 'April', key: 'Apr'},
-        { value: 'May', key: 'May'},
-        { value: 'June', key: 'Jun'},
-        { value: 'July', key: 'Jul'},
-        { value: 'August', key: 'Aug'},
-        { value: 'September', key: 'Sep'},
-        { value: 'October', key: 'Oct'},
-        { value: 'November', key: 'Nov'},
-        { value: 'December', key: 'Dec'},
-    ]
+    // Clear errors when component unmounts or navigates away
+    useEffect(() => {
+        return () => {
+            // Only clear if no errors exist
+            if (validateAllFields().length === 0) {
+                setValidationErrors('admissionClinicalData', []);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const fetchId = async () => {
@@ -286,7 +286,6 @@ export default function PatientInformationScreen() {
                             const newValue = !isUnderSixMonths
                             updatePatientData({isUnderSixMonths: newValue})
                             handleAgeChange(newValue)
-                            confirmNewIsUnderSixMonthFlagValid(newValue)
                         }}
                     /> 
                     <Checkbox label={'Exact date of birth (DOB) unknown'} 
@@ -304,7 +303,6 @@ export default function PatientInformationScreen() {
                                         approxAgeInYears: ''
                                     })
                                 })
-                                setAgeValidationError(''); // clear error when toggling
                             }}
                     />  
                     {
@@ -349,7 +347,6 @@ export default function PatientInformationScreen() {
                                             approxAgeInYears: ''
                                         })
                                     });
-                                    setAgeValidationError(''); // Clear error when toggling
                                 }}
                             />  
                             {
@@ -411,6 +408,15 @@ export default function PatientInformationScreen() {
                         </Text>
                     }
                 </ScrollView>
+
+                {/* Display error summary*/}
+                { showErrorSummary &&
+                    <ValidationSummary 
+                        errors={validationErrors}
+                        variant='error'
+                        title= 'ALERT: Fix Errors Below'
+                    />
+                }
                 
                 {/* Pagination controls */}
                 <View style={[
@@ -421,13 +427,15 @@ export default function PatientInformationScreen() {
                 ]}>
                     <PaginationButton
                         onPress={() => {
-                            if (!ageValidationError) {
+                            if (hasValidationErrors) {
+                                setShowErrorSummary(true)
+                            } else {
+                                setShowErrorSummary(false)
                                 router.push('../(dataEntry-sidenav)/admissionClinicalData')
                             }
                         }}
                         isNext={true}
                         label='Next'
-                        disabled={!!ageValidationError} // disable pagination if there are age validation errors
                     />
                 </View>
             </KeyboardAvoidingView>
