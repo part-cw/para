@@ -43,7 +43,7 @@ export default function AdmissionClinicalDataScreen() {
         weight,
         waz,
         muac,
-        spo2,
+        spo2_admission: spo2,
 
         //0-6months
         illnessDuration,
@@ -578,7 +578,7 @@ export default function AdmissionClinicalDataScreen() {
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
                                         value={spo2} 
-                                        onChangeText={(value) => updatePatientData({ spo2: value })}
+                                        onChangeText={(value) => updatePatientData({ spo2_admission: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true}
                                         customValidator={(value) => validateOxygenSaturationRange(value).isValid}
@@ -751,7 +751,7 @@ export default function AdmissionClinicalDataScreen() {
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
                                         value={spo2} 
-                                        onChangeText={(value) => updatePatientData({ spo2: value })}
+                                        onChangeText={(value) => updatePatientData({ spo2_admission: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         customValidator={(value) => validateOxygenSaturationRange(value).isValid}

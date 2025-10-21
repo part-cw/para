@@ -414,7 +414,7 @@ export default function ReviewScreen() {
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
                                 <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
-                                <InfoRow label="SpO₂" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
+                                <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                             </View>
                             :
                             <View style={Styles.accordionContentWrapper}>
@@ -427,7 +427,7 @@ export default function ReviewScreen() {
                                 <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
                                 <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
                                 <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
-                                <InfoRow label="SpO2" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
+                                <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
                                 <InfoRow label="Eye movement" value={patientData.eyeMovement?.value || 'Not provided'} />

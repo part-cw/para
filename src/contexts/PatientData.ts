@@ -24,7 +24,7 @@ export interface PatientData {
   weight: string;
   waz: number | null;
   muac: string;
-  spo2: string;
+  spo2_admission: string;
  
   // Admission Clinical Data (6-60 months only)
   hivStatus: string;
@@ -91,7 +91,7 @@ export const initialPatientData: PatientData = {
   weight: '',
   waz: null,
   muac: '',
-  spo2: '',
+  spo2_admission: '',
   
   // Admission Clinical Data (6-60 months only)
   lastHospitalized: '',

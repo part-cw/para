@@ -197,35 +197,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return riskAssessment;
   };
 
-   // Debug functions for testing
-//   const getAllSubmittedPatients = async (): Promise<any[]> => {
-//     try {
-//       const existingData = await SecureStore.getItemAsync(SUBMITTED_DATA_KEY);
-//       return existingData ? JSON.parse(existingData) : [];
-//     } catch (error) {
-//       console.error('Error getting submitted patients:', error);
-//       return [];
-//     }
-//   };
-
-//   const clearAllSubmittedPatients = async (): Promise<void> => {
-//     try {
-//       await SecureStore.deleteItemAsync(SUBMITTED_DATA_KEY);
-//       console.log('All submitted patients cleared');
-//     } catch (error) {
-//       console.error('Error clearing submitted patients:', error);
-//     }
-//   };
-
-//   const getTempPatientData = async (): Promise<any> => {
-//     try {
-//       const tempData = await SecureStore.getItemAsync(TEMP_STORAGE_KEY);
-//       return tempData ? JSON.parse(tempData) : null;
-//     } catch (error) {
-//       console.error('Error getting temp data:', error);
-//       return null;
-//     }
-//   };
 
   return (
     <PatientDataContext.Provider
@@ -238,9 +209,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         startAdmission,
         isDataLoaded,
         handleAgeChange,
-        // getAllSubmittedPatients,
-        // clearAllSubmittedPatients,
-        // getTempPatientData,
         calculateAdmissionRisk,
         calculateDischargeRisk,
         getCurrentRiskAssessment,

@@ -37,7 +37,7 @@ export const displayNames: Record<string, string> = {
 
     // AdmissionClinical Data (all ages)
     muac: 'MUAC',
-    spo2: 'SpO₂',
+    spo2_admission: 'SpO₂',
     weight: 'Weight',
 
     // Medical Conditions

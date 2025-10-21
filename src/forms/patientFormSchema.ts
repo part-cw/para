@@ -36,7 +36,7 @@ export const patientFormSchema = [
     {
         sectionName: 'admissionClinicalData',
         isRequired: true, 
-        requiredFields: ['muac', 'weight', 'spo2'],
+        requiredFields: ['muac', 'weight', 'spo2_admission'],
         conditionalRequired: {
             isNeonate: ['neonatalJaundice'],
             underSixMonths: ['illnessDuration', 'bulgingFontanelle', 'feedingWell'],
