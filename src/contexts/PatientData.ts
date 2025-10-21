@@ -45,14 +45,14 @@ export interface PatientData {
   feedingWell: boolean | null;
 
   // Medical Conditions
-  anaemia: string;
+  severeAnaemia: string;
   pneumonia: string;
-  chronicIllness: string[];
+  chronicIllnesses: string[];
   otherChronicIllness: string;
   diarrhea: string;
   malaria: string;
   sepsis: string;
-  meningitis: string;
+  meningitis_encephalitis: string;
   malnutritionStatus: string;
   sickYoungInfant: boolean;
   
@@ -112,14 +112,14 @@ export const initialPatientData: PatientData = {
   feedingWell: null,
 
   // medical conditions
-  anaemia: '',
+  severeAnaemia: '',
   pneumonia: '',
-  chronicIllness: [],
+  chronicIllnesses: [],
   otherChronicIllness: '',
   diarrhea: '',
   malaria: '',
   sepsis: '',
-  meningitis: '',
+  meningitis_encephalitis: '',
   malnutritionStatus: '',
   sickYoungInfant: false,
 

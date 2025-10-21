@@ -26,13 +26,13 @@ export default function MedicalConditionsScreen() {
     const hasValidationErrors = validationErrors.length > 0;
 
     const {
-        anaemia,
+        severeAnaemia: anaemia,
         pneumonia,
-        chronicIllness,
+        chronicIllnesses: chronicIllness,
         diarrhea,
         malaria,
         sepsis,
-        meningitis,
+        meningitis_encephalitis: meningitis,
         malnutritionStatus,
         sickYoungInfant,
         otherChronicIllness
@@ -75,7 +75,7 @@ export default function MedicalConditionsScreen() {
     useEffect(() => {
         if (patientData.hivStatus === 'positive') {
             console.log('here!!')
-            updatePatientData({chronicIllness: ['HIV']})
+            updatePatientData({chronicIllnesses: ['HIV']})
         }
     }, [])
 
@@ -86,7 +86,7 @@ export default function MedicalConditionsScreen() {
             updatePatientData({otherChronicIllness: ''})
         } 
  
-        updatePatientData({chronicIllness: selected})
+        updatePatientData({chronicIllnesses: selected})
     };
 
     
@@ -159,7 +159,7 @@ export default function MedicalConditionsScreen() {
                     data={diagnosisOptions} 
                     label={'Severe anaemia'}
                     placeholder='select option below' 
-                    onSelect={(item) => updatePatientData({ anaemia: item.value })}
+                    onSelect={(item) => updatePatientData({ severeAnaemia: item.value })}
                     value={anaemia}
                     search={false}
                 />
@@ -193,7 +193,7 @@ export default function MedicalConditionsScreen() {
                     data = {diagnosisOptions}
                     value = {meningitis}
                     placeholder='select option below' 
-                    onSelect = {(item) => updatePatientData({ meningitis: item.value })}
+                    onSelect = {(item) => updatePatientData({ meningitis_encephalitis: item.value })}
                     search={false}
                 />
                 <View style={{marginRight: 10, marginLeft: 10, marginTop: -10}}>

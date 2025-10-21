@@ -351,7 +351,7 @@ export default function ReviewScreen() {
         return isReviewed && isComplete ? 'green' : 'orange';
     };
 
-    const otherChronicIllnessSelected = patientData.chronicIllness.includes('other')
+    const otherChronicIllnessSelected = patientData.chronicIllnesses.includes('other')
 
     const formatChronicIllness = (items: string[] = []): string => {
         if (!items || items.length === 0) return 'Not provided';
@@ -447,12 +447,12 @@ export default function ReviewScreen() {
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
-                            <InfoRow label="Severe anaemia" value={patientData.anaemia || 'Not provided'} />
+                            <InfoRow label="Severe anaemia" value={patientData.severeAnaemia || 'Not provided'} />
                             <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
                             <InfoRow label="Malaria" value={patientData.malaria ||'Not provided' } />
                             <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
-                            <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis || 'Not provided'} />
-                            <InfoRow label="Chronic Illnesses" value={formatChronicIllness(patientData.chronicIllness) || 'Not provided'} />
+                            <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis_encephalitis || 'Not provided'} />
+                            <InfoRow label="Chronic Illnesses" value={formatChronicIllness(patientData.chronicIllnesses) || 'Not provided'} />
                             {otherChronicIllnessSelected && 
                                 <InfoRow label="Other chronic illness" value={patientData.otherChronicIllness || 'Not provided'} />
                             }
