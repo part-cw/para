@@ -1,5 +1,7 @@
 import { DropdownItem } from "../components/SearchableDropdown";
 
+// TODO update PatientData??? so it only containts core data present in patients data
+
 // Data structure type delcarations based on all screens
 export interface PatientData {
   // Metadata
@@ -68,6 +70,25 @@ export interface PatientData {
   confirmTel: string;
   sendReminders: boolean;
   isCaregiversPhone: boolean;
+
+  // core discharge info
+  dischargeReason: DropdownItem | null;
+  dischargeDiagnosis: string;
+
+}
+
+// TODO move Model-specific variables stored in clinical_variables table to here
+export interface ClinicalVariables {
+  // shared variables
+
+  // 0-6 months specific
+
+  // 6-60 months specific
+
+  // discharge specific
+  spo2_discharge: string;
+  feedingWell_discharge: boolean;
+  dischargeReason: string;
 }
 
 export const initialPatientData: PatientData = {
@@ -135,4 +156,8 @@ export const initialPatientData: PatientData = {
   confirmTel: '',
   isCaregiversPhone: false,
   sendReminders: false,
+
+  // discharge info:
+  dischargeReason: null, // TODO - move to ClinicalVariables? 
+  dischargeDiagnosis: '',
 };

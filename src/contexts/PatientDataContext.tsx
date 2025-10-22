@@ -3,9 +3,11 @@ import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
+import { getStorageInstance } from '../services/StorageInstance';
+import { IStorageService } from '../services/StorageService';
 import { initialPatientData, PatientData } from './PatientData';
 
-
+// TODO add draft id stuff here
 interface PatientDataContextType {
   patientData: PatientData;
   updatePatientData: (updates: Partial<PatientData>) => void;
@@ -34,13 +36,21 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [patientData, setPatientData] = useState<PatientData>(initialPatientData);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
-  
+  const [storage] = useState<IStorageService>(() => getStorageInstance())
+
   const modelSelector = getModelSelectorInstance();
   // TODO use hook useRiskCalcualtion instead???
 
-  // Load temporary data on app start
+  console.log('storage', storage)
+
+  // Load storage on app start
   useEffect(() => {
-    loadTempData();
+    (async () => {
+      await storage.init();
+      setIsDataLoaded(true);
+    })(); // initialize database
+
+    loadTempData(); // TODO remove this
   }, []);
 
   const loadTempData = async () => {
@@ -197,6 +207,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return riskAssessment;
   };
 
+  // TODO - loading spinner if data not ready
+  // if (!isDataLoaded) return load screen
 
   return (
     <PatientDataContext.Provider

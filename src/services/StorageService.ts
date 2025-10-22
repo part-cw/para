@@ -1,24 +1,39 @@
 import { Platform } from "react-native";
 import { PatientData } from "../contexts/PatientData";
+import { RiskAssessment, RiskPrediction } from "../models/types";
 import { WebStorage } from "./WebStorage";
 
 
 export interface IStorageService {
     init(): Promise<void>;
 
-    // draft operations - retrieve or save to database
-    saveDraft(key: string, data: PatientData): Promise<void>;
-    deleteDraft(key: string): Promise<void>;
-    getAllDrafts(): Promise<Array<{ key: string; data: PatientData }>>;
-    getDraft(key: string): Promise<PatientData | null>;
-    getCurrentDraftKey(): Promise<string | null>;
-    setCurrentDraftKey(key: string): Promise<void>;
-
-    // completed patient operations
-    saveCompletedPatient(data: PatientData): Promise<void>;
-    deleteCompletedPatient(id: string): Promise<void>;
-    getAllCompletedPatients(): Promise<PatientData[]>;
-    getCompletedPatient(id: string): Promise<PatientData | null>
+    // Patient operations
+    savePatient(data: PatientData, patientId: string): Promise<void>;
+    getPatient(patientId: string): Promise<PatientData | null>;
+    updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void>;
+    deletePatient(patientId: string): Promise<void>;
+  
+    // Draft operations
+    saveDraft(data: PatientData): Promise<void>;
+    getDraft(): Promise<PatientData | null>; // pass in draft id?
+    clearDraft(): Promise<void>;
+    
+    // List operations
+    getPatients(): Promise<PatientData[]>;
+    getDraftPatients(): Promise<PatientData[]>;
+    getSubmittedPatients(): Promise<PatientData[]>;
+  
+    // Risk operations
+    saveRiskPrediction(
+        patientId: string,
+        prediction: RiskPrediction,
+        usageTime: 'admission' | 'discharge'
+    ): Promise<void>;
+    getRiskAssessment(patientId: string): Promise<RiskAssessment>;
+    
+    // Archive operations
+    archivePatient(patientId: string): Promise<void>;
+    getArchivedPatients(): Promise<PatientData[]>;
 
     // utility
     clearAll(): Promise<void>;
@@ -37,6 +52,5 @@ export function getStorageService(): IStorageService {
     } 
 
 }
-
 
 

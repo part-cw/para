@@ -63,10 +63,17 @@ export interface RiskModel {
     ageInteractions?: ModelInteraction[];
 }
 
+export interface TopPredictor {
+  name: string;          // Feature name (e.g., 'temperature', 'waz')
+  value: string;         // Actual value for this patient
+  contribution: number;  // Contribution to risk score
+}
+
 export interface RiskPrediction {
     riskScore: number;
     riskCategory: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
     model: string;
+    // topPredictors?: TopPredictor[];
 }
 
 export interface RiskAssessment {
