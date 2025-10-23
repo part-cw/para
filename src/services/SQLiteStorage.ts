@@ -1,5 +1,5 @@
-import * as SecureStore from 'expo-secure-store';
 import * as SQLite from "expo-sqlite";
+import { CURRENT_USER } from "../config";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from '../models/types';
 import { IStorageService } from "./StorageService";
@@ -9,13 +9,23 @@ import { IStorageService } from "./StorageService";
 
 export class SQLiteStorage implements IStorageService {
     private db: SQLite.SQLiteDatabase | null = null;
-    private DRAFT_KEY = 'DRAFT_';
+    private encryptionKey: string | null = null;
+    private readonly DB_NAME = 'patient_data_encrypted.db';
+    private readonly ENCRYPTION_KEY_STORAGE = 'db_encryption_key';
+
 
     async init(): Promise<void> {
-        // open or create db file and return connection -- TODO: add pathname?
-        this.db = await SQLite.openDatabaseAsync('patient_records.db') 
+        // TOOD uncomment encryption key stuff
+        // this.encryptionKey = await this.getOrCreateEncryptionKey();
+        this.db = await SQLite.openDatabaseAsync(this.DB_NAME);
+        // await this.db.execAsync(`PRAGMA key = '${this.encryptionKey}';`);
+        await this.initializeSchema();
+        await this.seedData();
+    }
 
-        // create draft table if they don't exist
+    async initializeSchema(): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        
         await this.db.execAsync(`
             CREATE TABLE IF NOT EXISTS patients (
                 patientId               TEXT PRIMARY KEY,
@@ -30,11 +40,6 @@ export class SQLiteStorage implements IStorageService {
                 isUnderSixMonths        INTEGER NOT NULL,
                 isNeonate               INTEGER NOT NULL,
                 ageInMonths             INTEGER,
-                
-                -- Core admission clincial data (used by most models)
-                weight                  TEXT,
-                waz                     REAL,
-                spo2_admission          TEXT,
 
                 -- Medical conditions (for risk profiles)
                 malnutritionStatus      TEXT NOT NULL,
@@ -47,7 +52,7 @@ export class SQLiteStorage implements IStorageService {
                 chronicIllnesses        TEXT NOT NULL, -- JSON array e.g.['HIV', 'TB', etc]
                 otherChronicIllness     TEXT,
                 
-                -- VHT and Caregiver info
+                -- VHT info
                 vhtName                 TEXT,
                 vhtTelephone            TEXT
                 village                 TEXT,
@@ -59,7 +64,6 @@ export class SQLiteStorage implements IStorageService {
                 isCaregiversPhone       INTEGER DEFAULT 0, -- TODO - default to true (1)
 
                 -- Core discharge info (always needed)
-                dischargeReason         TEXT,
                 dischargeDiagnosis      TEXT,
 
                 -- Metadata & status flags
@@ -141,7 +145,7 @@ export class SQLiteStorage implements IStorageService {
                 id             INTEGER PRIMARY KEY AUTOINCREMENT,
                 patientId      TEXT NOT NULL,
                 
-                action          TEXT NOT NULL,
+                action         TEXT NOT NULL,
                 fieldChanged   TEXT,
                 oldValue       TEXT,
                 newValue       TEXT,
@@ -165,10 +169,58 @@ export class SQLiteStorage implements IStorageService {
         console.log('✅ SQLite database initialized');
     }
 
+    async seedData(): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+
+
+    }
+
     // ========== PATIENT OPERATIONS ==========
 
-    savePatient(data: PatientData, patientId: string): Promise<void> {
-        throw new Error('Method not implemented.');
+    /**
+     * 
+     * inserts or replaces the entire row (patient) - run this only on submit
+     */
+    async savePatient(data: PatientData, patientId: string): Promise<void> {
+        const now = new Date().toISOString()
+        
+        // open transaction
+        // insert data into patients
+        // insert initial variables into clinical_variables
+        // delete draft ??
+        // update audit_log
+
+        await this.db?.withTransactionAsync(async () => {
+            // TODO - change CURRENT_USER to a user id from userTable once that is implemetneed
+            await this.db?.runAsync(`
+                INSERT OR REPLACE INTO patients (
+                    patientId, surname, firstName, otherName, sex, dob, birthYear, birthMonth, approxAgeInYears, ageInMonths,
+                    malnutritionStatus, sickYoungInfant, pneumonia, diarrhea, malaria, sepsis, meningitis_encephalitis, chronicIllnesses, otherChronicIllness,
+                    vhtName, vhtTelephone, village, subvillage, caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone,
+                    admissionStartedAt, admissionCompletedAt, updatedAt, isDraftAdmission, admittedBy
+                ) 
+                VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?
+                )
+            `, [
+                patientId, data.surname, data.firstName, data.otherName, data.sex, (data.dob ? data.dob.toISOString() : null), data.birthYear, data.birthMonth, data.approxAgeInYears, data.ageInMonths,
+                data.malnutritionStatus, data.sickYoungInfant, data.pneumonia, data.diarrhea, data.malaria, data.sepsis, data.meningitis_encephalitis, data.chronicIllnesses.toString(), data.otherChronicIllness,
+                data.vhtName, data.vhtTelephone, data.village, data.subvillage, data.caregiverName, data.caregiverTel, data.confirmTel, data.sendReminders, data.isCaregiversPhone,
+                (data.admissionStartedAt || now), now, now, 0, CURRENT_USER 
+             ]);
+
+            await this.db?.runAsync(`
+                INSERT OR REPLACE INTO clinical_variables (
+                        ...
+                    )
+                VALUES ()
+            `, []);
+
+            await this.db?.runAsync(`INSERT ... INTO audit_log`);
+        });
     }
 
     async getPatient(patientId: string): Promise<PatientData | null> {
@@ -176,11 +228,15 @@ export class SQLiteStorage implements IStorageService {
             SELECT * FROM patients WHERE patientId = ?
         `, [patientId]);
 
+        if (!patient) return null;
+
         const clinicalData = await  this.db?.getAllAsync(`
-            SELECT * FROM clinical_variables where patientId = ? 
+            SELECT (todo, just need name and value?) FROM clinical_variables where patientId = ? 
         `, [patientId])
 
-        if (!patient) return null;
+       
+
+        // TODO join patient and clincial data? or just map immediately
         
         return (this.mapToPatientData(patient, clinicalData))
     }
@@ -195,27 +251,116 @@ export class SQLiteStorage implements IStorageService {
 
     // ========== DRAFT OPERATIONS ==========
 
-    saveDraft(data: PatientData): Promise<void> {
-        throw new Error('Method not implemented.');
+    async saveDraft(data: PatientData, draftId: string): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+        
+        const now = new Date().toISOString();
+        
+        // TODO FINISH THIS
+        await this.db.withTransactionAsync(async () => {
+            await this.db?.runAsync(`
+                INSERT OR REPLACE INTO patients (
+                patientId, surname, firstName, otherName, sex,
+                isUnderSixMonths, isNeonate, dob, birthYear, birthMonth,
+                approxAgeInYears, ageInMonths, admissionStartedAt,
+                updatedAt, isDraftAdmission) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                draftId, // Use the provided draft ID
+                data.surname,
+                data.firstName,
+                data.otherName,
+                data.sex,
+                data.isUnderSixMonths ? 1 : 0,
+                data.isNeonate ? 1 : 0,
+                data.dob ? data.dob.toISOString() : null,
+                data.birthYear,
+                data.birthMonth,
+                data.approxAgeInYears,
+                data.ageInMonths,
+                data.admissionStartedAt || now,
+                now,
+                1 // draft = true
+            ]);
+
+            // TODO Save all related data with draftId...
+            // (Similar to savePatient but using draftId)
+        });
     }
-    getDraft(): Promise<PatientData | null> {
-        throw new Error('Method not implemented.');
+
+  /**
+   * 
+   * get specific draft admission by id
+   */
+    async getDraft(draftId: string): Promise<PatientData | null> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        return this.getPatient(draftId);
     }
-    clearDraft(): Promise<void> {
-        throw new Error('Method not implemented.');
+
+    /**
+     * 
+     * delete specific draft admission by id
+     */
+    async deleteDraft(draftId: string): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        await this.db.runAsync(
+            'DELETE FROM patients WHERE patientId = ? AND isDraftAdmission = 1',
+            [draftId]
+        );
     }
+
+    /*
+    * deletes all draft admissions
+    */
+    async deleteAllDrafts(): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        await this.db.runAsync('DELETE FROM patients WHERE isDraftAdmission = 1')
+    } 
+
 
     // ========== LIST OPERATIONS ==========
 
     getPatients(): Promise<PatientData[]> {
         throw new Error('Method not implemented.');
     }
-    getDraftPatients(): Promise<PatientData[]> {
-        throw new Error('Method not implemented.');
+
+    /**
+     * Get all draft patients 
+     */
+    async getDraftPatients(): Promise<PatientData[]> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const draftPatients =  await this.db.getAllAsync(
+            `SELECT * FROM patients 
+             WHERE isDraftAdmission = 1
+             ORDER BY admissionStartedAt DESC
+            `);
+
+        const draftClinicalData = await this.db.getAllAsync(
+            'SELECT * FROM clinical_variables WHERE patientId = ?',
+            []
+        ) // TODO how to find the draft clin data?
+
+        const allDrafts: PatientData[] | PromiseLike<PatientData[]> = []
+        // TODO - join draft patients nd draft clincci  data? 
+        // or do a for each loop?
+        // for each patinets in draftPatients 
+        // for each data in clinicaData
+        // if patietns.pateitID = data.patientId, join then map?
+        // allDrafts.push this joined data
+
+        // return (this.mapToPatientData(draftPatients, draftClinicalData))
+
+        return allDrafts; // stub
     }
+
     getSubmittedPatients(): Promise<PatientData[]> {
         throw new Error('Method not implemented.');
     }
+
 
     // ========== RISK OPERATIONS ==========
 
@@ -246,7 +391,7 @@ export class SQLiteStorage implements IStorageService {
             DELETE * FROM 
         `);
 
-        await SecureStore.deleteItemAsync(this.DRAFT_KEY);
+        // await SecureStore.deleteItemAsync(this.DRAFT_KEY);
 
         console.log('🧹 All data cleared');
     }

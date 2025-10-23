@@ -50,7 +50,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       setIsDataLoaded(true);
     })(); // initialize database
 
-    loadTempData(); // TODO remove this
+    loadTempData(); // TODO replace with loadOrCreateDraft
   }, []);
 
   const loadTempData = async () => {
@@ -70,6 +70,26 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       setIsDataLoaded(true);
     }
   };
+
+  const loadOrCreateDraft = async () => {
+    try {
+      const drafts = await storage.getDraftPatients()
+
+      if (drafts.length > 0) {
+        // TODO load most recent draft
+        const mostRecent = drafts[0]
+        setPatientData(mostRecent)
+        // TODO set current draft Id
+        // console.log('📂 Loaded existing draft:', currentDraftId);
+      } else {
+        // TODO createNewDraft
+      }
+    } catch (error) {
+      console.error('Error loading draft: ', error)
+    } finally {
+      setIsDataLoaded(true);
+    }
+  }
 
   const updatePatientData = async (updates: Partial<PatientData>) => {
     const newData = { ...patientData, ...updates };

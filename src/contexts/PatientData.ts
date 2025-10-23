@@ -22,6 +22,65 @@ export interface PatientData {
   approxAgeInYears: string;
   ageInMonths: number | null;
   
+  // Admission Clinical Data (all ages) - todo - remove?
+  weight: string;
+  waz: number | null;
+  muac: string;
+  spo2_admission: string;
+ 
+  // Admission Clinical Data (6-60 months only) - todo - remove?
+  hivStatus: string;
+  temperature: string;
+  temperatureSquared: number | null,
+  rrate: string;
+  lastHospitalized: string;
+  eyeMovement: DropdownItem | null;
+  motorResponse: DropdownItem | null;
+  verbalResponse: DropdownItem | null;
+  bcsScore: number | null;
+  abnormalBCS: boolean | null;
+
+  // Admission Clinical Data (0-6 months only) - todo - remove?
+  illnessDuration: string;
+  neonatalJaundice: boolean | null;
+  bulgingFontanelle: boolean | null;
+  feedingWell: boolean | null;
+
+  // Medical Conditions
+  severeAnaemia: string;
+  pneumonia: string;
+  chronicIllnesses: string[];
+  otherChronicIllness: string;
+  diarrhea: string;
+  malaria: string;
+  sepsis: string;
+  meningitis_encephalitis: string;
+  malnutritionStatus: string;
+  sickYoungInfant: boolean;
+  // TODO add socialVulnerability ?
+  
+  // vhtReferral info
+  village: string;
+  subvillage: string;
+  vhtName: string;
+  vhtTelephone: string;
+  
+  // caregiverContact
+  caregiverName: string;
+  caregiverTel: string;
+  confirmTel: string;
+  sendReminders: boolean;
+  isCaregiversPhone: boolean;
+
+  // discharge info
+  dischargeDiagnosis: string;
+  // spo2_discharge: string;
+  // dischargeReason: string;
+  // feedingWell_discharge: boolean | null;
+
+}
+
+export interface ClinicalVariables {
   // Admission Clinical Data (all ages)
   weight: string;
   waz: number | null;
@@ -45,45 +104,6 @@ export interface PatientData {
   neonatalJaundice: boolean | null;
   bulgingFontanelle: boolean | null;
   feedingWell: boolean | null;
-
-  // Medical Conditions
-  severeAnaemia: string;
-  pneumonia: string;
-  chronicIllnesses: string[];
-  otherChronicIllness: string;
-  diarrhea: string;
-  malaria: string;
-  sepsis: string;
-  meningitis_encephalitis: string;
-  malnutritionStatus: string;
-  sickYoungInfant: boolean;
-  
-  // vhtReferral info
-  village: string;
-  subvillage: string;
-  vhtName: string;
-  vhtTelephone: string;
-  
-  // caregiverContact
-  caregiverName: string;
-  caregiverTel: string;
-  confirmTel: string;
-  sendReminders: boolean;
-  isCaregiversPhone: boolean;
-
-  // core discharge info
-  dischargeReason: DropdownItem | null;
-  dischargeDiagnosis: string;
-
-}
-
-// TODO move Model-specific variables stored in clinical_variables table to here
-export interface ClinicalVariables {
-  // shared variables
-
-  // 0-6 months specific
-
-  // 6-60 months specific
 
   // discharge specific
   spo2_discharge: string;
@@ -158,6 +178,8 @@ export const initialPatientData: PatientData = {
   sendReminders: false,
 
   // discharge info:
-  dischargeReason: null, // TODO - move to ClinicalVariables? 
+  // dischargeReason: '', // TODO - move to ClinicalVariables? 
   dischargeDiagnosis: '',
+  // spo2_discharge: '',
+  // feedingWell_discharge: null,
 };
