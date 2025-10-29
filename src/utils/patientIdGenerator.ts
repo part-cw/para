@@ -10,22 +10,22 @@ export class PatientIdGenerator {
   private static previewId: string | null = null;
 
 
-  /**
-   * Generate a temporary draft ID
-   */
-  // TODO test this
-  static generateDraftId(): string {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 6);
-    return `DRAFT_${timestamp}_${random}`;
-  }
+  // /**
+  //  * Generate a temporary draft ID
+  //  */
+  // // TODO test this
+  // static generateDraftId(): string {
+  //   const timestamp = Date.now();
+  //   const random = Math.random().toString(36).substring(2, 6);
+  //   return `DRAFT_${timestamp}_${random}`;
+  // }
 
-   /**
-   * Check if an ID is a draft
-   */
-  static isDraftId(patientId: string): boolean {
-    return patientId.startsWith('DRAFT_');
-  }
+  //  /**
+  //  * Check if an ID is a draft
+  //  */
+  // static isDraftId(patientId: string): boolean {
+  //   return patientId.startsWith('DRAFT_');
+  // }
 
   /**
    * Finalize a unique patient ID (format: SITE-A-0001) on submit

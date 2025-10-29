@@ -34,6 +34,7 @@ const SUBMITTED_DATA_KEY = 'submitted_patient_data';
 
 export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [patientData, setPatientData] = useState<PatientData>(initialPatientData);
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
   const [storage] = useState<IStorageService>(() => getStorageInstance())
@@ -76,13 +77,15 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const drafts = await storage.getDraftPatients()
 
       if (drafts.length > 0) {
-        // TODO load most recent draft
+        // load most recent draft
         const mostRecent = drafts[0]
         setPatientData(mostRecent)
-        // TODO set current draft Id
+        
+        // set draft id
+        // setCurrentDraftId(exctractDraftId(mostRecent)) // TODO implement getDraftId
         // console.log('📂 Loaded existing draft:', currentDraftId);
       } else {
-        // TODO createNewDraft
+        await createNewDraft();
       }
     } catch (error) {
       console.error('Error loading draft: ', error)
@@ -90,6 +93,21 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       setIsDataLoaded(true);
     }
   }
+
+   const createNewDraft = async () => {
+    // const draftId = PatientIdGenerator.generateDraftId();
+    const newDraftData = {
+      ...initialPatientData,
+      admissionStartedAt: new Date().toISOString()
+    };
+    
+    // setCurrentDraftId(draftId);
+    setPatientData(newDraftData);
+    
+    // // Save initial draft to database
+    // await storage.saveDraft(newDraftData, draftId);
+    // console.log('✨ Created new draft:', draftId);
+  };
 
   const updatePatientData = async (updates: Partial<PatientData>) => {
     const newData = { ...patientData, ...updates };

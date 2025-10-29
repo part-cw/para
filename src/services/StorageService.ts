@@ -8,7 +8,7 @@ export interface IStorageService {
     init(): Promise<void>;
 
     // Patient operations
-    savePatient(data: PatientData, patientId: string): Promise<void>;
+    submitPatient(patientId: string): Promise<void>;
     getPatient(patientId: string): Promise<PatientData | null>;
     updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void>;
     deletePatient(patientId: string): Promise<void>;

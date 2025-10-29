@@ -10,7 +10,7 @@ export class WebStorage implements IStorageService {
     init(): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    savePatient(data: PatientData, patientId: string): Promise<void> {
+    submitPatient(patientId: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
     getPatient(patientId: string): Promise<PatientData | null> {
