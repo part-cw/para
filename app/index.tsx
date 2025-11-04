@@ -31,6 +31,17 @@ export default function Index() {
                   }}>
             Patient Records
         </Button>
+
+         <Button style={[{ alignSelf: 'center' }, {marginTop: 10}]}
+                buttonColor={colors.primary} 
+                textColor={colors.onPrimary} 
+                icon= 'folder'
+                mode="elevated" 
+                onPress={() => {
+                  router.push('/drafts')
+                  }}>
+            Drafts
+        </Button>
       </View>
     </>
   );

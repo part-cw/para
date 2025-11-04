@@ -7,49 +7,43 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO - get patient data from storage
 
-export default function PatientRecords() {
+export default function DraftAdmissions() {
 
   const dummyPatients = [
   {
     id: 'BUIKWE-A-0001',
-    name: 'John Doe',
+    name: '',
     age: '3 years',
-    status: 'active',
-    riskLevel: 'low',
-    riskProfile: [],
-    isDraft: false,
+    status: 'draft',
+    isDraft: true,
     isDischarged: false,
+    admittedAt: '2025-10-01'
   },
   {
     id: 'BUIKWE-A-0002',
     name: 'Jane Doe',
-    age: '2 years',
-    status: 'active',
-    riskLevel: 'moderate',
-    riskProfile: [],
-    isDraft: false,
+    status: 'draft',
+    isDraft: true,
     isDischarged: false,
+    admittedAt: '2025-10-02'
   },
   {
     id: 'BUIKWE-A-0003',
     name: 'Emma Stone',
     age: '6 months',
-    status: 'discharged',
-    riskLevel: 'high',
-    riskProfile: [],
-    isDraft: false,
-    isDischarged: true,
+    status: 'draft',
+    isDraft: true,
+    isDischarged: false,
+    admittedAt: '2025-10-03'
   },
   {
     id: 'BUIKWE-A-0004',
     name: 'Daniel Radcliff',
     age: '1 year',
-    status: 'active',
-    riskLevel: 'very high',
-    riskProfile: [],
-    recommendedCareplan: ['Video Title 1', 'Video Title 2'],
-    isDraft: false,
+    status: 'draft',
+    isDraft: true,
     isDischarged: false,
+    admittedAt: '2025-10-04'
   },
 ];
 
@@ -59,23 +53,21 @@ export default function PatientRecords() {
         {/* Header */}
         <View style={[Styles.pageHeaderContainer]}>
           <Text style={[Styles.pageHeaderTitle ]}>
-              Patient Records 
+              Draft Admissions
           </Text>
         </View>
 
         {dummyPatients.map((p) => (
-           <PatientCard 
-              key={p.id} 
-              id={p.id} 
-              name={p.name} 
-              age={p.age}
-              status={p.status} 
-              isDischarged={p.isDischarged} 
-              isDraft={p.isDraft}
-              riskLevel={p.riskLevel}
-              riskProfile={p.riskProfile}
-              recommendedCareplan={p.recommendedCareplan}            
-            />
+          <PatientCard 
+            key={p.id} 
+            id={p.id} 
+            name={p.name} 
+            age={p.age}
+            status={p.status} 
+            isDischarged={p.isDischarged} 
+            isDraft={p.isDraft} 
+            admittedAt={p.admittedAt}           
+          />
         ))}
 
       </ScrollView>
