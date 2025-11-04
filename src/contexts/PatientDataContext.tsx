@@ -32,13 +32,13 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [isDataLoaded, setIsDataLoaded] = useState(true);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
   
-  const { storage } = useStorage();
+  const { storage, isInitialized } = useStorage();
   const modelSelector = getModelSelectorInstance();
 
 
   // Autosave draft whenever patientData changes, wait 1000 ms
   useEffect(() => {
-    if (!isDataLoaded || !currentPatientId) return;
+    if (!isInitialized || !currentPatientId) return;
 
     // Only save if user has entered at least SOME required data
     const hasMinimalData = 
@@ -63,28 +63,43 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timeoutId);
   }, [patientData, isDataLoaded, currentPatientId]);
 
+  /**
+   * Initialize patient workflow - called when user starts adding a patient
+   * This is the ONLY place that should load or create drafts
+   */
+  const startAdmission = async () => {
+    // If we already have a patient loaded, don't do anything
+    if (currentPatientId) {
+      console.log('📋 Patient already loaded:', currentPatientId);
+      return;
+    }
 
-  // load exisitng draft or create new one - called when enter 'add patient' workflow
-  // const loadOrCreateDraft = async () => {
-  //   try {
-  //     const drafts = await storage.getDraftPatients()
+    try {
+      setIsDataLoaded(false);
+      await createNewDraft();
+      
+      // Check for existing drafts
+      // const drafts = await storage.getDraftPatients();
 
-  //     if (drafts.length > 0) {
-  //       // load most recent draft
-  //       const mostRecent = drafts[0]
-  //       setPatientData(mostRecent)        
-  //       setCurrentPatientId(mostRecent.patientId as string)
-  //       console.log('📂 Loaded existing draft:', mostRecent.patientId );
-  //     } else {
-  //       await createNewDraft();
-  //     }
-  //   } catch (error) {
-  //     console.error('Error loading draft: ', error)
-  //     await createNewDraft();
-  //   } finally {
-  //     setIsDataLoaded(true);
-  //   }
-  // }
+      // if (drafts.length > 0) {
+        // Load most recent draft
+      //   const mostRecent = drafts[0];
+      //   setPatientData(mostRecent);
+      //   setCurrentPatientId(mostRecent.patientId!);
+      //   console.log('📂 Loaded existing draft:', mostRecent.patientId);
+      // } else {
+      //   // Create new draft with final patient ID
+      //   await createNewDraft();
+      // }
+    } catch (error) {
+      console.error('Error starting admission:', error);
+      throw error;
+      // Still create a new draft as fallback
+      // await createNewDraft();
+    } finally {
+      setIsDataLoaded(true);
+    }
+  };
 
   const createNewDraft = async () => {
     try {
@@ -114,11 +129,11 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const loadDraft = async (patientId: string) => {
     console.log('TODO - check load draft working')
      try {
+
+      setIsDataLoaded(false);
       const draft = await storage.getDraft(patientId);
       
-      if (!draft) {
-        throw new Error(`Draft ${patientId} not found`);
-      }
+      if (!draft) throw new Error(`Draft ${patientId} not found`);
 
       setPatientData(draft);
       setCurrentPatientId(patientId);
@@ -126,6 +141,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error loading draft:', error);
       throw error;
+    } finally {
+      setIsDataLoaded(true);
     }
   };
 
@@ -174,15 +191,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * Clear current patient data
    */
   const clearPatientData = () => {
-    // if (currentPatientId) {
-    //   try {
-    //     // await storage.deleteDraft(currentPatientId); // TODO - remove this?
-    //     // console.log('🗑️ Cleared patient data');
-    //   } catch (err) {
-    //     console.error('Error clearing temp data:', err);
-    //   }
-    // }
-
     setPatientData(initialPatientData);
     setCurrentPatientId(null)
   };
@@ -242,45 +250,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    */
   const getCurrentPatientId = (): string | null => {
     return currentPatientId;
-  };
-
-
-  /**
-   * Initialize patient workflow - called when user starts adding a patient
-   * This is the ONLY place that should load or create drafts
-   */
-  const startAdmission = async () => {
-    // If we already have a patient loaded, don't do anything
-    if (currentPatientId) {
-      console.log('📋 Patient already loaded:', currentPatientId);
-      return;
-    }
-
-    try {
-      setIsDataLoaded(false);
-
-      // TODO just call loadOrCreatDraft instead?
-      
-      // Check for existing drafts
-      const drafts = await storage.getDraftPatients();
-
-      if (drafts.length > 0) {
-        // Load most recent draft
-        const mostRecent = drafts[0];
-        setPatientData(mostRecent);
-        setCurrentPatientId(mostRecent.patientId!);
-        console.log('📂 Loaded existing draft:', mostRecent.patientId);
-      } else {
-        // Create new draft with final patient ID
-        await createNewDraft();
-      }
-    } catch (error) {
-      console.error('Error starting admission:', error);
-      // Still create a new draft as fallback
-      await createNewDraft();
-    } finally {
-      setIsDataLoaded(true);
-    }
   };
 
 
