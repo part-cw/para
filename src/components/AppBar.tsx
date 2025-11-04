@@ -26,11 +26,10 @@ export default function AppBar() {
   
   const isDataEntryScreen = dataEntryRoutes.includes(pathname);
   const dataWarningMessage = 
-    'Are you sure you want to go home before submitting patient record? Incomplete drafts can be resumed from the "Drafts" page.';
+    'Incomplete admissions are automatically saved and can be resumed from the “Drafts” page.';
 
   const handleGoHome = () => {
     const confirmAndGo = () => {
-        // Clear patient data from context (draft already saved in DB)
         clearPatientData();
         router.push('/');
       };
@@ -42,9 +41,9 @@ export default function AppBar() {
           confirmAndGo();
         }
       } else {
-        Alert.alert("Warning", dataWarningMessage,
+        Alert.alert("Leave without submitting?", dataWarningMessage,
           [{ text: "Cancel", style: "cancel" },
-            { text: "Save & Quit", onPress: () => confirmAndGo() }]
+            { text: "Go Home", onPress: () => confirmAndGo() }]
         );
       } 
     } else {

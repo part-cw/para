@@ -257,6 +257,38 @@ export function indexToNutritionStatus(index: number): string {
     return indexMap[index] ?? 'invalid'; // invalid if not found
 }
 
+export function getEyeMovementScore(value: string): number {
+    const scoreMap: Record<string, number> = {
+        "watches or follows": 1,
+        "fails to watch or follow": 0,
+    };
+
+     return scoreMap[value.toLowerCase()];
+}
+
+export function getMotorResponseScore(value: string): number {
+    const scoreMap: Record<string, number> = {
+        "normal behaviour observed": 2,
+        "localizes painful stimulus": 2,
+        'withdraws limb from painful stimulus': 1,
+        'no response or inappropriate response': 0
+    };
+
+     return scoreMap[value.toLowerCase()];
+}
+
+export function getVerbalResponseScore(value: string): number {
+    const scoreMap: Record<string, number> = {
+        "normal behaviour observed": 2,
+        "cries appropriately with pain (or speaks if verbal)": 2,
+        'moan or abnormal cry with pain': 1,
+        'no vocal response to pain': 0
+    };
+
+     return scoreMap[value.toLowerCase()];
+}
+
+
 /**
  * 
  * @param score value in range of  [0, 5]
