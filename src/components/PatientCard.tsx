@@ -19,6 +19,11 @@ type PatientCardProps = {
   isDischarged: boolean;
   isDraft: boolean;
   admittedAt?: string;
+  onResume?: () => void;
+  onDelete?: () => void;
+  onEdit?: () => void;
+  onDischarge?: () => void;
+  onArchive?: () => void;
 };
 
 export default function PatientCard({ 
@@ -31,7 +36,12 @@ export default function PatientCard({
   recommendedCareplan,
   isDischarged,
   isDraft,
-  admittedAt
+  admittedAt,
+  onResume,
+  onDelete,
+  onEdit,
+  onDischarge,
+  onArchive
 }: PatientCardProps) {
   const { colors } = useTheme();  
   const [expanded, setExpanded] = useState(false);
@@ -133,7 +143,7 @@ export default function PatientCard({
           {isDraft 
             ? 
             (<View style={styles.footerButtons}>
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => onResume?.()}>
                 <MaterialIcons
                     name="arrow-forward"
                     size={24}
@@ -142,7 +152,7 @@ export default function PatientCard({
                 <Text style={styles.buttonText}>Resume</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => onDelete?.()}>
                 <MaterialIcons
                     name="delete"
                     size={24}
@@ -154,7 +164,7 @@ export default function PatientCard({
             </View>)
             : 
             (<View style={styles.footerButtons}>
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => onEdit?.()}>
                 <MaterialIcons
                     name="edit"
                     size={24}
@@ -164,7 +174,7 @@ export default function PatientCard({
               </TouchableOpacity>
 
               {isDischarged ? (
-                <TouchableOpacity style={styles.iconButton}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => onArchive?.()}>
                     <MaterialIcons
                     name="archive"
                     size={24}
@@ -173,7 +183,7 @@ export default function PatientCard({
                     <Text style={styles.buttonText}>Archive</Text>
                 </TouchableOpacity>
                 ) : (
-                <TouchableOpacity style={styles.iconButton}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => onDischarge?.()}>
                     <MaterialIcons
                     name="directions-walk"
                     size={24}

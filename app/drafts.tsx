@@ -66,7 +66,9 @@ export default function DraftAdmissions() {
             status={p.status} 
             isDischarged={p.isDischarged} 
             isDraft={p.isDraft} 
-            admittedAt={p.admittedAt}           
+            admittedAt={p.admittedAt}  
+            onResume={() => console.log('resuming draft...')}
+            onDelete={() => console.log('deleting draft...')}         
           />
         ))}
 

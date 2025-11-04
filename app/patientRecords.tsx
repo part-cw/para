@@ -74,7 +74,10 @@ export default function PatientRecords() {
               isDraft={p.isDraft}
               riskLevel={p.riskLevel}
               riskProfile={p.riskProfile}
-              recommendedCareplan={p.recommendedCareplan}            
+              recommendedCareplan={p.recommendedCareplan}
+              onEdit={() => console.log('editing record...')}
+              onArchive={() => console.log('archiving record...')}
+              onDischarge={() => console.log('discharging patient...')}              
             />
         ))}
 
