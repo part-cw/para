@@ -49,7 +49,7 @@
             "standardDeviation": 0.492648804946814
         },
         {
-            "name": "spo2",
+            "name": "spo2_admission",
             "displayName": "SpO₂",
             "description": "Oxygen saturation",
             "type": "number",

@@ -37,19 +37,19 @@ export const displayNames: Record<string, string> = {
 
     // AdmissionClinical Data (all ages)
     muac: 'MUAC',
-    spo2: 'SpO₂',
+    spo2_admission: 'SpO₂',
     weight: 'Weight',
 
     // Medical Conditions
     medicalConditions: 'Medical Conditions',
-    anaemia: 'Severe anaemia',
+    severeAnaemia: 'Severe anaemia',
     pneumonia: 'Pneumonia',
-    chronicIllness: 'Chronic Illnesses',
+    chronicIllnesses: 'Chronic Illnesses',
     chronicIllnessQuestion: 'Does the patient have any of the following chronic illnesses? Select all that apply:',
     acuteDiarrhea: 'Acute Diarrhea',
     malaria: 'Malaria',
     sepsis: 'Sepsis',
-    meningitis: 'Meningitis/Encephalitis',
+    meningitis_encephalitis: 'Meningitis/Encephalitis',
     malnutritionStatus: 'Malnutrition Status',
     sickYoungInfant: 'Sick young infant',
 

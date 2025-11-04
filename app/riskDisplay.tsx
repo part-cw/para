@@ -11,6 +11,8 @@ import { Button, useTheme } from 'react-native-paper';
 
 export default function RiskDisplay() {
   const { colors } = useTheme();
+  // const { storage } = useStorage();
+  
   const params = useLocalSearchParams();
 
   // parse params
@@ -18,6 +20,17 @@ export default function RiskDisplay() {
   const patientName = params.patientName as string;
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
 
+  // load patient data if needed -- TODO: uncomment or remove?
+  // useEffect(() => {
+  //   const loadPatientDetails = async () => {
+  //     if (patientId) {
+  //       const fullPatient = await storage.getPatient(patientId);
+  //       // Use for additional display if needed
+  //     }
+  //   };
+  //   loadPatientDetails();
+  // }, [patientId]);
+  
   // Handle missing data
   if (!riskAssessment || !patientId || !patientName) {
     return (

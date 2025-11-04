@@ -28,7 +28,7 @@ describe('LogisticRegressionStrategy: 0-6C Model', () => {
             // Map test case fields to PatientData
             ageInMonths: testCase.ageInMonths,
             muac: testCase.muac.toString(),
-            spo2: testCase.spo2.toString(),
+            spo2_admission: testCase.spo2.toString(),
             weight: testCase.weight.toString(),
             sex: testCase.sex.toLowerCase(),
             illnessDuration: testCase.illnessDuration,
@@ -121,7 +121,7 @@ describe('LogisticRegressionStrategy: 6-60C Model', () => {
             // Map test case fields to PatientData
             ageInMonths: testCase.ageInMonths,
             muac: testCase.muac.toString(),
-            spo2: testCase.spo2.toString(),
+            spo2_admission: testCase.spo2.toString(),
             weight: testCase.weight.toString(),
             sex: testCase.sex.toLowerCase(),
             lastHospitalized: testCase.lastHospitalized.toLowerCase(),

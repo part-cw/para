@@ -11,7 +11,7 @@ import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatNumericInput, isValidTextFormat, isValidYearInput, textErrorMessage, validateApproxAge, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
     KeyboardAvoidingView,
@@ -22,23 +22,30 @@ import {
     View
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { TextInput } from 'react-native-paper';
+import { TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function PatientInformationScreen() {
     const { height } = useWindowDimensions();
+    const { colors } = useTheme();
 
-    const { patientData, updatePatientData, getPreviewPatientId, startAdmission, handleAgeChange, isDataLoaded } = usePatientData();
+    // Check if resuming a draft
+    const params = useLocalSearchParams();
+    const resumingDraft = params.resuming === 'true';
+    const draftId = params.draftId as string | undefined;
+
+    const { patientData, updatePatientData, getCurrentPatientId, startAdmission, handleAgeChange, loadDraft, isDataLoaded } = usePatientData();
     const { setValidationErrors, getScreenErrors } = useValidation();
 
-    const [previewPatientId, setPreviewPatientId] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [ageDisplay, setAgeDisplay] = useState<number | null>(null);
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
 
     const validationErrors = getScreenErrors('patientInformation');
     const hasValidationErrors = validationErrors.length > 0;
+
+    const patientId = getCurrentPatientId();
 
     // Local state for form validation and UI
     const {
@@ -189,7 +196,24 @@ export default function PatientInformationScreen() {
         })
     }
 
-    // Validate age whenever relevant data changes
+     // Initialize on mount
+    useEffect(() => {
+        const initialize = async () => {
+            if (resumingDraft && draftId) {
+                // Load specific draft (user clicked "Continue Admission")
+                await loadDraft(draftId);
+                console.log('📂 Resumed draft:', draftId);
+            } else {
+                // New admission - just mark it as started
+                console.log('starting new admission...') // todo delete this
+                await startAdmission();
+            }
+        };
+        
+        initialize();
+    }, []);
+
+    // Validate age whenever fields change
     useEffect(() => {
         const errorMessages = validateAllFields();
         setValidationErrors('patientInformation', errorMessages)
@@ -205,16 +229,6 @@ export default function PatientInformationScreen() {
         };
     }, []);
 
-    useEffect(() => {
-        const fetchId = async () => {
-            const id = await getPreviewPatientId();
-            setPreviewPatientId(id);
-        };
-        fetchId();
-
-        // Start admission tracking when user first enters patient information screen
-        startAdmission();
-    }, []);
 
     // Don't render until data is loaded
     if (!isDataLoaded) {
@@ -241,7 +255,16 @@ export default function PatientInformationScreen() {
                 >
                     {/* Patient ID Section */}
                     <Text style={Styles.sectionHeader}>Patient ID</Text>
-                    <TextInput mode="flat" value={previewPatientId} disabled />
+                    <TextInput 
+                        mode="flat" 
+                        value={patientId || 'Generating ID...'} 
+                        disabled 
+                    />
+                     <Text style={{ fontSize: 12, color: colors.outline, marginTop: 4, marginBottom: 8 }}>
+                        {resumingDraft 
+                            ? '📂 Continuing draft admission'
+                            : null}
+                    </Text>
 
                     {/* Patient Name Section */}
                     <Text style={Styles.sectionHeader}>Patient Name <Text style={Styles.required}>*</Text></Text>

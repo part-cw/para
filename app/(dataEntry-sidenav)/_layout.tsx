@@ -1,4 +1,3 @@
-import { PatientDataProvider } from '@/src/contexts/PatientDataContext';
 import { useValidation, ValidationProvider } from '@/src/contexts/ValidationContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
@@ -144,7 +143,7 @@ export default function DrawerLayout() {
     <>
     {/* <DebugStack/> */}
       <SafeAreaProvider>
-        <PatientDataProvider>
+        {/* <PatientDataProvider> */}
           <ValidationProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <Drawer
@@ -158,7 +157,7 @@ export default function DrawerLayout() {
               </Drawer>
             </GestureHandlerRootView>
           </ValidationProvider>
-        </PatientDataProvider>
+        {/* </PatientDataProvider> */}
       </SafeAreaProvider>
     </>
   );

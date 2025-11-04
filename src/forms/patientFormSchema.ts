@@ -36,7 +36,7 @@ export const patientFormSchema = [
     {
         sectionName: 'admissionClinicalData',
         isRequired: true, 
-        requiredFields: ['muac', 'weight', 'spo2'],
+        requiredFields: ['muac', 'weight', 'spo2_admission'],
         conditionalRequired: {
             isNeonate: ['neonatalJaundice'],
             underSixMonths: ['illnessDuration', 'bulgingFontanelle', 'feedingWell'],
@@ -46,8 +46,8 @@ export const patientFormSchema = [
     {
         sectionName: 'medicalConditions', 
         isRequired: true,
-        requiredFields: ['anaemia', 'pneumonia', 'chronicIllness', 
-                    'diarrhea', 'malaria', 'sepsis', 'meningitis']
+        requiredFields: ['severeAnaemia', 'pneumonia', 'chronicIllnesses', 
+                    'diarrhea', 'malaria', 'sepsis', 'meningitis_encephalitis']
     },
     {
         sectionName: 'vhtReferral',

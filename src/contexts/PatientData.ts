@@ -1,16 +1,17 @@
-import { DropdownItem } from "../components/SearchableDropdown";
 
 // Data structure type delcarations based on all screens
 export interface PatientData {
   // Metadata
+  patientId?: string;
   admissionStartedAt: string | null;
   
-  // Patient Information
+  // Patient Information (for all ages)
   surname: string;
   firstName: string;
   otherName: string;
   sex: string;
   isUnderSixMonths: boolean;
+  isNeonate: boolean | null;
   isDOBUnknown: boolean;
   isYearMonthUnknown: boolean;
   dob: Date | null;
@@ -18,43 +19,44 @@ export interface PatientData {
   birthMonth: string;
   approxAgeInYears: string;
   ageInMonths: number | null;
-  isNeonate: boolean | null;
+
   
   // Admission Clinical Data (all ages)
   weight: string;
   waz: number | null;
   muac: string;
-  spo2: string;
+  spo2_admission: string;
  
   // Admission Clinical Data (6-60 months only)
-  hivStatus: string;
-  temperature: string;
-  temperatureSquared: number | null,
-  rrate: string;
-  lastHospitalized: string;
-  eyeMovement: DropdownItem | null;
-  motorResponse: DropdownItem | null;
-  verbalResponse: DropdownItem | null;
-  bcsScore: number | null;
-  abnormalBCS: boolean | null;
+  hivStatus?: string;
+  temperature?: string;
+  temperatureSquared?: number | null,
+  rrate?: string;
+  lastHospitalized?: string;
+  eyeMovement?: string;
+  motorResponse?: string;
+  verbalResponse?: string;
+  bcsScore?: number | null;
+  abnormalBCS?: boolean | null;
 
   // Admission Clinical Data (0-6 months only)
-  illnessDuration: string;
-  neonatalJaundice: boolean | null;
-  bulgingFontanelle: boolean | null;
-  feedingWell: boolean | null;
+  illnessDuration?: string;
+  neonatalJaundice?: string;
+  bulgingFontanelle?: string;
+  feedingWell?: string;
 
   // Medical Conditions
-  anaemia: string;
+  severeAnaemia: string;
   pneumonia: string;
-  chronicIllness: string[];
+  chronicIllnesses: string[];
   otherChronicIllness: string;
   diarrhea: string;
   malaria: string;
   sepsis: string;
-  meningitis: string;
+  meningitis_encephalitis: string;
   malnutritionStatus: string;
   sickYoungInfant: boolean;
+  // TODO add socialVulnerability 
   
   // vhtReferral info
   village: string;
@@ -68,6 +70,13 @@ export interface PatientData {
   confirmTel: string;
   sendReminders: boolean;
   isCaregiversPhone: boolean;
+
+  // discharge info
+  dischargeDiagnosis?: string;
+  spo2_discharge?: string;
+  dischargeReason?: string;
+  feedingWell_discharge?: boolean;
+
 }
 
 export const initialPatientData: PatientData = {
@@ -91,35 +100,17 @@ export const initialPatientData: PatientData = {
   weight: '',
   waz: null,
   muac: '',
-  spo2: '',
+  spo2_admission: '',
   
-  // Admission Clinical Data (6-60 months only)
-  lastHospitalized: '',
-  hivStatus: '',
-  temperature: '',
-  temperatureSquared: null,
-  rrate: '',
-  eyeMovement: null,
-  motorResponse: null,
-  verbalResponse: null,
-  bcsScore: null,
-  abnormalBCS: null,
-
-  // Admission Clinical Data (0-6 months only)
-  illnessDuration: '',
-  neonatalJaundice: null,
-  bulgingFontanelle: null,
-  feedingWell: null,
-
   // medical conditions
-  anaemia: '',
+  severeAnaemia: '',
   pneumonia: '',
-  chronicIllness: [],
+  chronicIllnesses: [],
   otherChronicIllness: '',
   diarrhea: '',
   malaria: '',
   sepsis: '',
-  meningitis: '',
+  meningitis_encephalitis: '',
   malnutritionStatus: '',
   sickYoungInfant: false,
 

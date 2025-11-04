@@ -351,7 +351,7 @@ export default function ReviewScreen() {
         return isReviewed && isComplete ? 'green' : 'orange';
     };
 
-    const otherChronicIllnessSelected = patientData.chronicIllness.includes('other')
+    const otherChronicIllnessSelected = patientData.chronicIllnesses.includes('other')
 
     const formatChronicIllness = (items: string[] = []): string => {
         if (!items || items.length === 0) return 'Not provided';
@@ -407,32 +407,32 @@ export default function ReviewScreen() {
                              <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
                                 <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
-                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} />}
-                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
-                                <InfoRow label="Feeding well?" value={patientData.feedingWell ? 'Yes': 'No'} />
+                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice as string} />}
+                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle as string} />
+                                <InfoRow label="Feeding well?" value={patientData.feedingWell as string} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
                                 <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
-                                <InfoRow label="SpO₂" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
+                                <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                             </View>
                             :
                             <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
                                 <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
-                                <InfoRow label="HIV Status" value={patientData.hivStatus} />
+                                <InfoRow label="HIV Status" value={patientData.hivStatus as string} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
                                 <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
                                 <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
                                 <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
-                                <InfoRow label="SpO2" value={patientData.spo2 ? `${patientData.spo2} %` : 'Not provided'} />
+                                <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                                <InfoRow label="Eye movement" value={patientData.eyeMovement?.value || 'Not provided'} />
-                                <InfoRow label="Best motor response" value={patientData.motorResponse?.value || 'Not provided'} />
-                                <InfoRow label="Best verbal response" value={patientData.verbalResponse?.value || 'Not provided'} />
+                                <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
+                                <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
+                                <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
                             </View>
                         }
                     </List.Accordion>
@@ -447,12 +447,12 @@ export default function ReviewScreen() {
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
-                            <InfoRow label="Severe anaemia" value={patientData.anaemia || 'Not provided'} />
+                            <InfoRow label="Severe anaemia" value={patientData.severeAnaemia || 'Not provided'} />
                             <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
                             <InfoRow label="Malaria" value={patientData.malaria ||'Not provided' } />
                             <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
-                            <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis || 'Not provided'} />
-                            <InfoRow label="Chronic Illnesses" value={formatChronicIllness(patientData.chronicIllness) || 'Not provided'} />
+                            <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis_encephalitis || 'Not provided'} />
+                            <InfoRow label="Chronic Illnesses" value={formatChronicIllness(patientData.chronicIllnesses) || 'Not provided'} />
                             {otherChronicIllnessSelected && 
                                 <InfoRow label="Other chronic illness" value={patientData.otherChronicIllness || 'Not provided'} />
                             }

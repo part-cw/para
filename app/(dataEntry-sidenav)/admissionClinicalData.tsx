@@ -9,7 +9,7 @@ import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { bcsGeneralInfo, eyeMovementInfo, jaundiceInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { calculateBcsScore, calculateWAZ, getMuacStatus, getTempSquared, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
+import { calculateBcsScore, calculateWAZ, getEyeMovementScore, getMotorResponseScore, getMuacStatus, getTempSquared, getVerbalResponseScore, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -43,7 +43,7 @@ export default function AdmissionClinicalDataScreen() {
         weight,
         waz,
         muac,
-        spo2,
+        spo2_admission: spo2,
 
         //0-6months
         illnessDuration,
@@ -208,9 +208,9 @@ export default function AdmissionClinicalDataScreen() {
     // handle changes in BCS selections and updates scores accordingly
     useEffect(() => {
         // if options selected, set scores
-        eyeMovement?.value ? setEyeScore(Number(eyeMovement.key)) : setEyeScore(null)
-        motorResponse?.value ? setMotorScore(Number(motorResponse.key)) : setMotorScore(null)
-        verbalResponse?.value ? setVerbalScore(Number(verbalResponse.key)) : setVerbalScore(null)
+        eyeMovement ? setEyeScore(getEyeMovementScore(eyeMovement)) : setEyeScore(null)
+        motorResponse ? setMotorScore(getMotorResponseScore(motorResponse)) : setMotorScore(null)
+        verbalResponse ? setVerbalScore(getVerbalResponseScore(verbalResponse)) : setVerbalScore(null)
 
         if (eyeScore !== null && motorScore !== null && verbalScore !==null) {
             const score = calculateBcsScore(eyeScore, motorScore, verbalScore)
@@ -229,7 +229,7 @@ export default function AdmissionClinicalDataScreen() {
 
     // handle changes to isNeonate; resets jaundice selection if changes made to age
     useEffect(() => {
-        if (!isNeonate) updatePatientData({neonatalJaundice: null})
+        if (!isNeonate) updatePatientData({neonatalJaundice: ''})
     }, [isNeonate])
     
     const setMalnutritionStatus = () => {
@@ -300,7 +300,7 @@ export default function AdmissionClinicalDataScreen() {
     };
 
     const handleTemperatureBlur = () => {
-        const warning = validateTemperatureRange(temperature).warningMessage;
+        const warning = temperature && validateTemperatureRange(temperature).warningMessage;
         
         if (!warning) return;
 
@@ -344,7 +344,7 @@ export default function AdmissionClinicalDataScreen() {
     };
 
       const handleRrateBlur = () => {30
-        const warning = validateRespiratoryRange(rrate).warningMessage;
+        const warning = rrate && validateRespiratoryRange(rrate).warningMessage;
         
         if (!warning) return;
 
@@ -479,9 +479,9 @@ export default function AdmissionClinicalDataScreen() {
                                                 options={[
                                                     { label: 'Yes', value: 'yes'},
                                                     { label: 'No', value: 'no'},]} 
-                                                selected={(jaundice!== null) && booleanToString(jaundice)} 
+                                                selected={jaundice as string} 
                                                 onSelect={(value) => updatePatientData({ 
-                                                    neonatalJaundice: stringToBoolean(value) })}
+                                                    neonatalJaundice: value})}
                                             />
                                         </View>
                                     }
@@ -493,8 +493,8 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={(bulgingFontanelle !== null) && booleanToString(bulgingFontanelle)} 
-                                            onSelect={(value) => updatePatientData({ bulgingFontanelle: stringToBoolean(value) })}
+                                            selected={bulgingFontanelle as string} 
+                                            onSelect={(value) => updatePatientData({ bulgingFontanelle: value})}
                                         />
                                     </View>
                                     
@@ -505,8 +505,8 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={feedingStatus !== null && booleanToString(feedingStatus)} 
-                                            onSelect={(value) => updatePatientData({ feedingWell: stringToBoolean(value) })}
+                                            selected={feedingStatus as string} 
+                                            onSelect={(value) => updatePatientData({ feedingWell: value })}
                                         />
                                     </View>
                                 </View>
@@ -578,7 +578,7 @@ export default function AdmissionClinicalDataScreen() {
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
                                         value={spo2} 
-                                        onChangeText={(value) => updatePatientData({ spo2: value })}
+                                        onChangeText={(value) => updatePatientData({ spo2_admission: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true}
                                         customValidator={(value) => validateOxygenSaturationRange(value).isValid}
@@ -618,7 +618,7 @@ export default function AdmissionClinicalDataScreen() {
                                             { label: 'Positive', value: 'positive'},
                                             { label: 'Negative', value: 'negative'},
                                             { label: 'Unknown', value: 'unknown'}]} 
-                                        selected={hivStatus} 
+                                        selected={hivStatus as string} 
                                         onSelect={(value) => {
                                             if (value === 'unknown') {
                                                 Platform.OS !== 'web' 
@@ -698,7 +698,7 @@ export default function AdmissionClinicalDataScreen() {
                                     
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}
-                                        value={temperature} 
+                                        value={temperature as string} 
                                         onChangeText={(value) => updatePatientData({ 
                                             temperature: value,
                                             temperatureSquared: getTempSquared(value)
@@ -706,7 +706,7 @@ export default function AdmissionClinicalDataScreen() {
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         customValidator={(value) => validateTemperatureRange(value).isValid}
-                                        customErrorMessage={validateTemperatureRange(temperature).errorMessage}
+                                        customErrorMessage={validateTemperatureRange(temperature as string).errorMessage}
                                         onBlurExternal={handleTemperatureBlur}
                                         right={<TextInput.Affix text="°C" />}                             
                                     />
@@ -729,12 +729,12 @@ export default function AdmissionClinicalDataScreen() {
                                 
                                     <ValidatedTextInput 
                                         label={'Breaths per minute (required)'}
-                                        value={rrate} 
+                                        value={rrate as string} 
                                         onChangeText={(value) => updatePatientData({ rrate: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true}
                                         customValidator={(value) => validateRespiratoryRange(value).isValid}
-                                        customErrorMessage={validateRespiratoryRange(rrate).errorMessage }
+                                        customErrorMessage={validateRespiratoryRange(rrate as string).errorMessage }
                                         onBlurExternal={handleRrateBlur}
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
@@ -751,7 +751,7 @@ export default function AdmissionClinicalDataScreen() {
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
                                         value={spo2} 
-                                        onChangeText={(value) => updatePatientData({ spo2: value })}
+                                        onChangeText={(value) => updatePatientData({ spo2_admission: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         customValidator={(value) => validateOxygenSaturationRange(value).isValid}
@@ -781,9 +781,9 @@ export default function AdmissionClinicalDataScreen() {
                                                 label={'Eye movement'}
                                                 placeholder='select option below' 
                                                 onSelect={(item) => {
-                                                    updatePatientData({ eyeMovement: item})
+                                                    updatePatientData({ eyeMovement: item.value})
                                                 }}
-                                                value={eyeMovement?.value}
+                                                value={eyeMovement}
                                                 search={false}
                                             />
                                         </View>
@@ -805,9 +805,9 @@ export default function AdmissionClinicalDataScreen() {
                                                     label={'Best motor response'}
                                                     placeholder='select option below' 
                                                     onSelect={(item) => {
-                                                        updatePatientData({ motorResponse: item})
+                                                        updatePatientData({ motorResponse: item.value})
                                                     }}
-                                                    value={motorResponse?.value}
+                                                    value={motorResponse}
                                                     search={false}
                                                 />
                                             </View>
@@ -829,9 +829,9 @@ export default function AdmissionClinicalDataScreen() {
                                                 label={'Verbal response'}
                                                 placeholder='select option below' 
                                                 onSelect={(item) => {
-                                                    updatePatientData({ verbalResponse: item})
+                                                    updatePatientData({ verbalResponse: item.value})
                                                 }}
-                                                value={verbalResponse?.value}
+                                                value={verbalResponse}
                                                 search={false}
                                             />
                                         </View>
@@ -842,11 +842,11 @@ export default function AdmissionClinicalDataScreen() {
                                             iconColor='white'
                                         />
                                     </View>
-                                    { bcsScore !== null && eyeMovement?.value && motorResponse?.value && verbalResponse?.value &&
+                                    { bcsScore !== null && eyeMovement && motorResponse && verbalResponse &&
                                         <NutritionStatusBar 
                                             title={`${abnormalBCS ? 'ABNORMAL BCS' : 'NORMAL BCS'}`}
                                             content={`calculated BCS score = ${bcsScore}`}
-                                            variant={mapBcsScoreToVariant(bcsScore)}
+                                            variant={mapBcsScoreToVariant(bcsScore as number)}
                                         />
                                     }
                                     

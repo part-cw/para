@@ -39,7 +39,7 @@
             "standardDeviation": 16.0800528137268
         },
         {
-            "name": "spo2",
+            "name": "spo2_admission",
             "displayName": "SpO₂",
             "description": "Oxygen saturation",
             "type": "number",
@@ -181,7 +181,7 @@
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": "spo2",
+            "dependency": "spo2_admission",
             "dependencyType": "number",
             "coefficient": 0.0108191861065529,
             "mean": 2052.48068080642,

@@ -9,7 +9,6 @@ export default function Index() {
   return (
     <>
       <View style={{ flex: 1, alignItems: 'center' }}>
-        {/* <DebugStack/> */}
         <Text style={{paddingBlock: 50}}>TODO Edit app/index.tsx to edit home screen.</Text>
         <Button style={{ alignSelf: 'center' }}
                 buttonColor={colors.primary} 

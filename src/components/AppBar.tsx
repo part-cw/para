@@ -3,9 +3,15 @@ import { useState } from 'react';
 import { Alert, Image, Platform, View } from 'react-native';
 import { Appbar, Button, Menu, Text, useTheme } from 'react-native-paper';
 import { ACTIVE_SITE, CURRENT_USER, DEVICE_ID_KEY } from '../config';
+import { usePatientData } from '../contexts/PatientDataContext';
+import { useStorage } from '../contexts/StorageContext';
+import { PatientIdGenerator } from '../utils/patientIdGenerator';
 
 export default function AppBar() {
   const { colors } = useTheme();
+  const { clearPatientData, patientData } = usePatientData();
+  const { storage } = useStorage();
+
   const [menuVisible, setMenuVisible] = useState(false);
 
   // get current route
@@ -22,7 +28,50 @@ export default function AppBar() {
   ]
   
   const isDataEntryScreen = dataEntryRoutes.includes(pathname);
-  const dataWarningMessage = 'Are you sure you want to go home before submitting patient record? All data will be lost.'
+  const dataWarningMessage = 
+    'Incomplete admissions are automatically saved and can be resumed from the “Drafts” page.';
+
+  const handleGoHome = () => {
+     const resetStorage = async () => {  
+        const patientId = patientData.patientId;
+
+        if (patientId) {
+          await PatientIdGenerator.recyclePatientId(patientId)
+          await storage.deletePatient(patientId)
+        }
+      };
+
+    const resetFormAndGo = () => {      
+        clearPatientData();
+        router.push('/');
+      };
+    
+    const hasMinimalData = patientData.surname || patientData.firstName  
+
+    if (isDataEntryScreen) {
+      if (!hasMinimalData) {
+        resetStorage();
+        resetFormAndGo();
+        return;
+      }
+
+      if (Platform.OS === 'web') {
+        // TODO - fix web version
+        if (window.confirm(dataWarningMessage)) {
+          resetFormAndGo();
+        }
+      } else {
+        Alert.alert("Leave without submitting?", dataWarningMessage,
+          [{ text: "Cancel", style: "cancel" },
+            { text: "Go Home", onPress: () => resetFormAndGo() }]
+        );
+      } 
+    } else {
+      // no alert if not in data entry screen
+      router.push('/')
+    }
+            
+  };
 
   return (
     <Appbar.Header 
@@ -43,23 +92,7 @@ export default function AppBar() {
             textColor={colors.onSecondary} 
             icon= 'home'
             mode="elevated" 
-            onPress={() => {
-              if (isDataEntryScreen) {
-                if (Platform.OS === 'web') {
-                  if (window.confirm(dataWarningMessage)) {
-                    router.push('/')
-                  }
-                } else {
-                  Alert.alert("Warning", dataWarningMessage,
-                    [{ text: "Cancel", style: "cancel" },
-                     { text: "OK", onPress: () => router.push('/') }]
-                  );
-                } 
-              } else {
-                // no alert if not in data entry screen
-                router.push('/')
-              }
-            }}
+            onPress={handleGoHome}
           >
             Home
           </Button>)}
