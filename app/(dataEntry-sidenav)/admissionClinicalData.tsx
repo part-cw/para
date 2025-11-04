@@ -300,7 +300,7 @@ export default function AdmissionClinicalDataScreen() {
     };
 
     const handleTemperatureBlur = () => {
-        const warning = validateTemperatureRange(temperature).warningMessage;
+        const warning = temperature && validateTemperatureRange(temperature).warningMessage;
         
         if (!warning) return;
 
@@ -344,7 +344,7 @@ export default function AdmissionClinicalDataScreen() {
     };
 
       const handleRrateBlur = () => {30
-        const warning = validateRespiratoryRange(rrate).warningMessage;
+        const warning = rrate && validateRespiratoryRange(rrate).warningMessage;
         
         if (!warning) return;
 
@@ -479,7 +479,7 @@ export default function AdmissionClinicalDataScreen() {
                                                 options={[
                                                     { label: 'Yes', value: 'yes'},
                                                     { label: 'No', value: 'no'},]} 
-                                                selected={(jaundice!== null) && booleanToString(jaundice)} 
+                                                selected={(jaundice !== null) ? booleanToString(jaundice as boolean) : false} 
                                                 onSelect={(value) => updatePatientData({ 
                                                     neonatalJaundice: stringToBoolean(value) })}
                                             />
@@ -493,7 +493,7 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={(bulgingFontanelle !== null) && booleanToString(bulgingFontanelle)} 
+                                            selected={(bulgingFontanelle !== null) ? booleanToString(bulgingFontanelle as boolean) : false} 
                                             onSelect={(value) => updatePatientData({ bulgingFontanelle: stringToBoolean(value) })}
                                         />
                                     </View>
@@ -505,7 +505,7 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={feedingStatus !== null && booleanToString(feedingStatus)} 
+                                            selected={feedingStatus !== null ? booleanToString(feedingStatus as boolean) : false} 
                                             onSelect={(value) => updatePatientData({ feedingWell: stringToBoolean(value) })}
                                         />
                                     </View>

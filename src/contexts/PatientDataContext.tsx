@@ -1,13 +1,10 @@
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
-import * as SecureStore from 'expo-secure-store';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
-import { getStorageInstance } from '../services/StorageInstance';
-import { IStorageService } from '../services/StorageService';
 import { initialPatientData, PatientData } from './PatientData';
+import { useStorage } from './StorageContext';
 
-// TODO add draft id stuff here
 interface PatientDataContextType {
   patientData: PatientData;
   updatePatientData: (updates: Partial<PatientData>) => void;
@@ -16,188 +13,221 @@ interface PatientDataContextType {
       patientId: string;
       riskAssessment: RiskAssessment;
       patientName: string;}>;
-  getPreviewPatientId: () => Promise<string>;
   startAdmission: () => void;
+  loadDraft: (patientId: string) => Promise<void>;
   isDataLoaded: boolean;
   handleAgeChange: (isUnderSixMonths: boolean) => void;
-
   calculateAdmissionRisk: () => RiskPrediction | null;
   calculateDischargeRisk: () => RiskPrediction | null;
   getCurrentRiskAssessment: () => RiskAssessment;
+  getCurrentPatientId: () => string | null;
   riskAssessment: RiskAssessment;
 }
 
 const PatientDataContext = createContext<PatientDataContextType | undefined>(undefined);
 
-const TEMP_STORAGE_KEY = 'temp_patient_data';
-const SUBMITTED_DATA_KEY = 'submitted_patient_data';
-
 export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [patientData, setPatientData] = useState<PatientData>(initialPatientData);
-  const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(true);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
-  const [storage] = useState<IStorageService>(() => getStorageInstance())
-
+  
+  const { storage } = useStorage();
   const modelSelector = getModelSelectorInstance();
-  // TODO use hook useRiskCalcualtion instead???
 
-  console.log('storage', storage)
 
-  // Load storage on app start
+  // Autosave draft whenever patientData changes, wait 1000 ms
   useEffect(() => {
-    (async () => {
-      await storage.init();
-      setIsDataLoaded(true);
-    })(); // initialize database
+    if (!isDataLoaded || !currentPatientId) return;
 
-    loadTempData(); // TODO replace with loadOrCreateDraft
-  }, []);
+    // Only save if user has entered at least SOME required data
+    const hasMinimalData = 
+        patientData.surname || 
+        patientData.firstName || 
+        patientData.sex;
 
-  const loadTempData = async () => {
-    try {
-      const tempData = await SecureStore.getItemAsync(TEMP_STORAGE_KEY);
-      if (tempData) {
-        const parsedData = JSON.parse(tempData);
-        // Convert date strings back to Date objects
-        if (parsedData.dob) {
-          parsedData.dob = new Date(parsedData.dob);
-        }
-        setPatientData(parsedData);
+    if (!hasMinimalData) {
+        console.log('⏳ Skipping auto-save - no data entered yet');
+        return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        await storage.saveDraft(patientData, currentPatientId);
+        console.log('🔄 Auto-saved draft:', currentPatientId);
+      } catch (error) {
+        console.error('Error auto-saving draft:', error);
       }
-    } catch (error) {
-      console.error('Error loading temp data:', error);
-    } finally {
-      setIsDataLoaded(true);
+    }, 1000); // 1s debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [patientData, isDataLoaded, currentPatientId]);
+
+
+  // load exisitng draft or create new one - called when enter 'add patient' workflow
+  // const loadOrCreateDraft = async () => {
+  //   try {
+  //     const drafts = await storage.getDraftPatients()
+
+  //     if (drafts.length > 0) {
+  //       // load most recent draft
+  //       const mostRecent = drafts[0]
+  //       setPatientData(mostRecent)        
+  //       setCurrentPatientId(mostRecent.patientId as string)
+  //       console.log('📂 Loaded existing draft:', mostRecent.patientId );
+  //     } else {
+  //       await createNewDraft();
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading draft: ', error)
+  //     await createNewDraft();
+  //   } finally {
+  //     setIsDataLoaded(true);
+  //   }
+  // }
+
+  const createNewDraft = async () => {
+    try {
+      const patientId = await PatientIdGenerator.generatePatientId();
+      const newDraftData = {
+        ...initialPatientData,
+        patientId: patientId,
+        admissionStartedAt: new Date().toISOString()
+      };
+
+      setCurrentPatientId(patientId);
+      setPatientData(newDraftData);
+
+      // save initial draft to database
+      // await storage.saveDraft(newDraftData, patientId); -- TODO delete?
+      console.log('✨ Created new draft in memory with ID:', patientId);
+
+    } catch (err) {
+      console.error('Error creating new draft:', err);
+      throw err;
     }
   };
 
-  const loadOrCreateDraft = async () => {
-    try {
-      const drafts = await storage.getDraftPatients()
-
-      if (drafts.length > 0) {
-        // load most recent draft
-        const mostRecent = drafts[0]
-        setPatientData(mostRecent)
-        
-        // set draft id
-        // setCurrentDraftId(exctractDraftId(mostRecent)) // TODO implement getDraftId
-        // console.log('📂 Loaded existing draft:', currentDraftId);
-      } else {
-        await createNewDraft();
+  /**
+   * TODO - load specific draft for 'continue admission' workflow
+   */
+  const loadDraft = async (patientId: string) => {
+    console.log('TODO - check load draft working')
+     try {
+      const draft = await storage.getDraft(patientId);
+      
+      if (!draft) {
+        throw new Error(`Draft ${patientId} not found`);
       }
-    } catch (error) {
-      console.error('Error loading draft: ', error)
-    } finally {
-      setIsDataLoaded(true);
-    }
-  }
 
-   const createNewDraft = async () => {
-    // const draftId = PatientIdGenerator.generateDraftId();
-    const newDraftData = {
-      ...initialPatientData,
-      admissionStartedAt: new Date().toISOString()
-    };
-    
-    // setCurrentDraftId(draftId);
-    setPatientData(newDraftData);
-    
-    // // Save initial draft to database
-    // await storage.saveDraft(newDraftData, draftId);
-    // console.log('✨ Created new draft:', draftId);
-  };
-
-  const updatePatientData = async (updates: Partial<PatientData>) => {
-    const newData = { ...patientData, ...updates };
-    setPatientData(newData);
-    
-    // Auto-save to temporary storage
-    try {
-      await SecureStore.setItemAsync(TEMP_STORAGE_KEY, JSON.stringify(newData));
-      console.log('🔄 Auto-saved patient data:', JSON.stringify(updates, null, 2));
+      setPatientData(draft);
+      setCurrentPatientId(patientId);
+      console.log('📂 Loaded draft:', patientId);
     } catch (error) {
-      console.error('Error auto-saving data:', error);
+      console.error('Error loading draft:', error);
+      throw error;
     }
   };
 
+
+  /**
+   * Update data .. triggers autosave via useEffect
+   */
+  const updatePatientData = (updates: Partial<PatientData>) => {
+    setPatientData(prev => ({ ...prev, ...updates }));
+  };
+
+  /**
+   * Handle age range change (clears incompatible fields)
+   */
   const handleAgeChange = async (isUnderSixMonths: boolean) => {
     if (isUnderSixMonths) {
       // Clear 6-60 months specific fields
-      const updates = {
+      const updates: Partial<PatientData> = {
         isUnderSixMonths,
         hivStatus: '',
         temperature: '',
+        temperatureSquared: null,
         rrate: '',
         lastHospitalized: '',
-        eyeMovement: null,
-        motorResponse: null,
-        verbalResponse: null,
+        eyeMovement: '',
+        motorResponse: '',
+        verbalResponse: '',
+        bcsScore: null,
+        abnormalBCS: null,
       };
-      await updatePatientData(updates);
+      updatePatientData(updates);
     } else {
       // Clear 0-6 months specific fields
-      const updates = {
+      const updates: Partial<PatientData> = {
         isUnderSixMonths,
         illnessDuration: '',
         neonatalJaundice: null,
         bulgingFontanelle: null,
         feedingWell: null,
       };
-      await updatePatientData(updates);
+      updatePatientData(updates);
     }
   };
 
-  const clearPatientData = async () => {
+  /**
+   * Clear current patient data
+   */
+  const clearPatientData = () => {
+    // if (currentPatientId) {
+    //   try {
+    //     // await storage.deleteDraft(currentPatientId); // TODO - remove this?
+    //     // console.log('🗑️ Cleared patient data');
+    //   } catch (err) {
+    //     console.error('Error clearing temp data:', err);
+    //   }
+    // }
+
     setPatientData(initialPatientData);
-    try {
-      await SecureStore.deleteItemAsync(TEMP_STORAGE_KEY);
-    } catch (error) {
-      console.error('Error clearing temp data:', error);
-    }
+    setCurrentPatientId(null)
   };
 
+   /**
+   * Submit patient (convert draft to submitted patient) - patient ID stays the same
+   * 
+   */
   const savePatientData = async (): 
     Promise<{patientId: string; riskAssessment: RiskAssessment; patientName: string;}> => {
+      if (!currentPatientId) throw new Error('No patient ID available for submission');
+    
     try {
-      // Calculate final risk assessments before saving - TODO make this work with discharge risks
-      // TODO - only calculate risk if we have all required info
+      // Calculate final risk assessments before saving
+      // TODO make this work with discharge risks; only calculate risk if we have all required info??
+      const admissionRisk = calculateAdmissionRisk()
       const finalRiskAssessment: RiskAssessment = {
-        admission: calculateAdmissionRisk(),
+        admission: admissionRisk|| undefined,
         // discharge: calculateDischargeRisk(),
       };
 
-      // Save to permanent storage
-      const existingData = await SecureStore.getItemAsync(SUBMITTED_DATA_KEY);
-      const submittedData = existingData ? JSON.parse(existingData) : [];
-      
-      // Generate the final patient ID using your existing generator
-      const finalPatientId = await PatientIdGenerator.generatePatientId();
-
       // Store patient name before clearing
       const patientName = `${patientData.firstName} ${patientData.surname}`;
-      
-      const patientRecord = {
-        ...patientData,
-        patientId: finalPatientId,
-        submittedAt: new Date().toISOString(),
-        riskAssessment: finalRiskAssessment
-      };
-      
-      submittedData.push(patientRecord);
-      await SecureStore.setItemAsync(SUBMITTED_DATA_KEY, JSON.stringify(submittedData));
-      
-      console.log('✅ Patient data saved successfully!');
-      console.log('📄 Patient Record:', JSON.stringify(patientRecord, null, 2));
-      console.log('📊 Total submitted patients:', submittedData.length);
 
-      // Clear temporary data
-      await clearPatientData();
+      // submit patient (isDraft change from 1 to 0)
+      await storage.submitPatient(currentPatientId);
+
+      // Save risk prediction with admission model, if exists
+      if (admissionRisk) {
+        await storage.saveRiskPrediction(currentPatientId, admissionRisk, 'admission');
+      }
+
+      console.log('✅ Patient submitted:', currentPatientId);
       
-      // return finalPatientId;
+      const submittedPatientId = currentPatientId;
+      
+      // Clear current state and create new draft for next patient
+      clearPatientData();
+      await createNewDraft();
+      
+      
+      console.log('✅ Cleared current state and create new draft for next patient');
+      
       return {
-        patientId: finalPatientId,
+        patientId: submittedPatientId,
         riskAssessment: finalRiskAssessment,
         patientName 
       };
@@ -207,16 +237,56 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const getPreviewPatientId = async (): Promise<string> => {
-    return await PatientIdGenerator.getPreviewPatientId();
+  /**
+   * Get current patient ID
+   */
+  const getCurrentPatientId = (): string | null => {
+    return currentPatientId;
   };
 
-  const startAdmission = () => {
-    if (!patientData.admissionStartedAt) {
-      updatePatientData({ admissionStartedAt: new Date().toISOString() });
+
+  /**
+   * Initialize patient workflow - called when user starts adding a patient
+   * This is the ONLY place that should load or create drafts
+   */
+  const startAdmission = async () => {
+    // If we already have a patient loaded, don't do anything
+    if (currentPatientId) {
+      console.log('📋 Patient already loaded:', currentPatientId);
+      return;
+    }
+
+    try {
+      setIsDataLoaded(false);
+
+      // TODO just call loadOrCreatDraft instead?
+      
+      // Check for existing drafts
+      const drafts = await storage.getDraftPatients();
+
+      if (drafts.length > 0) {
+        // Load most recent draft
+        const mostRecent = drafts[0];
+        setPatientData(mostRecent);
+        setCurrentPatientId(mostRecent.patientId!);
+        console.log('📂 Loaded existing draft:', mostRecent.patientId);
+      } else {
+        // Create new draft with final patient ID
+        await createNewDraft();
+      }
+    } catch (error) {
+      console.error('Error starting admission:', error);
+      // Still create a new draft as fallback
+      await createNewDraft();
+    } finally {
+      setIsDataLoaded(true);
     }
   };
 
+
+  /**
+   * Calculate post-discharge mortality risk at admission time
+   */
   const calculateAdmissionRisk = (): RiskPrediction | null => {
     const context: ModelContext = {
       isUnderSixMonths: patientData.isUnderSixMonths,
@@ -229,6 +299,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return strategy && strategy?.calculateRisk(patientData)
   };
 
+  /**
+   * Calculate post-discharge mortality risk at discharge time
+   */
   const calculateDischargeRisk = (): RiskPrediction | null => {
     const context: ModelContext = {
       isUnderSixMonths: patientData.isUnderSixMonths,
@@ -245,8 +318,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return riskAssessment;
   };
 
-  // TODO - loading spinner if data not ready
-  // if (!isDataLoaded) return load screen
+  // TODO - loading spinner if data not ready ?
+  // if (!isDataLoaded) return null;
 
   return (
     <PatientDataContext.Provider
@@ -255,13 +328,14 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         updatePatientData,
         clearPatientData,
         savePatientData,
-        getPreviewPatientId,
         startAdmission,
+        loadDraft,
         isDataLoaded,
         handleAgeChange,
         calculateAdmissionRisk,
         calculateDischargeRisk,
         getCurrentRiskAssessment,
+        getCurrentPatientId,
         riskAssessment
       }}
     >
@@ -270,6 +344,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Hook to access PatientData  throughout the app
+ */
 export const usePatientData = () => {
   const context = useContext(PatientDataContext);
   if (context === undefined) {

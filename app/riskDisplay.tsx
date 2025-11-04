@@ -1,3 +1,4 @@
+import PaginationControls from '@/src/components/PaginationControls';
 import RiskCard from '@/src/components/RiskCard';
 import { RiskAssessment } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
@@ -11,6 +12,8 @@ import { Button, useTheme } from 'react-native-paper';
 
 export default function RiskDisplay() {
   const { colors } = useTheme();
+  // const { storage } = useStorage();
+  
   const params = useLocalSearchParams();
 
   // parse params
@@ -18,6 +21,17 @@ export default function RiskDisplay() {
   const patientName = params.patientName as string;
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
 
+  // load patient data if needed -- TODO: uncomment or remove?
+  // useEffect(() => {
+  //   const loadPatientDetails = async () => {
+  //     if (patientId) {
+  //       const fullPatient = await storage.getPatient(patientId);
+  //       // Use for additional display if needed
+  //     }
+  //   };
+  //   loadPatientDetails();
+  // }, [patientId]);
+  
   // Handle missing data
   if (!riskAssessment || !patientId || !patientName) {
     return (
@@ -101,7 +115,7 @@ export default function RiskDisplay() {
               </Text>
             </RiskCard>
 
-            <Button
+            {/* <Button
               style={{ alignSelf: 'center', marginTop: 20 }}
               mode="elevated"
               buttonColor={colors.primary}
@@ -109,7 +123,16 @@ export default function RiskDisplay() {
               onPress={() => router.replace('/patientRecords')}
             >
               Patient Records
-            </Button>
+            </Button> */}
+
+          <PaginationControls
+            showPrevious={true}
+            showNext={true}
+            labelPrevious='Back'
+            labelNext='Patient Records'
+            onPrevious={() => router.back()}
+            onNext={() => router.replace('/patientRecords')}
+          />
           </View>
         </ScrollView>
       </View>

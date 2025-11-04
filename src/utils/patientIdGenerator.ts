@@ -10,28 +10,11 @@ export class PatientIdGenerator {
   private static previewId: string | null = null;
 
 
-  // /**
-  //  * Generate a temporary draft ID
-  //  */
-  // // TODO test this
-  // static generateDraftId(): string {
-  //   const timestamp = Date.now();
-  //   const random = Math.random().toString(36).substring(2, 6);
-  //   return `DRAFT_${timestamp}_${random}`;
-  // }
-
-  //  /**
-  //  * Check if an ID is a draft
-  //  */
-  // static isDraftId(patientId: string): boolean {
-  //   return patientId.startsWith('DRAFT_');
-  // }
-
   /**
-   * Finalize a unique patient ID (format: SITE-A-0001) on submit
+   * Generate a unique patient ID (format: SITE-DEVICE-####)
    * SITE = Site name (set by admin - in config.ts)
-   * A = Device ID (A to Z, set by admin - in config.ts)
-   * 00001 = Sequential patient number for that device on that date
+   * DEVICE = Device ID (A to Z, set by admin - in config.ts)
+   * #### = Sequential patient number for that device
    */
   static async generatePatientId(): Promise<string> {
     try {
@@ -83,34 +66,34 @@ export class PatientIdGenerator {
     }
   }
 
-    /**
-     * Generate a preview ID without incrementing the counter
-     */ 
-    static async getPreviewPatientId(): Promise<string> {
-        const counter = await this.peekNextPatientNumber();
-        const site = ACTIVE_SITE;
-        this.previewId = `${site}-${this.deviceId}-${counter.toString().padStart(4, '0')}`;
+  // /**
+  //  * Generate a preview ID without incrementing the counter
+  //  */ 
+  // static async getPreviewPatientId(): Promise<string> {
+  //     const counter = await this.peekNextPatientNumber();
+  //     const site = ACTIVE_SITE;
+  //     this.previewId = `${site}-${this.deviceId}-${counter.toString().padStart(4, '0')}`;
 
-        return this.previewId;
-    }
+  //     return this.previewId;
+  // }
 
-    /**
-     * Peek next patient number without incrementing
-     */ 
-    private static async peekNextPatientNumber(): Promise<number> {
-        const storageKey = `${this.PATIENT_COUNTER_KEY}_${this.deviceId}`;
-        let counter: number;
+  // /**
+  //  * Peek next patient number without incrementing
+  //  */ 
+  // private static async peekNextPatientNumber(): Promise<number> {
+  //     const storageKey = `${this.PATIENT_COUNTER_KEY}_${this.deviceId}`;
+  //     let counter: number;
 
-        if (Platform.OS === 'web') {
-            const stored = localStorage.getItem(storageKey);
-            counter = stored ? parseInt(stored, 10) + 1 : 1; // default to 1 if no patients
-        } else {
-            const stored = await SecureStore.getItemAsync(storageKey);
-            counter = stored ? parseInt(stored, 10) + 1 : 1; // default to 1 if no patients
-        }
+  //     if (Platform.OS === 'web') {
+  //         const stored = localStorage.getItem(storageKey);
+  //         counter = stored ? parseInt(stored, 10) + 1 : 1; // default to 1 if no patients
+  //     } else {
+  //         const stored = await SecureStore.getItemAsync(storageKey);
+  //         counter = stored ? parseInt(stored, 10) + 1 : 1; // default to 1 if no patients
+  //     }
 
-        return counter;
-    }
+  //     return counter;
+  // }
 
     /**
      * Get current date string in YYYYMMDD format

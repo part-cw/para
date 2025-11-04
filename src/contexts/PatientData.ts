@@ -1,4 +1,3 @@
-import { DropdownItem } from "../components/SearchableDropdown";
 
 // TODO update PatientData??? so it only containts core data present in patients data
 
@@ -36,9 +35,9 @@ export interface PatientData {
   temperatureSquared?: number | null,
   rrate?: string;
   lastHospitalized?: string;
-  eyeMovement?: DropdownItem | null;
-  motorResponse?: DropdownItem | null;
-  verbalResponse?: DropdownItem | null;
+  eyeMovement?: string; //DropdownItem | null;
+  motorResponse?: string; //DropdownItem | null;
+  verbalResponse?: string;//DropdownItem | null;
   bcsScore?: number | null;
   abnormalBCS?: boolean | null;
 
@@ -76,9 +75,9 @@ export interface PatientData {
 
   // discharge info
   dischargeDiagnosis?: string;
-  // spo2_discharge: string;
-  // dischargeReason: string;
-  // feedingWell_discharge: boolean | null;
+  spo2_discharge?: string;
+  dischargeReason?: string;
+  feedingWell_discharge?: boolean;
 
 }
 
@@ -155,33 +154,33 @@ export const initialPatientData: PatientData = {
   // feedingWell_discharge: null,
 };
 
-export interface ClinicalVariables {
-  // Admission Clinical Data (all ages)
-  ageInMonths: number | null; // TODO remove because repeated?
-  waz: number | null;
-  muac: string;
-  spo2_admission: string;
+// export interface ClinicalVariables {
+//   // Admission Clinical Data (all ages)
+//   ageInMonths: number | null; // TODO remove because repeated?
+//   waz: number | null;
+//   muac: string;
+//   spo2_admission: string;
  
-  // Admission Clinical Data (6-60 months only)
-  hivStatus: string;
-  temperature: string;
-  temperatureSquared: number | null,
-  rrate: string;
-  lastHospitalized: string;
-  eyeMovement: DropdownItem | null;
-  motorResponse: DropdownItem | null;
-  verbalResponse: DropdownItem | null;
-  bcsScore: number | null;
-  abnormalBCS: boolean | null;
+//   // Admission Clinical Data (6-60 months only)
+//   hivStatus: string;
+//   temperature: string;
+//   temperatureSquared: number | null,
+//   rrate: string;
+//   lastHospitalized: string;
+//   eyeMovement: DropdownItem | null;
+//   motorResponse: DropdownItem | null;
+//   verbalResponse: DropdownItem | null;
+//   bcsScore: number | null;
+//   abnormalBCS: boolean | null;
 
-  // Admission Clinical Data (0-6 months only)
-  illnessDuration: string;
-  neonatalJaundice: boolean | null;
-  bulgingFontanelle: boolean | null;
-  feedingWell: boolean | null;
+//   // Admission Clinical Data (0-6 months only)
+//   illnessDuration: string;
+//   neonatalJaundice: boolean | null;
+//   bulgingFontanelle: boolean | null;
+//   feedingWell: boolean | null;
 
-  // discharge specific
-  spo2_discharge: string;
-  feedingWell_discharge: boolean;
-  dischargeReason: string;
-}
+//   // discharge specific
+//   spo2_discharge: string;
+//   feedingWell_discharge: boolean;
+//   dischargeReason: string;
+// }
