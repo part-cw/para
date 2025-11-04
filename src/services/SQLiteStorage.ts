@@ -673,12 +673,6 @@ export class SQLiteStorage implements IStorageService {
         `, values);
     }
 
-
-
-
-    
-
-
     /**
      * 
      * Get medical conditions for a patient.
@@ -706,7 +700,7 @@ export class SQLiteStorage implements IStorageService {
 
         const conditions: { [key: string]: any } = {
             malnutritionStatus: row.malnutritionStatus,
-            sickYoungInfant: Boolean(row.sickYoungInfant), // TODO double check what this should look like
+            sickYoungInfant: Boolean(row.sickYoungInfant),
             pneumonia: row.pneumonia,
             diarrhea: row.diarrhea,
             malaria: row.malaria,

@@ -17,9 +17,7 @@ export default function RootLayout() {
 
     const [modelsLoaded, setModelsLoaded] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    // useEffect(() => {
-    //   initializeModels();
-    // }, [])
+ 
     useEffect(() => {
         const loadModels = async () => {
             try {

@@ -77,24 +77,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     try {
       setIsDataLoaded(false);
       await createNewDraft();
-      
-      // Check for existing drafts
-      // const drafts = await storage.getDraftPatients();
-
-      // if (drafts.length > 0) {
-        // Load most recent draft
-      //   const mostRecent = drafts[0];
-      //   setPatientData(mostRecent);
-      //   setCurrentPatientId(mostRecent.patientId!);
-      //   console.log('📂 Loaded existing draft:', mostRecent.patientId);
-      // } else {
-      //   // Create new draft with final patient ID
-      //   await createNewDraft();
-      // }
     } catch (error) {
       console.error('Error starting admission:', error);
       throw error;
-      // Still create a new draft as fallback
       // await createNewDraft();
     } finally {
       setIsDataLoaded(true);
@@ -112,11 +97,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
       setCurrentPatientId(patientId);
       setPatientData(newDraftData);
-
-      // save initial draft to database
-      // await storage.saveDraft(newDraftData, patientId); -- TODO delete?
       console.log('✨ Created new draft in memory with ID:', patientId);
-
     } catch (err) {
       console.error('Error creating new draft:', err);
       throw err;

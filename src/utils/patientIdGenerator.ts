@@ -5,12 +5,7 @@ import { ACTIVE_SITE, DEVICE_ID_KEY } from '../config';
 export class PatientIdGenerator {
   private static readonly PATIENT_COUNTER_KEY = 'patient_counter';  
   private static readonly RECYCLED_IDS_KEY = 'recycled_patient_ids';
-
   private static deviceId: string =  DEVICE_ID_KEY
-
-  // Cached preview ID for the current workflow
-  // private static recycledId: string | null = null;
-
 
   /**
    * Generate a unique patient ID (format: SITE-DEVICE-####)
@@ -174,44 +169,5 @@ export class PatientIdGenerator {
     
     return `${site}-FALL-${dateStr}-${randomNum.toString().padStart(4, '0')}`;
   }
-
-
-// UTILITY FUNCTIONS 
-
-// /**
-//    * Clear all recycled IDs
-//    */
-//   static async clearRecycledIds(): Promise<void> {
-//     try {
-//       const storageKey = `${this.RECYCLED_IDS_KEY}_${this.deviceId}`;
-      
-//       if (Platform.OS !== 'web') {
-//         await SecureStore.deleteItemAsync(storageKey);
-//       }
-//       console.log('🗑️ Cleared all recycled patient IDs');
-//     } catch (error) {
-//       console.error('Failed to clear recycled IDs:', error);
-//     }
-//   }
-
-//   /**
-//    * Get count of recycled IDs available
-//    */
-//   static async getRecycledIdCount(): Promise<number> {
-//     try {
-//       const storageKey = `${this.RECYCLED_IDS_KEY}_${this.deviceId}`;
-      
-//       if (Platform.OS !== 'web') {
-//         const stored = await SecureStore.getItemAsync(storageKey);
-//         const recycledIds = stored ? JSON.parse(stored) : [];
-//         return recycledIds.length;
-//       } else {
-//         return 0 // stub for web - TODO fix implementation
-//       }
-//     } catch (error) {
-//       console.error('Failed to get recycled ID count:', error);
-//       return 0;
-//     }
-//   }
 
 }

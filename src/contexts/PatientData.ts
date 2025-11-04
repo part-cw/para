@@ -27,19 +27,19 @@ export interface PatientData {
   muac: string;
   spo2_admission: string;
  
-  // Admission Clinical Data (6-60 months only) - todo - remove?
+  // Admission Clinical Data (6-60 months only)
   hivStatus?: string;
   temperature?: string;
   temperatureSquared?: number | null,
   rrate?: string;
   lastHospitalized?: string;
-  eyeMovement?: string; //DropdownItem | null;
-  motorResponse?: string; //DropdownItem | null;
-  verbalResponse?: string;//DropdownItem | null;
+  eyeMovement?: string;
+  motorResponse?: string;
+  verbalResponse?: string;
   bcsScore?: number | null;
   abnormalBCS?: boolean | null;
 
-  // Admission Clinical Data (0-6 months only) - todo - remove?
+  // Admission Clinical Data (0-6 months only)
   illnessDuration?: string;
   neonatalJaundice?: string;
   bulgingFontanelle?: string;
@@ -102,24 +102,6 @@ export const initialPatientData: PatientData = {
   muac: '',
   spo2_admission: '',
   
-  // Admission Clinical Data (6-60 months only)
-  // lastHospitalized: '',
-  // hivStatus: '',
-  // temperature: '',
-  // temperatureSquared: null,
-  // rrate: '',
-  // eyeMovement: null,
-  // motorResponse: null,
-  // verbalResponse: null,
-  // bcsScore: null,
-  // abnormalBCS: null,
-
-  // Admission Clinical Data (0-6 months only)
-  // illnessDuration: '',
-  // neonatalJaundice: null,
-  // bulgingFontanelle: null,
-  // feedingWell: null,
-
   // medical conditions
   severeAnaemia: '',
   pneumonia: '',
@@ -144,10 +126,4 @@ export const initialPatientData: PatientData = {
   confirmTel: '',
   isCaregiversPhone: false,
   sendReminders: false,
-
-  // discharge info:
-  // dischargeReason: '', // TODO - move to ClinicalVariables? 
-  // dischargeDiagnosis: '',
-  // spo2_discharge: '',
-  // feedingWell_discharge: null,
 };
