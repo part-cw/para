@@ -4,10 +4,13 @@ import { Alert, Image, Platform, View } from 'react-native';
 import { Appbar, Button, Menu, Text, useTheme } from 'react-native-paper';
 import { ACTIVE_SITE, CURRENT_USER, DEVICE_ID_KEY } from '../config';
 import { usePatientData } from '../contexts/PatientDataContext';
+import { useStorage } from '../contexts/StorageContext';
+import { PatientIdGenerator } from '../utils/patientIdGenerator';
 
 export default function AppBar() {
   const { colors } = useTheme();
   const { clearPatientData, patientData } = usePatientData();
+  const { storage } = useStorage();
 
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -29,7 +32,16 @@ export default function AppBar() {
     'Incomplete admissions are automatically saved and can be resumed from the “Drafts” page.';
 
   const handleGoHome = () => {
-    const confirmAndGo = () => {
+     const resetStorage = async () => {  
+        const patientId = patientData.patientId;
+
+        if (patientId) {
+          await PatientIdGenerator.recyclePatientId(patientId)
+          await storage.deletePatient(patientId)
+        }
+      };
+
+    const resetFormAndGo = () => {      
         clearPatientData();
         router.push('/');
       };
@@ -38,19 +50,20 @@ export default function AppBar() {
 
     if (isDataEntryScreen) {
       if (!hasMinimalData) {
-        confirmAndGo(); // TODO maintain the unused patientID
+        resetStorage();
+        resetFormAndGo();
         return;
       }
 
       if (Platform.OS === 'web') {
         // TODO - fix web version
         if (window.confirm(dataWarningMessage)) {
-          confirmAndGo();
+          resetFormAndGo();
         }
       } else {
         Alert.alert("Leave without submitting?", dataWarningMessage,
           [{ text: "Cancel", style: "cancel" },
-            { text: "Go Home", onPress: () => confirmAndGo() }]
+            { text: "Go Home", onPress: () => resetFormAndGo() }]
         );
       } 
     } else {
