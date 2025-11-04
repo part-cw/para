@@ -1,6 +1,4 @@
 
-// TODO update PatientData??? so it only containts core data present in patients data
-
 // Data structure type delcarations based on all screens
 export interface PatientData {
   // Metadata
@@ -43,9 +41,9 @@ export interface PatientData {
 
   // Admission Clinical Data (0-6 months only) - todo - remove?
   illnessDuration?: string;
-  neonatalJaundice?: boolean | null;
-  bulgingFontanelle?: boolean | null;
-  feedingWell?: boolean | null;
+  neonatalJaundice?: string;
+  bulgingFontanelle?: string;
+  feedingWell?: string;
 
   // Medical Conditions
   severeAnaemia: string;
@@ -153,34 +151,3 @@ export const initialPatientData: PatientData = {
   // spo2_discharge: '',
   // feedingWell_discharge: null,
 };
-
-// export interface ClinicalVariables {
-//   // Admission Clinical Data (all ages)
-//   ageInMonths: number | null; // TODO remove because repeated?
-//   waz: number | null;
-//   muac: string;
-//   spo2_admission: string;
- 
-//   // Admission Clinical Data (6-60 months only)
-//   hivStatus: string;
-//   temperature: string;
-//   temperatureSquared: number | null,
-//   rrate: string;
-//   lastHospitalized: string;
-//   eyeMovement: DropdownItem | null;
-//   motorResponse: DropdownItem | null;
-//   verbalResponse: DropdownItem | null;
-//   bcsScore: number | null;
-//   abnormalBCS: boolean | null;
-
-//   // Admission Clinical Data (0-6 months only)
-//   illnessDuration: string;
-//   neonatalJaundice: boolean | null;
-//   bulgingFontanelle: boolean | null;
-//   feedingWell: boolean | null;
-
-//   // discharge specific
-//   spo2_discharge: string;
-//   feedingWell_discharge: boolean;
-//   dischargeReason: string;
-// }

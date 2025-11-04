@@ -7,7 +7,7 @@ import { usePatientData } from '../contexts/PatientDataContext';
 
 export default function AppBar() {
   const { colors } = useTheme();
-  const { clearPatientData } = usePatientData();
+  const { clearPatientData, patientData } = usePatientData();
 
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -33,8 +33,15 @@ export default function AppBar() {
         clearPatientData();
         router.push('/');
       };
+    
+    const hasMinimalData = patientData.surname || patientData.firstName  
 
     if (isDataEntryScreen) {
+      if (!hasMinimalData) {
+        confirmAndGo(); // TODO maintain the unused patientID
+        return;
+      }
+
       if (Platform.OS === 'web') {
         // TODO - fix web version
         if (window.confirm(dataWarningMessage)) {

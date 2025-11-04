@@ -1,4 +1,3 @@
-import PaginationControls from '@/src/components/PaginationControls';
 import RiskCard from '@/src/components/RiskCard';
 import { RiskAssessment } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
@@ -115,7 +114,7 @@ export default function RiskDisplay() {
               </Text>
             </RiskCard>
 
-            {/* <Button
+            <Button
               style={{ alignSelf: 'center', marginTop: 20 }}
               mode="elevated"
               buttonColor={colors.primary}
@@ -123,16 +122,7 @@ export default function RiskDisplay() {
               onPress={() => router.replace('/patientRecords')}
             >
               Patient Records
-            </Button> */}
-
-          <PaginationControls
-            showPrevious={true}
-            showNext={true}
-            labelPrevious='Back'
-            labelNext='Patient Records'
-            onPrevious={() => router.back()}
-            onNext={() => router.replace('/patientRecords')}
-          />
+            </Button>
           </View>
         </ScrollView>
       </View>

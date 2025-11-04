@@ -73,7 +73,7 @@ export interface RiskPrediction {
     riskScore: number;
     riskCategory: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
     model: string;
-    // topPredictors?: TopPredictor[];
+    topPredictors?: TopPredictor[];
 }
 
 export interface RiskAssessment {

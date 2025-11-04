@@ -179,9 +179,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const updates: Partial<PatientData> = {
         isUnderSixMonths,
         illnessDuration: '',
-        neonatalJaundice: null,
-        bulgingFontanelle: null,
-        feedingWell: null,
+        neonatalJaundice: '',
+        bulgingFontanelle: '',
+        feedingWell: '',
       };
       updatePatientData(updates);
     }
@@ -223,7 +223,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         await storage.saveRiskPrediction(currentPatientId, admissionRisk, 'admission');
       }
 
-      console.log('✅ Patient submitted:', currentPatientId);
+      console.log('✅ Stored risk prediction for ${currentPatientId}:', finalRiskAssessment);
       
       const submittedPatientId = currentPatientId;
       

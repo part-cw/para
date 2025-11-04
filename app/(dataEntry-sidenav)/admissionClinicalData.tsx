@@ -229,7 +229,7 @@ export default function AdmissionClinicalDataScreen() {
 
     // handle changes to isNeonate; resets jaundice selection if changes made to age
     useEffect(() => {
-        if (!isNeonate) updatePatientData({neonatalJaundice: null})
+        if (!isNeonate) updatePatientData({neonatalJaundice: ''})
     }, [isNeonate])
     
     const setMalnutritionStatus = () => {
@@ -479,9 +479,9 @@ export default function AdmissionClinicalDataScreen() {
                                                 options={[
                                                     { label: 'Yes', value: 'yes'},
                                                     { label: 'No', value: 'no'},]} 
-                                                selected={(jaundice !== null) ? booleanToString(jaundice as boolean) : false} 
+                                                selected={jaundice as string} 
                                                 onSelect={(value) => updatePatientData({ 
-                                                    neonatalJaundice: stringToBoolean(value) })}
+                                                    neonatalJaundice: value})}
                                             />
                                         </View>
                                     }
@@ -493,8 +493,8 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={(bulgingFontanelle !== null) ? booleanToString(bulgingFontanelle as boolean) : false} 
-                                            onSelect={(value) => updatePatientData({ bulgingFontanelle: stringToBoolean(value) })}
+                                            selected={bulgingFontanelle as string} 
+                                            onSelect={(value) => updatePatientData({ bulgingFontanelle: value})}
                                         />
                                     </View>
                                     
@@ -505,8 +505,8 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={feedingStatus !== null ? booleanToString(feedingStatus as boolean) : false} 
-                                            onSelect={(value) => updatePatientData({ feedingWell: stringToBoolean(value) })}
+                                            selected={feedingStatus as string} 
+                                            onSelect={(value) => updatePatientData({ feedingWell: value })}
                                         />
                                     </View>
                                 </View>

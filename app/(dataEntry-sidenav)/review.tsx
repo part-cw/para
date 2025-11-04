@@ -407,9 +407,9 @@ export default function ReviewScreen() {
                              <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
                                 <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
-                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} />}
-                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
-                                <InfoRow label="Feeding well?" value={patientData.feedingWell ? 'Yes': 'No'} />
+                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice as string} />}
+                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle as string} />
+                                <InfoRow label="Feeding well?" value={patientData.feedingWell as string} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
@@ -420,7 +420,7 @@ export default function ReviewScreen() {
                             <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
                                 <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
-                                <InfoRow label="HIV Status" value={patientData.hivStatus} />
+                                <InfoRow label="HIV Status" value={patientData.hivStatus as string} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
@@ -430,9 +430,9 @@ export default function ReviewScreen() {
                                 <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                                <InfoRow label="Eye movement" value={patientData.eyeMovement?.value || 'Not provided'} />
-                                <InfoRow label="Best motor response" value={patientData.motorResponse?.value || 'Not provided'} />
-                                <InfoRow label="Best verbal response" value={patientData.verbalResponse?.value || 'Not provided'} />
+                                <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
+                                <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
+                                <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
                             </View>
                         }
                     </List.Accordion>

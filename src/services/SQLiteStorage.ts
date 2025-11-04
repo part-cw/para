@@ -145,10 +145,8 @@ export class SQLiteStorage implements IStorageService {
                 usageTime           TEXT NOT NULL CHECK (usageTime IN ('admission', 'discharge')),
                 riskScore           REAL NOT NULL,
                 riskCategory        TEXT NOT NULL,
-
-                variablesUsed       TEXT NOT NULL, -- JSON  object {"temp": ":37.5", "rrate": "56" ...}... Not needed? can join patients instead? TODO delete
                 
-                -- context/metadata at time of calculation -- TODO: remove ageInMonths and hivStat at calc if keep variablesUsed
+                -- context/metadata at time of calculation
                 ageInMonths_atCalc  INTEGER NOT NULL,  
                 hivStatus_atCalc    TEXT NOT NULL,
                 calculatedAt        TEXT NOT NULL,
@@ -485,9 +483,50 @@ export class SQLiteStorage implements IStorageService {
 
     // ========== RISK OPERATIONS ==========
 
-    saveRiskPrediction(patientId: string, prediction: RiskPrediction, usageTime: 'admission' | 'discharge'): Promise<void> {
-        throw new Error('Method not implemented.');
+    async saveRiskPrediction(patientId: string, prediction: RiskPrediction, usageTime: 'admission' | 'discharge'): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const now = new Date().toISOString();
+        
+        // Get current patient context
+        const patient = await this.getPatient(patientId);
+        if (!patient) throw new Error(`Patient ${patientId} not found`);
+
+        await this.db.withTransactionAsync(async () => {
+            const result = await this.db!.runAsync(`
+                INSERT OR REPLACE INTO risk_predictions (
+                    patientId, modelName, usageTime, riskScore, riskCategory,
+                    ageInMonths_atCalc, hivStatus_atCalc, calculatedAt
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                patientId,
+                prediction.model,
+                usageTime,
+                prediction.riskScore,
+                prediction.riskCategory,
+                patient.ageInMonths || 0,
+                patient.hivStatus || 'unknown',
+                now
+            ]);
+
+            // TODO Save top predictors if available
+            // const predictionId = result.lastInsertRowId;
+
+            // if (prediction.topPredictors && prediction.topPredictors.length > 0) {
+            //     for (let i = 0; i < prediction.topPredictors.length; i++) {
+            //         const predictor = prediction.topPredictors[i];
+            //         await this.db!.runAsync(`
+            //             INSERT INTO top_predictors (
+            //                 predictionId, featureName, contribution, rank
+            //             ) VALUES (?, ?, ?, ?)
+            //         `, [predictionId, predictor.name, predictor.contribution, i + 1]);
+            //     }
+            // }
+        });
+
+        console.log(`✅ Risk prediction saved for ${patientId} at ${usageTime}`);
     }
+
     getRiskAssessment(patientId: string): Promise<RiskAssessment> {
         throw new Error('Method not implemented.');
     }
