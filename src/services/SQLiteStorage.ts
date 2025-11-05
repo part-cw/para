@@ -63,6 +63,8 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
         
         await this.db.execAsync(`
+            PRAGMA foreign_keys = ON;
+
             CREATE TABLE IF NOT EXISTS patients (
                 -- Patient info 
                 patientId               TEXT PRIMARY KEY,
@@ -203,6 +205,7 @@ export class SQLiteStorage implements IStorageService {
             WHERE patientId = ?
         `, [now, now, patientId]);
 
+        await this.logChanges(patientId, 'SUBMIT', null, null, null);
         console.log(`✅ Patient ${patientId} submitted`);
     }
 
@@ -350,7 +353,6 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
         
         const now = new Date().toISOString();
-        console.log('insie saveDraft now =', now)
 
         // Check if draft exists
         const existing = await this.db.getFirstAsync<{ patientId: string }>(
@@ -359,15 +361,11 @@ export class SQLiteStorage implements IStorageService {
             [patientId]
         );
 
-        console.log('still insde saveDraft, exisitng=', existing)
-
-         if (existing) {
+        if (existing) {
             // DRAFT EXISTS: Use UPDATE (only changes what's needed)
-            console.log('!!!! draft exists..updating patient')
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
-             console.log('**** draft does not exists..inserting new patient')
             await this.insertNewPatient(data, patientId, now, true);
         }
     }
@@ -414,7 +412,7 @@ export class SQLiteStorage implements IStorageService {
     async deleteDraft(patientId: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
-        await this.db.runAsync(
+        await this.db?.runAsync(
             'DELETE FROM patients WHERE patientId = ? AND isDraftAdmission = 1',
             [patientId]
         );
@@ -546,6 +544,8 @@ export class SQLiteStorage implements IStorageService {
     async clearAll(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
+        console.log('clearing data...')
+
         await this.db.execAsync(`
             DELETE * FROM patients;
             DELETE * FROM medical_conditions;
@@ -624,7 +624,7 @@ export class SQLiteStorage implements IStorageService {
         console.log('upserting clinical variable')
     }
 
-     private async updatePatientTable(
+    private async updatePatientTable(
         patientId: string,
         fields: { [key: string]: any },
         timestamp: string

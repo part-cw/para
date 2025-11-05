@@ -1,3 +1,4 @@
+import { useStorage } from "@/src/contexts/StorageContext";
 import { router } from "expo-router";
 import { Text, View } from "react-native";
 import { Button, useTheme } from 'react-native-paper';
@@ -5,6 +6,7 @@ import { Button, useTheme } from 'react-native-paper';
 
 export default function Index() {
   const { colors } = useTheme();
+  const { storage } = useStorage();
 
   return (
     <>
@@ -32,7 +34,7 @@ export default function Index() {
             Patient Records
         </Button>
 
-         <Button style={[{ alignSelf: 'center' }, {marginTop: 10}]}
+        <Button style={[{ alignSelf: 'center' }, {marginTop: 10}]}
                 buttonColor={colors.primary} 
                 textColor={colors.onPrimary} 
                 icon= 'folder'
@@ -41,6 +43,17 @@ export default function Index() {
                   router.push('/drafts')
                   }}>
             Drafts
+        </Button>
+
+        <Button 
+          style={[{ alignSelf: 'center' }, {marginTop: 10}]}
+          buttonColor={colors.primary} 
+          textColor={colors.onPrimary} 
+          icon= 'trash-can'
+          mode="elevated" 
+          onPress={async () => await storage.clearAll()}
+        >
+            Clear storage
         </Button>
       </View>
     </>

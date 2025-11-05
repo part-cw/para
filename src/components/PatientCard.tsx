@@ -5,8 +5,6 @@ import { useTheme } from 'react-native-paper';
 
 // TODO - use format age function for age info
 // TODO - fix risk profile mapping
-// TODO - add functionality to buttons
-// TODO - add status mapping? 
 
 type PatientCardProps = {
   id: string;
@@ -18,7 +16,7 @@ type PatientCardProps = {
   recommendedCareplan?: string[];
   isDischarged: boolean;
   isDraft: boolean;
-  admittedAt?: string;
+  admittedAt?: string | null;
   onResume?: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
@@ -82,7 +80,7 @@ export default function PatientCard({
             <View style={{flexDirection: 'row'}}>
                 <Text style={[styles.info, {fontWeight: 'bold'}]}>ID: </Text><Text style={styles.info}>{id}</Text> 
             </View>
-            {age &&
+            {age !== undefined || age !== null &&
               <View style={{flexDirection: 'row'}}>
                   <Text style={[styles.info, {fontWeight: 'bold'}]}>Age: </Text>
                   <Text style={styles.info}>{age}</Text>

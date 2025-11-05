@@ -1,6 +1,12 @@
 import PatientCard from '@/src/components/PatientCard';
+import { PatientData } from '@/src/contexts/PatientData';
+import { usePatientData } from '@/src/contexts/PatientDataContext';
+import { useStorage } from '@/src/contexts/StorageContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { Text, View } from "react-native";
+import { formatDateString, formatName } from '@/src/utils/formatUtils';
+import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
+import { useEffect, useState } from 'react';
+import { Alert, Platform, Text, View } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,44 +14,93 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 // TODO - get patient data from storage
 
 export default function DraftAdmissions() {
+  const { storage } = useStorage();
+  const { loadDraft } = usePatientData();
 
-  const dummyPatients = [
-  {
-    id: 'BUIKWE-A-0001',
-    name: '',
-    age: '3 years',
-    status: 'draft',
-    isDraft: true,
-    isDischarged: false,
-    admittedAt: '2025-10-01'
-  },
-  {
-    id: 'BUIKWE-A-0002',
-    name: 'Jane Doe',
-    status: 'draft',
-    isDraft: true,
-    isDischarged: false,
-    admittedAt: '2025-10-02'
-  },
-  {
-    id: 'BUIKWE-A-0003',
-    name: 'Emma Stone',
-    age: '6 months',
-    status: 'draft',
-    isDraft: true,
-    isDischarged: false,
-    admittedAt: '2025-10-03'
-  },
-  {
-    id: 'BUIKWE-A-0004',
-    name: 'Daniel Radcliff',
-    age: '1 year',
-    status: 'draft',
-    isDraft: true,
-    isDischarged: false,
-    admittedAt: '2025-10-04'
-  },
-];
+  const [ drafts, setDrafts ] = useState<PatientData[]>([])
+  // const [loading, setLoading] = useState(true);
+  // const [refreshing, setRefreshing] = useState(false);
+
+
+
+  // // Load drafts on mount
+  // useEffect(() => {
+  //   loadDrafts();
+  // }, []);
+
+  // TODO implement loaddrafts function to refresh current draft lists - 
+  // get drafts on mount, update list whenever patients deleted?
+  useEffect(() => {
+    const getDrafts = async () => {
+        const drafts = await storage.getDraftPatients();
+        setDrafts(drafts);
+    }
+
+    getDrafts();
+  }, [drafts])
+
+
+  const handleResume = async (id: string) => {
+    // TODO pass patient data params to router --> call getPatient(id) ?
+    console.log('TODO - implement handle resume')
+
+    // try {
+    //   await loadDraft(id); 
+      
+    //   //navigate to data entry screen with params
+    //   router.push({
+    //     pathname: '/(dataEntry-sidenav)/patientInformation',
+    //     params: {
+    //       resuming: 'true',
+    //       draftId: id
+    //     }
+    //   })
+
+    // } catch (error) {
+    //   console.error('Error resuming draft:', error);
+    //   Alert.alert('Error', 'Failed to load draft');
+    // }
+    
+  };
+
+  const handleDelete = async (id: string, name?: string) => {
+    const confirmDelete = async () => {
+      try {
+        await PatientIdGenerator.recyclePatientId(id);
+        await storage.deleteDraft(id);
+        // TODO call functions to reload draft lists
+      } catch (error) {
+        console.error(`Error deleting draft ${id}: `, error)
+        Alert.alert('Error', 'Failed to delete draft. Please try again.');
+      }
+    };
+    
+      // Show confirmation
+      if (Platform.OS === 'web') {
+        if (window.confirm(`Delete draft for ${name}? All patient data will be lost.`)) {
+          await confirmDelete();
+        }
+      } else {
+        Alert.alert(
+          'Delete Draft?',
+          `Are you sure you want to delete the draft for ${name}? All patient data will be lost`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Delete', style: 'destructive', onPress: confirmDelete }
+          ]
+        );
+      }
+    
+  };
+
+  // TODO make this look better
+  if (drafts.length === 0) {
+    return (
+      <View>
+        <Text>No Drafts...</Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white', marginTop: -50}}>
@@ -57,18 +112,18 @@ export default function DraftAdmissions() {
           </Text>
         </View>
 
-        {dummyPatients.map((p) => (
+        {drafts.map((p) => (
           <PatientCard 
-            key={p.id} 
-            id={p.id} 
-            name={p.name} 
-            age={p.age}
-            status={p.status} 
-            isDischarged={p.isDischarged} 
-            isDraft={p.isDraft} 
-            admittedAt={p.admittedAt}  
-            onResume={() => console.log('resuming draft...')}
-            onDelete={() => console.log('deleting draft...')}         
+            key={p.patientId} 
+            id={p.patientId as string} 
+            name={formatName(p.firstName, p.surname, p.otherName)} 
+            age={`${p.ageInMonths} months`}
+            status={'draft'}
+            isDischarged={false}
+            isDraft={true}
+            admittedAt={p.admissionStartedAt && formatDateString(p.admissionStartedAt)}  
+            onResume={() => handleResume(p.patientId as string)}
+            onDelete={() => handleDelete(p.patientId as string, formatName(p.firstName, p.surname, p.otherName))}         
           />
         ))}
 

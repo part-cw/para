@@ -105,7 +105,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * TODO - load specific draft for 'continue admission' workflow
+   * Load specific draft for 'continue admission' workflow
    */
   const loadDraft = async (patientId: string) => {
     console.log('TODO - check load draft working')
