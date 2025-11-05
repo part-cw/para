@@ -45,7 +45,8 @@ export default function Index() {
             Drafts
         </Button>
 
-        <Button 
+        {/* TODO - delet clear button */}
+        {/* <Button 
           style={[{ alignSelf: 'center' }, {marginTop: 10}]}
           buttonColor={colors.primary} 
           textColor={colors.onPrimary} 
@@ -54,7 +55,7 @@ export default function Index() {
           onPress={async () => await storage.clearAll()}
         >
           Clear storage
-        </Button>
+        </Button> */}
       </View>
     </>
   );
