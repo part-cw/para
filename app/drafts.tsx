@@ -5,6 +5,7 @@ import { useStorage } from '@/src/contexts/StorageContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { formatDateString, formatName } from '@/src/utils/formatUtils';
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, Text, View } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';
@@ -41,26 +42,22 @@ export default function DraftAdmissions() {
 
 
   const handleResume = async (id: string) => {
-    // TODO pass patient data params to router --> call getPatient(id) ?
-    console.log('TODO - implement handle resume')
-
-    // try {
-    //   await loadDraft(id); 
+    try {
+      await loadDraft(id); 
       
-    //   //navigate to data entry screen with params
-    //   router.push({
-    //     pathname: '/(dataEntry-sidenav)/patientInformation',
-    //     params: {
-    //       resuming: 'true',
-    //       draftId: id
-    //     }
-    //   })
+      // navigate to data entry screen with params
+      router.push({
+        pathname: '/(dataEntry-sidenav)/patientInformation',
+        params: {
+          resuming: 'true',
+          draftId: id
+        }
+      })
 
-    // } catch (error) {
-    //   console.error('Error resuming draft:', error);
-    //   Alert.alert('Error', 'Failed to load draft');
-    // }
-    
+    } catch (error) {
+      console.error('Error resuming draft:', error);
+      Alert.alert('Error', 'Failed to load draft');
+    }
   };
 
   const handleDelete = async (id: string, name?: string) => {

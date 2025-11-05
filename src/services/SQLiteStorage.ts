@@ -24,7 +24,7 @@ type MedicalConditionsRow = {
 export class SQLiteStorage implements IStorageService {
     private db: SQLite.SQLiteDatabase | null = null;
     private encryptionKey: string | null = null;
-    private readonly DB_NAME = 'patient_records.db';
+    private readonly DB_NAME = 'para.db';
     private readonly ENCRYPTION_KEY_STORAGE = 'db_encryption_key';
 
 
@@ -226,7 +226,9 @@ export class SQLiteStorage implements IStorageService {
     }
   
     /**
-     * use in edit screens - updates all changed fields  in one go?
+     * use in edit screens - updates all changed fields  in one go
+     * TODO - optimize it so it only updates one field at a time - curruenly upserts all clinical variables for each field change
+     * TODO - add/increase timeout?
      */
     async updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
@@ -544,15 +546,13 @@ export class SQLiteStorage implements IStorageService {
     async clearAll(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
-        console.log('clearing data...')
-
         await this.db.execAsync(`
-            DELETE * FROM patients;
-            DELETE * FROM medical_conditions;
-            DELETE * FROM clinical_variables;
-            DELETE * FROM risk_predictions;
-            DELETE * FROM top_predictors;
-            DELETE * FROM audit_log;
+            DELETE FROM patients;
+            DELETE FROM medical_conditions;
+            DELETE FROM clinical_variables;
+            DELETE FROM risk_predictions;
+            DELETE FROM top_predictors;
+            DELETE FROM audit_log;
         `);
 
         console.log('🧹 All data cleared');
@@ -621,7 +621,7 @@ export class SQLiteStorage implements IStorageService {
                 patientId, variableName, variableValue, variableType, usageTime
             ) VALUES (?, ?, ?, ?, ?)
         `, [patientId, varName, stringValue, varType, usageTime]);
-        console.log('upserting clinical variable')
+        console.log(`!!upserting clinical variable fpr ${patientId}`, varName, stringValue, varType, usageTime)
     }
 
     private async updatePatientTable(
@@ -767,7 +767,11 @@ export class SQLiteStorage implements IStorageService {
         }
     }
 
-    private buildPatientData(patientRow: PatientData, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
+    private buildPatientData(patientRow: any, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
+        // console.log('patientRow', patientRow)
+        // console.log('dob type', patientRow.dob, typeof(patientRow.dob))
+        // const dateObject = new Date(patientRow.dob)
+        // console.log('dob object', dateObject, typeof(dateObject))
         return {
             patientId: patientRow.patientId,
             admissionStartedAt: patientRow.admissionStartedAt,
@@ -778,7 +782,7 @@ export class SQLiteStorage implements IStorageService {
             isUnderSixMonths: patientRow.isUnderSixMonths,
             isNeonate: patientRow.isNeonate,
             isYearMonthUnknown: patientRow.isYearMonthUnknown,
-            dob: patientRow.dob,
+            dob: !patientRow.dob ? null : new Date(patientRow.dob),
             birthYear: patientRow.birthYear,
             birthMonth: patientRow.birthMonth,
             approxAgeInYears: patientRow.approxAgeInYears,

@@ -53,7 +53,7 @@ export default function Index() {
           mode="elevated" 
           onPress={async () => await storage.clearAll()}
         >
-            Clear storage
+          Clear storage
         </Button>
       </View>
     </>
