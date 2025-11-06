@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { getStorageService, IStorageService } from '../services/StorageService';
 
 interface StorageContextType {
@@ -25,22 +26,19 @@ export function StorageProvider({ children }: { children: ReactNode }) {
         setError(err instanceof Error ? err.message : 'Unknown storage error');
       }
     };
-
+    
     initializeStorage();
   }, []);
 
-  console.log('storage', storage)
-
-
   // Show loading screen while initializing
-  // if (!isInitialized && !error) {
-  //   return (
-  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-  //       <ActivityIndicator size="large" />
-  //       <Text style={{ marginTop: 16, fontSize: 16 }}>Initializing database...</Text>
-  //     </View>
-  //   )
-  // }
+  if (!isInitialized && !error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 16, fontSize: 16 }}>Loading data...</Text>
+      </View>
+    )
+  }
 
   // Show error screen if initialization failed
   // if (error) {

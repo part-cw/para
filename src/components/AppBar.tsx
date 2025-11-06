@@ -46,7 +46,7 @@ export default function AppBar() {
         router.push('/');
       };
     
-    const hasMinimalData = patientData.surname || patientData.firstName  
+    const hasMinimalData = patientData.surname && patientData.firstName  
 
     if (isDataEntryScreen) {
       if (!hasMinimalData) {

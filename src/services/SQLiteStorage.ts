@@ -59,6 +59,7 @@ export class SQLiteStorage implements IStorageService {
     //     return key;
     // }
 
+    // TODO - add isDOBUnknwon and isYearMonthUnknown
     async initializeSchema(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
         
@@ -76,6 +77,8 @@ export class SQLiteStorage implements IStorageService {
                 birthYear               TEXT,
                 birthMonth              TEXT,
                 approxAgeInYears        TEXT,
+                isDOBUnknown            INTEGER DEFAULT 0,
+                isYearMonthUnknown      INTEGER DEFAULT 0,
                 isUnderSixMonths        INTEGER NOT NULL,
                 isNeonate               INTEGER,
                 ageInMonths             INTEGER,      
@@ -282,26 +285,30 @@ export class SQLiteStorage implements IStorageService {
             await this.db?.runAsync(`
                 INSERT INTO patients (
                     patientId, surname, firstName, otherName, sex, 
-                    dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isUnderSixMonths, isNeonate,
+                    dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isDOBUnknown, isYearMonthUnknown, isUnderSixMonths, isNeonate,
                     village, subvillage, vhtName, vhtTelephone, 
                     caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone,
                     dischargeDiagnosis, admissionStartedAt, updatedAt, isDraftAdmission
                 ) 
                 VALUES (
                     ?, ?, ?, ?, ?,              -- name/sex
-                    ?, ?, ?, ?, ?,?, ?,         -- age demographics
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- age demographics
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
                     ?, ?, ?, ?                  -- discharge & etadata
                 )
             `, [
-                patientId, data.surname, 
-                data.firstName, data.otherName || null, 
+                patientId, 
+                data.surname, 
+                data.firstName, 
+                data.otherName || null, 
                 data.sex, 
                 data.dob ? data.dob.toISOString() : null, 
                 data.birthYear || null, 
                 data.birthMonth || null, 
                 data.approxAgeInYears || null, 
                 data.ageInMonths || null,
+                data.isDOBUnknown ? 1 : 0,
+                data.isYearMonthUnknown ? 1: 0,
                 data.isUnderSixMonths ? 1 : 0, 
                 data.isNeonate !== null ? (data.isNeonate ? 1 : 0) : null,
                 data.village || null,
@@ -364,7 +371,7 @@ export class SQLiteStorage implements IStorageService {
         );
 
         if (existing) {
-            // DRAFT EXISTS: Use UPDATE (only changes what's needed)
+            // DRAFT EXISTS: Use UPDATE (TODO make sure it only changes what's needed)
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
@@ -614,6 +621,8 @@ export class SQLiteStorage implements IStorageService {
         const usageTime = this.determineUsageTime(varName);
         const stringValue = this.convertToString(value, varType);
 
+        console.log('inside upsertClinicalVariable, varName and value', varName, value, typeof(value))
+
         if (stringValue === null) return;
 
         await this.db.runAsync(`
@@ -621,7 +630,7 @@ export class SQLiteStorage implements IStorageService {
                 patientId, variableName, variableValue, variableType, usageTime
             ) VALUES (?, ?, ?, ?, ?)
         `, [patientId, varName, stringValue, varType, usageTime]);
-        console.log(`!!upserting clinical variable fpr ${patientId}`, varName, stringValue, varType, usageTime)
+        console.log(`!!upserting clinical variable fpr ${patientId}`, varName, varType, usageTime, stringValue)
     }
 
     private async updatePatientTable(
@@ -768,10 +777,6 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private buildPatientData(patientRow: any, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
-        // console.log('patientRow', patientRow)
-        // console.log('dob type', patientRow.dob, typeof(patientRow.dob))
-        // const dateObject = new Date(patientRow.dob)
-        // console.log('dob object', dateObject, typeof(dateObject))
         return {
             patientId: patientRow.patientId,
             admissionStartedAt: patientRow.admissionStartedAt,
@@ -779,13 +784,15 @@ export class SQLiteStorage implements IStorageService {
             firstName: patientRow.firstName,
             otherName: patientRow.otherName || '',
             sex: patientRow.sex,
+            isDOBUnknown: patientRow.isDOBUnknown,
+            isYearMonthUnknown: patientRow.isYearMonthUnknown,
             isUnderSixMonths: patientRow.isUnderSixMonths,
             isNeonate: patientRow.isNeonate,
-            isYearMonthUnknown: patientRow.isYearMonthUnknown,
             dob: !patientRow.dob ? null : new Date(patientRow.dob),
             birthYear: patientRow.birthYear,
             birthMonth: patientRow.birthMonth,
             approxAgeInYears: patientRow.approxAgeInYears,
+            ageInMonths: patientRow.ageInMonths,
 
             vhtName: patientRow.vhtName,
             vhtTelephone: patientRow.vhtTelephone,
@@ -827,6 +834,8 @@ export class SQLiteStorage implements IStorageService {
             birthMonth: 'birthMonth',
             approxAgeInYears: 'approxAgeInYears',
             ageInMonths: 'ageInMonths',
+            isDOBUnknown: 'isDOBUnknown',
+            isYearMonthUnknown: 'isYearMonthUnknown',
             isUnderSixMonths: 'isUnderSixMonths',
             isNeonate: 'isNeonate',
             village: 'village',

@@ -42,9 +42,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
     // Only save if user has entered at least SOME required data
     const hasMinimalData = 
-        patientData.surname || 
-        patientData.firstName || 
-        patientData.sex;
+        patientData.surname && 
+        patientData.firstName
 
     if (!hasMinimalData) {
         console.log('⏳ Skipping auto-save - no data entered yet');
@@ -267,9 +266,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const getCurrentRiskAssessment = (): RiskAssessment => {
     return riskAssessment;
   };
-
-  // TODO - loading spinner if data not ready ?
-  // if (!isDataLoaded) return null;
 
   return (
     <PatientDataContext.Provider
