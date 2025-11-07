@@ -2,6 +2,7 @@ import PatientCard from '@/src/components/PatientCard';
 import { PatientData } from '@/src/contexts/PatientData';
 import { useStorage } from '@/src/contexts/StorageContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatName } from '@/src/utils/formatUtils';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -113,14 +114,14 @@ export default function PatientRecords() {
 
         {records.map((p) => {
           const name = formatName(p.firstName, p.surname, p.otherName)
+          const age = AgeCalculator.formatAge(p.ageInMonths as number)
           const risk = handleGetRiskLevel(p.patientId as string);
 
           /**
            * TODO: implement the following helpers
-           * 1. formatAge - conert ageinmonths to displays...or use what's already in utils?
-           * 2. mapStatusFlags --convert flags (isDischarged, isArchived, isDraft) to text
-           * 3. hadnleGetRiskLevel
-           * 4. handleGetRiskProfile
+           * 1. mapStatusFlags --convert flags (isDischarged, isArchived, isDraft) to text
+           * 2. hadnleGetRiskLevel
+           * 3. handleGetRiskProfile
            */
           
           return (
@@ -128,7 +129,7 @@ export default function PatientRecords() {
               key={p.patientId} 
               id={p.patientId as string} 
               name={name} 
-              age={`${p.ageInMonths} months`}
+              age={age}
               status={'todo - mapstatus'} 
               isDischarged={false} 
               isDraft={false}

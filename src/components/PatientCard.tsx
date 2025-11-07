@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
-// TODO - use format age function for age info
 // TODO - fix risk profile mapping
 
 type PatientCardProps = {
@@ -68,25 +67,25 @@ export default function PatientCard({
           <View>
             <View style={{flexDirection: 'row'}}>
                 <Text style={styles.name}>{name} </Text>
-                {isDraft 
-                ?
-                <Text style={[styles.info, {fontStyle: 'italic', color: 'grey'}]}>(in progress - started {admittedAt})</Text>
-                :
                 <Text style={[styles.info, {fontStyle: 'italic', color: 'grey'}]}>({status})</Text>
-                }
-                
             </View>
             
             <View style={{flexDirection: 'row'}}>
-                <Text style={[styles.info, {fontWeight: 'bold'}]}>ID: </Text><Text style={styles.info}>{id}</Text> 
+                <Text style={[styles.info, {fontWeight: 'bold'}]}>ID: </Text>
+                <Text style={styles.info}>{id}</Text> 
             </View>
-            {age !== undefined || age !== null &&
+
+            {(age !== undefined && age !== null && age !== '') &&
               <View style={{flexDirection: 'row'}}>
                   <Text style={[styles.info, {fontWeight: 'bold'}]}>Age: </Text>
                   <Text style={styles.info}>{age}</Text>
               </View>
             }
+            {isDraft &&
+              <Text style={[styles.info, {fontStyle: 'italic', color: 'grey'}]}>Started at {admittedAt}</Text>
+            }
           </View>
+
           <MaterialIcons
             name={expanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
             size={28}

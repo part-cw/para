@@ -3,7 +3,8 @@ import { PatientData } from '@/src/contexts/PatientData';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useStorage } from '@/src/contexts/StorageContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { formatDateString, formatName } from '@/src/utils/formatUtils';
+import { AgeCalculator } from '@/src/utils/ageCalculator';
+import { formatName } from '@/src/utils/formatUtils';
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -145,26 +146,30 @@ export default function DraftAdmissions() {
           <Text style={[Styles.pageHeaderTitle ]}>
               Draft Admissions
           </Text>
-          {/* draft counter -- TODO - remove? */}
-          {/* <Text style={{ fontSize: 14, color: colors.outline }}>
-            {drafts.length} draft{drafts.length !== 1 ? 's' : ''}
-          </Text> */}
+
+          {/* draft counter -- TODO: remove? */}
+          {drafts.length > 0 &&
+            <Text style={{ fontSize: 14, color: colors.outline }}>
+              {drafts.length} draft{drafts.length !== 1 ? 's' : ''}
+            </Text>
+          }
         </View>
         
-        {/* TODO - change/remove horizontal padding? */}
         <View style={{ paddingHorizontal: 10 }}>
           {drafts.map((p) => {
             const name = formatName(p.firstName, p.surname, p.otherName)
+            const age = AgeCalculator.formatAge(p.ageInMonths)
+            
             return (
               <PatientCard 
                 key={p.patientId} 
                 id={p.patientId as string} 
                 name={name} 
-                age={`${p.ageInMonths} months`}
+                age={age}
                 status={'draft'}
                 isDischarged={false}
                 isDraft={true}
-                admittedAt={p.admissionStartedAt && formatDateString(p.admissionStartedAt)}  
+                admittedAt={p.admissionStartedAt && p.admissionStartedAt}  
                 onResume={() => handleResume(p.patientId as string)}
                 onDelete={() => handleDelete(p.patientId as string, name)}         
               />
