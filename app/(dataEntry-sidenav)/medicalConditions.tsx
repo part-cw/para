@@ -14,6 +14,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// TODO figure out why bcs dropdown autopopulates wiith // when resule draft if not selected. and if selected it has  the n option
+// something to do with the typedefined as JSON?
 
 export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
@@ -197,13 +199,14 @@ export default function MedicalConditionsScreen() {
                     search={false}
                 />
                 <View style={{marginRight: 10, marginLeft: 10, marginTop: -10}}>
-                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Illnesses <Text style={Styles.required}>*</Text></Text>
+                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Conditions/Vulnerabilities <Text style={Styles.required}>*</Text></Text>
                     <Text>{displayNames['chronicIllnessQuestion']}</Text>
                     <CheckboxGroup 
                         options={[
                             {label: 'HIV', value: 'HIV'},
                             {label: 'Tuberculosis', value: 'Tuberculosis'},
                             {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
+                            {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
                             {label: 'Unsure', value: 'unsure'},
                             {label: 'None', value: 'none'},
                             {label: 'Other', value: 'other'}
