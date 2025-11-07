@@ -103,10 +103,10 @@ export default function DraftAdmissions() {
 
   if (drafts.length === 0) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center'}}>
-        <Text style={{ fontSize: 18, marginBottom: 16, color: colors.primary, fontWeight: 'bold' }}>No Draft Admissions</Text>
-        <Text style={{ textAlign: 'center', marginBottom: 20 }}>
-          Draft admissions will appear here when you start a patient admission and leave before submitting.
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: 30}}>
+        <Text style={{ fontSize: 24, marginBottom: 16, color: colors.primary, fontWeight: 'bold' }}>No Draft Admissions</Text>
+        <Text style={{ fontSize: 16, textAlign: 'center', marginBottom: 20 }}>
+          Drafts will appear here when you start a patient admission and leave the page before submitting.
         </Text>
         <Button 
           style={{ alignSelf: 'center', marginTop: 10 }}
@@ -124,7 +124,7 @@ export default function DraftAdmissions() {
     );
   }
 
-  // retrurns a loading screen with spinner - TODO - make this a separate component, with text as prop?
+  // retrurns a loading screen with spinner
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
