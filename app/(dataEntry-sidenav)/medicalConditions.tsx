@@ -60,7 +60,7 @@ export default function MedicalConditionsScreen() {
         if (!malaria) errors.push('Malaria is missing a diagnosis');
         if (!sepsis) errors.push('Sepsis is missing a diagnosis');
         if (!meningitis) errors.push('Meningitis/encaphalitis is missing a diagnosis');
-        if (chronicIllness.length === 0) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
+        if (chronicIllness?.length === 0) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
 
         return errors;
     }
@@ -208,10 +208,10 @@ export default function MedicalConditionsScreen() {
                             {label: 'None', value: 'none'},
                             {label: 'Other', value: 'other'}
                         ]} 
-                        selected={chronicIllness} 
+                        selected={chronicIllness as string[]} 
                         onSelectionChange={handleChronicIllnessChange}
                     />
-                    {chronicIllness.some(item => item.toLowerCase().startsWith('other')) &&
+                    {chronicIllness?.some(item => item.toLowerCase().startsWith('other')) &&
                         <TextInput 
                             label="Specify other illnesses (optional)" 
                             mode="outlined" 

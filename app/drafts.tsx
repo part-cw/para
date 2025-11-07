@@ -13,9 +13,6 @@ import { Button, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO - fix handleResume - app breaks when we go to dataEntry UI with incomplete data 
-// - get lots of errors 
-
 export default function DraftAdmissions() {
   const { storage } = useStorage();
   const { loadDraft } = usePatientData();

@@ -22,10 +22,10 @@ export interface PatientData {
 
   
   // Admission Clinical Data (all ages)
-  weight: string;
-  waz: number | null;
-  muac: string;
-  spo2_admission: string;
+  weight?: string;
+  waz?: number | null;
+  muac?: string;
+  spo2_admission?: string;
  
   // Admission Clinical Data (6-60 months only)
   hivStatus?: string;
@@ -46,17 +46,16 @@ export interface PatientData {
   feedingWell?: string;
 
   // Medical Conditions
-  severeAnaemia: string;
-  pneumonia: string;
-  chronicIllnesses: string[];
-  otherChronicIllness: string;
-  diarrhea: string;
-  malaria: string;
-  sepsis: string;
-  meningitis_encephalitis: string;
-  malnutritionStatus: string;
-  sickYoungInfant: boolean;
-  // TODO add socialVulnerability 
+  severeAnaemia?: string;
+  pneumonia?: string;
+  chronicIllnesses?: string[];
+  otherChronicIllness?: string;
+  diarrhea?: string;
+  malaria?: string;
+  sepsis?: string;
+  meningitis_encephalitis?: string;
+  malnutritionStatus?: string;
+  sickYoungInfant?: boolean;
   
   // vhtReferral info
   village: string;
@@ -97,10 +96,10 @@ export const initialPatientData: PatientData = {
   isNeonate: null,
 
   // admission clinical data (all)
-  weight: '',
-  waz: null,
-  muac: '',
-  spo2_admission: '',
+  // weight: '',
+  // waz: null,
+  // muac: '',
+  // spo2_admission: '',
   
   // medical conditions
   severeAnaemia: '',

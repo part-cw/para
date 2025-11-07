@@ -237,24 +237,30 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
         
         const now = new Date().toISOString();
+        console.log('### updatingPatient, updates = ', updates)
 
         await this.db.withTransactionAsync(async () => {
             // Update patient demographics
             const patientFields = this.extractPatientFields(updates);
             if (Object.keys(patientFields).length > 0) {
                 await this.updatePatientTable(patientId, patientFields, now);
+                console.log('### updated patients table')
             }
 
             // Update medical conditions
             const conditionFields = this.extractConditionFields(updates);
             if (Object.keys(conditionFields).length > 0) {
                 await this.updateMedicalConditions(patientId, conditionFields);
+                console.log('### updated medical_conditions table')
+
             }
 
             // Update clinical variables
             const clinicalFields = this.extractClinicalFields(updates);
             for (const [varName, value] of Object.entries(clinicalFields)) {
                 await this.upsertClinicalVariable(patientId, varName, value);
+                console.log('### updated clinical_varibales table')
+
             }
         });
 
@@ -279,6 +285,7 @@ export class SQLiteStorage implements IStorageService {
      */
     async insertNewPatient(data: PatientData, patientId: string, timestamp: string, isDraft: boolean): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
+        console.log('!!! inserting new patient...')
 
         await this.db?.withTransactionAsync(async () => {
             // TODO - add admittedBy CURRENT_USER, make sure it's a user id from userTable once that is implemetneed
@@ -325,6 +332,7 @@ export class SQLiteStorage implements IStorageService {
                 timestamp, 
                 isDraft ? 1 : 0
              ]);
+             console.log('!!! inserted initial patient data')
 
             // Insert medical conditions
             await this.db!.runAsync(`
@@ -346,9 +354,8 @@ export class SQLiteStorage implements IStorageService {
                 JSON.stringify(data.chronicIllnesses || []),
                 data.otherChronicIllness || null
             ]);
-            
-            // Insert clinical variables
-            await this.insertClinicalVariables(patientId, data);
+
+            console.log('!!! inserted null medical conditions')
         });
 
         await this.logChanges(patientId, 'CREATE', null, null, null);
@@ -372,6 +379,7 @@ export class SQLiteStorage implements IStorageService {
 
         if (existing) {
             // DRAFT EXISTS: Use UPDATE (TODO make sure it only changes what's needed)
+            console.log('!!! updating patient with data....', data)
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
@@ -568,6 +576,7 @@ export class SQLiteStorage implements IStorageService {
     // ========== HELPERS ==========
 
      private async insertClinicalVariables(patientId: string, data: PatientData): Promise<void> {
+        console.log('..inside inserClinicalVariables')
         const variables = [
             // Common variables
             { name: 'weight', value: data.weight, type: 'numeric', usage: 'admission' },
@@ -600,6 +609,7 @@ export class SQLiteStorage implements IStorageService {
         ];
 
         for (const variable of variables) {
+            console.log('inserting variable ', variable.name)
             if (variable.value !== undefined && variable.value !== null && variable.value !== '') {
                 await this.db!.runAsync(`
                     INSERT OR REPLACE INTO clinical_variables (
@@ -624,6 +634,8 @@ export class SQLiteStorage implements IStorageService {
         console.log('inside upsertClinicalVariable, varName and value', varName, value, typeof(value))
 
         if (stringValue === null) return;
+
+        console.log('~~~~ should not reach here if value is null')
 
         await this.db.runAsync(`
             INSERT OR REPLACE INTO clinical_variables (
@@ -938,7 +950,8 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private convertToString(value: any, type: string): string | null {
-        if (value === null || value === undefined) return null;
+        console.log(`converting value ${value} to string`, typeof(value))
+        if (value === null || value === undefined || value == '') return null;
         
         if (type === 'json') {
             return JSON.stringify(value);
