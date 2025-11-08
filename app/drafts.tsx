@@ -148,11 +148,11 @@ export default function DraftAdmissions() {
           </Text>
 
           {/* draft counter -- TODO: remove? */}
-          {drafts.length > 0 &&
+          {/* {drafts.length > 0 &&
             <Text style={{ fontSize: 14, color: colors.outline }}>
               {drafts.length} draft{drafts.length !== 1 ? 's' : ''}
             </Text>
-          }
+          } */}
         </View>
         
         <View style={{ paddingHorizontal: 10 }}>

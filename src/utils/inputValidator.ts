@@ -90,6 +90,8 @@ export function formatPhoneNumber(str: string): string {
  * - Returns True if valid, else False
  */
 export function isValidPhoneNumber(input: string): boolean {
+    if (!input) return false; 
+
     const invalidSymbols = /[^0-9]/
     const trimmedInput = input.trim()
 
@@ -143,9 +145,8 @@ export function isValidPhoneNumber(input: string): boolean {
 
     // Numeric validation
     export function isValidNumericFormat(input: string, minValue: number | null = null, maxValue: number | null = null): boolean {        
-        if (!input || !input.trim()) {
-            return false;
-        }
+        if (!input) return false; 
+        if (!input.trim()) return false;
 
         const trimmed = input.trim();
         

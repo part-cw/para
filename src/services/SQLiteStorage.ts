@@ -237,30 +237,24 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
         
         const now = new Date().toISOString();
-        console.log('### updatingPatient, updates = ', updates)
 
         await this.db.withTransactionAsync(async () => {
             // Update patient demographics
             const patientFields = this.extractPatientFields(updates);
             if (Object.keys(patientFields).length > 0) {
                 await this.updatePatientTable(patientId, patientFields, now);
-                console.log('### updated patients table')
             }
 
             // Update medical conditions
             const conditionFields = this.extractConditionFields(updates);
             if (Object.keys(conditionFields).length > 0) {
                 await this.updateMedicalConditions(patientId, conditionFields);
-                console.log('### updated medical_conditions table')
-
             }
 
             // Update clinical variables
             const clinicalFields = this.extractClinicalFields(updates);
             for (const [varName, value] of Object.entries(clinicalFields)) {
                 await this.upsertClinicalVariable(patientId, varName, value);
-                console.log('### updated clinical_varibales table')
-
             }
         });
 
@@ -285,7 +279,6 @@ export class SQLiteStorage implements IStorageService {
      */
     async insertNewPatient(data: PatientData, patientId: string, timestamp: string, isDraft: boolean): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
-        console.log('!!! inserting new patient...')
 
         await this.db?.withTransactionAsync(async () => {
             // TODO - add admittedBy CURRENT_USER, make sure it's a user id from userTable once that is implemetneed
@@ -332,7 +325,6 @@ export class SQLiteStorage implements IStorageService {
                 timestamp, 
                 isDraft ? 1 : 0
              ]);
-             console.log('!!! inserted initial patient data')
 
             // Insert medical conditions
             await this.db!.runAsync(`
@@ -354,8 +346,6 @@ export class SQLiteStorage implements IStorageService {
                 JSON.stringify(data.chronicIllnesses || []),
                 data.otherChronicIllness || null
             ]);
-
-            console.log('!!! inserted null medical conditions')
         });
 
         await this.logChanges(patientId, 'CREATE', null, null, null);
@@ -576,7 +566,6 @@ export class SQLiteStorage implements IStorageService {
     // ========== HELPERS ==========
 
      private async insertClinicalVariables(patientId: string, data: PatientData): Promise<void> {
-        console.log('..inside inserClinicalVariables')
         const variables = [
             // Common variables
             { name: 'weight', value: data.weight, type: 'numeric', usage: 'admission' },
@@ -609,7 +598,6 @@ export class SQLiteStorage implements IStorageService {
         ];
 
         for (const variable of variables) {
-            console.log('inserting variable ', variable.name)
             if (variable.value !== undefined && variable.value !== null && variable.value !== '') {
                 await this.db!.runAsync(`
                     INSERT OR REPLACE INTO clinical_variables (
@@ -631,18 +619,13 @@ export class SQLiteStorage implements IStorageService {
         const usageTime = this.determineUsageTime(varName);
         const stringValue = this.convertToString(value, varType);
 
-        console.log('inside upsertClinicalVariable, varName and value', varName, value, typeof(value))
-
         if (stringValue === null) return;
-
-        console.log('~~~~ should not reach here if value is null')
 
         await this.db.runAsync(`
             INSERT OR REPLACE INTO clinical_variables (
                 patientId, variableName, variableValue, variableType, usageTime
             ) VALUES (?, ?, ?, ?, ?)
         `, [patientId, varName, stringValue, varType, usageTime]);
-        console.log(`!!upserting clinical variable fpr ${patientId}`, varName, varType, usageTime, stringValue)
     }
 
     private async updatePatientTable(
@@ -746,15 +729,17 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
 
         const query = usageTime
-        ? `SELECT variableName, variableValue
+        ? `SELECT variableName, variableValue, variableType
             FROM clinical_variables 
             WHERE patientId = ? AND usageTime = ?`
-        : `SELECT variableName, variableValue 
+        : `SELECT variableName, variableValue, variableType 
             FROM clinical_variables 
             WHERE patientId = ?`;
 
         const params = usageTime ? [patientId, usageTime] : [patientId];
         const rows = await this.db.getAllAsync<any>(query, params);
+
+        console.log('~~~~ rows', rows)
 
         const variables: { [key: string]: any } = {};
 
@@ -789,6 +774,7 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private buildPatientData(patientRow: any, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
+        console.log('~~~ returned patietndata value/typ of waz', clinicalData.waz, typeof clinicalData.waz )
         return {
             patientId: patientRow.patientId,
             admissionStartedAt: patientRow.admissionStartedAt,
@@ -931,15 +917,14 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private determineVariableType(varName: string): string {
-        const numericVars = ['weight', 'waz', 'muac', 'spo2_admission', 'spo2_discharge', 
-                           'temperature', 'temperatureSquared', 'rrate', 'bcsScore'];
+        const numericVars = ['waz', 'temperatureSquared', 'bcsScore'];
         const booleanVars = ['neonatalJaundice', 'bulgingFontanelle', 'feedingWell', 
                            'feedingWell_discharge', 'abnormalBCS'];
-        const jsonVars = ['eyeMovement', 'motorResponse', 'verbalResponse'];
+        // const jsonVars = ['eyeMovement', 'motorResponse', 'verbalResponse'];
 
         if (numericVars.includes(varName)) return 'numeric';
         if (booleanVars.includes(varName)) return 'boolean';
-        if (jsonVars.includes(varName)) return 'json';
+        // if (jsonVars.includes(varName)) return 'json';
         return 'text';
     }
 
@@ -950,7 +935,6 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private convertToString(value: any, type: string): string | null {
-        console.log(`converting value ${value} to string`, typeof(value))
         if (value === null || value === undefined || value == '') return null;
         
         if (type === 'json') {
@@ -967,8 +951,6 @@ export class SQLiteStorage implements IStorageService {
    */
   private parseVariableValue(value: string | null, type: string): any {
     if (value === null) return null;
-
-    // TODO - handle dropdown item types
 
     switch (type) {
       case 'numeric':

@@ -94,12 +94,6 @@ export const initialPatientData: PatientData = {
   approxAgeInYears: '',
   ageInMonths: null,
   isNeonate: null,
-
-  // admission clinical data (all)
-  // weight: '',
-  // waz: null,
-  // muac: '',
-  // spo2_admission: '',
   
   // medical conditions
   severeAnaemia: '',
@@ -125,4 +119,34 @@ export const initialPatientData: PatientData = {
   confirmTel: '',
   isCaregiversPhone: false,
   sendReminders: false,
+
+  // clinical variables:
+  weight: '',
+  waz: null,
+  muac: '',
+  spo2_admission: '',
+  
+  // 6-60 months
+  hivStatus: '',
+  temperature: '',
+  temperatureSquared: null,
+  rrate: '',
+  lastHospitalized: '',
+  eyeMovement: '',
+  motorResponse: '',
+  verbalResponse: '',
+  bcsScore: null,
+  abnormalBCS: null,
+  
+  // 0-6 months
+  illnessDuration: '',
+  neonatalJaundice: '',
+  bulgingFontanelle: '',
+  feedingWell: '',
+  
+  // discharge fields
+  dischargeDiagnosis: '',
+  spo2_discharge: '',
+  dischargeReason: '',
+  feedingWell_discharge: undefined,
 };
