@@ -131,6 +131,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * Update data .. triggers autosave via useEffect
    */
   const updatePatientData = (updates: Partial<PatientData>) => {
+    console.log('~~~ setting patient data...')
     setPatientData(prev => ({ ...prev, ...updates }));
   };
 
@@ -138,6 +139,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * Handle age range change (clears incompatible fields)
    */
   const handleAgeChange = async (isUnderSixMonths: boolean) => {
+    console.log('~~~ inside handleAgeChange')
     if (isUnderSixMonths) {
       // Clear 6-60 months specific fields
       const updates: Partial<PatientData> = {
@@ -152,7 +154,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         verbalResponse: '',
         bcsScore: null,
         abnormalBCS: null,
+        weight: '',
+        spo2_admission: '',
+        waz: null,
+        muac: ''
       };
+      console.log('~~~ updating patient data with nullified 6-60 vars', updates)
       updatePatientData(updates);
     } else {
       // Clear 0-6 months specific fields
@@ -162,7 +169,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         neonatalJaundice: '',
         bulgingFontanelle: '',
         feedingWell: '',
+        weight: '',
+        spo2_admission: '',
+        waz: null,
+        muac: ''
       };
+      console.log('~~~ updating patient data with nullified 0-6 vars', updates)
       updatePatientData(updates);
     }
   };
