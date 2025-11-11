@@ -369,7 +369,7 @@ export class SQLiteStorage implements IStorageService {
 
         if (existing) {
             // DRAFT EXISTS: Use UPDATE (TODO make sure it only changes what's needed)
-            console.log('!!! updating patient with data....', data)
+            console.log('!!! inside sqlstorage/saveDraft...updating patient with data....', data)
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
@@ -619,7 +619,21 @@ export class SQLiteStorage implements IStorageService {
         const usageTime = this.determineUsageTime(varName);
         const stringValue = this.convertToString(value, varType);
 
-        if (stringValue === null) return;
+        console.log('~~~ inside upsertClinicalVariable, varName and value', varName, value, typeof(value))
+
+        // if (stringValue === null) return;
+
+        // If value is null/undefined/empty, DELETE the row instead of inserting
+        if (stringValue === null || stringValue === '') {
+            console.log(`~~~~ deleting clinical variable ${varName} for ${patientId}`)
+            await this.db.runAsync(`
+                DELETE FROM clinical_variables 
+                WHERE patientId = ? AND variableName = ? AND usageTime = ?
+            `, [patientId, varName, usageTime]);
+            return;
+        }
+
+        console.log('~~~~ upserting clinical variable', varName)
 
         await this.db.runAsync(`
             INSERT OR REPLACE INTO clinical_variables (
