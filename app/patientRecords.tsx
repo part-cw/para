@@ -1,6 +1,7 @@
 import PatientCard from '@/src/components/PatientCard';
 import { PatientData } from '@/src/contexts/PatientData';
 import { useStorage } from '@/src/contexts/StorageContext';
+import { RiskAssessment } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatName } from '@/src/utils/formatUtils';
@@ -17,6 +18,8 @@ export default function PatientRecords() {
   const { colors } = useTheme()
 
   const [ records, setRecords ] = useState<PatientData[]>([])
+  const [riskAssessments, setRiskAssessments] = useState<Map<string, RiskAssessment>>(new Map());
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -31,6 +34,20 @@ export default function PatientRecords() {
       
       const records = await storage.getSubmittedPatients();
       setRecords(records);
+
+      // Load risk assessments for all patients
+      const assessments = new Map<string, RiskAssessment>();
+      for (const patient of records) {
+        if (patient.patientId) {
+          try {
+            const assessment = await storage.getRiskAssessment(patient.patientId);
+            assessments.set(patient.patientId, assessment);
+          } catch (error) {
+            console.warn(`Could not load risk assmessment for ${patient.patientId}`);
+          }
+        }
+      }
+      setRiskAssessments(assessments);
       
       console.log(`📋 Loaded ${records.length} patient records`);
     } catch (error) {
@@ -47,9 +64,14 @@ export default function PatientRecords() {
     setRefreshing(false);
   }
 
-  // TODO
-  const handleGetRiskLevel = (patientId: string): string => {
-    return 'low'; // stub
+  // If discharged patient use discharge riskC, if not discharged use admission risk category
+  const handleGetRiskCategory =  (patientId: string): string => {
+    const assessment = riskAssessments.get(patientId);
+
+    if (!assessment) return 'none'
+    if (assessment.discharge) return assessment.discharge.riskCategory; 
+    if (assessment.admission) return assessment.admission.riskCategory; // TODO - make sure this is the most recent admission risk
+    return 'none'; // default if not risk assmessents
   }
 
   // returns 'No Records' display and prompt user to add patient
@@ -115,13 +137,12 @@ export default function PatientRecords() {
         {records.map((p) => {
           const name = formatName(p.firstName, p.surname, p.otherName)
           const age = AgeCalculator.formatAge(p.ageInMonths as number)
-          const risk = handleGetRiskLevel(p.patientId as string);
+          const risk = handleGetRiskCategory(p.patientId as string);
 
           /**
            * TODO: implement the following helpers
            * 1. mapStatusFlags --convert flags (isDischarged, isArchived, isDraft) to text
-           * 2. hadnleGetRiskLevel
-           * 3. handleGetRiskProfile
+           * 2. handleGetRiskProfile
            */
           
           return (
@@ -133,7 +154,7 @@ export default function PatientRecords() {
               status={'todo - mapstatus'} 
               isDischarged={false} 
               isDraft={false}
-              riskLevel={risk}
+              riskCategory={ risk.toLocaleLowerCase() }
               // riskProfile={p.riskProfile}
               // recommendedCareplan={p.recommendedCareplan}
               onEdit={() => console.log('TODO: editing record...')}

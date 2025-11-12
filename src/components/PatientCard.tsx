@@ -10,7 +10,7 @@ type PatientCardProps = {
   name: string;
   age?: string;
   status: string;
-  riskLevel?: 'low' | 'moderate' | 'high' | 'very high' | string;
+  riskCategory?: string;
   riskProfile?: string[];
   recommendedCareplan?: string[];
   isDischarged: boolean;
@@ -28,7 +28,7 @@ export default function PatientCard({
   name,
   age,
   status,
-  riskLevel,
+  riskCategory,
   riskProfile,
   recommendedCareplan,
   isDischarged,
@@ -44,13 +44,14 @@ export default function PatientCard({
   const [expanded, setExpanded] = useState(false);
 
   let riskColor;
-  if (riskLevel) {
+  if (riskCategory) {
     riskColor = {
       low: '#4caf50',
       moderate: '#rgb(255, 208, 0)',
       high: '#ff9800',
       'very high': '#f44336',
-    }[riskLevel];
+      none: 'grey'
+    }[riskCategory];
   }
   
 
@@ -94,11 +95,11 @@ export default function PatientCard({
         </View>
 
         {/* Risk level */}
-        {riskLevel &&
+        {riskCategory &&
         <View style={styles.riskRow}>
           <Text style={styles.label}>Risk Level: </Text>
           <View style={[styles.badge, { backgroundColor: riskColor }]}>
-            <Text style={styles.badgeText}>{riskLevel.toUpperCase()}</Text>
+            <Text style={styles.badgeText}>{riskCategory.toUpperCase()}</Text>
           </View>
         </View>
         }

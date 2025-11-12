@@ -74,9 +74,9 @@ export default function MedicalConditionsScreen() {
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
 
     // autoselect 'hiv' if hivStatus is positive when page first renders 
+    // TODO - make sure this is accurately reflectd in storage
     useEffect(() => {
         if (patientData.hivStatus === 'positive') {
-            console.log('here!!')
             updatePatientData({chronicIllnesses: ['HIV']})
         }
     }, [])

@@ -533,8 +533,48 @@ export class SQLiteStorage implements IStorageService {
         console.log(`✅ Risk prediction saved for ${patientId} at ${usageTime}`);
     }
 
-    getRiskAssessment(patientId: string): Promise<RiskAssessment> {
-        throw new Error('Method not implemented.');
+    async getRiskAssessment(patientId: string): Promise<RiskAssessment> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const predictions = await this.db.getAllAsync<any>(`
+            SELECT * FROM risk_predictions
+            WHERE patientId = ?
+            ORDER BY calculatedAt ASC -- TODO makesure most recent is last
+        `, [patientId]);
+        
+        return await this.buildRiskAssesment(predictions)        
+    }
+
+    private async buildRiskAssesment(predictions: any[]): Promise<RiskAssessment> {
+        const assessment: RiskAssessment = {};
+
+        for (const pred of predictions) {
+            // const topPredictors = await this.db?.getAllAsync<any>(`
+            //     SELECT featureName, contribution 
+            //     FROM top_predictors 
+            //     WHERE predictionId = ?
+            //     ORDER BY rank ASC
+            // `, [pred.id]);
+
+            const riskPrediction: RiskPrediction = {
+                model: pred.modelName,
+                riskScore: pred.riskScore,
+                riskCategory: pred.riskCategory,
+                // topPredictors: topPredictors.map(tp => ({
+                //     name: tp.featureName,
+                //     contribution: tp.contribution
+                // }))
+            };
+
+            if (pred.usageTime === 'admission') {
+                assessment.admission = riskPrediction;
+                // TODO - use most recent admission prediction if we have mulitple risks 
+            } else {
+                assessment.discharge = riskPrediction;
+            }
+        }
+
+        return assessment;
     }
 
     // ========== ARCHIVE OPERATIONS ==========
