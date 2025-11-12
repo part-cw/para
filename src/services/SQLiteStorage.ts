@@ -2,6 +2,7 @@ import * as SQLite from "expo-sqlite";
 import { CURRENT_USER } from "../config";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from '../models/types';
+import { normalizeBoolean } from "../utils/normalizer";
 import { IStorageService } from "./StorageService";
 
 // TODO ADD ENCRYPTION - add sqlCipher AFTER databse test are all working
@@ -369,7 +370,7 @@ export class SQLiteStorage implements IStorageService {
 
         if (existing) {
             // DRAFT EXISTS: Use UPDATE (TODO make sure it only changes what's needed)
-            console.log('!!! inside sqlstorage/saveDraft...updating patient with data....', data)
+            // console.log('!!! inside sqlstorage/saveDraft...updating patient with data....', data)
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
@@ -619,13 +620,11 @@ export class SQLiteStorage implements IStorageService {
         const usageTime = this.determineUsageTime(varName);
         const stringValue = this.convertToString(value, varType);
 
-        console.log('~~~ inside upsertClinicalVariable, varName and value', varName, value, typeof(value))
-
-        // if (stringValue === null) return;
+        // console.log('~~~ inside upsertClinicalVariable, varName and value', varName, value, typeof(value))
 
         // If value is null/undefined/empty, DELETE the row instead of inserting
         if (stringValue === null || stringValue === '') {
-            console.log(`~~~~ deleting clinical variable ${varName} for ${patientId}`)
+            // console.log(`~~~~ deleting clinical variable ${varName} for ${patientId}`)
             await this.db.runAsync(`
                 DELETE FROM clinical_variables 
                 WHERE patientId = ? AND variableName = ? AND usageTime = ?
@@ -633,7 +632,7 @@ export class SQLiteStorage implements IStorageService {
             return;
         }
 
-        console.log('~~~~ upserting clinical variable', varName)
+        // console.log('~~~~ upserting clinical variable', varName)
 
         await this.db.runAsync(`
             INSERT OR REPLACE INTO clinical_variables (
@@ -753,7 +752,7 @@ export class SQLiteStorage implements IStorageService {
         const params = usageTime ? [patientId, usageTime] : [patientId];
         const rows = await this.db.getAllAsync<any>(query, params);
 
-        console.log('~~~~ rows', rows)
+        // console.log('~~~~ rows', rows)
 
         const variables: { [key: string]: any } = {};
 
@@ -788,7 +787,6 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private buildPatientData(patientRow: any, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
-        console.log('~~~ returned patietndata value/typ of waz', clinicalData.waz, typeof clinicalData.waz )
         return {
             patientId: patientRow.patientId,
             admissionStartedAt: patientRow.admissionStartedAt,
@@ -948,13 +946,15 @@ export class SQLiteStorage implements IStorageService {
         return 'admission';
     }
 
-    private convertToString(value: any, type: string): string | null {
+    private convertToString(value: any, variableType: string): string | null {
         if (value === null || value === undefined || value == '') return null;
         
-        if (type === 'json') {
+        if (variableType === 'json') {
             return JSON.stringify(value);
-        } else if (type === 'boolean') {
-            return value ? '1' : '0';
+        } else if (variableType === 'boolean') {
+            // console.log('~~inside sqlStorage/convertToString... normalizing bool value', value)
+            // console.log('~~normalized bool = ', normalizeBoolean(value))
+            return normalizeBoolean(value) ? '1' : '0';
         } else {
             return value.toString();
         }

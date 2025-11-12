@@ -11,6 +11,7 @@ import { bcsGeneralInfo, eyeMovementInfo, jaundiceInfo, motorResponseInfo, muacI
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { calculateBcsScore, calculateWAZ, getEyeMovementScore, getMotorResponseScore, getMuacStatus, getTempSquared, getVerbalResponseScore, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
+import { normalizeBoolean } from '@/src/utils/normalizer';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, Text, View } from 'react-native';
@@ -54,7 +55,6 @@ export default function AdmissionClinicalDataScreen() {
         //6-60 months
         hivStatus,
         temperature,
-        temperatureSquared,
         rrate,
         lastHospitalized,
         eyeMovement,
@@ -70,11 +70,11 @@ export default function AdmissionClinicalDataScreen() {
         isNeonate,
     } = patientData
 
-    console.log('🔍 WEIGHT Debug:', {
-        weight,
-        weightType: typeof weight,
-        weightValue: weight,
-        canCallToTrim: typeof weight === 'string'
+
+      console.log('🔍 neonatalJaundice Debug:', {
+        type: typeof jaundice,
+        value: jaundice,
+        // canCallToTrim: typeof weight === 'string'
     });
 
     const validateAllFields = () => {
@@ -240,7 +240,11 @@ export default function AdmissionClinicalDataScreen() {
     const setMalnutritionStatus = () => {
         if ((waz != null) && muac) { // TODO double check this
             const wazStatus = getWazNutritionalStatus(waz)
-            const muacStatus = getMuacStatus(isUnderSixMonths, muac)
+            // TODO -- normlaize booleans -- make sure 0, '0', false all return false
+            console.log('%%%here!')
+            const normalizedSixMonthFlag = normalizeBoolean(isUnderSixMonths)
+            console.log('%%% normalized sixmonth flag', normalizedSixMonthFlag)
+            const muacStatus = getMuacStatus(normalizedSixMonthFlag, muac)
 
             const wazNutritionIndex = nutritionStatusToIndex(wazStatus)
             const muacNutritionIndex = nutritionStatusToIndex(muacStatus)
@@ -386,18 +390,6 @@ export default function AdmissionClinicalDataScreen() {
         }
     };
 
-    const stringToBoolean = (input: string) => {
-        if (input.toLowerCase() === 'yes' || input.toLowerCase() === 'true' || parseFloat(input) === 1) {
-            return true
-        } else {
-            return false;
-        }
-    }
-
-    const booleanToString = (input: boolean) => {
-        return input ? 'yes' : 'no'
-    }
-
     const durationOptions = [
         { value: 'Less than 48 hours', key: '<48h' },
         { value: '48 hours to 7 days', key: '48h-7d' },
@@ -490,7 +482,6 @@ export default function AdmissionClinicalDataScreen() {
                                             />
                                         </View>
                                     }
-
                                     <View>
                                         <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Bulging Fontanelle <Text style={Styles.required}>*</Text></Text>
                                         <Text>{displayNames['fontanelleQuestion']}</Text>
