@@ -159,14 +159,17 @@ export default function DraftAdmissions() {
           {drafts.map((p) => {
             const name = formatName(p.firstName, p.surname, p.otherName)
             const age = AgeCalculator.formatAge(p.ageInMonths)
+
+            // TODO - figure out why  isDraft flag is undefined, even though succesfully retrieed drafts from db
+            // console.log('p.isDraft', p.isDraftAdmission, typeof p.isDraftAdmission, p)
             
             return (
               <PatientCard 
                 key={p.patientId} 
                 id={p.patientId as string} 
                 name={name} 
-                age={age}
-                status={'draft'}
+                age={`${age} old`}
+                status={'in progress'}
                 isDischarged={false}
                 isDraft={true}
                 admittedAt={p.admissionStartedAt && p.admissionStartedAt}  

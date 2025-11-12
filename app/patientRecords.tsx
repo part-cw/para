@@ -135,23 +135,22 @@ export default function PatientRecords() {
         </View>
 
         {records.map((p) => {
-          const name = formatName(p.firstName, p.surname, p.otherName)
-          const age = AgeCalculator.formatAge(p.ageInMonths as number)
+          const name = formatName(p.firstName, p.surname, p.otherName);
+          const age = AgeCalculator.formatAge(p.ageInMonths as number);
           const risk = handleGetRiskCategory(p.patientId as string);
 
           /**
            * TODO: implement the following helpers
-           * 1. mapStatusFlags --convert flags (isDischarged, isArchived, isDraft) to text
-           * 2. handleGetRiskProfile
+           * - handleGetRiskProfile
            */
-          
+
           return (
            <PatientCard 
               key={p.patientId} 
               id={p.patientId as string} 
               name={name} 
-              age={age}
-              status={'todo - mapstatus'} 
+              age={`${age} old`}
+              status={p.isDischarged ? 'discharged' : 'active'} 
               isDischarged={false} 
               isDraft={false}
               riskCategory={ risk.toLocaleLowerCase() }

@@ -856,6 +856,10 @@ export class SQLiteStorage implements IStorageService {
             isCaregiversPhone: patientRow.isCaregiversPhone,
 
             dischargeDiagnosis: patientRow.dischargeDiagnosis ? patientRow.dischargeDiagnosis : null,
+            
+            isDraftAdmission: patientRow.isDraftAdmision,
+            isDischarged: patientRow.isDischarged,
+            isArchived: patientRow.isArchived,
 
             ...conditions,
             ...clinicalData
@@ -872,7 +876,7 @@ export class SQLiteStorage implements IStorageService {
         return patients.filter(Boolean) as PatientData[];
     }
 
-       private extractPatientFields(updates: Partial<PatientData>): { [key: string]: any } {
+    private extractPatientFields(updates: Partial<PatientData>): { [key: string]: any } {
         const patientFields: { [key: string]: any } = {};
         const fieldMap: { [key: string]: string } = {
             surname: 'surname',

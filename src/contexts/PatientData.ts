@@ -76,6 +76,10 @@ export interface PatientData {
   dischargeReason?: string;
   feedingWell_discharge?: boolean;
 
+  // status flags
+  isDraftAdmission?: boolean,
+  isDischarged?: boolean,
+  isArchived?: boolean,
 }
 
 export const initialPatientData: PatientData = {
