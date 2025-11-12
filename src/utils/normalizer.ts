@@ -4,8 +4,6 @@ export function normalizeBoolean(input: boolean | number | string): boolean {
 
     if (typeof input === 'string') return stringToBoolean(input);
 
-    console.log('666666666 HERE 77777777')
-
     // Default: typeof input is boolean
     return input;
 

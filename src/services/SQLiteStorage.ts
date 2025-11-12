@@ -511,7 +511,7 @@ export class SQLiteStorage implements IStorageService {
                 prediction.riskScore,
                 prediction.riskCategory,
                 patient.ageInMonths || 0,
-                patient.hivStatus || 'unknown',
+                patient.hivStatus || 'n/a',
                 now
             ]);
 

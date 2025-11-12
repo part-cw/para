@@ -107,7 +107,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * Load specific draft for 'continue admission' workflow
    */
   const loadDraft = async (patientId: string) => {
-    console.log('TODO - check load draft working')
      try {
 
       setIsDataLoaded(false);
@@ -131,7 +130,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * Update data .. triggers autosave via useEffect
    */
   const updatePatientData = (updates: Partial<PatientData>) => {
-    console.log('~~~ setting patient data...')
     setPatientData(prev => ({ ...prev, ...updates }));
   };
 
@@ -139,7 +137,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * Handle age range change (clears incompatible fields)
    */
   const handleAgeChange = async (isUnderSixMonths: boolean) => {
-    console.log('~~~ inside handleAgeChange')
     if (isUnderSixMonths) {
       // Clear 6-60 months specific fields
       const updates: Partial<PatientData> = {
@@ -159,7 +156,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         waz: null,
         muac: ''
       };
-      console.log('~~~ updating patient data with nullified 6-60 vars', updates)
       updatePatientData(updates);
     } else {
       // Clear 0-6 months specific fields
@@ -174,7 +170,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         waz: null,
         muac: ''
       };
-      console.log('~~~ updating patient data with nullified 0-6 vars', updates)
       updatePatientData(updates);
     }
   };
