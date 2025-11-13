@@ -9,7 +9,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, Text, View } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';
-import { Button, useTheme } from 'react-native-paper';
+import { Button, SegmentedButtons, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
@@ -22,6 +22,9 @@ export default function PatientRecords() {
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [filter, setFilter] = useState('all');
+
 
   // Load drafts on mount
   useEffect(() => {
@@ -120,9 +123,8 @@ export default function PatientRecords() {
     );
   }
 
-
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: 'white', marginTop: -50}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
       <ScrollView 
         contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
@@ -133,6 +135,45 @@ export default function PatientRecords() {
               Patient Records 
           </Text>
         </View>
+
+        {/* Filter Buttons */}
+        <View style={{paddingHorizontal: 16, paddingVertical: 8}}>
+          <SegmentedButtons
+            value={filter}
+            onValueChange={setFilter}
+            buttons={[
+              { value: 'all', label: 'All', 
+                style: {backgroundColor: filter === 'all' ? colors.primaryContainer : 'white'},
+              },
+              { value: 'active', label: 'Active',
+                style: {backgroundColor: filter === 'active' ? colors.primaryContainer : 'white'},
+              },
+              { value: 'discharged', label: 'Discharged',
+                style: {backgroundColor: filter === 'discharged' ? colors.primaryContainer : 'white'},
+              },
+            ]}
+            style={{elevation: 1}}
+            
+          />
+        </View>
+
+        {/* Search Bar -- TODO uncomment and continue implementation */}
+        {/* <View style={{paddingHorizontal: 16, paddingVertical: 5}}>
+          <Searchbar
+            placeholder="Search by name or ID"
+            onChangeText={() => console.log('blah')}
+            value={''}
+            style={{
+              backgroundColor: colors.secondary, 
+              height: 40, 
+              width: '60%',
+            }} 
+            inputStyle={{fontSize: 14, padding: 0, alignSelf: 'center'}}
+            iconColor={colors.primary}
+            elevation={1}
+          />
+        </View> */}
+
 
         {records.map((p) => {
           const name = formatName(p.firstName, p.surname, p.otherName);
@@ -153,7 +194,7 @@ export default function PatientRecords() {
               status={p.isDischarged ? 'discharged' : 'active'} 
               isDischarged={false} 
               isDraft={false}
-              riskCategory={ risk.toLocaleLowerCase() }
+              riskCategory={ risk.toLowerCase() }
               // riskProfile={p.riskProfile}
               // recommendedCareplan={p.recommendedCareplan}
               onEdit={() => console.log('TODO: editing record...')}
