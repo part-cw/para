@@ -64,37 +64,43 @@ export default function PatientCard({
     >
       {/* Top summary row */}
       <TouchableOpacity onPress={() => setExpanded(!expanded)}>
-        <View style={styles.headerRow}>
-          <View>
-            <View style={{flexDirection: 'row'}}>
-                <Text style={styles.name}>{name} </Text>
-                <Text style={[styles.info, {fontStyle: 'italic', color: 'grey'}]}>({status})</Text>
-            </View>
-            
-            <View style={{flexDirection: 'row'}}>
-                <Text style={[styles.info, {fontWeight: 'bold'}]}>ID: </Text>
-                <Text style={styles.info}>{id}</Text> 
-            </View>
-
-            {(age !== undefined && age !== null && age !== '') &&
-              <View style={{flexDirection: 'row'}}>
-                  <Text style={[styles.info, {fontWeight: 'bold'}]}>Age: </Text>
-                  <Text style={styles.info}>{age}</Text>
-              </View>
-            }
-            {isDraft &&
-              <Text style={[styles.info, {fontStyle: 'italic', color: 'grey'}]}>Started at {admittedAt}</Text>
-            }
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>{name} </Text>
+          <View style={styles.statusContainer}>
+            <MaterialIcons 
+              name="circle" 
+              size={8} 
+              color={
+                status.toLowerCase() === 'active'
+                  ? '#4caf50' // green #4caf50
+                  : status.toLowerCase() === 'discharged'
+                  ? '#bdbdbd' // #bdbdbd
+                  : 'rgba(251, 234, 0, 0.98)' // draft/default  
+              }
+              style={{marginHorizontal: 5}}
+            />
+            <Text style={[styles.info, {color: 'grey', marginRight: 5}]}>
+              {status.toUpperCase()}
+            </Text>
           </View>
-
-          <MaterialIcons
-            name={expanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
-            size={28}
-            color={colors.primary}
-          />
+        </View>
+        
+        <View style={{flexDirection: 'row'}}>
+            <Text style={[styles.info, {fontWeight: 'bold'}]}>ID: </Text>
+            <Text style={styles.info}>{id}</Text> 
         </View>
 
-        {/* Risk level */}
+        {(age !== undefined && age !== null && age !== '') &&
+          <View style={{flexDirection: 'row'}}>
+              <Text style={[styles.info, {fontWeight: 'bold'}]}>Age: </Text>
+              <Text style={styles.info}>{age}</Text>
+          </View>
+        }
+        {isDraft &&
+          <Text style={[styles.info, {fontStyle: 'italic', color: 'grey'}]}>Started at {admittedAt}</Text>
+        }
+
+        {/* Risk level + arrow */}
         {riskCategory &&
         <View style={styles.riskRow}>
           <Text style={styles.label}>Risk Level: </Text>
@@ -150,7 +156,7 @@ export default function PatientCard({
                 <Text style={styles.buttonText}>Resume</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.iconButton} onPress={() => onDelete?.()}>
+              <TouchableOpacity style={[styles.iconButton, styles.rightFooterButton]} onPress={() => onDelete?.()}>
                 <MaterialIcons
                     name="delete"
                     size={24}
@@ -172,7 +178,7 @@ export default function PatientCard({
               </TouchableOpacity>
 
               {isDischarged ? (
-                <TouchableOpacity style={styles.iconButton} onPress={() => onArchive?.()}>
+                <TouchableOpacity style={[styles.iconButton, styles.rightFooterButton]} onPress={() => onArchive?.()}>
                     <MaterialIcons
                     name="archive"
                     size={24}
@@ -181,11 +187,11 @@ export default function PatientCard({
                     <Text style={styles.buttonText}>Archive</Text>
                 </TouchableOpacity>
                 ) : (
-                <TouchableOpacity style={styles.iconButton} onPress={() => onDischarge?.()}>
+                <TouchableOpacity style={[styles.iconButton, styles.rightFooterButton]} onPress={() => onDischarge?.()}>
                     <MaterialIcons
-                    name="directions-walk"
-                    size={24}
-                    color={colors.onSecondary}
+                      name="directions-walk"
+                      size={24}
+                      color={colors.onSecondary}
                     />
                     <Text style={styles.buttonText}>Discharge</Text>
                 </TouchableOpacity>
@@ -194,6 +200,15 @@ export default function PatientCard({
           }
         </View>
       )}
+
+      <TouchableOpacity onPress={() => setExpanded(!expanded)} style={styles.arrowButton}>
+        <MaterialIcons
+          name={expanded ? 'keyboard-double-arrow-up' : 'keyboard-double-arrow-down'}
+          size={28}
+          color={colors.primary}
+        />
+      </TouchableOpacity>
+   
     </View>
   );
 }
@@ -288,7 +303,7 @@ const styles = StyleSheet.create({
   },
   footerButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-evenly',  // TODO
     marginTop: 12,
   },
   iconButton: {
@@ -309,4 +324,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  arrowButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16
+  },
+  rightFooterButton: {
+    marginRight: 40
+  }
 });

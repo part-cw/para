@@ -19,12 +19,9 @@ export default function PatientRecords() {
 
   const [ records, setRecords ] = useState<PatientData[]>([])
   const [riskAssessments, setRiskAssessments] = useState<Map<string, RiskAssessment>>(new Map());
-
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
   const [filter, setFilter] = useState('all');
-
 
   // Load drafts on mount
   useEffect(() => {
