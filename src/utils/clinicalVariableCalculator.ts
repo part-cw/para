@@ -107,15 +107,15 @@ export function getMuacStatus(isUnderSixMonths: boolean, muacString: string): st
 
 // TODO -- add more checks -- any max/min values?? 
 export function validateWeight(weight: string): ValidationResult {
-    const weightNum = parseFloat(weight.trim())
-
-    if (!weight || !weightNum) {
+    if (!weight) {
         return {
             isValid: false,
             errorMessage: 'Weight is required and must be a valid number',
             warningMessage: ''
         } 
     }
+
+    const weightNum = parseFloat(weight.trim())
 
     if (weightNum < 0) {
         return {
