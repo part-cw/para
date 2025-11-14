@@ -5,6 +5,7 @@ import { RiskAssessment } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatName } from '@/src/utils/formatUtils';
+import { normalizeBoolean } from '@/src/utils/normalizer';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, Text, View } from "react-native";
@@ -12,6 +13,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, SegmentedButtons, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+type FilterType = 'all' | 'active' | 'discharged';
 
 export default function PatientRecords() {
   const { storage } = useStorage();
@@ -21,12 +23,19 @@ export default function PatientRecords() {
   const [riskAssessments, setRiskAssessments] = useState<Map<string, RiskAssessment>>(new Map());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
+
 
   // Load drafts on mount
   useEffect(() => {
     loadAllRecords();
   }, []);
+
+  useEffect(() => {
+    filterRecords();
+  }, [records, filter]);
+
 
   const loadAllRecords = async () => {
     try {
@@ -62,6 +71,31 @@ export default function PatientRecords() {
     setRefreshing(true);
     await loadAllRecords();
     setRefreshing(false);
+  }
+
+  const filterRecords = () => {
+    let filtered = records;
+
+    switch (filter) {
+      case 'active':
+        filtered = filtered.filter(p => !p.isDraftAdmission && !p.isDischarged && !p.isArchived);
+        break;
+      case 'discharged':
+        filtered = filtered.filter(p => p.isDischarged);
+        break;
+      case 'all':
+      default:
+        // Show all non-draft and non-archived patients
+        filtered = filtered.filter(p => !p.isDraftAdmission && !p.isArchived);
+        break;
+    }
+
+    setFilteredPatients(filtered)
+  }
+
+  const handleDischarge = async (patientId: string) => {
+    await storage.updatePatient(patientId, {isDischarged: true})
+    await onRefresh();
   }
 
   // If discharged patient use discharge riskC, if not discharged use admission risk category
@@ -172,31 +206,32 @@ export default function PatientRecords() {
         </View> */}
 
 
-        {records.map((p) => {
+        {filteredPatients.map((p) => {
           const name = formatName(p.firstName, p.surname, p.otherName);
           const age = AgeCalculator.formatAge(p.ageInMonths as number);
+          const ageDisplay = age && age.trim() ? `${age} old` : undefined;
           const risk = handleGetRiskCategory(p.patientId as string);
 
-          /**
-           * TODO: implement the following helpers
-           * - handleGetRiskProfile
-           */
+          {/*
+            TODO: implement the following helpers
+            - handleGetRiskProfile
+           */}
 
           return (
            <PatientCard 
-              key={p.patientId} 
+              key={p.patientId as string} 
               id={p.patientId as string} 
               name={name} 
-              age={`${age} old`}
+              age={ageDisplay}
               status={p.isDischarged ? 'discharged' : 'active'} 
-              isDischarged={false} 
+              isDischarged={normalizeBoolean(p.isDischarged as boolean)} 
               isDraft={false}
               riskCategory={ risk.toLowerCase() }
               // riskProfile={p.riskProfile}
               // recommendedCareplan={p.recommendedCareplan}
               onEdit={() => console.log('TODO: editing record...')}
               onArchive={() => console.log('TODO: archiving record...')}
-              onDischarge={() => console.log('TODO: discharging patient...')}              
+              onDischarge={() => handleDischarge(p.patientId as string)}              
             />
           )
         })}

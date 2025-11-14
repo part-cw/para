@@ -901,7 +901,9 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: 'confirmTel',
             sendReminders: 'sendReminders',
             isCaregiversPhone: 'isCaregiversPhone',
-            dischargeDiagnosis: 'dischargeDiagnosis'
+            dischargeDiagnosis: 'dischargeDiagnosis',
+            isDischarged: 'isDischarged',
+            isArchived: 'isArchived'
         };
 
         for (const [key, dbColumn] of Object.entries(fieldMap)) {

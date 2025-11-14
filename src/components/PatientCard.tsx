@@ -19,8 +19,8 @@ type PatientCardProps = {
   onResume?: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
-  onDischarge?: () => void;
-  onArchive?: () => void;
+  onDischarge?: () => Promise<void> | void;
+  onArchive?: () => Promise<void> | void;
 };
 
 export default function PatientCard({ 
@@ -65,7 +65,7 @@ export default function PatientCard({
       {/* Top summary row */}
       <TouchableOpacity onPress={() => setExpanded(!expanded)}>
         <View style={styles.nameRow}>
-          <Text style={styles.name}>{name} </Text>
+          <Text style={styles.name} numberOfLines={2}>{name}</Text>
           <View style={styles.statusContainer}>
             <MaterialIcons 
               name="circle" 
@@ -77,7 +77,7 @@ export default function PatientCard({
                   ? '#bdbdbd' // #bdbdbd
                   : 'rgba(251, 234, 0, 0.98)' // draft/default  
               }
-              style={{marginHorizontal: 5}}
+              style={{marginRight: 5}}
             />
             <Text style={[styles.info, {color: 'grey', marginRight: 5}]}>
               {status.toUpperCase()}
@@ -144,7 +144,7 @@ export default function PatientCard({
           )}
 
           {/* Footer buttons (change if discharged) */}
-          {isDraft 
+          {isDraft
             ? 
             (<View style={styles.footerButtons}>
               <TouchableOpacity style={styles.iconButton} onPress={() => onResume?.()}>
@@ -233,6 +233,10 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: 'bold',
     fontSize: 18,
+    flexWrap: 'wrap',
+    flexShrink: 1,
+    flexGrow: 1,
+    marginRight: 8,
   },
   info: {
     fontSize: 14,
@@ -326,12 +330,13 @@ const styles = StyleSheet.create({
   },
   nameRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    flexWrap: 'wrap'
   },
   statusContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
+    flexShrink: 0
   },
   arrowButton: {
     position: 'absolute',

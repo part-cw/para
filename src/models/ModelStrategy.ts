@@ -60,7 +60,7 @@ export abstract class ModelStrategy {
 
         // Validate age for interactions if they exist
         const interactions = this.model.ageInteractions
-        if ((interactions && interactions.length > 0) && !patientData.ageInMonths) {
+        if ((interactions && interactions.length > 0) && typeof patientData.ageInMonths !== 'number') {
             throw new Error('Age in months is required for models with age interactions');
         }
     }
