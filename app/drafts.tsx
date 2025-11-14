@@ -93,7 +93,7 @@ export default function DraftAdmissions() {
       } else {
         Alert.alert(
           'Delete Draft?',
-          `Are you sure you want to delete the draft for ${name}? Patient data will be lost`,
+          `Are you sure you wantgit d to delete the draft for ${name}? Patient data will be lost.`,
           [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', style: 'destructive', onPress: confirmDelete }

@@ -32,7 +32,6 @@ export default function AdmissionClinicalDataScreen() {
     const hasValidationWarnings = validationWarnings.length > 0;
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
-    const [showMuacStatusBar, setShowMuacStatusBar] = useState<boolean>(false)
 
     // For BCS calcualtions
     const [eyeScore, setEyeScore] = useState<number | null>(null)
@@ -71,7 +70,7 @@ export default function AdmissionClinicalDataScreen() {
     } = patientData
 
 
-      console.log('🔍 neonatalJaundice Debug:', {
+    console.log('🔍 neonatalJaundice Debug:', {
         type: typeof jaundice,
         value: jaundice,
         // canCallToTrim: typeof weight === 'string'
@@ -240,10 +239,8 @@ export default function AdmissionClinicalDataScreen() {
     const setMalnutritionStatus = () => {
         if ((waz != null) && muac) { // TODO double check this
             const wazStatus = getWazNutritionalStatus(waz)
-            // TODO -- normlaize booleans -- make sure 0, '0', false all return false
-            console.log('%%%here!')
+
             const normalizedSixMonthFlag = normalizeBoolean(isUnderSixMonths)
-            console.log('%%% normalized sixmonth flag', normalizedSixMonthFlag)
             const muacStatus = getMuacStatus(normalizedSixMonthFlag, muac)
 
             const wazNutritionIndex = nutritionStatusToIndex(wazStatus)
@@ -265,12 +262,11 @@ export default function AdmissionClinicalDataScreen() {
     }
 
     const handleMuacBlur = () => {
-        const warning = muac && validateMuac(muac).warningMessage;
-
-        if (!warning) {
-            setShowMuacStatusBar(true);
+        if (muac && validateMuac(muac).errorMessage) {
             return;
         }
+
+        const warning = muac && validateMuac(muac).warningMessage;
 
         if (Platform.OS === 'web') {
             // Web: use confirm to mimic Cancel / OK
@@ -278,14 +274,6 @@ export default function AdmissionClinicalDataScreen() {
                 `Data Outside Physiological Range\n\n${warning}\n\nPress OK to continue, Cancel to clear value.`
             );
 
-            if (confirmResult) {
-                // ok
-                setShowMuacStatusBar(true);
-            } else {
-                // Cancel
-                updatePatientData({ muac: '' });
-                setShowMuacStatusBar(false);
-            }
         } else {
             // Mobile (iOS/Android)
             Alert.alert(
@@ -296,12 +284,10 @@ export default function AdmissionClinicalDataScreen() {
                         text: 'Cancel',
                         onPress: () => {
                             updatePatientData({ muac: '' });
-                            setShowMuacStatusBar(false);
                     }},
                     {
                         text: 'Yes',
                         style: 'cancel',
-                        onPress: () => setShowMuacStatusBar(true),
                     },
                 ]
             );
@@ -543,7 +529,7 @@ export default function AdmissionClinicalDataScreen() {
                                             value={muac as string} 
                                             onChangeText={(value) => {
                                                 updatePatientData({ muac: value })
-                                                setShowMuacStatusBar(false)
+                                                // setShowMuacStatusBar(false)
                                             }}
                                             onBlurExternal={handleMuacBlur}
                                             inputType={INPUT_TYPES.NUMERIC}
@@ -563,11 +549,14 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
-                                    {showMuacStatusBar &&
+
+                                    {/* show muac status bar if muac is valid string */}
+                                    {!validateMuac(muac as string).errorMessage && typeof muac === 'string' &&  
+
                                         <NutritionStatusBar 
-                                            title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac as string).toUpperCase()}`} 
+                                            title={`MUAC Nutritional Status: ${getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string).toUpperCase()}`} 
                                             content=''
-                                            variant={getMuacStatus(isUnderSixMonths, muac as string)}
+                                            variant={getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string)}
                                         />
                                     }
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
@@ -665,7 +654,7 @@ export default function AdmissionClinicalDataScreen() {
                                             value={muac as string} 
                                             onChangeText={(value) => {
                                                 updatePatientData({ muac: value })
-                                                setShowMuacStatusBar(false)
+                                                // setShowMuacStatusBar(false)
                                             }}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
@@ -684,11 +673,13 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
-                                    { showMuacStatusBar &&
+
+                                    {/* show muac status bar if muac is valid string */}
+                                    {!validateMuac(muac as string).errorMessage && typeof muac === 'string' &&  
                                         <NutritionStatusBar 
-                                            title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac as string).toUpperCase()}`} 
+                                            title={`MUAC Nutritional Status: ${getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string).toUpperCase()}`} 
                                             content=''
-                                            variant={getMuacStatus(isUnderSixMonths, muac as string)}
+                                            variant={getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string)}
                                         />
                                     }
                                     

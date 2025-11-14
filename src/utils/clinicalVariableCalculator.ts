@@ -92,7 +92,10 @@ export function getMuacStatus(isUnderSixMonths: boolean, muacString: string): st
     }
 
     // find rules that apply to patient's age range (under 6 months vs 6 months+)
-    const rules = muacConfig.rules?.find(r => r.isUnderSixMonths === isUnderSixMonths)
+    const rules = muacConfig.rules?.find(r => {
+        return r.isUnderSixMonths === isUnderSixMonths
+    });
+
     if (!rules) {
         throw new Error ("Could not find rules for MUAC")
     }

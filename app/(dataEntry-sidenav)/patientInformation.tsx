@@ -205,7 +205,6 @@ export default function PatientInformationScreen() {
                 console.log('📂 Resumed draft:', draftId);
             } else {
                 // New admission - just mark it as started
-                console.log('starting new admission...') // todo delete this
                 await startAdmission();
             }
         };

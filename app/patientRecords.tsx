@@ -95,7 +95,14 @@ export default function PatientRecords() {
 
   const handleDischarge = async (patientId: string) => {
     await storage.updatePatient(patientId, {isDischarged: true})
-    await onRefresh();
+    // TODO - enter discharge workflow
+    // allow edit medical conditions
+    // add VHT and caregiver info if not already complete  
+    // collect discharge variables
+    // calculate risk prediction & update risk assessment with discharge calc
+    // go to risk display - have buttons to go back to records
+    // 
+    await onRefresh(); // TODO remove
   }
 
   // If discharged patient use discharge riskC, if not discharged use admission risk category
