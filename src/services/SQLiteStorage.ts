@@ -857,7 +857,7 @@ export class SQLiteStorage implements IStorageService {
 
             dischargeDiagnosis: patientRow.dischargeDiagnosis ? patientRow.dischargeDiagnosis : null,
             
-            isDraftAdmission: patientRow.isDraftAdmision,
+            isDraftAdmission: patientRow.isDraftAdmission,
             isDischarged: patientRow.isDischarged,
             isArchived: patientRow.isArchived,
 
@@ -903,7 +903,8 @@ export class SQLiteStorage implements IStorageService {
             isCaregiversPhone: 'isCaregiversPhone',
             dischargeDiagnosis: 'dischargeDiagnosis',
             isDischarged: 'isDischarged',
-            isArchived: 'isArchived'
+            isArchived: 'isArchived',
+            isDraftAdmission: 'isDraftAdmission'
         };
 
         for (const [key, dbColumn] of Object.entries(fieldMap)) {

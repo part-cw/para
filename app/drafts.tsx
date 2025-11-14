@@ -5,6 +5,7 @@ import { useStorage } from '@/src/contexts/StorageContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatName } from '@/src/utils/formatUtils';
+import { normalizeBoolean } from '@/src/utils/normalizer';
 import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -136,7 +137,7 @@ export default function DraftAdmissions() {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: 'white', marginTop: -50}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
       <ScrollView 
         contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
@@ -159,19 +160,17 @@ export default function DraftAdmissions() {
           {drafts.map((p) => {
             const name = formatName(p.firstName, p.surname, p.otherName)
             const age = AgeCalculator.formatAge(p.ageInMonths)
+            const ageDisplay = age && age.trim() ? `${age} old` : undefined;
 
-            // TODO - figure out why  isDraft flag is undefined, even though succesfully retrieed drafts from db
-            // console.log('p.isDraft', p.isDraftAdmission, typeof p.isDraftAdmission, p)
-            
             return (
               <PatientCard 
                 key={p.patientId} 
                 id={p.patientId as string} 
                 name={name} 
-                age={`${age} old`}
+                age={ageDisplay}
                 status={'in progress'}
-                isDischarged={false}
-                isDraft={true}
+                isDischarged={normalizeBoolean(p.isDischarged as boolean)}
+                isDraft={normalizeBoolean(p.isDraftAdmission as boolean)}
                 admittedAt={p.admissionStartedAt && p.admissionStartedAt}  
                 onResume={() => handleResume(p.patientId as string)}
                 onDelete={() => handleDelete(p.patientId as string, name)}         

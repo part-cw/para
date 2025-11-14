@@ -74,7 +74,7 @@ export default function PatientRecords() {
   }
 
   const filterRecords = () => {
-    let filtered = records;
+    let filtered = [...records];
 
     switch (filter) {
       case 'active':
@@ -225,7 +225,7 @@ export default function PatientRecords() {
               age={ageDisplay}
               status={p.isDischarged ? 'discharged' : 'active'} 
               isDischarged={normalizeBoolean(p.isDischarged as boolean)} 
-              isDraft={false}
+              isDraft={normalizeBoolean(p.isDraftAdmission as boolean)}
               riskCategory={ risk.toLowerCase() }
               // riskProfile={p.riskProfile}
               // recommendedCareplan={p.recommendedCareplan}
