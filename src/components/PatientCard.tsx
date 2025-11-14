@@ -75,6 +75,8 @@ export default function PatientCard({
                   ? '#4caf50' // green #4caf50
                   : status.toLowerCase() === 'discharged'
                   ? '#bdbdbd' // #bdbdbd
+                  : status.toLowerCase() === 'deceased'
+                  ? 'rgb(237, 78, 78)' // rgb(237, 78, 78)
                   : 'rgba(251, 234, 0, 0.98)' // draft/default  
               }
               style={{marginRight: 5}}

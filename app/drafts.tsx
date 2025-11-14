@@ -87,13 +87,13 @@ export default function DraftAdmissions() {
     
       // Show confirmation
       if (Platform.OS === 'web') {
-        if (window.confirm(`Delete draft for ${name}? All patient data will be lost.`)) {
+        if (window.confirm(`Delete draft for ${name}? Patient data will be lost.`)) {
           await confirmDelete();
         }
       } else {
         Alert.alert(
           'Delete Draft?',
-          `Are you sure you want to delete the draft for ${name}? All patient data will be lost`,
+          `Are you sure you want to delete the draft for ${name}? Patient data will be lost`,
           [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', style: 'destructive', onPress: confirmDelete }
@@ -102,6 +102,37 @@ export default function DraftAdmissions() {
       }
     
   };
+
+
+  const handleDeleteAll = async () => {
+    const confirmDelete = async () => {
+      try {
+        await storage.deleteAllDrafts();
+
+        // reload page
+        await loadAllDrafts();
+      } catch (error) {
+        console.error(`Error deleting drafts: `, error)
+        Alert.alert('Error', 'Failed to delete all drafts. Please try again.');
+      }
+    };
+
+    // Show confirmation
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Delete all drafts? All patient data will be lost.`)) {
+        await confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        'Delete Draft?',
+        `Are you sure you want to delete all drafts? All data will be lost.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', style: 'destructive', onPress: confirmDelete }
+        ]
+      );
+    }
+  }
 
   if (drafts.length === 0) {
     return (
@@ -178,6 +209,17 @@ export default function DraftAdmissions() {
             );}
           )}
         </View>
+
+        <Button 
+          style={[{ alignSelf: 'center', marginVertical: 30}]}
+          buttonColor={colors.primary} 
+          textColor={colors.onPrimary} 
+          icon= 'delete'
+          mode="elevated" 
+          onPress={handleDeleteAll}
+        >
+          Delete All
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );

@@ -17,6 +17,7 @@ export interface IStorageService {
     saveDraft(data: PatientData, draftId: string): Promise<void>;
     getDraft(draftId: string): Promise<PatientData | null>; // pass in draft id?
     deleteDraft(draftId: string): Promise<void>;
+    deleteAllDrafts(): Promise<void>
     
     // List operations
     getPatients(): Promise<PatientData[]>;

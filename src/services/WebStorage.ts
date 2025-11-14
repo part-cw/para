@@ -31,6 +31,9 @@ export class WebStorage implements IStorageService {
     deleteDraft(): Promise<void> {
         throw new Error("Method not implemented.");
     }
+    deleteAllDrafts(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
     getPatients(): Promise<PatientData[]> {
         throw new Error("Method not implemented.");
     }

@@ -212,6 +212,12 @@ export default function PatientRecords() {
           const ageDisplay = age && age.trim() ? `${age} old` : undefined;
           const risk = handleGetRiskCategory(p.patientId as string);
 
+          // deceased patients are a subcategory of discharged
+          const status = 
+            p.isDischarged 
+            ? (p.dischargeReason === 'deceased' ? 'deceased' : 'discharged') 
+            : 'active';
+
           {/*
             TODO: implement the following helpers
             - handleGetRiskProfile
@@ -223,7 +229,7 @@ export default function PatientRecords() {
               id={p.patientId as string} 
               name={name} 
               age={ageDisplay}
-              status={p.isDischarged ? 'discharged' : 'active'} 
+              status={status} 
               isDischarged={normalizeBoolean(p.isDischarged as boolean)} 
               isDraft={normalizeBoolean(p.isDraftAdmission as boolean)}
               riskCategory={ risk.toLowerCase() }
