@@ -42,9 +42,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
     // Only save if user has entered at least SOME required data
     const hasMinimalData = 
-        patientData.surname || 
-        patientData.firstName || 
-        patientData.sex;
+        patientData.surname && 
+        patientData.firstName
 
     if (!hasMinimalData) {
         console.log('⏳ Skipping auto-save - no data entered yet');
@@ -105,10 +104,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * TODO - load specific draft for 'continue admission' workflow
+   * Load specific draft for 'continue admission' workflow
    */
   const loadDraft = async (patientId: string) => {
-    console.log('TODO - check load draft working')
      try {
 
       setIsDataLoaded(false);
@@ -153,6 +151,10 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         verbalResponse: '',
         bcsScore: null,
         abnormalBCS: null,
+        weight: '',
+        spo2_admission: '',
+        waz: null,
+        muac: ''
       };
       updatePatientData(updates);
     } else {
@@ -163,6 +165,10 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         neonatalJaundice: '',
         bulgingFontanelle: '',
         feedingWell: '',
+        weight: '',
+        spo2_admission: '',
+        waz: null,
+        muac: ''
       };
       updatePatientData(updates);
     }
@@ -267,9 +273,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const getCurrentRiskAssessment = (): RiskAssessment => {
     return riskAssessment;
   };
-
-  // TODO - loading spinner if data not ready ?
-  // if (!isDataLoaded) return null;
 
   return (
     <PatientDataContext.Provider

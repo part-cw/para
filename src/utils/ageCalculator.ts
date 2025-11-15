@@ -148,7 +148,9 @@ export class AgeCalculator {
      * @param months age in months
      * @returns age in format 'X years' or 'Y months' or 'Z days'.
      */
-    static formatAge(months: number): string {
+    static formatAge(months: number | null): string {
+        if (months === null) return '';
+
         if (months < 6) {
             if (months < 1) {
                 return `${Math.round(months * 30)} days`

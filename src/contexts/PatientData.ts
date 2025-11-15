@@ -22,10 +22,10 @@ export interface PatientData {
 
   
   // Admission Clinical Data (all ages)
-  weight: string;
-  waz: number | null;
-  muac: string;
-  spo2_admission: string;
+  weight?: string;
+  waz?: number | null;
+  muac?: string;
+  spo2_admission?: string;
  
   // Admission Clinical Data (6-60 months only)
   hivStatus?: string;
@@ -46,17 +46,16 @@ export interface PatientData {
   feedingWell?: string;
 
   // Medical Conditions
-  severeAnaemia: string;
-  pneumonia: string;
-  chronicIllnesses: string[];
-  otherChronicIllness: string;
-  diarrhea: string;
-  malaria: string;
-  sepsis: string;
-  meningitis_encephalitis: string;
-  malnutritionStatus: string;
-  sickYoungInfant: boolean;
-  // TODO add socialVulnerability 
+  severeAnaemia?: string;
+  pneumonia?: string;
+  chronicIllnesses?: string[];
+  otherChronicIllness?: string;
+  diarrhea?: string;
+  malaria?: string;
+  sepsis?: string;
+  meningitis_encephalitis?: string;
+  malnutritionStatus?: string;
+  sickYoungInfant?: boolean;
   
   // vhtReferral info
   village: string;
@@ -77,6 +76,10 @@ export interface PatientData {
   dischargeReason?: string;
   feedingWell_discharge?: boolean;
 
+  // status flags
+  isDraftAdmission?: boolean,
+  isDischarged?: boolean,
+  isArchived?: boolean,
 }
 
 export const initialPatientData: PatientData = {
@@ -95,12 +98,6 @@ export const initialPatientData: PatientData = {
   approxAgeInYears: '',
   ageInMonths: null,
   isNeonate: null,
-
-  // admission clinical data (all)
-  weight: '',
-  waz: null,
-  muac: '',
-  spo2_admission: '',
   
   // medical conditions
   severeAnaemia: '',
@@ -126,4 +123,34 @@ export const initialPatientData: PatientData = {
   confirmTel: '',
   isCaregiversPhone: false,
   sendReminders: false,
+
+  // clinical variables:
+  weight: '',
+  waz: null,
+  muac: '',
+  spo2_admission: '',
+  
+  // 6-60 months
+  hivStatus: '',
+  temperature: '',
+  temperatureSquared: null,
+  rrate: '',
+  lastHospitalized: '',
+  eyeMovement: '',
+  motorResponse: '',
+  verbalResponse: '',
+  bcsScore: null,
+  abnormalBCS: null,
+  
+  // 0-6 months
+  illnessDuration: '',
+  neonatalJaundice: '',
+  bulgingFontanelle: '',
+  feedingWell: '',
+  
+  // discharge fields
+  dischargeDiagnosis: '',
+  spo2_discharge: '',
+  dischargeReason: '',
+  feedingWell_discharge: undefined,
 };

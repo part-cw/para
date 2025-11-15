@@ -14,25 +14,24 @@ import { AppTheme } from "../src/themes/theme";
 
 // TODO - add error screens if models or storage fail
 export default function RootLayout() {
-
-    const [modelsLoaded, setModelsLoaded] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
  
-    useEffect(() => {
-        const loadModels = async () => {
-            try {
-                console.log('🔄 Loading risk models...');
-                await initializeModels();
-                setModelsLoaded(true);
-                console.log('✅ Models loaded successfully');
-            } catch (err) {
-                setError(err instanceof Error ? err.message : '❌ Failed to load models');
-                console.error('Model loading error:', err);
-            }
-        };
+  useEffect(() => {
+      const loadModels = async () => {
+          try {
+              console.log('🔄 Loading risk models...');
+              await initializeModels();
+              setModelsLoaded(true);
+              console.log('✅ Models loaded successfully');
+          } catch (err) {
+              setError(err instanceof Error ? err.message : '❌ Failed to load models');
+              console.error('Model loading error:', err);
+          }
+      };
 
-        loadModels();
-    }, []);
+      loadModels();
+  }, []);
 
   useEffect(() => {
         // Prevent splash screen from auto-hiding immediately

@@ -14,6 +14,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// TODO figure out why bcs dropdown autopopulates wiith // when resule draft if not selected. and if selected it has  the n option
+// something to do with the typedefined as JSON?
 
 export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
@@ -60,7 +62,7 @@ export default function MedicalConditionsScreen() {
         if (!malaria) errors.push('Malaria is missing a diagnosis');
         if (!sepsis) errors.push('Sepsis is missing a diagnosis');
         if (!meningitis) errors.push('Meningitis/encaphalitis is missing a diagnosis');
-        if (chronicIllness.length === 0) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
+        if (chronicIllness?.length === 0) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
 
         return errors;
     }
@@ -72,9 +74,9 @@ export default function MedicalConditionsScreen() {
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
 
     // autoselect 'hiv' if hivStatus is positive when page first renders 
+    // TODO - make sure this is accurately reflectd in storage
     useEffect(() => {
         if (patientData.hivStatus === 'positive') {
-            console.log('here!!')
             updatePatientData({chronicIllnesses: ['HIV']})
         }
     }, [])
@@ -197,21 +199,22 @@ export default function MedicalConditionsScreen() {
                     search={false}
                 />
                 <View style={{marginRight: 10, marginLeft: 10, marginTop: -10}}>
-                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Illnesses <Text style={Styles.required}>*</Text></Text>
+                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Conditions/Vulnerabilities <Text style={Styles.required}>*</Text></Text>
                     <Text>{displayNames['chronicIllnessQuestion']}</Text>
                     <CheckboxGroup 
                         options={[
                             {label: 'HIV', value: 'HIV'},
                             {label: 'Tuberculosis', value: 'Tuberculosis'},
                             {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
+                            {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
                             {label: 'Unsure', value: 'unsure'},
                             {label: 'None', value: 'none'},
                             {label: 'Other', value: 'other'}
                         ]} 
-                        selected={chronicIllness} 
+                        selected={chronicIllness as string[]} 
                         onSelectionChange={handleChronicIllnessChange}
                     />
-                    {chronicIllness.some(item => item.toLowerCase().startsWith('other')) &&
+                    {chronicIllness?.some(item => item.toLowerCase().startsWith('other')) &&
                         <TextInput 
                             label="Specify other illnesses (optional)" 
                             mode="outlined" 

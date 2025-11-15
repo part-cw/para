@@ -15,7 +15,8 @@ export default function Checkbox({ label, checked, onChange }: Props) {
   return (
     <Pressable style={Style.checkboxContainer} onPress={onChange}>
       <View style={[Style.checkbox, checked && Style.checked]}>
-        {checked && <MaterialIcons name="check" size={18} color="white" />}
+        {/* need explicit check in case prop is undefined */}
+        {checked === true && <MaterialIcons name="check" size={18} color="white" />}
       </View>
       <Text style={{ fontSize: 16 }}>{label}</Text>
     </Pressable>

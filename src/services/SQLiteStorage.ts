@@ -2,6 +2,7 @@ import * as SQLite from "expo-sqlite";
 import { CURRENT_USER } from "../config";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from '../models/types';
+import { normalizeBoolean } from "../utils/normalizer";
 import { IStorageService } from "./StorageService";
 
 // TODO ADD ENCRYPTION - add sqlCipher AFTER databse test are all working
@@ -24,7 +25,7 @@ type MedicalConditionsRow = {
 export class SQLiteStorage implements IStorageService {
     private db: SQLite.SQLiteDatabase | null = null;
     private encryptionKey: string | null = null;
-    private readonly DB_NAME = 'patient_records.db';
+    private readonly DB_NAME = 'para.db';
     private readonly ENCRYPTION_KEY_STORAGE = 'db_encryption_key';
 
 
@@ -59,10 +60,13 @@ export class SQLiteStorage implements IStorageService {
     //     return key;
     // }
 
+    // TODO - add isDOBUnknwon and isYearMonthUnknown
     async initializeSchema(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
         
         await this.db.execAsync(`
+            PRAGMA foreign_keys = ON;
+
             CREATE TABLE IF NOT EXISTS patients (
                 -- Patient info 
                 patientId               TEXT PRIMARY KEY,
@@ -74,6 +78,8 @@ export class SQLiteStorage implements IStorageService {
                 birthYear               TEXT,
                 birthMonth              TEXT,
                 approxAgeInYears        TEXT,
+                isDOBUnknown            INTEGER DEFAULT 0,
+                isYearMonthUnknown      INTEGER DEFAULT 0,
                 isUnderSixMonths        INTEGER NOT NULL,
                 isNeonate               INTEGER,
                 ageInMonths             INTEGER,      
@@ -203,6 +209,7 @@ export class SQLiteStorage implements IStorageService {
             WHERE patientId = ?
         `, [now, now, patientId]);
 
+        await this.logChanges(patientId, 'SUBMIT', null, null, null);
         console.log(`✅ Patient ${patientId} submitted`);
     }
 
@@ -223,7 +230,9 @@ export class SQLiteStorage implements IStorageService {
     }
   
     /**
-     * use in edit screens - updates all changed fields  in one go?
+     * use in edit screens - updates all changed fields  in one go
+     * TODO - optimize it so it only updates one field at a time - curruenly upserts all clinical variables for each field change
+     * TODO - add/increase timeout?
      */
     async updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
@@ -277,26 +286,30 @@ export class SQLiteStorage implements IStorageService {
             await this.db?.runAsync(`
                 INSERT INTO patients (
                     patientId, surname, firstName, otherName, sex, 
-                    dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isUnderSixMonths, isNeonate,
+                    dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isDOBUnknown, isYearMonthUnknown, isUnderSixMonths, isNeonate,
                     village, subvillage, vhtName, vhtTelephone, 
                     caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone,
                     dischargeDiagnosis, admissionStartedAt, updatedAt, isDraftAdmission
                 ) 
                 VALUES (
                     ?, ?, ?, ?, ?,              -- name/sex
-                    ?, ?, ?, ?, ?,?, ?,         -- age demographics
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- age demographics
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
                     ?, ?, ?, ?                  -- discharge & etadata
                 )
             `, [
-                patientId, data.surname, 
-                data.firstName, data.otherName || null, 
+                patientId, 
+                data.surname, 
+                data.firstName, 
+                data.otherName || null, 
                 data.sex, 
                 data.dob ? data.dob.toISOString() : null, 
                 data.birthYear || null, 
                 data.birthMonth || null, 
                 data.approxAgeInYears || null, 
                 data.ageInMonths || null,
+                data.isDOBUnknown ? 1 : 0,
+                data.isYearMonthUnknown ? 1: 0,
                 data.isUnderSixMonths ? 1 : 0, 
                 data.isNeonate !== null ? (data.isNeonate ? 1 : 0) : null,
                 data.village || null,
@@ -334,9 +347,6 @@ export class SQLiteStorage implements IStorageService {
                 JSON.stringify(data.chronicIllnesses || []),
                 data.otherChronicIllness || null
             ]);
-            
-            // Insert clinical variables
-            await this.insertClinicalVariables(patientId, data);
         });
 
         await this.logChanges(patientId, 'CREATE', null, null, null);
@@ -350,7 +360,6 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
         
         const now = new Date().toISOString();
-        console.log('insie saveDraft now =', now)
 
         // Check if draft exists
         const existing = await this.db.getFirstAsync<{ patientId: string }>(
@@ -359,15 +368,12 @@ export class SQLiteStorage implements IStorageService {
             [patientId]
         );
 
-        console.log('still insde saveDraft, exisitng=', existing)
-
-         if (existing) {
-            // DRAFT EXISTS: Use UPDATE (only changes what's needed)
-            console.log('!!!! draft exists..updating patient')
+        if (existing) {
+            // DRAFT EXISTS: Use UPDATE (TODO make sure it only changes what's needed)
+            // console.log('!!! inside sqlstorage/saveDraft...updating patient with data....', data)
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
-             console.log('**** draft does not exists..inserting new patient')
             await this.insertNewPatient(data, patientId, now, true);
         }
     }
@@ -414,7 +420,7 @@ export class SQLiteStorage implements IStorageService {
     async deleteDraft(patientId: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
-        await this.db.runAsync(
+        await this.db?.runAsync(
             'DELETE FROM patients WHERE patientId = ? AND isDraftAdmission = 1',
             [patientId]
         );
@@ -505,7 +511,7 @@ export class SQLiteStorage implements IStorageService {
                 prediction.riskScore,
                 prediction.riskCategory,
                 patient.ageInMonths || 0,
-                patient.hivStatus || 'unknown',
+                patient.hivStatus || 'n/a',
                 now
             ]);
 
@@ -527,8 +533,48 @@ export class SQLiteStorage implements IStorageService {
         console.log(`✅ Risk prediction saved for ${patientId} at ${usageTime}`);
     }
 
-    getRiskAssessment(patientId: string): Promise<RiskAssessment> {
-        throw new Error('Method not implemented.');
+    async getRiskAssessment(patientId: string): Promise<RiskAssessment> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const predictions = await this.db.getAllAsync<any>(`
+            SELECT * FROM risk_predictions
+            WHERE patientId = ?
+            ORDER BY calculatedAt ASC -- TODO makesure most recent is last
+        `, [patientId]);
+        
+        return await this.buildRiskAssesment(predictions)        
+    }
+
+    private async buildRiskAssesment(predictions: any[]): Promise<RiskAssessment> {
+        const assessment: RiskAssessment = {};
+
+        for (const pred of predictions) {
+            // const topPredictors = await this.db?.getAllAsync<any>(`
+            //     SELECT featureName, contribution 
+            //     FROM top_predictors 
+            //     WHERE predictionId = ?
+            //     ORDER BY rank ASC
+            // `, [pred.id]);
+
+            const riskPrediction: RiskPrediction = {
+                model: pred.modelName,
+                riskScore: pred.riskScore,
+                riskCategory: pred.riskCategory,
+                // topPredictors: topPredictors.map(tp => ({
+                //     name: tp.featureName,
+                //     contribution: tp.contribution
+                // }))
+            };
+
+            if (pred.usageTime === 'admission') {
+                assessment.admission = riskPrediction;
+                // TODO - use most recent admission prediction if we have mulitple risks 
+            } else {
+                assessment.discharge = riskPrediction;
+            }
+        }
+
+        return assessment;
     }
 
     // ========== ARCHIVE OPERATIONS ==========
@@ -547,12 +593,12 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
 
         await this.db.execAsync(`
-            DELETE * FROM patients;
-            DELETE * FROM medical_conditions;
-            DELETE * FROM clinical_variables;
-            DELETE * FROM risk_predictions;
-            DELETE * FROM top_predictors;
-            DELETE * FROM audit_log;
+            DELETE FROM patients;
+            DELETE FROM medical_conditions;
+            DELETE FROM clinical_variables;
+            DELETE FROM risk_predictions;
+            DELETE FROM top_predictors;
+            DELETE FROM audit_log;
         `);
 
         console.log('🧹 All data cleared');
@@ -614,17 +660,23 @@ export class SQLiteStorage implements IStorageService {
         const usageTime = this.determineUsageTime(varName);
         const stringValue = this.convertToString(value, varType);
 
-        if (stringValue === null) return;
+        // If value is null/undefined/empty, DELETE the row instead of inserting
+        if (stringValue === null || stringValue === '') {
+            await this.db.runAsync(`
+                DELETE FROM clinical_variables 
+                WHERE patientId = ? AND variableName = ? AND usageTime = ?
+            `, [patientId, varName, usageTime]);
+            return;
+        }
 
         await this.db.runAsync(`
             INSERT OR REPLACE INTO clinical_variables (
                 patientId, variableName, variableValue, variableType, usageTime
             ) VALUES (?, ?, ?, ?, ?)
         `, [patientId, varName, stringValue, varType, usageTime]);
-        console.log('upserting clinical variable')
     }
 
-     private async updatePatientTable(
+    private async updatePatientTable(
         patientId: string,
         fields: { [key: string]: any },
         timestamp: string
@@ -725,15 +777,17 @@ export class SQLiteStorage implements IStorageService {
         if (!this.db) throw new Error('Database not initialized');
 
         const query = usageTime
-        ? `SELECT variableName, variableValue
+        ? `SELECT variableName, variableValue, variableType
             FROM clinical_variables 
             WHERE patientId = ? AND usageTime = ?`
-        : `SELECT variableName, variableValue 
+        : `SELECT variableName, variableValue, variableType 
             FROM clinical_variables 
             WHERE patientId = ?`;
 
         const params = usageTime ? [patientId, usageTime] : [patientId];
         const rows = await this.db.getAllAsync<any>(query, params);
+
+        // console.log('~~~~ rows', rows)
 
         const variables: { [key: string]: any } = {};
 
@@ -767,7 +821,7 @@ export class SQLiteStorage implements IStorageService {
         }
     }
 
-    private buildPatientData(patientRow: PatientData, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
+    private buildPatientData(patientRow: any, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
         return {
             patientId: patientRow.patientId,
             admissionStartedAt: patientRow.admissionStartedAt,
@@ -775,13 +829,15 @@ export class SQLiteStorage implements IStorageService {
             firstName: patientRow.firstName,
             otherName: patientRow.otherName || '',
             sex: patientRow.sex,
+            isDOBUnknown: patientRow.isDOBUnknown,
+            isYearMonthUnknown: patientRow.isYearMonthUnknown,
             isUnderSixMonths: patientRow.isUnderSixMonths,
             isNeonate: patientRow.isNeonate,
-            isYearMonthUnknown: patientRow.isYearMonthUnknown,
-            dob: patientRow.dob,
+            dob: !patientRow.dob ? null : new Date(patientRow.dob),
             birthYear: patientRow.birthYear,
             birthMonth: patientRow.birthMonth,
             approxAgeInYears: patientRow.approxAgeInYears,
+            ageInMonths: patientRow.ageInMonths,
 
             vhtName: patientRow.vhtName,
             vhtTelephone: patientRow.vhtTelephone,
@@ -795,6 +851,10 @@ export class SQLiteStorage implements IStorageService {
             isCaregiversPhone: patientRow.isCaregiversPhone,
 
             dischargeDiagnosis: patientRow.dischargeDiagnosis ? patientRow.dischargeDiagnosis : null,
+            
+            isDraftAdmission: patientRow.isDraftAdmission,
+            isDischarged: patientRow.isDischarged,
+            isArchived: patientRow.isArchived,
 
             ...conditions,
             ...clinicalData
@@ -811,7 +871,7 @@ export class SQLiteStorage implements IStorageService {
         return patients.filter(Boolean) as PatientData[];
     }
 
-       private extractPatientFields(updates: Partial<PatientData>): { [key: string]: any } {
+    private extractPatientFields(updates: Partial<PatientData>): { [key: string]: any } {
         const patientFields: { [key: string]: any } = {};
         const fieldMap: { [key: string]: string } = {
             surname: 'surname',
@@ -823,6 +883,8 @@ export class SQLiteStorage implements IStorageService {
             birthMonth: 'birthMonth',
             approxAgeInYears: 'approxAgeInYears',
             ageInMonths: 'ageInMonths',
+            isDOBUnknown: 'isDOBUnknown',
+            isYearMonthUnknown: 'isYearMonthUnknown',
             isUnderSixMonths: 'isUnderSixMonths',
             isNeonate: 'isNeonate',
             village: 'village',
@@ -834,7 +896,10 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: 'confirmTel',
             sendReminders: 'sendReminders',
             isCaregiversPhone: 'isCaregiversPhone',
-            dischargeDiagnosis: 'dischargeDiagnosis'
+            dischargeDiagnosis: 'dischargeDiagnosis',
+            isDischarged: 'isDischarged',
+            isArchived: 'isArchived',
+            isDraftAdmission: 'isDraftAdmission'
         };
 
         for (const [key, dbColumn] of Object.entries(fieldMap)) {
@@ -906,15 +971,14 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private determineVariableType(varName: string): string {
-        const numericVars = ['weight', 'waz', 'muac', 'spo2_admission', 'spo2_discharge', 
-                           'temperature', 'temperatureSquared', 'rrate', 'bcsScore'];
+        const numericVars = ['waz', 'temperatureSquared', 'bcsScore'];
         const booleanVars = ['neonatalJaundice', 'bulgingFontanelle', 'feedingWell', 
                            'feedingWell_discharge', 'abnormalBCS'];
-        const jsonVars = ['eyeMovement', 'motorResponse', 'verbalResponse'];
+        // const jsonVars = ['eyeMovement', 'motorResponse', 'verbalResponse'];
 
         if (numericVars.includes(varName)) return 'numeric';
         if (booleanVars.includes(varName)) return 'boolean';
-        if (jsonVars.includes(varName)) return 'json';
+        // if (jsonVars.includes(varName)) return 'json';
         return 'text';
     }
 
@@ -924,13 +988,13 @@ export class SQLiteStorage implements IStorageService {
         return 'admission';
     }
 
-    private convertToString(value: any, type: string): string | null {
-        if (value === null || value === undefined) return null;
+    private convertToString(value: any, variableType: string): string | null {
+        if (value === null || value === undefined || value == '') return null;
         
-        if (type === 'json') {
+        if (variableType === 'json') {
             return JSON.stringify(value);
-        } else if (type === 'boolean') {
-            return value ? '1' : '0';
+        } else if (variableType === 'boolean') {
+            return normalizeBoolean(value) ? '1' : '0';
         } else {
             return value.toString();
         }
@@ -941,8 +1005,6 @@ export class SQLiteStorage implements IStorageService {
    */
   private parseVariableValue(value: string | null, type: string): any {
     if (value === null) return null;
-
-    // TODO - handle dropdown item types
 
     switch (type) {
       case 'numeric':

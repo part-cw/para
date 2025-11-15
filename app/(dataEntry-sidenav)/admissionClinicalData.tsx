@@ -11,6 +11,7 @@ import { bcsGeneralInfo, eyeMovementInfo, jaundiceInfo, motorResponseInfo, muacI
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { calculateBcsScore, calculateWAZ, getEyeMovementScore, getMotorResponseScore, getMuacStatus, getTempSquared, getVerbalResponseScore, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
+import { convertToYesNo, normalizeBoolean } from '@/src/utils/normalizer';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, Text, View } from 'react-native';
@@ -18,7 +19,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// TODO - reintroduce HIV unknown
+// TODO - make sure db updated with null values if BCS params are deleted
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
@@ -31,7 +32,6 @@ export default function AdmissionClinicalDataScreen() {
     const hasValidationWarnings = validationWarnings.length > 0;
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
-    const [showMuacStatusBar, setShowMuacStatusBar] = useState<boolean>(false)
 
     // For BCS calcualtions
     const [eyeScore, setEyeScore] = useState<number | null>(null)
@@ -54,7 +54,6 @@ export default function AdmissionClinicalDataScreen() {
         //6-60 months
         hivStatus,
         temperature,
-        temperatureSquared,
         rrate,
         lastHospitalized,
         eyeMovement,
@@ -69,6 +68,13 @@ export default function AdmissionClinicalDataScreen() {
         ageInMonths,
         isNeonate,
     } = patientData
+
+    // TODO delete
+    console.log('🔍 neonatalJaundice Debug:', {
+        type: typeof jaundice,
+        value: jaundice,
+        // canCallToTrim: typeof weight === 'string'
+    });
 
     const validateAllFields = () => {
         const errors: string[] = [];
@@ -138,7 +144,6 @@ export default function AdmissionClinicalDataScreen() {
                 }
             }
 
-
             if (!rrate || !isValidNumericFormat(rrate)) {
                 errors.push('Respiratory rate is required and must be a valid number');
             } else {
@@ -161,7 +166,6 @@ export default function AdmissionClinicalDataScreen() {
             }
         }
         
-        console.log('warnings', warnings)
         return {errors: errors, warnings: warnings}
     };
 
@@ -192,7 +196,7 @@ export default function AdmissionClinicalDataScreen() {
 
     // handle WAZ calculation on weight change
     useEffect(() => {
-        if (validateWeight(weight).isValid) {
+        if (weight && validateWeight(weight).isValid) {
             updatePatientData({waz: calculateWAZ(ageInMonths as number, sex, parseFloat(weight))})
         } else {
             updatePatientData({waz: null})
@@ -235,7 +239,9 @@ export default function AdmissionClinicalDataScreen() {
     const setMalnutritionStatus = () => {
         if ((waz != null) && muac) { // TODO double check this
             const wazStatus = getWazNutritionalStatus(waz)
-            const muacStatus = getMuacStatus(isUnderSixMonths, muac)
+
+            const normalizedSixMonthFlag = normalizeBoolean(isUnderSixMonths)
+            const muacStatus = getMuacStatus(normalizedSixMonthFlag, muac)
 
             const wazNutritionIndex = nutritionStatusToIndex(wazStatus)
             const muacNutritionIndex = nutritionStatusToIndex(muacStatus)
@@ -256,12 +262,13 @@ export default function AdmissionClinicalDataScreen() {
     }
 
     const handleMuacBlur = () => {
-        const warning = validateMuac(muac).warningMessage;
-
-        if (!warning) {
-            setShowMuacStatusBar(true);
+        if (muac && validateMuac(muac).errorMessage) {
             return;
         }
+
+        const warning = muac && validateMuac(muac).warningMessage;
+
+        if (!warning) return;
 
         if (Platform.OS === 'web') {
             // Web: use confirm to mimic Cancel / OK
@@ -269,14 +276,6 @@ export default function AdmissionClinicalDataScreen() {
                 `Data Outside Physiological Range\n\n${warning}\n\nPress OK to continue, Cancel to clear value.`
             );
 
-            if (confirmResult) {
-                // ok
-                setShowMuacStatusBar(true);
-            } else {
-                // Cancel
-                updatePatientData({ muac: '' });
-                setShowMuacStatusBar(false);
-            }
         } else {
             // Mobile (iOS/Android)
             Alert.alert(
@@ -287,12 +286,10 @@ export default function AdmissionClinicalDataScreen() {
                         text: 'Cancel',
                         onPress: () => {
                             updatePatientData({ muac: '' });
-                            setShowMuacStatusBar(false);
                     }},
                     {
                         text: 'Yes',
                         style: 'cancel',
-                        onPress: () => setShowMuacStatusBar(true),
                     },
                 ]
             );
@@ -381,18 +378,6 @@ export default function AdmissionClinicalDataScreen() {
         }
     };
 
-    const stringToBoolean = (input: string) => {
-        if (input.toLowerCase() === 'yes' || input.toLowerCase() === 'true' || parseFloat(input) === 1) {
-            return true
-        } else {
-            return false;
-        }
-    }
-
-    const booleanToString = (input: boolean) => {
-        return input ? 'yes' : 'no'
-    }
-
     const durationOptions = [
         { value: 'Less than 48 hours', key: '<48h' },
         { value: '48 hours to 7 days', key: '48h-7d' },
@@ -479,13 +464,13 @@ export default function AdmissionClinicalDataScreen() {
                                                 options={[
                                                     { label: 'Yes', value: 'yes'},
                                                     { label: 'No', value: 'no'},]} 
-                                                selected={jaundice as string} 
-                                                onSelect={(value) => updatePatientData({ 
-                                                    neonatalJaundice: value})}
+                                                selected={convertToYesNo(jaundice as string)} 
+                                                onSelect={(value) => {
+                                                    updatePatientData({ neonatalJaundice: value})}
+                                                }
                                             />
                                         </View>
                                     }
-
                                     <View>
                                         <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Bulging Fontanelle <Text style={Styles.required}>*</Text></Text>
                                         <Text>{displayNames['fontanelleQuestion']}</Text>
@@ -493,7 +478,7 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={bulgingFontanelle as string} 
+                                            selected={convertToYesNo(bulgingFontanelle as string)} 
                                             onSelect={(value) => updatePatientData({ bulgingFontanelle: value})}
                                         />
                                     </View>
@@ -505,7 +490,7 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={feedingStatus as string} 
+                                            selected={convertToYesNo(feedingStatus as string)} 
                                             onSelect={(value) => updatePatientData({ feedingWell: value })}
                                         />
                                     </View>
@@ -523,38 +508,38 @@ export default function AdmissionClinicalDataScreen() {
                                 <View style={Styles.accordionContentWrapper}>
                                     <ValidatedTextInput 
                                         label={'Weight (required)'}
-                                        value={weight} 
+                                        value={weight as string} 
                                         onChangeText={(value) => updatePatientData({ weight: value})}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         customValidator={(value) => validateWeight(value).isValid}
-                                        customErrorMessage={validateWeight(weight).errorMessage}
+                                        customErrorMessage={weight && validateWeight(weight).errorMessage}
                                         showErrorOnTyping={true}
                                         right={<TextInput.Affix text="kg" />}                             
                                     />
 
                                     {/* If no error and waz calculated, show nutrition status bar */}
-                                    {!validateWeight(weight).errorMessage && waz !== null &&
+                                    {!validateWeight(weight as string).errorMessage && waz !== null && typeof waz === 'number' &&
                                         <NutritionStatusBar 
-                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
-                                            content={`z-score = ${waz.toFixed(2)}`}
+                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz as number).toUpperCase()}`} 
+                                            content={`z-score = ${waz && waz.toFixed(2)}`}
                                             variant={getWazNutritionalStatus(waz as number) || 'invalid'}
                                         />
                                     }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
-                                            value={muac} 
+                                            value={muac as string} 
                                             onChangeText={(value) => {
                                                 updatePatientData({ muac: value })
-                                                setShowMuacStatusBar(false)
+                                                // setShowMuacStatusBar(false)
                                             }}
                                             onBlurExternal={handleMuacBlur}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
                                             customValidator={(value) => validateMuac(value).isValid}
-                                            customErrorMessage={validateMuac(muac).errorMessage }
+                                            customErrorMessage={muac && validateMuac(muac).errorMessage }
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text="mm" />}                             
                                         />
@@ -567,22 +552,25 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
-                                    {showMuacStatusBar &&
+
+                                    {/* show muac status bar if muac is valid string */}
+                                    {!validateMuac(muac as string).errorMessage && typeof muac === 'string' &&  
+
                                         <NutritionStatusBar 
-                                            title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                            title={`MUAC Nutritional Status: ${getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string).toUpperCase()}`} 
                                             content=''
-                                            variant={getMuacStatus(isUnderSixMonths, muac)}
+                                            variant={getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string)}
                                         />
                                     }
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
-                                        value={spo2} 
+                                        value={spo2 as string} 
                                         onChangeText={(value) => updatePatientData({ spo2_admission: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true}
                                         customValidator={(value) => validateOxygenSaturationRange(value).isValid}
-                                        customErrorMessage={validateOxygenSaturationRange(spo2).errorMessage } 
+                                        customErrorMessage={spo2 && validateOxygenSaturationRange(spo2).errorMessage } 
                                         right={<TextInput.Affix text="%" />}                             
                                     />
                                 </View>
@@ -645,36 +633,36 @@ export default function AdmissionClinicalDataScreen() {
                                 <View style={Styles.accordionContentWrapper}>
                                     <ValidatedTextInput 
                                         label={'Weight (required)'}
-                                        value={weight} 
+                                        value={weight as string} 
                                         onChangeText={(value) => updatePatientData({ weight: value})}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         customValidator={(value) => validateWeight(value).isValid}
-                                        customErrorMessage={validateWeight(weight).errorMessage}
+                                        customErrorMessage={weight && validateWeight(weight).errorMessage}
                                         showErrorOnTyping={true}
                                         right={<TextInput.Affix text="kg" />}                             
                                     />
 
                                     {/* If no error and waz calculated, show nutrition status bar */}
-                                    {!validateWeight(weight).errorMessage && waz !== null &&
+                                    {weight && !validateWeight(weight).errorMessage && waz !== null && typeof waz === 'number' &&
                                         <NutritionStatusBar 
-                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz).toUpperCase()}`} 
-                                            content={`z-score = ${waz.toFixed(2)}`}
+                                            title={`WAZ Nutritional Status: ${getWazNutritionalStatus(waz as number).toUpperCase()}`} 
+                                            content={`z-score = ${waz && waz.toFixed(2)}`}
                                             variant={getWazNutritionalStatus(waz as number) || 'invalid'}
                                         />
                                     }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
                                             label={'MUAC (required)'}
-                                            value={muac} 
+                                            value={muac as string} 
                                             onChangeText={(value) => {
                                                 updatePatientData({ muac: value })
-                                                setShowMuacStatusBar(false)
+                                                // setShowMuacStatusBar(false)
                                             }}
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             customValidator={(value) => validateMuac(value).isValid}
-                                            customErrorMessage={validateMuac(muac).errorMessage }
+                                            customErrorMessage={muac && validateMuac(muac).errorMessage }
                                             onBlurExternal={handleMuacBlur}
                                             style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
                                             right={<TextInput.Affix text="mm" />}                             
@@ -688,11 +676,13 @@ export default function AdmissionClinicalDataScreen() {
                                             }}
                                         />
                                     </View>
-                                    { showMuacStatusBar &&
+
+                                    {/* show muac status bar if muac is valid string */}
+                                    {!validateMuac(muac as string).errorMessage && typeof muac === 'string' &&  
                                         <NutritionStatusBar 
-                                            title={`MUAC Nutritional Status: ${getMuacStatus(isUnderSixMonths, muac).toUpperCase()}`} 
+                                            title={`MUAC Nutritional Status: ${getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string).toUpperCase()}`} 
                                             content=''
-                                            variant={getMuacStatus(isUnderSixMonths, muac)}
+                                            variant={getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string)}
                                         />
                                     }
                                     
@@ -750,12 +740,12 @@ export default function AdmissionClinicalDataScreen() {
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
-                                        value={spo2} 
+                                        value={spo2 as string} 
                                         onChangeText={(value) => updatePatientData({ spo2_admission: value })}
                                         inputType={INPUT_TYPES.NUMERIC}
                                         isRequired={true} 
                                         customValidator={(value) => validateOxygenSaturationRange(value).isValid}
-                                        customErrorMessage={validateOxygenSaturationRange(spo2).errorMessage } 
+                                        customErrorMessage={spo2 && validateOxygenSaturationRange(spo2).errorMessage } 
                                         right={<TextInput.Affix text="%" />}                             
                                     />
                                 </View>
