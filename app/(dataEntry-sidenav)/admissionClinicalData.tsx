@@ -19,7 +19,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, IconButton, List, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// TODO - make sure db updated with null values if BCS params are deleted
+
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
@@ -68,13 +68,6 @@ export default function AdmissionClinicalDataScreen() {
         ageInMonths,
         isNeonate,
     } = patientData
-
-    // TODO delete
-    console.log('🔍 neonatalJaundice Debug:', {
-        type: typeof jaundice,
-        value: jaundice,
-        // canCallToTrim: typeof weight === 'string'
-    });
 
     const validateAllFields = () => {
         const errors: string[] = [];
@@ -237,7 +230,7 @@ export default function AdmissionClinicalDataScreen() {
     }, [isNeonate])
     
     const setMalnutritionStatus = () => {
-        if ((waz != null) && muac) { // TODO double check this
+        if ((waz != null) && muac) {
             const wazStatus = getWazNutritionalStatus(waz)
 
             const normalizedSixMonthFlag = normalizeBoolean(isUnderSixMonths)
@@ -729,11 +722,14 @@ export default function AdmissionClinicalDataScreen() {
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     {/* TODO add url to rrate app */}
-                                    <Button style={{ alignSelf: 'center'}}
-                                            buttonColor={colors.primary} 
-                                            textColor={colors.onPrimary} 
-                                            mode="elevated" 
-                                            onPress={() => {}}>
+                                    <Button 
+                                        style={{ alignSelf: 'center'}}
+                                        buttonColor={colors.primary} 
+                                        textColor={colors.onPrimary} 
+                                        mode="elevated" 
+                                        disabled={true}
+                                        onPress={() => {}}
+                                    >
                                         Record from RRate
                                     </Button>
 

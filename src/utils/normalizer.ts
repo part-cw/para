@@ -30,11 +30,11 @@ export const numberToBoolean = (input: number): boolean => {
 
 /**
  * Given boolean or string booleans (ie 'true', 'false') returns either 'yes' or 'no'.
- * If input is empty string, returns '', otherwise throw error.
+ * If input is empty string or undefined, returns '', otherwise throw error.
  */
 export const convertToYesNo = (input: boolean | string) => {
     if (input === undefined) return '';
-    
+
     if (typeof input === 'string') {
         if (input === '') return ''
 

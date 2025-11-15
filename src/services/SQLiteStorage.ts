@@ -60,7 +60,6 @@ export class SQLiteStorage implements IStorageService {
     //     return key;
     // }
 
-    // TODO - add isDOBUnknwon and isYearMonthUnknown
     async initializeSchema(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
         
@@ -231,8 +230,6 @@ export class SQLiteStorage implements IStorageService {
   
     /**
      * use in edit screens - updates all changed fields  in one go
-     * TODO - optimize it so it only updates one field at a time - curruenly upserts all clinical variables for each field change
-     * TODO - add/increase timeout?
      */
     async updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
@@ -369,8 +366,7 @@ export class SQLiteStorage implements IStorageService {
         );
 
         if (existing) {
-            // DRAFT EXISTS: Use UPDATE (TODO make sure it only changes what's needed)
-            // console.log('!!! inside sqlstorage/saveDraft...updating patient with data....', data)
+            // DRAFT EXISTS: Use UPDATE
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
