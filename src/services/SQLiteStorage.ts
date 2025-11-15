@@ -660,19 +660,14 @@ export class SQLiteStorage implements IStorageService {
         const usageTime = this.determineUsageTime(varName);
         const stringValue = this.convertToString(value, varType);
 
-        // console.log('~~~ inside upsertClinicalVariable, varName and value', varName, value, typeof(value))
-
         // If value is null/undefined/empty, DELETE the row instead of inserting
         if (stringValue === null || stringValue === '') {
-            // console.log(`~~~~ deleting clinical variable ${varName} for ${patientId}`)
             await this.db.runAsync(`
                 DELETE FROM clinical_variables 
                 WHERE patientId = ? AND variableName = ? AND usageTime = ?
             `, [patientId, varName, usageTime]);
             return;
         }
-
-        // console.log('~~~~ upserting clinical variable', varName)
 
         await this.db.runAsync(`
             INSERT OR REPLACE INTO clinical_variables (
@@ -999,8 +994,6 @@ export class SQLiteStorage implements IStorageService {
         if (variableType === 'json') {
             return JSON.stringify(value);
         } else if (variableType === 'boolean') {
-            // console.log('~~inside sqlStorage/convertToString... normalizing bool value', value)
-            // console.log('~~normalized bool = ', normalizeBoolean(value))
             return normalizeBoolean(value) ? '1' : '0';
         } else {
             return value.toString();

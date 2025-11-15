@@ -11,7 +11,7 @@ import { bcsGeneralInfo, eyeMovementInfo, jaundiceInfo, motorResponseInfo, muacI
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { calculateBcsScore, calculateWAZ, getEyeMovementScore, getMotorResponseScore, getMuacStatus, getTempSquared, getVerbalResponseScore, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
-import { normalizeBoolean } from '@/src/utils/normalizer';
+import { convertToYesNo, normalizeBoolean } from '@/src/utils/normalizer';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, Text, View } from 'react-native';
@@ -69,7 +69,7 @@ export default function AdmissionClinicalDataScreen() {
         isNeonate,
     } = patientData
 
-
+    // TODO delete
     console.log('🔍 neonatalJaundice Debug:', {
         type: typeof jaundice,
         value: jaundice,
@@ -268,6 +268,8 @@ export default function AdmissionClinicalDataScreen() {
 
         const warning = muac && validateMuac(muac).warningMessage;
 
+        if (!warning) return;
+
         if (Platform.OS === 'web') {
             // Web: use confirm to mimic Cancel / OK
             const confirmResult = window.confirm(
@@ -462,9 +464,10 @@ export default function AdmissionClinicalDataScreen() {
                                                 options={[
                                                     { label: 'Yes', value: 'yes'},
                                                     { label: 'No', value: 'no'},]} 
-                                                selected={jaundice as string} 
-                                                onSelect={(value) => updatePatientData({ 
-                                                    neonatalJaundice: value})}
+                                                selected={convertToYesNo(jaundice as string)} 
+                                                onSelect={(value) => {
+                                                    updatePatientData({ neonatalJaundice: value})}
+                                                }
                                             />
                                         </View>
                                     }
@@ -475,7 +478,7 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={bulgingFontanelle as string} 
+                                            selected={convertToYesNo(bulgingFontanelle as string)} 
                                             onSelect={(value) => updatePatientData({ bulgingFontanelle: value})}
                                         />
                                     </View>
@@ -487,7 +490,7 @@ export default function AdmissionClinicalDataScreen() {
                                             options={[
                                                 { label: 'Yes', value: 'yes'},
                                                 { label: 'No', value: 'no'},]} 
-                                            selected={feedingStatus as string} 
+                                            selected={convertToYesNo(feedingStatus as string)} 
                                             onSelect={(value) => updatePatientData({ feedingWell: value })}
                                         />
                                     </View>
