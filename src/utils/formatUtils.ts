@@ -16,3 +16,13 @@ export function formatName(firstName: string, surname: string, othername?: strin
 
     return `${firstName} ${surname}`
 }
+
+
+export function displayDob(dob?: string, yob?: string, mob?: string): string {
+    if (dob) {
+        return formatDateString(dob);
+    } else if (yob && mob) {
+        return `${mob} ${yob}`;
+    } 
+    return 'Not provided';
+};
