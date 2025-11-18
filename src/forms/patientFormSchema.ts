@@ -29,7 +29,7 @@ export const patientFormSchema = [
         oneOf: [
             ['dob'],
             ['birthYear', 'birthMonth'],
-            ['approxAge']
+            ['approxAgeInYears']
         ],
         optionalFields: ['otherName']
     },
