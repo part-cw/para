@@ -797,7 +797,7 @@ export class SQLiteStorage implements IStorageService {
         return variables;
     }
 
-    private async logChanges(
+    async logChanges(
         patientId: string,
         action: string,
         fieldChanged: string | null,

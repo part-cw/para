@@ -12,6 +12,13 @@ export interface IStorageService {
     getPatient(patientId: string): Promise<PatientData | null>;
     updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void>;
     deletePatient(patientId: string): Promise<void>;
+    logChanges(
+        patientId: string,
+        action: string,
+        fieldChanged: string | null,
+        oldValue: string | null,
+        newValue: string | null
+    ): Promise<void> 
   
     // Draft operations
     saveDraft(data: PatientData, draftId: string): Promise<void>;

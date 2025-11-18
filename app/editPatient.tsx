@@ -21,6 +21,7 @@ export default function EditPatientRecord() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [recalculating, setRecalculating] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [patient, setPatient] = useState<PatientData | null>(null);
     
     const [showHivEdit, setShowHivEdit] = useState(false);
@@ -61,18 +62,31 @@ export default function EditPatientRecord() {
 
     const handleUpdateHivStatus = () => {
         console.log('inside handle edit')
-        const confirmUpdate = () => {
+        const confirmUpdate = async () => {
             console.log('updating hiv status to ', editedHivStatus)
+            const prev = patient?.hivStatus
 
+            setIsUpdating(true);
+            
             // update hivStatus in storage
-            // refresh?
-            // recalculate risk 
+            await storage.updatePatient(patientId, {hivStatus: editedHivStatus})
+            await storage.logChanges(patientId, 'UPDATE', 'hivStatus', prev as string, editedHivStatus as string)
+
+            // recalculate risk
+            setRecalculating(true);
+            // TODO call risk calcucaltion funvtion
+            // show snackbar (with timer?)
+            
+            setRecalculating(false);
+            setIsUpdating(false);
+            setShowHivEdit(false);
+            await onRefresh();
         }
 
         if (Platform.OS !== 'web') {
             Alert.alert(
                 '⚠️ Warning',
-                'Updating HIV status may trigger a risk recalculation. Continue anyway?',
+                'Updating HIV status may trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
                 [ 
                     {text: 'Cancel', style: 'cancel'},
                     {text: 'OK', onPress: () => confirmUpdate()}]
@@ -198,7 +212,7 @@ export default function EditPatientRecord() {
                                         </View>
 
                                         {/* HIV edit section */}
-                                        {showHivEdit && (
+                                        {showHivEdit && (patient.hivStatus === 'unknown') && (
                                             <View style={Styles.editFieldContainer}>
                                                 <Text style={{ marginBottom: 8, fontWeight: 'bold', fontSize: 16 }}>
                                                     Edit HIV Status:
@@ -207,7 +221,6 @@ export default function EditPatientRecord() {
                                                     options={[
                                                         { label: 'Positive', value: 'positive' },
                                                         { label: 'Negative', value: 'negative' },
-                                                        { label: 'Unknown', value: 'unknown' }
                                                     ]}
                                                     selected={editedHivStatus as string}
                                                     onSelect={setEditedHivStatus}
@@ -219,7 +232,7 @@ export default function EditPatientRecord() {
                                                     textColor={colors.onPrimary}
                                                     mode='elevated'
                                                     onPress={() => handleUpdateHivStatus()}
-                                                    // loading={true}
+                                                    loading={isUpdating}
                                                 >
                                                     Update
                                                 </Button>
