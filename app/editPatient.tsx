@@ -1,15 +1,17 @@
+import { EditFieldGroup } from "@/src/components/EditFieldGroup";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
 import { PatientData } from "@/src/contexts/PatientData";
 import { useStorage } from "@/src/contexts/StorageContext";
 import { displayNames } from "@/src/forms/displayNames";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
-import { displayDob, formatName } from "@/src/utils/formatUtils";
+import { displayDob, formatChronicIllness, formatName } from "@/src/utils/formatUtils";
+import { convertToYesNo } from "@/src/utils/normalizer";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Platform, RefreshControl, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Button, IconButton, List, Text, useTheme } from "react-native-paper";
+import { Button, List, Text, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 
@@ -117,6 +119,10 @@ export default function EditPatientRecord() {
     }
 
     if (patient) {
+        const otherChronicIllnessSelected = patient.chronicIllnesses?.includes('other');
+        const hivIsEditable = patient.hivStatus === 'unknown';
+        const ageIsEditable = !patient.dob || (!patient.birthYear && !patient.birthMonth);
+
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
                 <ScrollView 
@@ -144,10 +150,6 @@ export default function EditPatientRecord() {
                         </View>
                     </View>
 
-                    {/* <Text style={{marginLeft: 20, marginTop: 10, fontStyle: 'italic', color: 'grey'}}>
-                        Changes are automatically saved
-                    </Text> */}
-
                     {/* Patient Info Accordion */}
                     <View style={{margin: 15}}>
                         <View style={Styles.accordionListWrapper}>
@@ -155,12 +157,22 @@ export default function EditPatientRecord() {
                                 title="Patient Information"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="account"/>}
+                                description={ageIsEditable ? 'DOB can be edited' : 'Read only'}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <InfoRow label="Full Name" value={formatName(patient.firstName, patient.surname, patient.otherName)} />
                                     <InfoRow label="Sex" value={patient.sex} />
-                                    {/* TODO - if dob unknwon or yob and mob unknwon - allow edit */}
-                                    <InfoRow label="DOB" value={displayDob(patient.dob?.toISOString(), patient.birthYear, patient.birthMonth)} />
+                                    
+                                    {/* Age information */}
+                                    <EditFieldGroup 
+                                        fieldLabel={"DOB"} 
+                                        fieldValue={displayDob(patient.dob?.toISOString(), patient.birthYear, patient.birthMonth)}
+                                        editLabel="Edit Age Information" 
+                                        canEdit={ageIsEditable} 
+                                    >
+                                        <Text>Blah TODO </Text>
+                                    </EditFieldGroup>
+                                    
                                     <InfoRow label="Age" value={`${AgeCalculator.formatAge(patient.ageInMonths)} old`} />
                                     <InfoRow label="Under 6 months" value={patient.isUnderSixMonths ? 'Yes' : 'No'} />
                                 </View>
@@ -173,7 +185,7 @@ export default function EditPatientRecord() {
                                 title="Admission Clinical Data"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="heart-pulse"/>}
-                                description={`${patient.hivStatus === 'unknown' ? 'HIV status editable' : 'Read-only'}`}
+                                description={hivIsEditable ? 'HIV status editable' : 'Read-only'}
                             >
                                 {
                                     patient.isUnderSixMonths
@@ -181,10 +193,9 @@ export default function EditPatientRecord() {
                                     <View style={Styles.accordionContentWrapper}>
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
                                         <InfoRow label={displayNames['illnessDuration']} value={patient.illnessDuration || 'Not provided'} />
-                                        {patient.isNeonate && <InfoRow label="Neonatal Jaundice" value={patient.neonatalJaundice as string} />}
-                                        <InfoRow label="Bugling fontanelle" value={patient.bulgingFontanelle as string} />
-                                        <InfoRow label="Feeding well?" value={patient.feedingWell as string} />
-                                        
+                                        {patient.isNeonate && <InfoRow label="Neonatal Jaundice" value={convertToYesNo(patient.neonatalJaundice as string)} />}
+                                        <InfoRow label="Bugling fontanelle" value={convertToYesNo(patient.bulgingFontanelle as string)} />
+                                        <InfoRow label="Feeding well" value={convertToYesNo(patient.feedingWell as string)} />
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                         <InfoRow label="Weight" value={patient.weight ? `${patient.weight} kg`: 'Not provided'} />
                                         <InfoRow label="MUAC" value={patient.muac ? `${patient.muac} mm` : 'Not provided'} />
@@ -195,49 +206,33 @@ export default function EditPatientRecord() {
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
                                         <InfoRow label="Last Hopitalized" value={patient.lastHospitalized || 'Not provided'} />
                                         
-                                        {/* HIV status info */}
-                                        <View style={{flexDirection: 'row', marginBottom: 8, alignItems: 'center'}}>
-                                            <Text style={{fontWeight: 'bold', flex: 1, fontSize: 16}}>HIV Status:</Text>
-                                            <Text style={{flex: 2, fontSize: 16, marginLeft: 15}}>
-                                                {patient.hivStatus?.toUpperCase()}
-                                            </Text>
-                                            {patient.hivStatus === 'unknown' && (
-                                                <IconButton
-                                                    icon='lead-pencil'
-                                                    iconColor={colors.primary}
-                                                    size={20}
-                                                    onPress={() => setShowHivEdit(prev => !prev)}
-                                                />
-                                            )}
-                                        </View>
-
-                                        {/* HIV edit section */}
-                                        {showHivEdit && (patient.hivStatus === 'unknown') && (
-                                            <View style={Styles.editFieldContainer}>
-                                                <Text style={{ marginBottom: 8, fontWeight: 'bold', fontSize: 16 }}>
-                                                    Edit HIV Status:
-                                                </Text>
-                                                <RadioButtonGroup
-                                                    options={[
-                                                        { label: 'Positive', value: 'positive' },
-                                                        { label: 'Negative', value: 'negative' },
-                                                    ]}
-                                                    selected={editedHivStatus as string}
-                                                    onSelect={setEditedHivStatus}
-                                                />
-                                                <Button
-                                                    style={{ alignSelf: 'center' }}
-                                                    icon='content-save-check'
-                                                    buttonColor={colors.primary}
-                                                    textColor={colors.onPrimary}
-                                                    mode='elevated'
-                                                    onPress={() => handleUpdateHivStatus()}
-                                                    loading={isUpdating}
-                                                >
-                                                    Update
-                                                </Button>
-                                            </View>
-                                        )}
+                                        {/* HIV status info/edit */}
+                                        <EditFieldGroup 
+                                            fieldLabel={"HIV Status"} 
+                                            fieldValue={patient.hivStatus?.toUpperCase() as string}
+                                            editLabel="Edit HIV Status:" 
+                                            canEdit={patient.hivStatus === 'unknown'} 
+                                        >
+                                            <RadioButtonGroup
+                                                options={[
+                                                    { label: 'Positive', value: 'positive' },
+                                                    { label: 'Negative', value: 'negative' },
+                                                ]}
+                                                selected={editedHivStatus as string}
+                                                onSelect={setEditedHivStatus}
+                                            />
+                                            <Button
+                                                style={{ alignSelf: 'center' }}
+                                                icon='content-save-check'
+                                                buttonColor={colors.primary}
+                                                textColor={colors.onPrimary}
+                                                mode='elevated'
+                                                onPress={() => handleUpdateHivStatus()}
+                                                loading={isUpdating}
+                                            >
+                                                Update
+                                            </Button>
+                                        </EditFieldGroup>
                                         
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                         <InfoRow label="Weight" value={patient.weight ? `${patient.weight} kg`: 'Not provided'} />
@@ -264,7 +259,16 @@ export default function EditPatientRecord() {
                                 left={props => <List.Icon {...props} icon="medical-bag"/>}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO */}
+                                    <InfoRow label="Pneumonia" value={patient.pneumonia || 'Not provided'} />
+                                    <InfoRow label="Severe anaemia" value={patient.severeAnaemia || 'Not provided'} />
+                                    <InfoRow label="Diarrhea" value={patient.diarrhea || 'Not provided'} />
+                                    <InfoRow label="Malaria" value={patient.malaria ||'Not provided' } />
+                                    <InfoRow label="Sepsis" value={patient.sepsis|| 'Not provided'} />
+                                    <InfoRow label="Meningitis/ Encephalitis" value={patient.meningitis_encephalitis || 'Not provided'} />
+                                    <InfoRow label="Chronic Conditions" value={formatChronicIllness(patient.chronicIllnesses) || 'Not provided'} />
+                                    {otherChronicIllnessSelected && 
+                                        <InfoRow label="Other chronic illness" value={patient.otherChronicIllness || 'Not provided'} />
+                                    }
                                 </View>
                             </List.Accordion>
                         </View>
@@ -310,7 +314,7 @@ export default function EditPatientRecord() {
                         </View>
 
                         {/* Careplan Accordion*/}
-                        <View style={Styles.accordionListWrapper}>
+                        {/* <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Careplan Recommendations"
                                 titleStyle={Styles.accordionListTitle}
@@ -318,10 +322,9 @@ export default function EditPatientRecord() {
                                 description={'Read-only'}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO - show admission and discharge or only most recent? */}
                                 </View>
                             </List.Accordion>
-                        </View>
+                        </View> */}
                     </View>
 
                     {/* Pagination controls */}
