@@ -26,3 +26,23 @@ export function displayDob(dob?: string, yob?: string, mob?: string): string {
     } 
     return 'Not provided';
 };
+
+export const formatChronicIllness = (items: string[] = []): string => {
+        if (!items || items.length === 0) return 'Not provided';
+
+        // Capitalize the first letter of each illness and normalize spacing
+        const formatted = items.map(item => {
+            const trimmed = item.trim();
+            if (!trimmed) return null;
+
+            // Capitalize only the first letter (including after "other:")
+            const formattedText =
+            trimmed.length > 0
+                ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+                : trimmed;
+
+            return `• ${formattedText}`;
+        }).filter(Boolean);
+
+        return formatted.join('\n');
+    };
