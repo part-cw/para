@@ -174,4 +174,12 @@ export const GlobalStyles = StyleSheet.create({
         // textAlign: 'left',
         color: '#000',
     },
+    editFieldContainer: {
+        backgroundColor: 'rgb(255, 245, 198)',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: 'rgb(248, 203, 0)'
+    }
 })
