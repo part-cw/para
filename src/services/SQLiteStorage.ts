@@ -19,6 +19,7 @@ type MedicalConditionsRow = {
   meningitis_encephalitis: string;
   chronicIllnesses: string;
   otherChronicIllness: string | null;
+  severeAnaemia: string;
 };
 
 
@@ -753,6 +754,7 @@ export class SQLiteStorage implements IStorageService {
             diarrhea: row.diarrhea,
             malaria: row.malaria,
             sepsis: row.sepsis,
+            severeAnaemia: row.severeAnaemia,
             meningitis_encephalitis: row.meningitis_encephalitis,
             chronicIllnesses: chronicIllnesses,
             otherChronicIllness: row.otherChronicIllness,
