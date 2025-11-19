@@ -205,9 +205,9 @@ export class SQLiteStorage implements IStorageService {
         // flip isDraftAdmision flag and add metadata
         await this.db.runAsync(`
             UPDATE patients 
-            SET isDraftAdmission = 0, admissionCompletedAt = ?, updatedAt = ?
+            SET isDraftAdmission = 0, admissionCompletedAt = ?, updatedAt = ?, admittedBy = ?
             WHERE patientId = ?
-        `, [now, now, patientId]);
+        `, [now, now, CURRENT_USER,patientId]);
 
         await this.logChanges(patientId, 'SUBMIT', null, null, null);
         console.log(`✅ Patient ${patientId} submitted`);
@@ -232,16 +232,21 @@ export class SQLiteStorage implements IStorageService {
     /**
      * use in edit screens - updates all changed fields  in one go
      */
-    async updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void> {
+    async updatePatient(
+        patientId: string, 
+        updates: Partial<PatientData>, 
+        date?: string,
+        useTransaction: boolean = true,  
+    ): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
         
         const now = new Date().toISOString();
 
-        await this.db.withTransactionAsync(async () => {
+        const doUpdate = async () => {
             // Update patient demographics
             const patientFields = this.extractPatientFields(updates);
             if (Object.keys(patientFields).length > 0) {
-                await this.updatePatientTable(patientId, patientFields, now);
+                await this.updatePatientTable(patientId, patientFields, (date || now));
             }
 
             // Update medical conditions
@@ -255,9 +260,28 @@ export class SQLiteStorage implements IStorageService {
             for (const [varName, value] of Object.entries(clinicalFields)) {
                 await this.upsertClinicalVariable(patientId, varName, value);
             }
-        });
 
-        console.log(`✅ Patient ${patientId} updated`);
+            console.log(`✅ Patient ${patientId} updated`);
+        }
+
+        if (useTransaction) {
+            await this.db.withTransactionAsync(doUpdate)
+        } else {
+            await doUpdate();
+        }
+    }
+
+    async doBulkUpdate(patientId: string, updates: Partial<PatientData>, previousValues: Record<string, any>): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const now = new Date().toISOString();
+
+        await this.db.withTransactionAsync(async () => {
+            await this.logBulkUpdates(patientId, updates, previousValues, now);
+            await this.updatePatient(patientId, updates, now, false);
+        });
+        
+        console.log(`✅ Patient ${patientId} bulk update complete. Changes logged.`);
     }
 
     async deletePatient(patientId: string): Promise<void> {
@@ -818,6 +842,108 @@ export class SQLiteStorage implements IStorageService {
             console.warn('Failed to log audit:', error);
         }
     }
+
+    private async logBulkUpdates(
+        patientId: string,
+        updates: Partial<PatientData>,
+        previousValues: Record<string, any>,
+        now: string
+    ): Promise<void> {
+        if (!this.db) throw new Error ('Databse not initialized');
+
+        const changeEntries: any[] = [];
+
+        function normalizeAuditValue(value: any): string | number | null {
+            if (value === null || value === undefined) return null;
+            if (value instanceof Date) return value.toISOString();
+            if (typeof value === 'object') return JSON.stringify(value);
+            return value;
+        }
+
+        for (const field of Object.keys(updates)) {
+            const newValue = updates[field as keyof PatientData];
+            const oldValue = previousValues[field] ?? null;
+
+            // Only log if values are truly different
+            if (String(newValue) !== String(oldValue)) {
+                console.log('...inside change enries condition')
+                changeEntries.push({
+                    patientId,
+                    action: 'UPDATE',
+                    fieldChanged: field,
+                    oldValue: oldValue,
+                    newValue: normalizeAuditValue(newValue),
+                });
+            }
+        }
+
+        if (changeEntries.length === 0) return;
+
+        try {
+            // build bulk insert params
+            const placeholders = changeEntries
+            .map(() => "(?, ?, ?, ?, ?, ?, ?)")
+            .join(", ");
+
+            const flattened = changeEntries.flatMap(c => [
+                c.patientId,
+                c.action,
+                c.fieldChanged,
+                c.oldValue,
+                c.newValue,
+                CURRENT_USER,
+                now
+            ]);
+
+            await this.db.runAsync(`
+                INSERT INTO audit_log (
+                    patientId, action, fieldChanged, oldValue, newValue, changedBy, changedAt
+                ) VALUES ${placeholders}
+            `, flattened);
+        } catch (err) {
+            console.warn("Failed to log bulk audit:", err);
+        }
+    }
+
+    async logBulkChanges(
+        patientId: string,
+        changes: {
+            action: string;
+            fieldChanged: string | null;
+            oldValue: string | null;
+            newValue: string | null;}[]
+    ): Promise<void> {
+        if (!this.db) throw new Error ('Databse not initialized');
+
+        const changeEntries: any[] = [];
+
+
+        try {
+            // Build placeholders: (?,?,?,?,?,?) for each change
+            const placeholders = changes.map(() => "(?, ?, ?, ?, ?, ?)").join(", ");
+
+            // Flatten parameters
+            const params = changes.flatMap(change => [
+                patientId,
+                change.action,
+                change.fieldChanged,
+                change.oldValue,
+                change.newValue,
+                CURRENT_USER,
+            ]);
+
+            await this.db.runAsync(`
+                INSERT INTO audit_log (
+                    patientId, action, fieldChanged, oldValue, newValue, changedBy
+                )
+                VALUES ${placeholders}
+                `, params
+            );
+        } catch (error) {
+            console.warn("Failed to log bulk changes:", error);
+        }
+    }
+
 
     private buildPatientData(patientRow: any, conditions: { [key: string]: any; }, clinicalData: { [key: string]: any; }): PatientData {
         return {

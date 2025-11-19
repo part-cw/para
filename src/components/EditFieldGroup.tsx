@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { IconButton, useTheme } from 'react-native-paper';
 
 
-type EditFieldProps = {
+type EditGroupProps = {
   fieldLabel: string;
   fieldValue: string;
   editLabel?: string;
@@ -19,13 +19,13 @@ type EditBoxProps = {
   children?: React.ReactNode;
 };
 
-export function EditFieldGroup({ 
+export function EditGroup({ 
     fieldLabel, 
     fieldValue, 
     editLabel, 
     canEdit = true, 
     onClickEdit, 
-    children}: EditFieldProps) {
+    children}: EditGroupProps) {
 
     const { colors } = useTheme()
     const [showEdit, setShowEdit] = useState(false)
@@ -39,7 +39,7 @@ export function EditFieldGroup({
                 <Text style={styles.fieldValue}>
                     {fieldValue}
                 </Text>
-                {canEdit && (
+                {canEdit === true && (
                     <IconButton
                         icon='lead-pencil'
                         iconColor={colors.primary}
@@ -49,7 +49,7 @@ export function EditFieldGroup({
                 )}
             </View>
 
-            { showEdit &&
+            { showEdit === true &&
             <EditBox 
                 label= {editLabel}
                 canEdit={canEdit} 
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   fieldValue: {
     flex: 2, 
     fontSize: 16, 
-    marginLeft: 20
+    marginLeft: 5
   },
   
 });

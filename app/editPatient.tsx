@@ -1,18 +1,20 @@
-import { EditFieldGroup } from "@/src/components/EditFieldGroup";
+import { EditGroup } from "@/src/components/EditFieldGroup";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
 import { PatientData } from "@/src/contexts/PatientData";
 import { useStorage } from "@/src/contexts/StorageContext";
 import { displayNames } from "@/src/forms/displayNames";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
-import { displayDob, formatChronicIllness, formatName } from "@/src/utils/formatUtils";
-import { convertToYesNo } from "@/src/utils/normalizer";
+import { displayDob, formatChronicIllness, formatDateString, formatName } from "@/src/utils/formatUtils";
+import { convertToYesNo, normalizeBoolean } from "@/src/utils/normalizer";
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Platform, RefreshControl, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, RefreshControl, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Button, List, Text, useTheme } from "react-native-paper";
+import { Button, List, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 
 
@@ -26,6 +28,9 @@ export default function EditPatientRecord() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [patient, setPatient] = useState<PatientData | null>(null);
     
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [editedDOB, setEditeDob] = useState<Date | null>(null)
+
     const [showHivEdit, setShowHivEdit] = useState(false);
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
     const [riskUpdated, setRiskUpdated] = useState(false);
@@ -62,10 +67,96 @@ export default function EditPatientRecord() {
         setRefreshing(false);
     }
 
-    const handleUpdateHivStatus = () => {
-        console.log('inside handle edit')
+    const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        if (event.type === "set" && selectedDate) {
+            setEditeDob(selectedDate)
+        }
+
+        if (Platform.OS === "android") {
+            setShowDatePicker(false); // Android requires manual closing
+        }
+    };
+
+    /**
+     * TODO: restrict users from changing dob such that isUnderSixMonths changes 
+     *  - add alert that the selected date change will change model and tell them to 
+     *      (1) delete this record and re-admit patient (find a way to preserve basic demo and contact info) OR 
+     *      (2) cancel
+     * 
+     *  Allow users to go from neonate to not neonate, but prompt them to fill jaundice status if neonate now true
+     *  - trigger recalc AFTER neonatal jaundice filled
+     * 
+     *  make sure log logs changes to medical conditions and vht/caretiver contact as well
+     *  make sure sickYoungInfant change is also reflected in medical_conditions and audit_log
+     */
+    const handleUpdateDob = () => {
         const confirmUpdate = async () => {
-            console.log('updating hiv status to ', editedHivStatus)
+            // calculcate new age values
+            const newAgeInMonths = AgeCalculator.calculateAgeInMonths(editedDOB, '', '', '');
+            const newAgeInDays = editedDOB && AgeCalculator.getAgeInDaysFromDob(editedDOB);
+            const newIsUnderSixMonths = newAgeInMonths < 6
+            const newIsNeonate = (typeof newAgeInDays === 'number') && (newAgeInDays < 30);
+            const newIsSickYoungInfant = (typeof newAgeInDays === 'number') && (newAgeInDays < 28);
+
+            // store previous age info (before dob change)
+            const previous = {
+                dob: (patient?.dob && patient?.dob.toISOString()) || null,
+                birthYear: patient?.birthYear,
+                birthMonth: patient?.birthMonth,
+                approxAgeInYears: patient?.approxAgeInYears,
+                ageInMonths: patient?.ageInMonths,
+                isDOBUnknown: patient?.isDOBUnknown,
+                isYearMonthUnknown: patient?.isYearMonthUnknown,
+                isUnderSixMonths: patient?.isUnderSixMonths,
+                isNeonate: patient?.isNeonate,
+                isSickYoungInfant: patient?.sickYoungInfant
+            }
+
+            // only update values if they have changed
+            const updates = {
+                ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && {dob: editedDOB}),
+                ...(previous.birthYear && previous.birthYear !== '' && {birthYear: ''}),
+                ...(previous.birthMonth && previous.birthMonth !== '' &&  {birthMonth: ''}),
+                ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && {approxAgeInYears: ''}),
+                ...(previous.ageInMonths !== newAgeInMonths && {ageInMonths: newAgeInMonths}),
+                ...(previous.isDOBUnknown !== false && {isDOBUnknown: false} ),
+                ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
+                ...(previous.isUnderSixMonths !== newIsUnderSixMonths && {isUnderSixMonths: newIsUnderSixMonths}),
+                ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
+                ...(previous.isSickYoungInfant !== newIsSickYoungInfant && {isSickYoungInfant: newIsSickYoungInfant})
+            };
+            console.log('!!! updates', updates)
+
+            setIsUpdating(true);
+            await storage.doBulkUpdate(patientId, updates, previous)
+            
+            // recalculate risk 
+            setRecalculating(true);
+            // TODO call risk calcucaltion funvtion
+            // TODO check that all variabels are filled
+            // show snackbar (with timer?)
+            
+            setRecalculating(false);
+            setIsUpdating(false);
+            await onRefresh();
+        }
+
+        if (Platform.OS !== 'web') {
+            Alert.alert(
+                '⚠️ WARNING',
+                'Updating DOB will trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
+                [ 
+                    {text: 'Cancel', style: 'cancel'},
+                    {text: 'OK', onPress: () => confirmUpdate()}]
+            )
+        } else {
+            // TODO -  add alert for web 
+            return;
+        } 
+    }
+
+    const handleUpdateHivStatus = () => {
+        const confirmUpdate = async () => {
             const prev = patient?.hivStatus
 
             setIsUpdating(true);
@@ -81,13 +172,13 @@ export default function EditPatientRecord() {
             
             setRecalculating(false);
             setIsUpdating(false);
-            setShowHivEdit(false);
+            // setShowHivEdit(false);
             await onRefresh();
         }
 
         if (Platform.OS !== 'web') {
             Alert.alert(
-                '⚠️ Warning',
+                '⚠️ WARNING',
                 'Updating HIV status may trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
                 [ 
                     {text: 'Cancel', style: 'cancel'},
@@ -97,7 +188,6 @@ export default function EditPatientRecord() {
             // TODO -  add alert for web 
             return;
         } 
-      
     }
 
     const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
@@ -121,7 +211,7 @@ export default function EditPatientRecord() {
     if (patient) {
         const otherChronicIllnessSelected = patient.chronicIllnesses?.includes('other');
         const hivIsEditable = patient.hivStatus === 'unknown';
-        const ageIsEditable = !patient.dob || (!patient.birthYear && !patient.birthMonth);
+        const ageIsEditable = (patient.isDOBUnknown) || (!patient.isDOBUnknown && patient.isYearMonthUnknown);
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
@@ -164,14 +254,49 @@ export default function EditPatientRecord() {
                                     <InfoRow label="Sex" value={patient.sex} />
                                     
                                     {/* Age information */}
-                                    <EditFieldGroup 
+                                    <EditGroup 
                                         fieldLabel={"DOB"} 
                                         fieldValue={displayDob(patient.dob?.toISOString(), patient.birthYear, patient.birthMonth)}
-                                        editLabel="Edit Age Information" 
-                                        canEdit={ageIsEditable} 
+                                        editLabel="Enter new DOB if known" 
+                                        canEdit={normalizeBoolean(ageIsEditable)} 
                                     >
-                                        <Text>Blah TODO </Text>
-                                    </EditFieldGroup>
+                                        <>
+                                            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                                <TextInput 
+                                                    label="Date of Birth (YYYY-MM-DD)" 
+                                                    placeholder='Select date' 
+                                                    mode="outlined" 
+                                                    value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
+                                                    style={[Styles.textInput, {marginTop: 10}]}
+                                                    editable={false}
+                                                    pointerEvents="none"
+                                                />
+                                            </TouchableOpacity>
+
+                                            {showDatePicker && (
+                                                <DateTimePicker
+                                                    value={editedDOB || new Date()}
+                                                    mode="date"
+                                                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                                                    onChange={handleDobChange}
+                                                    maximumDate={new Date()}
+                                                />
+                                            )}
+                                            
+                                            <Button
+                                                style={{ alignSelf: 'center' }}
+                                                icon='content-save-check'
+                                                buttonColor={colors.primary}
+                                                textColor={colors.onPrimary}
+                                                mode='elevated'
+                                                onPress={handleUpdateDob}
+                                                loading={isUpdating}
+                                            >
+                                                Update
+                                            </Button>
+
+                                        </>
+                                    </EditGroup>
                                     
                                     <InfoRow label="Age" value={`${AgeCalculator.formatAge(patient.ageInMonths)} old`} />
                                     <InfoRow label="Under 6 months" value={patient.isUnderSixMonths ? 'Yes' : 'No'} />
@@ -207,11 +332,11 @@ export default function EditPatientRecord() {
                                         <InfoRow label="Last Hopitalized" value={patient.lastHospitalized || 'Not provided'} />
                                         
                                         {/* HIV status info/edit */}
-                                        <EditFieldGroup 
+                                        <EditGroup 
                                             fieldLabel={"HIV Status"} 
                                             fieldValue={patient.hivStatus?.toUpperCase() as string}
                                             editLabel="Edit HIV Status:" 
-                                            canEdit={patient.hivStatus === 'unknown'} 
+                                            canEdit={hivIsEditable} 
                                         >
                                             <RadioButtonGroup
                                                 options={[
@@ -232,7 +357,7 @@ export default function EditPatientRecord() {
                                             >
                                                 Update
                                             </Button>
-                                        </EditFieldGroup>
+                                        </EditGroup>
                                         
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                         <InfoRow label="Weight" value={patient.weight ? `${patient.weight} kg`: 'Not provided'} />

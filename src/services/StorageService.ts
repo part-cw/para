@@ -19,6 +19,21 @@ export interface IStorageService {
         oldValue: string | null,
         newValue: string | null
     ): Promise<void> 
+
+    logBulkChanges(
+        patientId: string,
+        changes: {
+            action: string;
+            fieldChanged: string | null;
+            oldValue: string | null;
+            newValue: string | null;}[]
+    ): Promise<void>
+
+    doBulkUpdate(
+        patientId: string, 
+        updates: Partial<PatientData>, 
+        previousValues: Record<string, any>
+    ): Promise<void>
   
     // Draft operations
     saveDraft(data: PatientData, draftId: string): Promise<void>;
