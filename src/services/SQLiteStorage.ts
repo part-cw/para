@@ -870,7 +870,6 @@ export class SQLiteStorage implements IStorageService {
 
             // Only log if values are truly different
             if (String(newValue) !== String(oldValue)) {
-                console.log('...inside change enries condition')
                 changeEntries.push({
                     patientId,
                     action: 'UPDATE',

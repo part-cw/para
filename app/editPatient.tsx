@@ -29,9 +29,7 @@ export default function EditPatientRecord() {
     const [patient, setPatient] = useState<PatientData | null>(null);
     
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [editedDOB, setEditeDob] = useState<Date | null>(null)
-
-    const [showHivEdit, setShowHivEdit] = useState(false);
+    const [editedDOB, setEditedDob] = useState<Date | null>(null)
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
     const [riskUpdated, setRiskUpdated] = useState(false);
 
@@ -69,7 +67,7 @@ export default function EditPatientRecord() {
 
     const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
-            setEditeDob(selectedDate)
+            setEditedDob(selectedDate)
         }
 
         if (Platform.OS === "android") {
@@ -78,41 +76,65 @@ export default function EditPatientRecord() {
     };
 
     /**
-     * TODO: restrict users from changing dob such that isUnderSixMonths changes 
-     *  - add alert that the selected date change will change model and tell them to 
-     *      (1) delete this record and re-admit patient (find a way to preserve basic demo and contact info) OR 
-     *      (2) cancel
+     * TODO: implement re-admit workflow (retain prev info to save time for users)
      * 
      *  Allow users to go from neonate to not neonate, but prompt them to fill jaundice status if neonate now true
      *  - trigger recalc AFTER neonatal jaundice filled
      * - if isNeonate and neonatal jaundice not provided --> MUST FILL IN VALUE
-     * 
-     * fix bug: text strings must be redndred withiu text component. hapend when patient not neonate and expand clin data card
-     * 
+     *     
      */
     const handleUpdateDob = () => {
-        const confirmUpdate = async () => {
-            // calculcate new age values
-            const newAgeInMonths = AgeCalculator.calculateAgeInMonths(editedDOB, '', '', '');
-            const newAgeInDays = editedDOB && AgeCalculator.getAgeInDaysFromDob(editedDOB);
-            const newIsUnderSixMonths = newAgeInMonths < 6
-            const newIsNeonate = (typeof newAgeInDays === 'number') && (newAgeInDays < 30);
-            const newIsSickYoungInfant = (typeof newAgeInDays === 'number') && (newAgeInDays < 28);
+        // calculcate new age values
+        const newAgeInMonths = AgeCalculator.calculateAgeInMonths(editedDOB, '', '', '');
+        const newAgeInDays = editedDOB && AgeCalculator.getAgeInDaysFromDob(editedDOB);
+        const newIsUnderSixMonths = newAgeInMonths < 6
+        const newIsNeonate = (typeof newAgeInDays === 'number') && (newAgeInDays < 30);
+        const newIsSickYoungInfant = (typeof newAgeInDays === 'number') && (newAgeInDays < 28);
 
-            // store previous age info (before dob change)
-            const previous = {
-                dob: (patient?.dob && patient?.dob.toISOString()) || null,
-                birthYear: patient?.birthYear,
-                birthMonth: patient?.birthMonth,
-                approxAgeInYears: patient?.approxAgeInYears,
-                ageInMonths: patient?.ageInMonths,
-                isDOBUnknown: patient?.isDOBUnknown,
-                isYearMonthUnknown: patient?.isYearMonthUnknown,
-                isUnderSixMonths: patient?.isUnderSixMonths,
-                isNeonate: patient?.isNeonate,
-                sickYoungInfant: patient?.sickYoungInfant
+        // store previous age info (before dob change)
+        const previous = {
+            dob: (patient?.dob && patient?.dob.toISOString()) || null,
+            birthYear: patient?.birthYear,
+            birthMonth: patient?.birthMonth,
+            approxAgeInYears: patient?.approxAgeInYears,
+            ageInMonths: patient?.ageInMonths,
+            isDOBUnknown: patient?.isDOBUnknown,
+            isYearMonthUnknown: patient?.isYearMonthUnknown,
+            isUnderSixMonths: normalizeBoolean(patient?.isUnderSixMonths as boolean),
+            isNeonate: patient?.isNeonate,
+            sickYoungInfant: patient?.sickYoungInfant
+        }
+
+        if (Platform.OS !== 'web') {
+            // confirm that isUnderSixMonths unchanged -> if it is prevent user from changing DOB
+            console.log('prev', previous.isUnderSixMonths, typeof previous.isUnderSixMonths)
+            console.log('new', newIsUnderSixMonths, typeof newIsUnderSixMonths)
+            if (previous.isUnderSixMonths !== newIsUnderSixMonths) {
+                Alert.alert(
+                    '⚠️ UPDATE FAILED',
+                    'Are you sure the date of birth you entered is correct? This DOB change affects the AI models used for risk scoring.\n\nClick cancel, or re-admit patient if the DOB needs to be corrected.',
+                    [ 
+                        {text: 'Cancel', style: 'cancel'},
+                        {text: 'Readmit', style: 'destructive', onPress: () => {console.log('TODO - redirect to add-workflow & perserve basic info')}}
+                    ]
+                )
+                setEditedDob(null)
+                return;
             }
 
+            Alert.alert(
+                'WARNING',
+                'Updating DOB will trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
+                [ 
+                    {text: 'Cancel', style: 'cancel'},
+                    {text: 'OK', onPress: () => confirmUpdate()}]
+            )
+        } else {
+            // TODO -  add alert for web 
+            return;
+        } 
+
+        const confirmUpdate = async () => {
             // only update values if they have changed
             const updates = {
                 ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && {dob: editedDOB}),
@@ -122,7 +144,7 @@ export default function EditPatientRecord() {
                 ...(previous.ageInMonths !== newAgeInMonths && {ageInMonths: newAgeInMonths}),
                 ...(previous.isDOBUnknown !== false && {isDOBUnknown: false} ),
                 ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
-                ...(previous.isUnderSixMonths !== newIsUnderSixMonths && {isUnderSixMonths: newIsUnderSixMonths}),
+                // ...(previous.isUnderSixMonths !== newIsUnderSixMonths && {isUnderSixMonths: newIsUnderSixMonths}),
                 ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
                 ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
             };
@@ -141,19 +163,6 @@ export default function EditPatientRecord() {
             setIsUpdating(false);
             await onRefresh();
         }
-
-        if (Platform.OS !== 'web') {
-            Alert.alert(
-                '⚠️ WARNING',
-                'Updating DOB will trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
-                [ 
-                    {text: 'Cancel', style: 'cancel'},
-                    {text: 'OK', onPress: () => confirmUpdate()}]
-            )
-        } else {
-            // TODO -  add alert for web 
-            return;
-        } 
     }
 
     const handleUpdateHivStatus = () => {
@@ -213,6 +222,8 @@ export default function EditPatientRecord() {
         const otherChronicIllnessSelected = patient.chronicIllnesses?.includes('other');
         const hivIsEditable = patient.hivStatus === 'unknown';
         const ageIsEditable = (patient.isDOBUnknown) || (!patient.isDOBUnknown && patient.isYearMonthUnknown);
+
+        const normalizedIsNeonate = patient.isNeonate && normalizeBoolean(patient.isNeonate);
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
@@ -319,7 +330,7 @@ export default function EditPatientRecord() {
                                     <View style={Styles.accordionContentWrapper}>
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
                                         <InfoRow label={displayNames['illnessDuration']} value={patient.illnessDuration || 'Not provided'} />
-                                        {patient.isNeonate && <InfoRow label="Neonatal Jaundice" value={convertToYesNo(patient.neonatalJaundice as string)} />}
+                                        {normalizedIsNeonate === true && <InfoRow label="Neonatal Jaundice" value={convertToYesNo(patient.neonatalJaundice as string)} />}
                                         <InfoRow label="Bugling fontanelle" value={convertToYesNo(patient.bulgingFontanelle as string)} />
                                         <InfoRow label="Feeding well" value={convertToYesNo(patient.feedingWell as string)} />
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
