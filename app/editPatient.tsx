@@ -16,8 +16,6 @@ import { Button, List, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 
-
-
 export default function EditPatientRecord() {
     const { storage } = useStorage();
     const { colors } = useTheme()
@@ -256,8 +254,8 @@ export default function EditPatientRecord() {
 
     if (patient) {
         const otherChronicIllnessSelected = patient.chronicIllnesses?.includes('other');
-        const hivIsEditable = patient.hivStatus === 'unknown';
-        const ageIsEditable = (patient.isDOBUnknown) || (!patient.isDOBUnknown && patient.isYearMonthUnknown);
+        const hivIsEditable = !patient.isDischarged && (patient.hivStatus === 'unknown');
+        const ageIsEditable = !patient.isDischarged && ((patient.isDOBUnknown) || (!patient.isDOBUnknown && patient.isYearMonthUnknown));
         const normalizedIsNeonate = patient.isNeonate && normalizeBoolean(patient.isNeonate);
 
         return (
