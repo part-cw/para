@@ -85,9 +85,10 @@ export default function EditPatientRecord() {
      * 
      *  Allow users to go from neonate to not neonate, but prompt them to fill jaundice status if neonate now true
      *  - trigger recalc AFTER neonatal jaundice filled
+     * - if isNeonate and neonatal jaundice not provided --> MUST FILL IN VALUE
      * 
-     *  make sure log logs changes to medical conditions and vht/caretiver contact as well
-     *  make sure sickYoungInfant change is also reflected in medical_conditions and audit_log
+     * fix bug: text strings must be redndred withiu text component. hapend when patient not neonate and expand clin data card
+     * 
      */
     const handleUpdateDob = () => {
         const confirmUpdate = async () => {
@@ -109,7 +110,7 @@ export default function EditPatientRecord() {
                 isYearMonthUnknown: patient?.isYearMonthUnknown,
                 isUnderSixMonths: patient?.isUnderSixMonths,
                 isNeonate: patient?.isNeonate,
-                isSickYoungInfant: patient?.sickYoungInfant
+                sickYoungInfant: patient?.sickYoungInfant
             }
 
             // only update values if they have changed
@@ -123,7 +124,7 @@ export default function EditPatientRecord() {
                 ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
                 ...(previous.isUnderSixMonths !== newIsUnderSixMonths && {isUnderSixMonths: newIsUnderSixMonths}),
                 ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
-                ...(previous.isSickYoungInfant !== newIsSickYoungInfant && {isSickYoungInfant: newIsSickYoungInfant})
+                ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
             };
             console.log('!!! updates', updates)
 

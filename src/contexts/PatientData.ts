@@ -71,7 +71,6 @@ export interface PatientData {
   isCaregiversPhone: boolean;
 
   // discharge info
-  dischargeDiagnosis?: string;
   spo2_discharge?: string;
   dischargeReason?: string;
   feedingWell_discharge?: boolean;
@@ -149,7 +148,6 @@ export const initialPatientData: PatientData = {
   feedingWell: '',
   
   // discharge fields
-  dischargeDiagnosis: '',
   spo2_discharge: '',
   dischargeReason: '',
   feedingWell_discharge: undefined,

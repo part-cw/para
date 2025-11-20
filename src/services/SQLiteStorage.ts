@@ -97,9 +97,6 @@ export class SQLiteStorage implements IStorageService {
                 sendReminders           INTEGER DEFAULT 0,
                 isCaregiversPhone       INTEGER DEFAULT 0, -- TODO - default to true (1)
 
-                -- Discharge Info
-                dischargeDiagnosis      TEXT,
-
                 -- Metadata & status flags
                 admissionStartedAt      TEXT NOT NULL,
                 admissionCompletedAt    TEXT,
@@ -125,6 +122,7 @@ export class SQLiteStorage implements IStorageService {
                 meningitis_encephalitis TEXT,
                 chronicIllnesses        TEXT, -- JSON array e.g.['HIV', 'TB', etc]
                 otherChronicIllness     TEXT,
+                lastUpdated             TEXT,
 
                 FOREIGN KEY (patientId) REFERENCES patients(patientId) ON DELETE CASCADE
             );
@@ -252,7 +250,7 @@ export class SQLiteStorage implements IStorageService {
             // Update medical conditions
             const conditionFields = this.extractConditionFields(updates);
             if (Object.keys(conditionFields).length > 0) {
-                await this.updateMedicalConditions(patientId, conditionFields);
+                await this.updateMedicalConditions(patientId, conditionFields, (date || now));
             }
 
             // Update clinical variables
@@ -303,6 +301,8 @@ export class SQLiteStorage implements IStorageService {
     async insertNewPatient(data: PatientData, patientId: string, timestamp: string, isDraft: boolean): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
+        const now = new Date().toISOString()
+
         await this.db?.withTransactionAsync(async () => {
             // TODO - add admittedBy CURRENT_USER, make sure it's a user id from userTable once that is implemetneed
             await this.db?.runAsync(`
@@ -311,13 +311,13 @@ export class SQLiteStorage implements IStorageService {
                     dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isDOBUnknown, isYearMonthUnknown, isUnderSixMonths, isNeonate,
                     village, subvillage, vhtName, vhtTelephone, 
                     caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone,
-                    dischargeDiagnosis, admissionStartedAt, updatedAt, isDraftAdmission
+                    admissionStartedAt, updatedAt, isDraftAdmission
                 ) 
                 VALUES (
                     ?, ?, ?, ?, ?,              -- name/sex
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- age demographics
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
-                    ?, ?, ?, ?                  -- discharge & etadata
+                    ?, ?, ?                     -- metadata
                 )
             `, [
                 patientId, 
@@ -343,7 +343,6 @@ export class SQLiteStorage implements IStorageService {
                 data.confirmTel|| null, 
                 data.sendReminders ? 1 : 0, 
                 data.isCaregiversPhone ? 1 : 0,
-                data.dischargeDiagnosis || null,
                 data.admissionStartedAt || timestamp, 
                 timestamp, 
                 isDraft ? 1 : 0
@@ -354,8 +353,8 @@ export class SQLiteStorage implements IStorageService {
                 INSERT INTO medical_conditions (
                     patientId, malnutritionStatus, sickYoungInfant,
                     pneumonia, severeAnaemia, diarrhea, malaria, sepsis,
-                    meningitis_encephalitis, chronicIllnesses, otherChronicIllness
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    meningitis_encephalitis, chronicIllnesses, otherChronicIllness, lastUpdated
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 patientId,
                 data.malnutritionStatus || null,
@@ -367,7 +366,8 @@ export class SQLiteStorage implements IStorageService {
                 data.sepsis || '',
                 data.meningitis_encephalitis || '',
                 JSON.stringify(data.chronicIllnesses || []),
-                data.otherChronicIllness || null
+                data.otherChronicIllness || null,
+                now
             ]);
         });
 
@@ -725,12 +725,16 @@ export class SQLiteStorage implements IStorageService {
 
     private async updateMedicalConditions(
         patientId: string,
-        fields: { [key: string]: any }
+        fields: { [key: string]: any },
+        timeStamp: string
     ): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const setClauses: string[] = [];
         const values: any[] = [];
+
+        setClauses.push(`lastUpdated = ?`);
+        values.push(timeStamp);
 
         for (const [key, value] of Object.entries(fields)) {
             setClauses.push(`${key} = ?`);
@@ -973,8 +977,6 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: patientRow.confirmTel,
             sendReminders: patientRow.sendReminders,
             isCaregiversPhone: patientRow.isCaregiversPhone,
-
-            dischargeDiagnosis: patientRow.dischargeDiagnosis ? patientRow.dischargeDiagnosis : null,
             
             isDraftAdmission: patientRow.isDraftAdmission,
             isDischarged: patientRow.isDischarged,
@@ -1020,7 +1022,6 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: 'confirmTel',
             sendReminders: 'sendReminders',
             isCaregiversPhone: 'isCaregiversPhone',
-            dischargeDiagnosis: 'dischargeDiagnosis',
             isDischarged: 'isDischarged',
             isArchived: 'isArchived',
             isDraftAdmission: 'isDraftAdmission'
