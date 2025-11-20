@@ -10,7 +10,7 @@ import { convertToYesNo, normalizeBoolean } from "@/src/utils/normalizer";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Platform, RefreshControl, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, Platform, RefreshControl, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, List, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,14 +24,21 @@ export default function EditPatientRecord() {
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [recalculating, setRecalculating] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [patient, setPatient] = useState<PatientData | null>(null);
     
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null)
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
+
+    const [recalculating, setRecalculating] = useState(false);
     const [riskUpdated, setRiskUpdated] = useState(false);
+
+    // Neonatal jaundice modal states
+    const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
+    const [neonatalJaundiceValue, setNeonatalJaundiceValue] = useState<string>('');
+    const [pendingUpdates, setPendingUpdates] = useState<any>(null);
+    const [pendingPrevious, setPendingPrevious] = useState<any>(null);
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
@@ -76,12 +83,7 @@ export default function EditPatientRecord() {
     };
 
     /**
-     * TODO: implement re-admit workflow (retain prev info to save time for users)
-     * 
-     *  Allow users to go from neonate to not neonate, but prompt them to fill jaundice status if neonate now true
-     *  - trigger recalc AFTER neonatal jaundice filled
-     * - if isNeonate and neonatal jaundice not provided --> MUST FILL IN VALUE
-     *     
+     * TODO: implement re-admit workflow (retain prev info to save time for users) 
      */
     const handleUpdateDob = () => {
         // calculcate new age values
@@ -107,8 +109,6 @@ export default function EditPatientRecord() {
 
         if (Platform.OS !== 'web') {
             // confirm that isUnderSixMonths unchanged -> if it is prevent user from changing DOB
-            console.log('prev', previous.isUnderSixMonths, typeof previous.isUnderSixMonths)
-            console.log('new', newIsUnderSixMonths, typeof newIsUnderSixMonths)
             if (previous.isUnderSixMonths !== newIsUnderSixMonths) {
                 Alert.alert(
                     '⚠️ UPDATE FAILED',
@@ -127,41 +127,68 @@ export default function EditPatientRecord() {
                 'Updating DOB will trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
                 [ 
                     {text: 'Cancel', style: 'cancel'},
-                    {text: 'OK', onPress: () => confirmUpdate()}]
+                    {text: 'OK', onPress: () => confirmDobUpdate(previous, newAgeInMonths, newIsNeonate, newIsSickYoungInfant)}]
             )
         } else {
             // TODO -  add alert for web 
             return;
         } 
+    }
 
-        const confirmUpdate = async () => {
-            // only update values if they have changed
-            const updates = {
-                ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && {dob: editedDOB}),
-                ...(previous.birthYear && previous.birthYear !== '' && {birthYear: ''}),
-                ...(previous.birthMonth && previous.birthMonth !== '' &&  {birthMonth: ''}),
-                ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && {approxAgeInYears: ''}),
-                ...(previous.ageInMonths !== newAgeInMonths && {ageInMonths: newAgeInMonths}),
-                ...(previous.isDOBUnknown !== false && {isDOBUnknown: false} ),
-                ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
-                // ...(previous.isUnderSixMonths !== newIsUnderSixMonths && {isUnderSixMonths: newIsUnderSixMonths}),
-                ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
-                ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
-            };
-            console.log('!!! updates', updates)
+    const confirmDobUpdate = async (previous: any, newAgeInMonths: number, newIsNeonate: boolean, newIsSickYoungInfant: boolean) => {
+        // only update values if they have changed - don't include isUnderSixMonths (this should never change)
+        const updates = {
+            ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && {dob: editedDOB}),
+            ...(previous.birthYear && previous.birthYear !== '' && {birthYear: ''}),
+            ...(previous.birthMonth && previous.birthMonth !== '' &&  {birthMonth: ''}),
+            ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && {approxAgeInYears: ''}),
+            ...(previous.ageInMonths !== newAgeInMonths && {ageInMonths: newAgeInMonths}),
+            ...(previous.isDOBUnknown !== false && {isDOBUnknown: false} ),
+            ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
+            ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
+            ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
+        };
+        console.log('!!! updates', updates)
 
+        setIsUpdating(true);
+        await storage.doBulkUpdate(patientId, updates, previous);
+        setIsUpdating(false);
+
+        // check if all neonatal info needs to be filled
+        if (newIsNeonate && !patient?.neonatalJaundice) {
+            // setPendingUpdates(updates);
+            // setPendingPrevious(previous);
+            setShowNeonatalJaundiceModal(true);
+            return;
+        } 
+
+        await proceedWithRiskRecalculation();
+        await onRefresh();
+    }
+
+    const handleSaveNeonatalJaundice = async () => {
+        if (!neonatalJaundiceValue) {
+            Alert.alert('Required', 'Please select a value for neonatal jaundice');
+            return;
+        }
+
+        try {
             setIsUpdating(true);
-            await storage.doBulkUpdate(patientId, updates, previous)
             
-            // recalculate risk 
-            setRecalculating(true);
-            // TODO call risk calcucaltion funvtion
-            // TODO check that all variabels are filled
-            // show snackbar (with timer?)
+            // Update neonatal jaundice
+            await storage.updatePatient(patientId, { neonatalJaundice: neonatalJaundiceValue });
+            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', 'undefined', neonatalJaundiceValue);
             
-            setRecalculating(false);
             setIsUpdating(false);
-            await onRefresh();
+            setShowNeonatalJaundiceModal(false);
+            
+            // Now proceed with risk recalculation
+            await proceedWithRiskRecalculation();
+            
+        } catch (error) {
+            console.error('Error updating neonatal jaundice:', error);
+            Alert.alert('Error', 'Failed to update neonatal jaundice');
+            setIsUpdating(false);
         }
     }
 
@@ -174,15 +201,9 @@ export default function EditPatientRecord() {
             // update hivStatus in storage
             await storage.updatePatient(patientId, {hivStatus: editedHivStatus})
             await storage.logChanges(patientId, 'UPDATE', 'hivStatus', prev as string, editedHivStatus as string)
-
-            // recalculate risk
-            setRecalculating(true);
-            // TODO call risk calcucaltion funvtion
-            // show snackbar (with timer?)
-            
-            setRecalculating(false);
             setIsUpdating(false);
-            // setShowHivEdit(false);
+
+            await proceedWithRiskRecalculation();
             await onRefresh();
         }
 
@@ -200,6 +221,17 @@ export default function EditPatientRecord() {
         } 
     }
 
+    // TODO 
+    const proceedWithRiskRecalculation = async () => {
+         // recalculate risk 
+        setRecalculating(true);
+        // TODO call risk calcucaltion funvtion
+        // TODO check that all variabels are filled
+        // show snackbar (with timer?)
+        setRecalculating(false);
+            
+    }
+
     const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             <Text style={{ fontWeight: 'bold', flex: 1, fontSize: 16 }}>{label}:</Text>
@@ -207,6 +239,11 @@ export default function EditPatientRecord() {
         </View>
     );
 
+    // show recuclating risk screen
+    if (recalculating) {
+        // TODO
+        return;
+    }
 
     // retrurns a loading screen with spinner
     if (loading) {
@@ -222,11 +259,62 @@ export default function EditPatientRecord() {
         const otherChronicIllnessSelected = patient.chronicIllnesses?.includes('other');
         const hivIsEditable = patient.hivStatus === 'unknown';
         const ageIsEditable = (patient.isDOBUnknown) || (!patient.isDOBUnknown && patient.isYearMonthUnknown);
-
         const normalizedIsNeonate = patient.isNeonate && normalizeBoolean(patient.isNeonate);
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
+                {/* Neonatal jaundice modal */}
+                <Modal
+                    visible={true}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => {}}
+                >
+                    <View style={Styles.modalOverlay}>
+                        <View style={Styles.modalContentWrapper}>
+                            <Text style={[Styles.modalHeader, {color: colors.primary}]}>
+                                Neonatal Jaundice Required
+                            </Text>
+                            
+                            <Text style={Styles.modalText}>
+                                The patient is now classified as a neonate. Please provide neonatal jaundice status before proceeding with risk recalculation.
+                            </Text>
+
+                            <Text style={[Styles.modalSubheader, {color: colors.primary}]}>
+                                Does the patient have neonatal jaundice?
+                            </Text>
+
+                            <RadioButtonGroup
+                                options={[
+                                    { label: 'Yes', value: 'yes' },
+                                    { label: 'No', value: 'no' }
+                                ]}
+                                selected={neonatalJaundiceValue}
+                                onSelect={setNeonatalJaundiceValue}
+                            />
+
+                            <View style={{
+                                flexDirection: 'row',
+                                gap: 10,
+                                marginTop: 20
+                            }}>
+                                <Button
+                                    mode="contained"
+                                    onPress={handleSaveNeonatalJaundice}
+                                    buttonColor={colors.primary}
+                                    textColor={colors.onPrimary}
+                                    style={{ flex: 1 }}
+                                    loading={isUpdating}
+                                    disabled={!neonatalJaundiceValue || isUpdating}
+                                >
+                                    Save & Continue
+                                </Button>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+                
+
                 <ScrollView 
                     contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
