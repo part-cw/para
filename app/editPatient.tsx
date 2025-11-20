@@ -37,8 +37,6 @@ export default function EditPatientRecord() {
     // Neonatal jaundice modal states
     const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
     const [neonatalJaundiceValue, setNeonatalJaundiceValue] = useState<string>('');
-    const [pendingUpdates, setPendingUpdates] = useState<any>(null);
-    const [pendingPrevious, setPendingPrevious] = useState<any>(null);
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
@@ -104,7 +102,8 @@ export default function EditPatientRecord() {
             isYearMonthUnknown: patient?.isYearMonthUnknown,
             isUnderSixMonths: normalizeBoolean(patient?.isUnderSixMonths as boolean),
             isNeonate: patient?.isNeonate,
-            sickYoungInfant: patient?.sickYoungInfant
+            sickYoungInfant: patient?.sickYoungInfant,
+            neonatalJaundice: patient?.neonatalJaundice
         }
 
         if (Platform.OS !== 'web') {
@@ -146,9 +145,9 @@ export default function EditPatientRecord() {
             ...(previous.isDOBUnknown !== false && {isDOBUnknown: false} ),
             ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
             ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
+            ...(!newIsNeonate && previous.neonatalJaundice && {neonatalJaundice: undefined}), // if new isNeonate false, set previous jaundice to null or undefined
             ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
         };
-        console.log('!!! updates', updates)
 
         setIsUpdating(true);
         await storage.doBulkUpdate(patientId, updates, previous);
@@ -156,8 +155,6 @@ export default function EditPatientRecord() {
 
         // check if all neonatal info needs to be filled
         if (newIsNeonate && !patient?.neonatalJaundice) {
-            // setPendingUpdates(updates);
-            // setPendingPrevious(previous);
             setShowNeonatalJaundiceModal(true);
             return;
         } 
@@ -173,18 +170,20 @@ export default function EditPatientRecord() {
         }
 
         try {
-            setIsUpdating(true);
+            const prevJaundice = patient?.neonatalJaundice as string;
             
             // Update neonatal jaundice
+            setIsUpdating(true);
             await storage.updatePatient(patientId, { neonatalJaundice: neonatalJaundiceValue });
-            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', 'undefined', neonatalJaundiceValue);
-            
+            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'));
             setIsUpdating(false);
+
             setShowNeonatalJaundiceModal(false);
+            setEditedDob(editedDOB);
             
             // Now proceed with risk recalculation
             await proceedWithRiskRecalculation();
-            
+            await onRefresh();
         } catch (error) {
             console.error('Error updating neonatal jaundice:', error);
             Alert.alert('Error', 'Failed to update neonatal jaundice');
@@ -265,7 +264,7 @@ export default function EditPatientRecord() {
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
                 {/* Neonatal jaundice modal */}
                 <Modal
-                    visible={true}
+                    visible={showNeonatalJaundiceModal}
                     transparent={true}
                     animationType="fade"
                     onRequestClose={() => {}}
