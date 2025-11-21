@@ -47,11 +47,8 @@ export default function EditPatientRecord() {
     const [editedChronicIllness, setEditedChronicIllness] = useState<string[]>([]);
     const [editedOtherChronicIllness, setEditedOtherChronicIllness] = useState<string>('');
 
-
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
-
-    console.log('edited cond', editedChronicIllness)
 
     // load patient data on mount  
     useEffect(() => {
@@ -309,7 +306,7 @@ export default function EditPatientRecord() {
         if (Platform.OS !== 'web') {
             Alert.alert(
                 'Confirm Update',
-                `Update ${displayNames[fieldName] || fieldName} from "${previousValue}" to "${newValue}"?`,
+                `Update ${displayNames[fieldName] || fieldName} from "${previousValue}" to "${newValue}"?\n\nChanges may affect careplan recommendations.`,
                 [
                     { text: 'Cancel', style: 'cancel' },
                     { text: 'OK', onPress: () => confirmUpdate() }
@@ -537,7 +534,7 @@ export default function EditPatientRecord() {
         if (Platform.OS !== 'web') {
             Alert.alert(
                 'Confirm Removal',
-                `Remove "${illnessToRemove}" from other chronic illnesses?`,
+                `Remove "${illnessToRemove}" from other chronic illnesses?\n\nChanges may affect careplan recommendations.`,
                 [
                     { text: 'Cancel', style: 'cancel' },
                     { text: 'Remove', style: 'destructive', onPress: () => confirmRemove() }
