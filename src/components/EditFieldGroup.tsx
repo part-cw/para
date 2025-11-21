@@ -39,14 +39,18 @@ export function EditGroup({
                 <Text style={styles.fieldValue}>
                     {fieldValue}
                 </Text>
-                {canEdit === true && (
-                    <IconButton
-                        icon='lead-pencil'
-                        iconColor={colors.primary}
-                        size={20}
-                        onPress={() => setShowEdit(prev => !prev)}
-                    />
-                )}
+
+                <View style={{ width: 32, alignItems: 'center' }}>
+                  {canEdit === true && (
+                      <IconButton
+                          icon='lead-pencil'
+                          iconColor={colors.primary}
+                          size={20}
+                          onPress={() => setShowEdit(prev => !prev)}
+                          style={{ margin: 0 }}
+                      />
+                  )}
+                </View>
             </View>
 
             { showEdit === true &&
@@ -99,7 +103,7 @@ const styles = StyleSheet.create({
   fieldValue: {
     flex: 2, 
     fontSize: 16, 
-    marginLeft: 5
+    // marginLeft: 5
   },
   
 });

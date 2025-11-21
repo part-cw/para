@@ -45,4 +45,17 @@ export const formatChronicIllness = (items: string[] = []): string => {
         }).filter(Boolean);
 
         return formatted.join('\n');
-    };
+};
+
+export const formatOtherChronicIllness = (otherIllness: string | undefined): string => {
+    if (!otherIllness || otherIllness.trim() === '') return 'Not provided';
+    
+    // Split by comma and format as a list
+    const illnesses = otherIllness.split(',').map(item => item.trim()).filter(Boolean);
+    return illnesses.join(', ');
+};
+
+export const getOtherChronicIllnessList = (otherIllness: string | undefined): string[] => {
+    if (!otherIllness || otherIllness.trim() === '') return [];
+    return otherIllness.split(',').map(item => item.trim()).filter(Boolean);
+};
