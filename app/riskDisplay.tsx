@@ -83,7 +83,7 @@ export default function RiskDisplay() {
                 title={admission?.riskCategory.toUpperCase()}
                 variant={admission?.riskCategory.toLowerCase()}
                 content={`Risk score = ${admission?.riskScore}%`}
-                expandable={true}
+                expandable={false}
               >
                 {/* TODO - fix children */}
                 <Text>
@@ -105,7 +105,7 @@ export default function RiskDisplay() {
             {/* TODO - map conditions to profile */}
             <RiskCard
                 title='Profile A'
-                expandable={true}
+                expandable={false}
                 content='Conditions 1, 2, 3'
             >
               {/* TODO - fix children */}

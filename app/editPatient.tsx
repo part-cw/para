@@ -1,6 +1,7 @@
 import CheckboxGroup from "@/src/components/CheckboxGroup";
 import { EditGroup } from "@/src/components/EditFieldGroup";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
+import RiskCard from "@/src/components/RiskCard";
 import { PatientData } from "@/src/contexts/PatientData";
 import { useStorage } from "@/src/contexts/StorageContext";
 import { displayNames } from "@/src/forms/displayNames";
@@ -32,6 +33,7 @@ export default function EditPatientRecord() {
 
     const [recalculating, setRecalculating] = useState(false);
     const [riskUpdated, setRiskUpdated] = useState(false);
+    const [showPreviousPredictions, setShowPreviousPredictions] = useState(false);
 
     // Neonatal jaundice modal states
     const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
@@ -46,6 +48,7 @@ export default function EditPatientRecord() {
     const [editedMeningitis, setEditedMeningitis] = useState<string>('');
     const [editedChronicIllness, setEditedChronicIllness] = useState<string[]>([]);
     const [editedOtherChronicIllness, setEditedOtherChronicIllness] = useState<string>('');
+    const [showOtherChronicIllnessModal, setShowOtherChronicIllnessModal] = useState(false);
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
@@ -329,6 +332,15 @@ export default function EditPatientRecord() {
         } else {
             // Normal selection
             setEditedChronicIllness(selected);
+            if (selected.includes('other')) {
+                Alert.alert(
+                    'Other Chronic Condition', 
+                    'Enter one or multuplke chronic conditions, if known, or click cancel',
+                    [
+                        {text: 'Cancel', style: 'cancel'},
+                        {text: 'Add Condition', onPress: () => setShowOtherChronicIllnessModal(true)}
+                    ])
+            }
         }
     };
 
@@ -446,6 +458,7 @@ export default function EditPatientRecord() {
                 
                 setIsUpdating(false);
                 setEditedOtherChronicIllness('');
+                setShowOtherChronicIllnessModal(false)
                 
                 await onRefresh();
                 
@@ -575,6 +588,7 @@ export default function EditPatientRecord() {
         const ageIsEditable = !patient.isDischarged && ((patient.isDOBUnknown) || (!patient.isDOBUnknown && patient.isYearMonthUnknown));
         const normalizedIsNeonate = patient.isNeonate && normalizeBoolean(patient.isNeonate);
 
+        const predictionButtonLabel = !showPreviousPredictions ? 'Show Previous' : 'Hide Previous'
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
                 {/* Neonatal jaundice modal */}
@@ -627,7 +641,54 @@ export default function EditPatientRecord() {
                         </View>
                     </View>
                 </Modal>
-                
+
+
+                {/* Chronic Illness modal */}
+                <Modal
+                    visible={showOtherChronicIllnessModal}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => {}}
+                >
+                    <View style={Styles.modalOverlay}>
+                        <View style={Styles.modalContentWrapper}>
+                            <Text style={[Styles.modalHeader, {color: colors.primary}]}>
+                                Add Chronic Conditions
+                            </Text>
+
+                            <Text style={[Styles.modalText]}>
+                                Enter one condition, or multiple conditions separated by a comma, then click 'update'. 
+                            </Text>
+
+                            <TextInput
+                                label="Enter chronic conditions"
+                                mode="outlined"
+                                value={editedOtherChronicIllness}
+                                onChangeText={setEditedOtherChronicIllness}
+                                style={[Styles.textInput, { marginTop: 10 }]}
+                                multiline
+                                numberOfLines={2}
+                            />
+                            <View style={{
+                                flexDirection: 'row',
+                                gap: 10,
+                                marginTop: 20
+                            }}>
+                                <Button
+                                    mode="contained"
+                                    onPress={handleUpdateOtherChronicIllness}
+                                    buttonColor={colors.primary}
+                                    textColor={colors.onPrimary}
+                                    style={{ flex: 1,  }}
+                                    loading={isUpdating}
+                                    disabled={!editedOtherChronicIllness?.trim() || isUpdating}
+                                >
+                                    Update
+                                </Button>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
 
                 <ScrollView 
                     contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
@@ -983,7 +1044,7 @@ export default function EditPatientRecord() {
                                         </Button>
                                     </EditGroup>
 
-                                    {/* Chronic Conditions - Read Only */}
+                                    {/* Chronic Conditions */}
                                     <EditGroup
                                         fieldLabel="Chronic Conditions"
                                         fieldValue={formatChronicIllness(patient.chronicIllnesses) || 'Not provided'}
@@ -1017,38 +1078,6 @@ export default function EditPatientRecord() {
                                         </Button>
                                     </EditGroup>
 
-                                    {/* Other Chronic Illness*/}
-                                    {/* { (editedChronicIllness.includes('other') || otherChronicIllnessSelected) &&
-                                        <EditGroup
-                                            fieldLabel="Other chronic illness"
-                                            fieldValue={patient.otherChronicIllness || 'Not provided'}
-                                            editLabel="Specify other chronic illnesses:"
-                                            canEdit={!patient.isDischarged}
-                                        >
-                                            <TextInput
-                                                label="Other Chronic Illness"
-                                                placeholder="Enter one or multiple conditions (separate with commas)"
-                                                mode="outlined"
-                                                value={editedOtherChronicIllness}
-                                                onChangeText={setEditedOtherChronicIllness}
-                                                style={[Styles.textInput, { marginTop: 10 }]}
-                                                multiline
-                                                numberOfLines={3}
-                                            />
-                                            <Button
-                                                style={{ alignSelf: 'center', marginTop: 10 }}
-                                                icon='content-save-check'
-                                                buttonColor={colors.primary}
-                                                textColor={colors.onPrimary}
-                                                mode='elevated'
-                                                onPress={handleUpdateOtherChronicIllness}
-                                                loading={isUpdating}
-                                                disabled={!editedOtherChronicIllness.trim()}
-                                            >
-                                                Update
-                                            </Button>
-                                        </EditGroup> */}
-                                    {/* } */}
                                     {/* Other Chronic Illness - Show if 'other' is selected OR already has value */}
                                     {(editedChronicIllness.includes('other') || otherChronicIllnessSelected) && (
                                         <View style={{ marginTop: 10 }}>
@@ -1176,6 +1205,30 @@ export default function EditPatientRecord() {
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     {/* TODO - show admission and discharge or only most recent? */}
+                                    <Text style={[Styles.modalSubheader]}>
+                                        Most recent prediction: 
+                                    </Text>
+                                    <RiskCard
+                                        title={'test'}
+                                        variant={'low'}
+                                        content={`Risk score = test%\nCalculated at 'discharge'`}
+                                        expandable={false}
+                                    />
+                                    <Button
+                                        style={{ alignSelf: 'center', marginVertical: 10 }}
+                                        mode="elevated"
+                                        buttonColor={colors.secondary}
+                                        textColor={colors.onSecondary}
+                                        onPress={() => setShowPreviousPredictions(prev => !prev)}
+                                    >
+                                        {predictionButtonLabel}
+                                    </Button>
+                                    {showPreviousPredictions &&
+                                    <>
+                                        <Text style={[Styles.modalSubheader]}> Previous Predictions:</Text>
+                                        <InfoRow label={"High (8%)"} value={"Calcuated at admission"}/>
+                                        <InfoRow label={"Very High (21%)"} value={"Calcuated at 2025-10-12"}/>
+                                    </>}
                                 </View>
                             </List.Accordion>
                         </View>
