@@ -3,8 +3,10 @@ import { EditGroup } from "@/src/components/EditFieldGroup";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
 import RiskCard from "@/src/components/RiskCard";
 import { PatientData } from "@/src/contexts/PatientData";
+import { usePatientData } from "@/src/contexts/PatientDataContext";
 import { useStorage } from "@/src/contexts/StorageContext";
 import { displayNames } from "@/src/forms/displayNames";
+import { RiskAssessment } from "@/src/models/types";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { displayDob, formatChronicIllness, formatDateString, formatName, getOtherChronicIllnessList } from "@/src/utils/formatUtils";
@@ -20,12 +22,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditPatientRecord() {
     const { storage } = useStorage();
+    const { patientData, loadPatient } = usePatientData();
     const { colors } = useTheme()
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
-    const [patient, setPatient] = useState<PatientData | null>(null);
     
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null)
@@ -52,6 +54,9 @@ export default function EditPatientRecord() {
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
+    const riskAssessment: RiskAssessment = JSON.parse(params.riskAssessment as string);
+
+    console.log('risk', riskAssessment, typeof riskAssessment)
 
     // load patient data on mount  
     useEffect(() => {
@@ -60,18 +65,14 @@ export default function EditPatientRecord() {
 
 
     const loadPatientData = async () => {
-    try {
-        setLoading(true)
-        const data = await storage.getPatient(patientId);
-        setPatient(data);
-        
-        console.log(`📋 Loaded patient ${patientId} data`);
-    } catch (error) {
-        console.error('Error loading patient data:', error);
-        Alert.alert('Error', 'Failed to load patient data');
-    } finally {
-        setLoading(false);
-    }
+        try {
+            setLoading(true)
+            await loadPatient(patientId)
+        } catch (error) {
+            Alert.alert('Error', 'Failed to load patient data');
+        } finally {
+            setLoading(false);
+        }
     }
 
     const onRefresh = async () => {
@@ -103,17 +104,17 @@ export default function EditPatientRecord() {
 
         // store previous age info (before dob change)
         const previous = {
-            dob: (patient?.dob && patient?.dob.toISOString()) || null,
-            birthYear: patient?.birthYear,
-            birthMonth: patient?.birthMonth,
-            approxAgeInYears: patient?.approxAgeInYears,
-            ageInMonths: patient?.ageInMonths,
-            isDOBUnknown: patient?.isDOBUnknown,
-            isYearMonthUnknown: patient?.isYearMonthUnknown,
-            isUnderSixMonths: normalizeBoolean(patient?.isUnderSixMonths as boolean),
-            isNeonate: patient?.isNeonate,
-            sickYoungInfant: patient?.sickYoungInfant,
-            neonatalJaundice: patient?.neonatalJaundice
+            dob: (patientData?.dob && patientData?.dob.toISOString()) || null,
+            birthYear: patientData?.birthYear,
+            birthMonth: patientData?.birthMonth,
+            approxAgeInYears: patientData?.approxAgeInYears,
+            ageInMonths: patientData?.ageInMonths,
+            isDOBUnknown: patientData?.isDOBUnknown,
+            isYearMonthUnknown: patientData?.isYearMonthUnknown,
+            isUnderSixMonths: normalizeBoolean(patientData?.isUnderSixMonths as boolean),
+            isNeonate: patientData?.isNeonate,
+            sickYoungInfant: patientData?.sickYoungInfant,
+            neonatalJaundice: patientData?.neonatalJaundice
         }
 
         if (Platform.OS !== 'web') {
@@ -164,7 +165,7 @@ export default function EditPatientRecord() {
         setIsUpdating(false);
 
         // check if all neonatal info needs to be filled
-        if (newIsNeonate && !patient?.neonatalJaundice) {
+        if (newIsNeonate && !patientData?.neonatalJaundice) {
             setShowNeonatalJaundiceModal(true);
             return;
         } 
@@ -180,7 +181,7 @@ export default function EditPatientRecord() {
         }
 
         try {
-            const prevJaundice = patient?.neonatalJaundice as string;
+            const prevJaundice = patientData?.neonatalJaundice as string;
             
             // Update neonatal jaundice
             setIsUpdating(true);
@@ -203,7 +204,7 @@ export default function EditPatientRecord() {
 
     const handleUpdateHivStatus = () => {
         const confirmUpdate = async () => {
-            const prev = patient?.hivStatus
+            const prev = patientData?.hivStatus
 
             setIsUpdating(true);
             
@@ -236,7 +237,7 @@ export default function EditPatientRecord() {
         setRecalculating(true);
         // TODO call risk calcucaltion funvtion
         // TODO check that all variabels are filled
-        // show snackbar (with timer?)
+        // TODO show snackbar (with timer?)
         setRecalculating(false);
             
     }
@@ -335,7 +336,7 @@ export default function EditPatientRecord() {
             if (selected.includes('other')) {
                 Alert.alert(
                     'Other Chronic Condition', 
-                    'Enter one or multuplke chronic conditions, if known, or click cancel',
+                    'Enter one or multiple conditions, if known, or click cancel',
                     [
                         {text: 'Cancel', style: 'cancel'},
                         {text: 'Add Condition', onPress: () => setShowOtherChronicIllnessModal(true)}
@@ -354,15 +355,15 @@ export default function EditPatientRecord() {
             try {
                 setIsUpdating(true);
                 
-                const previousConditions = patient?.chronicIllnesses && patient?.chronicIllnesses || [];
+                const previousConditions = patientData?.chronicIllnesses && patientData?.chronicIllnesses || [];
                 
                 const updates: Partial<PatientData> = { chronicIllnesses: editedChronicIllness };
                 const previous: Partial<PatientData> = {chronicIllnesses: previousConditions}
 
                 // If 'other' was removed, clear otherChronicIllness
-                if (!editedChronicIllness.includes('other') && patient?.otherChronicIllness) {
+                if (!editedChronicIllness.includes('other') && patientData?.otherChronicIllness) {
                     updates.otherChronicIllness = '';
-                    previous.otherChronicIllness = patient.otherChronicIllness;
+                    previous.otherChronicIllness = patientData.otherChronicIllness;
                 }
                 
                 await storage.doBulkUpdate(patientId, updates, previous)
@@ -403,7 +404,7 @@ export default function EditPatientRecord() {
             try {
                 setIsUpdating(true);
                 
-                const currentIllnesses = getOtherChronicIllnessList(patient?.otherChronicIllness);
+                const currentIllnesses = getOtherChronicIllnessList(patientData?.otherChronicIllness);
                 
                 // Parse the input - could be single illness or comma-separated list
                 const newIllnesses = editedOtherChronicIllness
@@ -436,7 +437,7 @@ export default function EditPatientRecord() {
                 const updatedIllnesses = [...currentIllnesses, ...toAdd];
                 const updatedValue = updatedIllnesses.join(', ');
                 
-                const currentChronicIllnesses = patient?.chronicIllnesses || [];
+                const currentChronicIllnesses = patientData?.chronicIllnesses || [];
                 
                 // Add 'other' to chronicIllnesses if not already present
                 const updatedChronicIllnesses = currentChronicIllnesses.includes('other')
@@ -452,7 +453,7 @@ export default function EditPatientRecord() {
                     patientId,
                     'UPDATE',
                     'otherChronicIllness',
-                    patient?.otherChronicIllness || '',
+                    patientData?.otherChronicIllness || '',
                     updatedValue
                 );
                 
@@ -508,7 +509,7 @@ export default function EditPatientRecord() {
             try {
                 setIsUpdating(true);
                 
-                const currentIllnesses = getOtherChronicIllnessList(patient?.otherChronicIllness);
+                const currentIllnesses = getOtherChronicIllnessList(patientData?.otherChronicIllness);
                 const updatedIllnesses = currentIllnesses.filter(
                     illness => illness.toLowerCase() !== illnessToRemove.toLowerCase()
                 );
@@ -518,8 +519,8 @@ export default function EditPatientRecord() {
                 // If no more other illnesses, optionally remove 'other' from chronicIllnesses
                 const updates: any = { otherChronicIllness: updatedValue };
                 if (updatedIllnesses.length === 0) {
-                    const updatedChronicIllnesses = (patient?.chronicIllnesses || []).filter(
-                        item => item !== 'other'
+                    const updatedChronicIllnesses = (patientData?.chronicIllnesses || []).filter(
+                        (item: string) => item !== 'other'
                     );
                     updates.chronicIllnesses = updatedChronicIllnesses;
                 }
@@ -529,7 +530,7 @@ export default function EditPatientRecord() {
                     patientId,
                     'UPDATE',
                     'otherChronicIllness',
-                    patient?.otherChronicIllness || '',
+                    patientData?.otherChronicIllness || '',
                     updatedValue
                 );
                 
@@ -582,11 +583,11 @@ export default function EditPatientRecord() {
         );
     }
 
-    if (patient) {
-        const otherChronicIllnessSelected = patient.chronicIllnesses?.includes('other');
-        const hivIsEditable = !patient.isDischarged && (patient.hivStatus === 'unknown');
-        const ageIsEditable = !patient.isDischarged && ((patient.isDOBUnknown) || (!patient.isDOBUnknown && patient.isYearMonthUnknown));
-        const normalizedIsNeonate = patient.isNeonate && normalizeBoolean(patient.isNeonate);
+    if (patientData) {
+        const otherChronicIllnessSelected = patientData.chronicIllnesses?.includes('other');
+        const hivIsEditable = !patientData.isDischarged && (patientData.hivStatus === 'unknown');
+        const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
+        const normalizedIsNeonate = patientData.isNeonate && normalizeBoolean(patientData.isNeonate);
 
         const predictionButtonLabel = !showPreviousPredictions ? 'Show Previous' : 'Hide Previous'
         return (
@@ -657,7 +658,7 @@ export default function EditPatientRecord() {
                             </Text>
 
                             <Text style={[Styles.modalText]}>
-                                Enter one condition, or multiple conditions separated by a comma, then click 'update'. 
+                                Enter one or multiple conditions separated by commas, then click 'update'. 
                             </Text>
 
                             <TextInput
@@ -706,7 +707,7 @@ export default function EditPatientRecord() {
                             }}  
                         >
                             <Text style={[Styles.pageHeaderTitle, {flex: 0, color: colors.primary}]}>
-                                {formatName(patient.firstName, patient.surname, patient.otherName).toUpperCase()}
+                                {formatName(patientData.firstName, patientData.surname, patientData.otherName).toUpperCase()}
                             </Text>
                             <Text style={[Styles.pageHeaderTitle, { flex: 0} ]}>
                                 View/Edit Profile
@@ -725,13 +726,13 @@ export default function EditPatientRecord() {
                                 description={ageIsEditable ? '' : 'Read-only'}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    <InfoRow label="Full Name" value={formatName(patient.firstName, patient.surname, patient.otherName)} />
-                                    <InfoRow label="Sex" value={patient.sex} />
+                                    <InfoRow label="Full Name" value={formatName(patientData.firstName, patientData.surname, patientData.otherName)} />
+                                    <InfoRow label="Sex" value={patientData.sex} />
                                     
                                     {/* Age information */}
                                     <EditGroup 
                                         fieldLabel={"DOB"} 
-                                        fieldValue={displayDob(patient.dob?.toISOString(), patient.birthYear, patient.birthMonth)}
+                                        fieldValue={displayDob(patientData.dob?.toISOString(), patientData.birthYear, patientData.birthMonth)}
                                         editLabel="Enter new DOB if known" 
                                         canEdit={normalizeBoolean(ageIsEditable)} 
                                     >
@@ -773,8 +774,8 @@ export default function EditPatientRecord() {
                                         </>
                                     </EditGroup>
                                     
-                                    <InfoRow label="Age" value={`${AgeCalculator.formatAge(patient.ageInMonths)} old`} />
-                                    <InfoRow label="Under 6 months" value={patient.isUnderSixMonths ? 'Yes' : 'No'} />
+                                    <InfoRow label="Age" value={`${AgeCalculator.formatAge(patientData.ageInMonths)} old`} />
+                                    <InfoRow label="Under 6 months" value={patientData.isUnderSixMonths ? 'Yes' : 'No'} />
                                 </View>
                             </List.Accordion>
                         </View>
@@ -788,28 +789,28 @@ export default function EditPatientRecord() {
                                 description={hivIsEditable ? '' : 'Read-only'}
                             >
                                 {
-                                    patient.isUnderSixMonths
+                                    patientData.isUnderSixMonths
                                     ?
                                     <View style={Styles.accordionContentWrapper}>
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
-                                        <InfoRow label={displayNames['illnessDuration']} value={patient.illnessDuration || 'Not provided'} />
-                                        {normalizedIsNeonate === true && <InfoRow label="Neonatal Jaundice" value={convertToYesNo(patient.neonatalJaundice as string)} />}
-                                        <InfoRow label="Bugling fontanelle" value={convertToYesNo(patient.bulgingFontanelle as string)} />
-                                        <InfoRow label="Feeding well" value={convertToYesNo(patient.feedingWell as string)} />
+                                        <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
+                                        {normalizedIsNeonate === true && <InfoRow label="Neonatal Jaundice" value={convertToYesNo(patientData.neonatalJaundice as string)} />}
+                                        <InfoRow label="Bugling fontanelle" value={convertToYesNo(patientData.bulgingFontanelle as string)} />
+                                        <InfoRow label="Feeding well" value={convertToYesNo(patientData.feedingWell as string)} />
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
-                                        <InfoRow label="Weight" value={patient.weight ? `${patient.weight} kg`: 'Not provided'} />
-                                        <InfoRow label="MUAC" value={patient.muac ? `${patient.muac} mm` : 'Not provided'} />
-                                        <InfoRow label="SpO₂" value={patient.spo2_admission ? `${patient.spo2_admission} %` : 'Not provided'} />
+                                        <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
+                                        <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                                        <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                     </View>
                                     :
                                     <View style={Styles.accordionContentWrapper}>
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
-                                        <InfoRow label="Last Hopitalized" value={patient.lastHospitalized || 'Not provided'} />
+                                        <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
                                         
                                         {/* HIV status info/edit */}
                                         <EditGroup 
                                             fieldLabel={"HIV Status"} 
-                                            fieldValue={patient.hivStatus?.toUpperCase() as string}
+                                            fieldValue={patientData.hivStatus?.toUpperCase() as string}
                                             editLabel="Edit HIV Status:" 
                                             canEdit={hivIsEditable} 
                                         >
@@ -835,16 +836,16 @@ export default function EditPatientRecord() {
                                         </EditGroup>
                                         
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
-                                        <InfoRow label="Weight" value={patient.weight ? `${patient.weight} kg`: 'Not provided'} />
-                                        <InfoRow label="MUAC" value={patient.muac ? `${patient.muac} mm` : 'Not provided'} />
-                                        <InfoRow label="Temperature" value={patient.temperature ? `${patient.temperature} °C` : 'Not provided'} />
-                                        <InfoRow label="Respiratory Rate" value={patient.rrate ? `${patient.rrate} breaths per min` : 'Not provided'} />
-                                        <InfoRow label="SpO2" value={patient.spo2_admission ? `${patient.spo2_admission} %` : 'Not provided'} />
+                                        <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
+                                        <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                                        <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
+                                        <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
+                                        <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                         
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                                        <InfoRow label="Eye movement" value={patient.eyeMovement || 'Not provided'} />
-                                        <InfoRow label="Best motor response" value={patient.motorResponse || 'Not provided'} />
-                                        <InfoRow label="Best verbal response" value={patient.verbalResponse || 'Not provided'} />
+                                        <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
+                                        <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
+                                        <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
                                     </View>
                                 }
                             </List.Accordion>
@@ -861,12 +862,12 @@ export default function EditPatientRecord() {
                                     {/* Pneumonia */}
                                     <EditGroup
                                         fieldLabel="Pneumonia"
-                                        fieldValue={patient.pneumonia || 'Not provided'}
+                                        fieldValue={patientData.pneumonia || 'Not provided'}
                                         editLabel="Update Pneumonia Status:"
-                                        canEdit={!patient.isDischarged && canEditCondition(patient.pneumonia)}
+                                        canEdit={!patientData.isDischarged && canEditCondition(patientData.pneumonia)}
                                     >
                                         <RadioButtonGroup
-                                            options={getAllowedOptions(patient.pneumonia)}
+                                            options={getAllowedOptions(patientData.pneumonia)}
                                             selected={editedPneumonia}
                                             onSelect={setEditedPneumonia}
                                         />
@@ -879,7 +880,7 @@ export default function EditPatientRecord() {
                                             onPress={() => handleUpdateMedicalCondition(
                                                 'pneumonia',
                                                 editedPneumonia,
-                                                patient.pneumonia || '',
+                                                patientData.pneumonia || '',
                                                 setEditedPneumonia
                                             )}
                                             loading={isUpdating}
@@ -892,12 +893,12 @@ export default function EditPatientRecord() {
                                     {/* Severe Anaemia */}
                                     <EditGroup
                                         fieldLabel="Severe anaemia"
-                                        fieldValue={patient.severeAnaemia || 'Not provided'}
+                                        fieldValue={patientData.severeAnaemia || 'Not provided'}
                                         editLabel="Update Severe Anaemia Status:"
-                                        canEdit={!patient.isDischarged && canEditCondition(patient.severeAnaemia)}
+                                        canEdit={!patientData.isDischarged && canEditCondition(patientData.severeAnaemia)}
                                     >
                                         <RadioButtonGroup
-                                            options={getAllowedOptions(patient.severeAnaemia)}
+                                            options={getAllowedOptions(patientData.severeAnaemia)}
                                             selected={editedSevereAnaemia}
                                             onSelect={setEditedSevereAnaemia}
                                         />
@@ -910,7 +911,7 @@ export default function EditPatientRecord() {
                                             onPress={() => handleUpdateMedicalCondition(
                                                 'severeAnaemia',
                                                 editedSevereAnaemia,
-                                                patient.severeAnaemia || '',
+                                                patientData.severeAnaemia || '',
                                                 setEditedSevereAnaemia
                                             )}
                                             loading={isUpdating}
@@ -923,12 +924,12 @@ export default function EditPatientRecord() {
                                     {/* Diarrhea */}
                                     <EditGroup
                                         fieldLabel="Diarrhea"
-                                        fieldValue={patient.diarrhea || 'Not provided'}
+                                        fieldValue={patientData.diarrhea || 'Not provided'}
                                         editLabel="Update Diarrhea Status:"
-                                        canEdit={!patient.isDischarged && canEditCondition(patient.diarrhea, 'diarrhea')}
+                                        canEdit={!patientData.isDischarged && canEditCondition(patientData.diarrhea, 'diarrhea')}
                                     >
                                         <RadioButtonGroup
-                                            options={getAllowedOptions(patient.diarrhea, 'diarrhea')}
+                                            options={getAllowedOptions(patientData.diarrhea, 'diarrhea')}
                                             selected={editedDiarrhea}
                                             onSelect={setEditedDiarrhea}
                                         />
@@ -941,7 +942,7 @@ export default function EditPatientRecord() {
                                             onPress={() => handleUpdateMedicalCondition(
                                                 'diarrhea',
                                                 editedDiarrhea,
-                                                patient.diarrhea || '',
+                                                patientData.diarrhea || '',
                                                 setEditedDiarrhea
                                             )}
                                             loading={isUpdating}
@@ -954,12 +955,12 @@ export default function EditPatientRecord() {
                                     {/* Malaria */}
                                     <EditGroup
                                         fieldLabel="Malaria"
-                                        fieldValue={patient.malaria || 'Not provided'}
+                                        fieldValue={patientData.malaria || 'Not provided'}
                                         editLabel="Update Malaria Status:"
-                                        canEdit={!patient.isDischarged && canEditCondition(patient.malaria)}
+                                        canEdit={!patientData.isDischarged && canEditCondition(patientData.malaria)}
                                     >
                                         <RadioButtonGroup
-                                            options={getAllowedOptions(patient.malaria)}
+                                            options={getAllowedOptions(patientData.malaria)}
                                             selected={editedMalaria}
                                             onSelect={setEditedMalaria}
                                         />
@@ -972,7 +973,7 @@ export default function EditPatientRecord() {
                                             onPress={() => handleUpdateMedicalCondition(
                                                 'malaria',
                                                 editedMalaria,
-                                                patient.malaria || '',
+                                                patientData.malaria || '',
                                                 setEditedMalaria
                                             )}
                                             loading={isUpdating}
@@ -985,12 +986,12 @@ export default function EditPatientRecord() {
                                     {/* Sepsis */}
                                     <EditGroup
                                         fieldLabel="Sepsis"
-                                        fieldValue={patient.sepsis || 'Not provided'}
+                                        fieldValue={patientData.sepsis || 'Not provided'}
                                         editLabel="Update Sepsis Status:"
-                                        canEdit={!patient.isDischarged && canEditCondition(patient.sepsis)}
+                                        canEdit={!patientData.isDischarged && canEditCondition(patientData.sepsis)}
                                     >
                                         <RadioButtonGroup
-                                            options={getAllowedOptions(patient.sepsis)}
+                                            options={getAllowedOptions(patientData.sepsis)}
                                             selected={editedSepsis}
                                             onSelect={setEditedSepsis}
                                         />
@@ -1003,7 +1004,7 @@ export default function EditPatientRecord() {
                                             onPress={() => handleUpdateMedicalCondition(
                                                 'sepsis',
                                                 editedSepsis,
-                                                patient.sepsis || '',
+                                                patientData.sepsis || '',
                                                 setEditedSepsis
                                             )}
                                             loading={isUpdating}
@@ -1016,12 +1017,12 @@ export default function EditPatientRecord() {
                                     {/* Meningitis/Encephalitis */}
                                     <EditGroup
                                         fieldLabel="Meningitis/Encephalitis"
-                                        fieldValue={patient.meningitis_encephalitis || 'Not provided'}
+                                        fieldValue={patientData.meningitis_encephalitis || 'Not provided'}
                                         editLabel="Update Meningitis/Encephalitis Status:"
-                                        canEdit={!patient.isDischarged && canEditCondition(patient.meningitis_encephalitis)}
+                                        canEdit={!patientData.isDischarged && canEditCondition(patientData.meningitis_encephalitis)}
                                     >
                                         <RadioButtonGroup
-                                            options={getAllowedOptions(patient.meningitis_encephalitis)}
+                                            options={getAllowedOptions(patientData.meningitis_encephalitis)}
                                             selected={editedMeningitis}
                                             onSelect={setEditedMeningitis}
                                         />
@@ -1034,7 +1035,7 @@ export default function EditPatientRecord() {
                                             onPress={() => handleUpdateMedicalCondition(
                                                 'meningitis_encephalitis',
                                                 editedMeningitis,
-                                                patient.meningitis_encephalitis || '',
+                                                patientData.meningitis_encephalitis || '',
                                                 setEditedMeningitis
                                             )}
                                             loading={isUpdating}
@@ -1047,9 +1048,9 @@ export default function EditPatientRecord() {
                                     {/* Chronic Conditions */}
                                     <EditGroup
                                         fieldLabel="Chronic Conditions"
-                                        fieldValue={formatChronicIllness(patient.chronicIllnesses) || 'Not provided'}
+                                        fieldValue={formatChronicIllness(patientData.chronicIllnesses) || 'Not provided'}
                                         editLabel="Update Chronic Conditions Status:"
-                                        canEdit={!patient.isDischarged}
+                                        canEdit={!patientData.isDischarged}
                                     >
                                        <CheckboxGroup 
                                             options={[
@@ -1061,7 +1062,7 @@ export default function EditPatientRecord() {
                                                 {label: 'None', value: 'none'},
                                                 {label: 'Other', value: 'other'}
                                             ]} 
-                                            selected={editedChronicIllness.length > 0 ? editedChronicIllness : (patient.chronicIllnesses || [])} 
+                                            selected={editedChronicIllness.length > 0 ? editedChronicIllness : (patientData.chronicIllnesses || [])} 
                                             onSelectionChange={handleChronicIllnessChange}
                                         />
                                         <Button
@@ -1081,19 +1082,49 @@ export default function EditPatientRecord() {
                                     {/* Other Chronic Illness - Show if 'other' is selected OR already has value */}
                                     {(editedChronicIllness.includes('other') || otherChronicIllnessSelected) && (
                                         <View style={{ marginTop: 10 }}>
-                                            <View style={{ flexDirection: 'row', marginBottom: 8, alignItems: 'center' }}>
-                                                <Text style={{ fontWeight: 'bold', flex: 1, fontSize: 16 }}>Other chronic illness:</Text>
-                                            </View>
+
+                                             {/* Add new illness form */}
+                                            {!patientData.isDischarged && (
+                                                <EditGroup
+                                                    fieldLabel="Other Conditions"
+                                                    fieldValue=""
+                                                    editLabel="Enter one or multiple conditions (separate with commas):"
+                                                    canEdit={true}
+                                                >
+                                                    <TextInput
+                                                        label="Other chronic condition(s)"
+                                                        placeholder="Enter condition"
+                                                        mode="outlined"
+                                                        value={editedOtherChronicIllness}
+                                                        onChangeText={setEditedOtherChronicIllness}
+                                                        style={[Styles.textInput, { marginTop: 10 }]}
+                                                        multiline
+                                                        numberOfLines={2}
+                                                    />
+                                                    <Button
+                                                        style={{ alignSelf: 'center', marginTop: 10 }}
+                                                        icon='plus'
+                                                        buttonColor={colors.primary}
+                                                        textColor={colors.onPrimary}
+                                                        mode='elevated'
+                                                        onPress={handleUpdateOtherChronicIllness}
+                                                        loading={isUpdating}
+                                                        disabled={!editedOtherChronicIllness?.trim()}
+                                                    >
+                                                        Add Condition
+                                                    </Button>
+                                                </EditGroup>
+                                            )}
                                             
                                             {/* Display list of other chronic illnesses */}
-                                            {getOtherChronicIllnessList(patient.otherChronicIllness).length > 0 ? (
+                                            {getOtherChronicIllnessList(patientData.otherChronicIllness).length > 0 ? (
                                                 <View style={{ 
                                                     backgroundColor: '#f5f5f5', 
                                                     padding: 12, 
                                                     borderRadius: 8,
                                                     marginBottom: 12 
                                                 }}>
-                                                    {getOtherChronicIllnessList(patient.otherChronicIllness).map((illness, index) => (
+                                                    {getOtherChronicIllnessList(patientData.otherChronicIllness).map((illness, index) => (
                                                         <View 
                                                             key={index} 
                                                             style={{ 
@@ -1101,12 +1132,12 @@ export default function EditPatientRecord() {
                                                                 justifyContent: 'space-between',
                                                                 alignItems: 'center',
                                                                 paddingVertical: 6,
-                                                                borderBottomWidth: index < getOtherChronicIllnessList(patient.otherChronicIllness).length - 1 ? 1 : 0,
+                                                                borderBottomWidth: index < getOtherChronicIllnessList(patientData.otherChronicIllness).length - 1 ? 1 : 0,
                                                                 borderBottomColor: '#e0e0e0'
                                                             }}
                                                         >
                                                             <Text style={{ flex: 1, fontSize: 15 }}>• {illness}</Text>
-                                                            {!patient.isDischarged && (
+                                                            {!patientData.isDischarged && (
                                                                 <TouchableOpacity
                                                                     onPress={() => handleRemoveOtherChronicIllness(illness)}
                                                                     style={{ 
@@ -1129,39 +1160,6 @@ export default function EditPatientRecord() {
                                                 }}>
                                                     No other chronic illnesses recorded
                                                 </Text>
-                                            )}
-
-                                            {/* Add new illness form */}
-                                            {!patient.isDischarged && (
-                                                <EditGroup
-                                                    fieldLabel="Add condition"
-                                                    fieldValue=""
-                                                    editLabel="Enter one or multiple conditions (separate with commas):"
-                                                    canEdit={true}
-                                                >
-                                                    <TextInput
-                                                        label="Other Chronic Illness"
-                                                        placeholder="Enter condition"
-                                                        mode="outlined"
-                                                        value={editedOtherChronicIllness}
-                                                        onChangeText={setEditedOtherChronicIllness}
-                                                        style={[Styles.textInput, { marginTop: 10 }]}
-                                                        multiline
-                                                        numberOfLines={2}
-                                                    />
-                                                    <Button
-                                                        style={{ alignSelf: 'center', marginTop: 10 }}
-                                                        icon='plus'
-                                                        buttonColor={colors.primary}
-                                                        textColor={colors.onPrimary}
-                                                        mode='elevated'
-                                                        onPress={handleUpdateOtherChronicIllness}
-                                                        loading={isUpdating}
-                                                        disabled={!editedOtherChronicIllness?.trim()}
-                                                    >
-                                                        Add Condition
-                                                    </Button>
-                                                </EditGroup>
                                             )}
                                         </View>
                                     )}
@@ -1206,12 +1204,12 @@ export default function EditPatientRecord() {
                                 <View style={Styles.accordionContentWrapper}>
                                     {/* TODO - show admission and discharge or only most recent? */}
                                     <Text style={[Styles.modalSubheader]}>
-                                        Most recent prediction: 
+                                        Most recent prediction (calculated at ...): 
                                     </Text>
                                     <RiskCard
-                                        title={'test'}
-                                        variant={'low'}
-                                        content={`Risk score = test%\nCalculated at 'discharge'`}
+                                        title={riskAssessment.admission?.riskCategory}
+                                        variant={riskAssessment.admission?.riskCategory.toLowerCase()}
+                                        content={`Risk score = ${riskAssessment.admission?.riskScore}%`}
                                         expandable={false}
                                     />
                                     <Button
@@ -1225,7 +1223,7 @@ export default function EditPatientRecord() {
                                     </Button>
                                     {showPreviousPredictions &&
                                     <>
-                                        <Text style={[Styles.modalSubheader]}> Previous Predictions:</Text>
+                                        <Text style={[Styles.modalSubheader]}> Previous Predictions (TODO):</Text>
                                         <InfoRow label={"High (8%)"} value={"Calcuated at admission"}/>
                                         <InfoRow label={"Very High (21%)"} value={"Calcuated at 2025-10-12"}/>
                                     </>}

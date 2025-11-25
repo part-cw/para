@@ -15,6 +15,7 @@ interface PatientDataContextType {
       patientName: string;}>;
   startAdmission: () => void;
   loadDraft: (patientId: string) => Promise<void>;
+  loadPatient: (patientId: string) => Promise<void>;
   isDataLoaded: boolean;
   handleAgeChange: (isUnderSixMonths: boolean) => void;
   calculateAdmissionRisk: () => RiskPrediction | null;
@@ -124,6 +125,27 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       setIsDataLoaded(true);
     }
   };
+
+  /**
+   * Load specifc patient record 
+   */
+  const loadPatient = async (patientId: string) => {
+    try {
+      setIsDataLoaded(false)
+      const data = await storage.getPatient(patientId);
+
+      if (!data) throw new Error(`Patient ${patientId} not found`)
+      
+      setPatientData(data);
+      setCurrentPatientId(patientId);
+      console.log(`📋 Loaded patient ${patientId} data`);
+    } catch (error) {
+        console.error('Error loading patient data:', error);
+        throw error;
+    } finally {
+        setIsDataLoaded(true);
+    }
+  }
 
 
   /**
@@ -283,6 +305,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         savePatientData,
         startAdmission,
         loadDraft,
+        loadPatient: loadPatient,
         isDataLoaded,
         handleAgeChange,
         calculateAdmissionRisk,
