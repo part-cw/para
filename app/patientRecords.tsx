@@ -26,7 +26,6 @@ export default function PatientRecords() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
 
-
   // Load drafts on mount
   useEffect(() => {
     loadAllRecords();
@@ -96,9 +95,7 @@ export default function PatientRecords() {
   const handleEdit = async (id: string) => {
     router.push({
       pathname: '/editPatient',
-      params: {
-        patientId: id
-      }
+      params: { patientId: id}
     })
   }
 

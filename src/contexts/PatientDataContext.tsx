@@ -20,7 +20,7 @@ interface PatientDataContextType {
   handleAgeChange: (isUnderSixMonths: boolean) => void;
   calculateAdmissionRisk: () => RiskPrediction | null;
   calculateDischargeRisk: () => RiskPrediction | null;
-  getCurrentRiskAssessment: () => RiskAssessment;
+  getCurrentRiskAssessment: (patientId: string) => Promise<RiskAssessment | null>;
   getCurrentPatientId: () => string | null;
   riskAssessment: RiskAssessment;
 }
@@ -133,11 +133,11 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     try {
       setIsDataLoaded(false)
       const data = await storage.getPatient(patientId);
-
-      if (!data) throw new Error(`Patient ${patientId} not found`)
+      if (!data) throw new Error(`Patient ${patientId} not found`);
       
       setPatientData(data);
       setCurrentPatientId(patientId);
+      await getCurrentRiskAssessment(patientId);
       console.log(`📋 Loaded patient ${patientId} data`);
     } catch (error) {
         console.error('Error loading patient data:', error);
@@ -292,7 +292,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return strategy && strategy?.calculateRisk(patientData)
   };
 
-  const getCurrentRiskAssessment = (): RiskAssessment => {
+  const getCurrentRiskAssessment = async (patientId: string): Promise<RiskAssessment | null> => {
+    if (!patientId) return null;
+
+    const assessment = await storage.getRiskAssessment(patientId)
+    setRiskAssessment(assessment);
+    
     return riskAssessment;
   };
 

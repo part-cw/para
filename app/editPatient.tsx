@@ -6,7 +6,6 @@ import { PatientData } from "@/src/contexts/PatientData";
 import { usePatientData } from "@/src/contexts/PatientDataContext";
 import { useStorage } from "@/src/contexts/StorageContext";
 import { displayNames } from "@/src/forms/displayNames";
-import { RiskAssessment } from "@/src/models/types";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { displayDob, formatChronicIllness, formatDateString, formatName, getOtherChronicIllnessList } from "@/src/utils/formatUtils";
@@ -22,7 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditPatientRecord() {
     const { storage } = useStorage();
-    const { patientData, loadPatient } = usePatientData();
+    const { patientData, loadPatient, riskAssessment } = usePatientData();
     const { colors } = useTheme()
 
     const [loading, setLoading] = useState(true);
@@ -54,9 +53,8 @@ export default function EditPatientRecord() {
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
-    const riskAssessment: RiskAssessment = JSON.parse(params.riskAssessment as string);
 
-    console.log('risk', riskAssessment, typeof riskAssessment)
+    console.log('@@@@risk', riskAssessment, typeof riskAssessment)
 
     // load patient data on mount  
     useEffect(() => {
