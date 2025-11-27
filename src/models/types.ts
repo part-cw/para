@@ -76,7 +76,14 @@ export interface RiskPrediction {
     topPredictors?: TopPredictor[];
 }
 
+/**
+ * 'admission' is most recently calculated risk using admission models.
+ * 'discharge' is risk calcualted at discharge, using discharge model.
+ * 'override' is a map of overriden admission or discharge risk categories, 
+ * where key is either 'admission' or 'discharge' and value is the new category
+ */
 export interface RiskAssessment {
   admission?: RiskPrediction | null;
   discharge?: RiskPrediction | null;
+  override?: Map<'admission' | 'discharge', string>;
 }

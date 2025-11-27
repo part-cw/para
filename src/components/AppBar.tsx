@@ -68,7 +68,7 @@ export default function AppBar() {
       } 
     } else {
       // no alert if not in data entry screen
-      router.push('/')
+      resetFormAndGo();
     }
             
   };
