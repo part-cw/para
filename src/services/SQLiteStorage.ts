@@ -259,7 +259,7 @@ export class SQLiteStorage implements IStorageService {
                 await this.upsertClinicalVariable(patientId, varName, value);
             }
 
-            console.log(`✅ Patient ${patientId} updated`);
+            console.log(`✅ Patient ${patientId} updated!`);
         }
 
         if (useTransaction) {
@@ -1113,7 +1113,7 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private convertToString(value: any, variableType: string): string | null {
-        if (value === null || value === undefined || value == '') return null;
+        if (value === null || value === undefined || value === '') return null;
         
         if (variableType === 'json') {
             return JSON.stringify(value);

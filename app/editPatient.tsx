@@ -8,6 +8,7 @@ import { useStorage } from "@/src/contexts/StorageContext";
 import { displayNames } from "@/src/forms/displayNames";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
+import { calculateWAZ } from "@/src/utils/clinicalVariableCalculator";
 import { displayDob, formatChronicIllness, formatDateString, formatName, getOtherChronicIllnessList } from "@/src/utils/formatUtils";
 import { convertToYesNo, normalizeBoolean } from "@/src/utils/normalizer";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -20,21 +21,29 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export default function EditPatientRecord() {
-    const { storage } = useStorage();
-    const { patientData, loadPatient, riskAssessment } = usePatientData();
     const { colors } = useTheme()
+    const { storage } = useStorage();
+    const { 
+        patientData, 
+        riskAssessment, 
+        loadPatient, 
+        calculateAdmissionRiskWithData, 
+        clearPatientData,
+    } = usePatientData();
 
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [editedDOB, setEditedDob] = useState<Date | null>(null)
+    const [editedDOB, setEditedDob] = useState<Date | null>(null);
+    const [pendingDobUpdates, setPendingDobUpdates] = useState<Partial<PatientData> | null>(null);
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
 
     const [recalculating, setRecalculating] = useState(false);
     const [riskUpdated, setRiskUpdated] = useState(false);
-    const [showPreviousPredictions, setShowPreviousPredictions] = useState(false);
+    const [riskUpdateTime, setRiskUpdateTime] = useState<Date>();
+
 
     // Neonatal jaundice modal states
     const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
@@ -54,7 +63,7 @@ export default function EditPatientRecord() {
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
 
-    console.log('@@@@risk', riskAssessment, typeof riskAssessment)
+    console.log('risk assessment', riskAssessment)
 
     // load patient data on mount  
     useEffect(() => {
@@ -99,6 +108,7 @@ export default function EditPatientRecord() {
         const newIsUnderSixMonths = newAgeInMonths < 6
         const newIsNeonate = (typeof newAgeInDays === 'number') && (newAgeInDays < 30);
         const newIsSickYoungInfant = (typeof newAgeInDays === 'number') && (newAgeInDays < 28);
+        const newWAZ = calculateWAZ(newAgeInMonths, patientData.sex, parseFloat(patientData.weight as string))
 
         // store previous age info (before dob change)
         const previous = {
@@ -112,7 +122,8 @@ export default function EditPatientRecord() {
             isUnderSixMonths: normalizeBoolean(patientData?.isUnderSixMonths as boolean),
             isNeonate: patientData?.isNeonate,
             sickYoungInfant: patientData?.sickYoungInfant,
-            neonatalJaundice: patientData?.neonatalJaundice
+            neonatalJaundice: patientData?.neonatalJaundice,
+            waz: patientData.waz
         }
 
         if (Platform.OS !== 'web') {
@@ -135,7 +146,7 @@ export default function EditPatientRecord() {
                 'Updating DOB will trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
                 [ 
                     {text: 'Cancel', style: 'cancel'},
-                    {text: 'OK', onPress: () => confirmDobUpdate(previous, newAgeInMonths, newIsNeonate, newIsSickYoungInfant)}]
+                    {text: 'OK', onPress: () => confirmDobUpdate(previous, newAgeInMonths, newIsNeonate, newIsSickYoungInfant, newWAZ)}]
             )
         } else {
             // TODO -  add alert for web 
@@ -143,14 +154,15 @@ export default function EditPatientRecord() {
         } 
     }
 
-    const confirmDobUpdate = async (previous: any, newAgeInMonths: number, newIsNeonate: boolean, newIsSickYoungInfant: boolean) => {
+    const confirmDobUpdate = async (previous: any, newAgeInMonths: number, newIsNeonate: boolean, newIsSickYoungInfant: boolean, newWaz: number) => {
         // only update values if they have changed - don't include isUnderSixMonths (this should never change)
-        const updates = {
+        let updates = {
             ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && {dob: editedDOB}),
             ...(previous.birthYear && previous.birthYear !== '' && {birthYear: ''}),
             ...(previous.birthMonth && previous.birthMonth !== '' &&  {birthMonth: ''}),
             ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && {approxAgeInYears: ''}),
             ...(previous.ageInMonths !== newAgeInMonths && {ageInMonths: newAgeInMonths}),
+            ...(previous.waz !== newWaz && {waz: newWaz}),
             ...(previous.isDOBUnknown !== false && {isDOBUnknown: false} ),
             ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
             ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
@@ -158,21 +170,30 @@ export default function EditPatientRecord() {
             ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
         };
 
+        console.log('....1. updating age info with updates', updates)
+
         setIsUpdating(true);
         await storage.doBulkUpdate(patientId, updates, previous);
         setIsUpdating(false);
 
         // check if all neonatal info needs to be filled
         if (newIsNeonate && !patientData?.neonatalJaundice) {
+            console.log('...2a. neonate status changed...')
+            setPendingDobUpdates(updates);
+            setNeonatalJaundiceValue('') // clear any prevous value
             setShowNeonatalJaundiceModal(true);
+            console.log('%%%% back to confrim dob update, neonatalJaundoice val', neonatalJaundiceValue)
             return;
         } 
 
-        await proceedWithRiskRecalculation();
+        // if no changes to neonate status, proceed with risk calculations
+        console.log('..2b. dob update complete..calculating risk...')
+        await proceedWithRiskRecalculation(updates);
         await onRefresh();
     }
 
     const handleSaveNeonatalJaundice = async () => {
+        console.log('handling save neonatal jaundice')
         if (!neonatalJaundiceValue) {
             Alert.alert('Required', 'Please select a value for neonatal jaundice');
             return;
@@ -180,18 +201,33 @@ export default function EditPatientRecord() {
 
         try {
             const prevJaundice = patientData?.neonatalJaundice as string;
+            const jaundiceUpdate = { neonatalJaundice: neonatalJaundiceValue };
+
+            console.log('!!!!!!!!!!!! prev jaundice', prevJaundice, typeof prevJaundice)
+            console.log('!!!!!!!! neonatal Juandice value', neonatalJaundiceValue)
+            console.log('!!!! updates', jaundiceUpdate)
+            console.log('!!!! pending DOB updates', pendingDobUpdates)
             
-            // Update neonatal jaundice
+            // Update neonatal jaundice in storage
             setIsUpdating(true);
-            await storage.updatePatient(patientId, { neonatalJaundice: neonatalJaundiceValue });
+            await storage.updatePatient(patientId, jaundiceUpdate);
+            console.log('!!!!!!!!!!!!!!!!!!!!! 3a. updated storage, now logging changes')
             await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'));
             setIsUpdating(false);
 
             setShowNeonatalJaundiceModal(false);
             setEditedDob(editedDOB);
+
+            // Merge neonatal jaundice with pending DOB updates (if any)
+            const allUpdates = {
+                ...pendingDobUpdates, 
+                ...jaundiceUpdate 
+            };
+
+            console.log('!!! 4a. proceeding witl all updates', allUpdates)
             
             // Now proceed with risk recalculation
-            await proceedWithRiskRecalculation();
+            await proceedWithRiskRecalculation(allUpdates);
             await onRefresh();
         } catch (error) {
             console.error('Error updating neonatal jaundice:', error);
@@ -203,15 +239,17 @@ export default function EditPatientRecord() {
     const handleUpdateHivStatus = () => {
         const confirmUpdate = async () => {
             const prev = patientData?.hivStatus
+            const updates = {hivStatus: editedHivStatus}
 
             setIsUpdating(true);
-            
+
             // update hivStatus in storage
-            await storage.updatePatient(patientId, {hivStatus: editedHivStatus})
+            await storage.updatePatient(patientId, updates)
             await storage.logChanges(patientId, 'UPDATE', 'hivStatus', prev as string, editedHivStatus as string)
+
             setIsUpdating(false);
 
-            await proceedWithRiskRecalculation();
+            await proceedWithRiskRecalculation(updates);
             await onRefresh();
         }
 
@@ -229,15 +267,28 @@ export default function EditPatientRecord() {
         } 
     }
 
-    // TODO 
-    const proceedWithRiskRecalculation = async () => {
-         // recalculate risk 
+    // recalculate risk 
+    const proceedWithRiskRecalculation = async (updates?: Partial<PatientData>) => {
+        console.log('...recalculating risk with udpates...', updates)
         setRecalculating(true);
-        // TODO call risk calcucaltion funvtion
-        // TODO check that all variabels are filled
-        // TODO show snackbar (with timer?)
-        setRecalculating(false);
+
+        try {
+            const dataForCalculation = 
+                updates ? { ...patientData, ...updates }: patientData;
+
+            const admissionRisk = calculateAdmissionRiskWithData(dataForCalculation);
+            console.log('~~~~ recalculated admissionRisk', admissionRisk)
             
+            admissionRisk && await storage.saveRiskPrediction(patientId, admissionRisk, 'admission');
+            setRiskUpdated(true);
+            setRiskUpdateTime(new Date());
+        } catch (error) {
+            console.error('Error recalculating risk:', error);
+            Alert.alert('Error', 'Failed to recalculate risk');
+        } finally {
+            setRecalculating(false); 
+            await onRefresh();   
+        }
     }
 
     // ========= medical conditions update functions ================
@@ -565,7 +616,7 @@ export default function EditPatientRecord() {
         </View>
     );
 
-    // show recuclating risk screen
+    // show recuclating risk screen OR snackbar
     if (recalculating) {
         // TODO
         return;
@@ -587,7 +638,6 @@ export default function EditPatientRecord() {
         const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
         const normalizedIsNeonate = patientData.isNeonate && normalizeBoolean(patientData.isNeonate);
 
-        const predictionButtonLabel = !showPreviousPredictions ? 'Show Previous' : 'Hide Previous'
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
                 {/* Neonatal jaundice modal */}
@@ -595,7 +645,10 @@ export default function EditPatientRecord() {
                     visible={showNeonatalJaundiceModal}
                     transparent={true}
                     animationType="fade"
-                    onRequestClose={() => {}}
+                    onRequestClose={() => {  
+                        setPendingDobUpdates(null);
+                        setShowNeonatalJaundiceModal(false);
+                    }}
                 >
                     <View style={Styles.modalOverlay}>
                         <View style={Styles.modalContentWrapper}>
@@ -713,9 +766,37 @@ export default function EditPatientRecord() {
                             
                         </View>
                     </View>
-
-                    {/* Patient Info Accordion */}
+                    
                     <View style={{margin: 15}}>
+                        {/* Risk Predictions Accordion */}
+                        <View style={Styles.accordionListWrapper}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+                                <List.Icon icon="chart-areaspline" color={colors.primary} />
+                                <Text style={Styles.cardTitle}>Current Risk Prediction</Text>
+                            </View>
+                            <View style={Styles.accordionContentWrapper}>
+                                {/* TODO - show admission and discharge or only most recent? */}
+                                <RiskCard
+                                    title={riskAssessment.admission?.riskCategory}
+                                    variant={riskAssessment.admission?.riskCategory.toLowerCase()}
+                                    content={`Risk score = ${riskAssessment.admission?.riskScore}%`}
+                                    expandable={false}
+                                />
+
+                                {riskUpdated
+                                    ?
+                                    <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}>
+                                        Risk last updated {riskUpdateTime?.toDateString()} 
+                                    </Text>
+                                    :
+                                    <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}>
+                                        Prediction calculated at {riskAssessment.discharge ? 'discharge' : 'admission'} 
+                                    </Text>
+                                }
+                            </View>
+                        </View>
+
+                        {/* Patient Info Accordion */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Patient Information"
@@ -732,7 +813,7 @@ export default function EditPatientRecord() {
                                         fieldLabel={"DOB"} 
                                         fieldValue={displayDob(patientData.dob?.toISOString(), patientData.birthYear, patientData.birthMonth)}
                                         editLabel="Enter new DOB if known" 
-                                        canEdit={normalizeBoolean(ageIsEditable)} 
+                                        canEdit={normalizeBoolean(ageIsEditable)}
                                     >
                                         <>
                                             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
@@ -850,6 +931,8 @@ export default function EditPatientRecord() {
                         </View>
 
                         {/* Medical Conditions Accordion */}
+                        {/* TODO fix bug in which is other selected from admission, and we try to add TB or hiv or any othe conition from the list, 
+                        the chronic illness modal pops up and HIV and tb arent ever displayed in the selecte lsit */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Common Medical Conditions"
@@ -1190,57 +1273,6 @@ export default function EditPatientRecord() {
                                 </View>
                             </List.Accordion>
                         </View>
-
-                        {/* Risk Predictions Accordion */}
-                        <View style={Styles.accordionListWrapper}>
-                            <List.Accordion
-                                title="Risk Predictions"
-                                titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="chart-areaspline"/>}
-                                description={'Read-only'}
-                            >
-                                <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO - show admission and discharge or only most recent? */}
-                                    <Text style={[Styles.modalSubheader]}>
-                                        Most recent prediction (calculated at ...): 
-                                    </Text>
-                                    <RiskCard
-                                        title={riskAssessment.admission?.riskCategory}
-                                        variant={riskAssessment.admission?.riskCategory.toLowerCase()}
-                                        content={`Risk score = ${riskAssessment.admission?.riskScore}%`}
-                                        expandable={false}
-                                    />
-                                    <Button
-                                        style={{ alignSelf: 'center', marginVertical: 10 }}
-                                        mode="elevated"
-                                        buttonColor={colors.secondary}
-                                        textColor={colors.onSecondary}
-                                        onPress={() => setShowPreviousPredictions(prev => !prev)}
-                                    >
-                                        {predictionButtonLabel}
-                                    </Button>
-                                    {showPreviousPredictions &&
-                                    <>
-                                        <Text style={[Styles.modalSubheader]}> Previous Predictions (TODO):</Text>
-                                        <InfoRow label={"High (8%)"} value={"Calcuated at admission"}/>
-                                        <InfoRow label={"Very High (21%)"} value={"Calcuated at 2025-10-12"}/>
-                                    </>}
-                                </View>
-                            </List.Accordion>
-                        </View>
-
-                        {/* Careplan Accordion*/}
-                        {/* <View style={Styles.accordionListWrapper}>
-                            <List.Accordion
-                                title="Careplan Recommendations"
-                                titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="clipboard-list"/>}
-                                description={'Read-only'}
-                            >
-                                <View style={Styles.accordionContentWrapper}>
-                                </View>
-                            </List.Accordion>
-                        </View> */}
                     </View>
 
                     {/* Pagination controls */}
@@ -1250,7 +1282,10 @@ export default function EditPatientRecord() {
                         textColor={colors.onPrimary} 
                         icon= 'account-group'
                         mode="elevated" 
-                        onPress={() => router.back()} // make sure it persists the changes made to patiennt
+                        onPress={() => {
+                            clearPatientData();
+                            router.back();
+                        }} 
                     >
                         Patient Records
                     </Button>

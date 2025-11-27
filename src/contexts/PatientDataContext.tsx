@@ -2,6 +2,7 @@ import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
+import { normalizeBoolean } from '../utils/normalizer';
 import { initialPatientData, PatientData } from './PatientData';
 import { useStorage } from './StorageContext';
 
@@ -20,6 +21,7 @@ interface PatientDataContextType {
   handleAgeChange: (isUnderSixMonths: boolean) => void;
   calculateAdmissionRisk: () => RiskPrediction | null;
   calculateDischargeRisk: () => RiskPrediction | null;
+  calculateAdmissionRiskWithData: (data: PatientData) => RiskPrediction | null;
   getCurrentRiskAssessment: (patientId: string) => Promise<RiskAssessment | null>;
   getCurrentPatientId: () => string | null;
   riskAssessment: RiskAssessment;
@@ -202,6 +204,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const clearPatientData = () => {
     setPatientData(initialPatientData);
     setCurrentPatientId(null)
+    setRiskAssessment({});
   };
 
    /**
@@ -213,12 +216,10 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       if (!currentPatientId) throw new Error('No patient ID available for submission');
     
     try {
-      // Calculate final risk assessments before saving
-      // TODO make this work with discharge risks; only calculate risk if we have all required info??
+      // Calculate risk assessments before saving
       const admissionRisk = calculateAdmissionRisk()
       const finalRiskAssessment: RiskAssessment = {
         admission: admissionRisk|| undefined,
-        // discharge: calculateDischargeRisk(),
       };
 
       // Store patient name before clearing
@@ -232,8 +233,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         await storage.saveRiskPrediction(currentPatientId, admissionRisk, 'admission');
       }
 
-      console.log('✅ Stored risk prediction for ${currentPatientId}:', finalRiskAssessment);
-      
+      console.log(`✅ Stored risk prediction for ${currentPatientId}:`, finalRiskAssessment);
+
       const submittedPatientId = currentPatientId;
       
       // Clear current state and create new draft for next patient
@@ -263,11 +264,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
 
   /**
-   * Calculate post-discharge mortality risk at admission time
+   * Calculate post-discharge mortality risk at admission time,
+   *  using patient data stored in context
    */
   const calculateAdmissionRisk = (): RiskPrediction | null => {
     const context: ModelContext = {
-      isUnderSixMonths: patientData.isUnderSixMonths,
+      isUnderSixMonths: normalizeBoolean(patientData.isUnderSixMonths),
       usageTime: 'admission'
     };
 
@@ -275,6 +277,25 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     const strategy = model && modelSelector.getStrategy(model?.modelName)
 
     return strategy && strategy?.calculateRisk(patientData)
+  };
+
+
+  /**
+   * Calculate post-discharge mortality risk at admission time; takes explicit data
+   */
+  const calculateAdmissionRiskWithData = (data: PatientData): RiskPrediction | null => {
+      const context: ModelContext = {
+          isUnderSixMonths: normalizeBoolean(data.isUnderSixMonths),
+          usageTime: 'admission'
+      };
+
+      console.log('!!! context', context)
+      console.log('!!! data', data)
+
+      const model = modelSelector.getModel(context);
+      const strategy = model && modelSelector.getStrategy(model?.modelName);
+
+      return strategy && strategy?.calculateRisk(data);
   };
 
   /**
@@ -297,7 +318,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
     const assessment = await storage.getRiskAssessment(patientId)
     setRiskAssessment(assessment);
-    
+
     return riskAssessment;
   };
 
@@ -315,6 +336,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         handleAgeChange,
         calculateAdmissionRisk,
         calculateDischargeRisk,
+        calculateAdmissionRiskWithData,
         getCurrentRiskAssessment,
         getCurrentPatientId,
         riskAssessment

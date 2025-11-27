@@ -1,7 +1,6 @@
 
 export function normalizeBoolean(input: boolean | number | string): boolean {
-    if (typeof input === 'number') return numberToBoolean(input)
-
+    if (typeof input === 'number') return numberToBoolean(input);
     if (typeof input === 'string') return stringToBoolean(input);
 
     // Default: typeof input is boolean
