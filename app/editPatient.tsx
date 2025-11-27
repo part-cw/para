@@ -56,19 +56,24 @@ export default function EditPatientRecord() {
     const [editedMalaria, setEditedMalaria] = useState<string>('');
     const [editedSepsis, setEditedSepsis] = useState<string>('');
     const [editedMeningitis, setEditedMeningitis] = useState<string>('');
-    const [editedChronicIllness, setEditedChronicIllness] = useState<string[]>([]);
+    const [editedChronicIllness, setEditedChronicIllness] = useState<string[]>(patientData.chronicIllnesses || []);
     const [editedOtherChronicIllness, setEditedOtherChronicIllness] = useState<string>('');
     const [showOtherChronicIllnessModal, setShowOtherChronicIllnessModal] = useState(false);
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
 
-    console.log('risk assessment', riskAssessment)
-
     // load patient data on mount  
     useEffect(() => {
         loadPatientData();
     }, []);
+
+    // sync edited illness with patientData
+    useEffect(() => {
+        if (patientData?.chronicIllnesses) {
+            setEditedChronicIllness(patientData.chronicIllnesses);
+        }
+    }, [patientData?.chronicIllnesses]);
 
 
     const loadPatientData = async () => {
@@ -170,30 +175,24 @@ export default function EditPatientRecord() {
             ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
         };
 
-        console.log('....1. updating age info with updates', updates)
-
         setIsUpdating(true);
         await storage.doBulkUpdate(patientId, updates, previous);
         setIsUpdating(false);
 
         // check if all neonatal info needs to be filled
         if (newIsNeonate && !patientData?.neonatalJaundice) {
-            console.log('...2a. neonate status changed...')
             setPendingDobUpdates(updates);
             setNeonatalJaundiceValue('') // clear any prevous value
             setShowNeonatalJaundiceModal(true);
-            console.log('%%%% back to confrim dob update, neonatalJaundoice val', neonatalJaundiceValue)
             return;
         } 
 
         // if no changes to neonate status, proceed with risk calculations
-        console.log('..2b. dob update complete..calculating risk...')
         await proceedWithRiskRecalculation(updates);
         await onRefresh();
     }
 
     const handleSaveNeonatalJaundice = async () => {
-        console.log('handling save neonatal jaundice')
         if (!neonatalJaundiceValue) {
             Alert.alert('Required', 'Please select a value for neonatal jaundice');
             return;
@@ -203,15 +202,9 @@ export default function EditPatientRecord() {
             const prevJaundice = patientData?.neonatalJaundice as string;
             const jaundiceUpdate = { neonatalJaundice: neonatalJaundiceValue };
 
-            console.log('!!!!!!!!!!!! prev jaundice', prevJaundice, typeof prevJaundice)
-            console.log('!!!!!!!! neonatal Juandice value', neonatalJaundiceValue)
-            console.log('!!!! updates', jaundiceUpdate)
-            console.log('!!!! pending DOB updates', pendingDobUpdates)
-            
             // Update neonatal jaundice in storage
             setIsUpdating(true);
             await storage.updatePatient(patientId, jaundiceUpdate);
-            console.log('!!!!!!!!!!!!!!!!!!!!! 3a. updated storage, now logging changes')
             await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'));
             setIsUpdating(false);
 
@@ -223,8 +216,6 @@ export default function EditPatientRecord() {
                 ...pendingDobUpdates, 
                 ...jaundiceUpdate 
             };
-
-            console.log('!!! 4a. proceeding witl all updates', allUpdates)
             
             // Now proceed with risk recalculation
             await proceedWithRiskRecalculation(allUpdates);
@@ -269,7 +260,6 @@ export default function EditPatientRecord() {
 
     // recalculate risk 
     const proceedWithRiskRecalculation = async (updates?: Partial<PatientData>) => {
-        console.log('...recalculating risk with udpates...', updates)
         setRecalculating(true);
 
         try {
@@ -277,7 +267,6 @@ export default function EditPatientRecord() {
                 updates ? { ...patientData, ...updates }: patientData;
 
             const admissionRisk = calculateAdmissionRiskWithData(dataForCalculation);
-            console.log('~~~~ recalculated admissionRisk', admissionRisk)
             
             admissionRisk && await storage.saveRiskPrediction(patientId, admissionRisk, 'admission');
             setRiskUpdated(true);
@@ -372,25 +361,59 @@ export default function EditPatientRecord() {
     };
 
     const handleChronicIllnessChange = (selected: string[]) => {
-        // Handle mutually exclusive logic
-        if (selected.includes('none') && selected.length > 1) {
-            // If 'none' is selected with others, remove 'none'
-            setEditedChronicIllness(selected.filter(item => item !== 'none'));
-        } else if (selected.includes('none')) {
-            // If only 'none' is selected
+        const wasAdded = selected.filter(item => !editedChronicIllness.includes(item));
+        const wasRemoved = editedChronicIllness.filter(item => !selected.includes(item));
+
+        // Handle "none" selection
+        if (wasAdded.includes('none')) {
+            // User just selected "none" - clear everything else
             setEditedChronicIllness(['none']);
-        } else {
-            // Normal selection
-            setEditedChronicIllness(selected);
-            if (selected.includes('other')) {
+            return;
+        }
+
+        // Handle "other" being added while "none" exists
+        if (selected.includes('none') && selected.length > 1) {
+            // Remove "none" if user selects anything else
+            const withoutNone = selected.filter(item => item !== 'none');
+            setEditedChronicIllness(withoutNone);
+            
+            // If "other" was just added, show modal
+            if (wasAdded.includes('other')) {
                 Alert.alert(
                     'Other Chronic Condition', 
                     'Enter one or multiple conditions, if known, or click cancel',
                     [
-                        {text: 'Cancel', style: 'cancel'},
+                        {text: 'Cancel', style: 'cancel', onPress: () => {
+                            // Remove "other" if user cancels
+                            setEditedChronicIllness(withoutNone.filter(item => item !== 'other'));
+                        }},
                         {text: 'Add Condition', onPress: () => setShowOtherChronicIllnessModal(true)}
-                    ])
+                    ]
+                );
             }
+            return;
+        }
+
+        // Normal selection - update state
+        setEditedChronicIllness(selected);
+
+        // Show modal only if "other" was JUST ADDED (not if it was already there)
+        if (wasAdded.includes('other')) {
+            Alert.alert(
+                'Other Chronic Condition', 
+                'Enter one or multiple conditions, if known, or click cancel',
+                [
+                    {
+                        text: 'Cancel', 
+                        style: 'cancel', 
+                        onPress: () => {
+                            // Remove "other" if user cancels
+                            setEditedChronicIllness(selected.filter(item => item !== 'other'));
+                        }
+                    },
+                    {text: 'Add Condition', onPress: () => setShowOtherChronicIllnessModal(true)}
+                ]
+            );
         }
     };
 
@@ -404,23 +427,30 @@ export default function EditPatientRecord() {
             try {
                 setIsUpdating(true);
                 
-                const previousConditions = patientData?.chronicIllnesses && patientData?.chronicIllnesses || [];
-                
+                const previousConditions = patientData?.chronicIllnesses || [];
                 const updates: Partial<PatientData> = { chronicIllnesses: editedChronicIllness };
                 const previous: Partial<PatientData> = {chronicIllnesses: previousConditions}
 
+                // If 'none' is selected, clear otherChronicIllness
+                if (editedChronicIllness.includes('none')) {
+                    updates.otherChronicIllness = '';
+                    updates.chronicIllnesses=['none'];
+
+                    if (patientData?.otherChronicIllness) {
+                        previous.otherChronicIllness = patientData.otherChronicIllness;
+                    }
+                }
+
                 // If 'other' was removed, clear otherChronicIllness
-                if (!editedChronicIllness.includes('other') && patientData?.otherChronicIllness) {
+                else if (!editedChronicIllness.includes('other') && patientData?.otherChronicIllness) {
                     updates.otherChronicIllness = '';
                     previous.otherChronicIllness = patientData.otherChronicIllness;
                 }
-                
+
                 await storage.doBulkUpdate(patientId, updates, previous)
                 
                 setIsUpdating(false);
-                setEditedChronicIllness([]);
-                
-                await onRefresh();
+                await onRefresh(); // will trigger use effect that updates editedChronicIllnesses
                 // Alert.alert('Success', 'Chronic conditions updated successfully');
             } catch (error) {
                 console.error('Error updating chronic illnesses:', error);
@@ -486,25 +516,28 @@ export default function EditPatientRecord() {
                 const updatedIllnesses = [...currentIllnesses, ...toAdd];
                 const updatedValue = updatedIllnesses.join(', ');
                 
-                const currentChronicIllnesses = patientData?.chronicIllnesses || [];
-                
+                // Use editedChronicIllness if it has changes, otherwise use current
+                const currentChronicIllnesses = editedChronicIllness.length > 0 
+                    ? editedChronicIllness 
+                    : (patientData?.chronicIllnesses || []);
+
                 // Add 'other' to chronicIllnesses if not already present
-                const updatedChronicIllnesses = currentChronicIllnesses.includes('other')
-                    ? currentChronicIllnesses
-                    : [...currentChronicIllnesses, 'other'];
+                // Remove 'none' if present (shouldn't be there with 'other')
+                const updatedChronicIllnesses = currentChronicIllnesses
+                    .filter(item => item !== 'none') // Remove 'none' if present
+                    .concat(currentChronicIllnesses.includes('other') ? [] : ['other']); // Add 'other' if not present
                 
-                await storage.updatePatient(patientId, {
+                const storageUpdates = {
                     otherChronicIllness: updatedValue,
                     chronicIllnesses: updatedChronicIllnesses
-                });
+                }
+
+                const previousStorageValues = {
+                    otherChronicIllness: patientData?.otherChronicIllness || '',
+                    chronicIllnesses: patientData?.chronicIllnesses || []
+                }
                 
-                await storage.logChanges(
-                    patientId,
-                    'UPDATE',
-                    'otherChronicIllness',
-                    patientData?.otherChronicIllness || '',
-                    updatedValue
-                );
+                await storage.doBulkUpdate(patientId, storageUpdates, previousStorageValues)
                 
                 setIsUpdating(false);
                 setEditedOtherChronicIllness('');
@@ -1143,7 +1176,7 @@ export default function EditPatientRecord() {
                                                 {label: 'None', value: 'none'},
                                                 {label: 'Other', value: 'other'}
                                             ]} 
-                                            selected={editedChronicIllness.length > 0 ? editedChronicIllness : (patientData.chronicIllnesses || [])} 
+                                            selected={editedChronicIllness}
                                             onSelectionChange={handleChronicIllnessChange}
                                         />
                                         <Button
