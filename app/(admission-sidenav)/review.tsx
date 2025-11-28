@@ -383,7 +383,7 @@ export default function ReviewScreen() {
                       onPress={() => handleAccordionPress('admissionClinicalData')}
                     >
                         {
-                            patientData.isUnderSixMonths
+                            patientData.isUnderSixMonths === true // TODO - test this page; make sure correct rows rendered
                             ?
                              <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>

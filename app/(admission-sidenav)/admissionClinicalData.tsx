@@ -869,7 +869,7 @@ export default function AdmissionClinicalDataScreen() {
                       setShowErrorSummary(true)
                     } else {
                         setShowErrorSummary(false)
-                        router.push('/(dataEntry-sidenav)/medicalConditions')}
+                        router.push('/(admission-sidenav)/medicalConditions')}
                     }
                 }
             />
