@@ -1,13 +1,13 @@
 import { Modal, TouchableOpacity, View } from "react-native";
 import { Button, Text, TextInput } from 'react-native-paper';
-import { PatientData } from "../contexts/PatientData";
-import { useMedicalConditionsManager } from "../hooks/useMedicalConditionsManager";
-import { IStorageService } from "../services/StorageService";
-import { GlobalStyles as Styles } from "../themes/styles";
-import { formatChronicIllness, getOtherChronicIllnessList } from "../utils/formatUtils";
-import CheckboxGroup from "./CheckboxGroup";
-import { EditGroup } from "./EditFieldGroup";
-import RadioButtonGroup from "./RadioButtonGroup";
+import { PatientData } from "../../contexts/PatientData";
+import { useMedicalConditionsManager } from "../../hooks/useMedicalConditionsManager";
+import { IStorageService } from "../../services/StorageService";
+import { GlobalStyles as Styles } from "../../themes/styles";
+import { formatChronicIllness, getOtherChronicIllnessList } from "../../utils/formatUtils";
+import CheckboxGroup from "../CheckboxGroup";
+import { EditGroup } from "../EditFieldGroup";
+import RadioButtonGroup from "../RadioButtonGroup";
 
 interface MedicalConditionsSectionProps {
     patientId: string;

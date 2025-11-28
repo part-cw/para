@@ -44,7 +44,7 @@ export const GlobalStyles = StyleSheet.create({
 
     cardWrapper: {
         backgroundColor: AppTheme.colors.secondary,
-        marginBottom: 8,
+        marginBottom: 16,
     },
 
     sectionHeader: {

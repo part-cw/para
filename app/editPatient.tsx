@@ -1,7 +1,8 @@
 import { EditGroup } from "@/src/components/EditFieldGroup";
-import { MedicalConditionsSection } from "@/src/components/EditableMedicalConditions";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
 import RiskCard from "@/src/components/RiskCard";
+import { MedicalConditionsSection } from "@/src/components/sections/EditableMedicalConditions";
+import { VHTReferralSection } from "@/src/components/sections/VhtReferralSection";
 import { PatientData } from "@/src/contexts/PatientData";
 import { usePatientData } from "@/src/contexts/PatientDataContext";
 import { useStorage } from "@/src/contexts/StorageContext";
@@ -29,6 +30,7 @@ export default function EditPatientRecord() {
         loadPatient, 
         calculateAdmissionRiskWithData, 
         clearPatientData,
+        updatePatientData
     } = usePatientData();
 
     const [loading, setLoading] = useState(true);
@@ -54,14 +56,6 @@ export default function EditPatientRecord() {
     useEffect(() => {
         loadPatientData();
     }, []);
-
-    // sync edited illness with patientData
-    // useEffect(() => {
-    //     if (patientData?.chronicIllnesses) {
-    //         setEditedChronicIllness(patientData.chronicIllnesses);
-    //     }
-    // }, [patientData?.chronicIllnesses]);
-
 
     const loadPatientData = async () => {
         try {
@@ -291,7 +285,6 @@ export default function EditPatientRecord() {
     }
 
     if (patientData) {
-        const otherChronicIllnessSelected = patientData.chronicIllnesses?.includes('other');
         const hivIsEditable = !patientData.isDischarged && (patientData.hivStatus === 'unknown');
         const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
         const normalizedIsNeonate = patientData.isNeonate && normalizeBoolean(patientData.isNeonate);
@@ -567,7 +560,17 @@ export default function EditPatientRecord() {
                                 left={props => <List.Icon {...props} icon="doctor"/>}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO */}
+                                    <VHTReferralSection
+                                        village={patientData.village}
+                                        subvillage={patientData.subvillage}
+                                        vhtName={patientData.vhtName}
+                                        vhtTelephone={patientData.vhtTelephone}
+                                        onUpdate={updatePatientData}
+                                        colors={colors}
+                                        mode="admission"
+                                        showClearButton={true}
+                                        showHeader={false}
+                                    />
                                 </View>
                             </List.Accordion>
                         </View>
