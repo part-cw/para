@@ -1,6 +1,7 @@
 import { EditGroup } from "@/src/components/EditFieldGroup";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
 import RiskCard from "@/src/components/RiskCard";
+import { CaregiverContactSection } from "@/src/components/sections/CaregiverContactSection";
 import { MedicalConditionsSection } from "@/src/components/sections/EditableMedicalConditions";
 import { VHTReferralSection } from "@/src/components/sections/VhtReferralSection";
 import { PatientData } from "@/src/contexts/PatientData";
@@ -622,9 +623,18 @@ export default function EditPatientRecord() {
                                 <View style={Styles.accordionContentWrapper}>
                                     {!isDischarged
                                         ?
-                                        <>
-                                        {/* TODO */}
-                                        </>
+                                        <CaregiverContactSection
+                                            caregiverName={patientData.caregiverName}
+                                            caregiverTel={patientData.caregiverTel}
+                                            confirmTel={patientData.confirmTel}
+                                            sendReminders={patientData.sendReminders}
+                                            isCaregiversPhone={patientData.isCaregiversPhone}
+                                            onUpdate={updatePatientData}
+                                            colors={colors}
+                                            mode="edit"
+                                            showHeader={false}
+                                            showClearButton={false}
+                                        />
                                         :
                                         <>
                                             <InfoRow label="Head of Household" value={patientData.caregiverName || 'Not provided'} />
