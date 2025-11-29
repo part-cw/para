@@ -52,6 +52,8 @@ export default function EditPatientRecord() {
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
 
+    console.log('isdiahchage', patientData.isDischarged)
+
     // load patient data on mount  
     useEffect(() => {
         loadPatientData();
@@ -288,6 +290,7 @@ export default function EditPatientRecord() {
         const hivIsEditable = !patientData.isDischarged && (patientData.hivStatus === 'unknown');
         const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
         const normalizedIsNeonate = patientData.isNeonate && normalizeBoolean(patientData.isNeonate);
+        const isDischarged = normalizeBoolean(patientData.isDischarged as boolean) === true;
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
@@ -462,7 +465,7 @@ export default function EditPatientRecord() {
                             </List.Accordion>
                         </View>
 
-                        {/* Clinical Info Accordion */}
+                        {/* Admission Clinical Info Accordion */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Admission Clinical Data"
@@ -533,12 +536,31 @@ export default function EditPatientRecord() {
                             </List.Accordion>
                         </View>
 
+                        {/* Discharge Data Accordion */}
+                        {isDischarged && 
+                        <View style={Styles.accordionListWrapper}>
+                            <List.Accordion
+                                title="Discharge Data"
+                                titleStyle={Styles.accordionListTitle}
+                                left={props => <List.Icon {...props} icon="transit-transfer"/>}
+                                description={'Read-only'}
+                            >
+                                <View style={Styles.accordionContentWrapper}>
+                                    <InfoRow label="Feeding well" value={convertToYesNo(patientData.feedingWell_discharge as boolean)} />
+                                    <InfoRow label="SpO₂ at Discharge" value={patientData.spo2_discharge ? `${patientData.spo2_discharge} %` : 'Not provided'} />
+                                    <InfoRow label="Discharge Reason" value={patientData.dischargeReason ? `${patientData.dischargeReason}`: 'Not provided'} />
+                                </View>
+                            </List.Accordion>
+                        </View>
+                        }
+
                         {/* Medical Conditions Accordion */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Common Medical Conditions"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="medical-bag"/>}
+                                description={patientData.isDischarged ? 'Read-only' : ''}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <MedicalConditionsSection 
@@ -558,19 +580,33 @@ export default function EditPatientRecord() {
                                 title="CHW Referral"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="doctor"/>}
+                                description={isDischarged ? 'Read-only' : ''}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    <VHTReferralSection
-                                        village={patientData.village}
-                                        subvillage={patientData.subvillage}
-                                        vhtName={patientData.vhtName}
-                                        vhtTelephone={patientData.vhtTelephone}
-                                        onUpdate={updatePatientData}
-                                        colors={colors}
-                                        mode="admission"
-                                        showClearButton={true}
-                                        showHeader={false}
-                                    />
+                                    {!isDischarged
+                                        ?
+                                        <VHTReferralSection
+                                            village={patientData.village}
+                                            subvillage={patientData.subvillage}
+                                            vhtName={patientData.vhtName}
+                                            vhtTelephone={patientData.vhtTelephone}
+                                            onUpdate={updatePatientData}
+                                            colors={colors}
+                                            mode="admission"
+                                            showClearButton={true}
+                                            showHeader={false}
+                                        />
+                                        :
+                                        <>
+                                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Patient Address</Text>
+                                            <InfoRow label="Village" value={patientData.village || 'Not provided'} />
+                                            <InfoRow label="Subvillage" value={patientData.subvillage || 'Not provided'} />
+                                            
+                                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>CHW Contact Information</Text>
+                                            <InfoRow label="Name" value={patientData.vhtName || 'Not provided'} />
+                                            <InfoRow label="Telephone" value={patientData.vhtTelephone || 'Not provided'} />
+                                        </>
+                                    }
                                 </View>
                             </List.Accordion>
                         </View>
@@ -581,9 +617,26 @@ export default function EditPatientRecord() {
                                 title="Caregiver Contact Information"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="account-child"/>}
+                                description={isDischarged ? 'Read-only' : ''}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    {/* TODO */}
+                                    {!isDischarged
+                                        ?
+                                        <>
+                                        {/* TODO */}
+                                        </>
+                                        :
+                                        <>
+                                            <InfoRow label="Head of Household" value={patientData.caregiverName || 'Not provided'} />
+                                            <InfoRow label="Telephone" value={patientData.caregiverTel || 'Not provided'} />
+                                            {(patientData.caregiverTel !== '') &&
+                                                <>
+                                                    <InfoRow label="Telephone belongs to caregiver" value={patientData.isCaregiversPhone ? 'Yes' : 'No'} />
+                                                    <InfoRow label="Receive reminders" value={patientData.sendReminders ? 'Yes' : 'No'} />
+                                                </>
+                                            }
+                                        </>
+                                    }
                                 </View>
                             </List.Accordion>
                         </View>
