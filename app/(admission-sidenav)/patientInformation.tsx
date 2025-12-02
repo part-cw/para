@@ -453,7 +453,7 @@ export default function PatientInformationScreen() {
                                 setShowErrorSummary(true)
                             } else {
                                 setShowErrorSummary(false)
-                                router.push('../(dataEntry-sidenav)/admissionClinicalData')
+                                router.push('../(admission-sidenav)/admissionClinicalData')
                             }
                         }}
                         isNext={true}

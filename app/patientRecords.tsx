@@ -26,7 +26,6 @@ export default function PatientRecords() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
 
-
   // Load drafts on mount
   useEffect(() => {
     loadAllRecords();
@@ -49,7 +48,7 @@ export default function PatientRecords() {
       for (const patient of records) {
         if (patient.patientId) {
           try {
-            const assessment = await storage.getRiskAssessment(patient.patientId);
+            const { assessment } = await storage.getRiskAssessment(patient.patientId);
             assessments.set(patient.patientId, assessment);
           } catch (error) {
             console.warn(`Could not load risk assmessment for ${patient.patientId}`);
@@ -93,16 +92,21 @@ export default function PatientRecords() {
     setFilteredPatients(filtered)
   }
 
-  const handleDischarge = async (patientId: string) => {
-    await storage.updatePatient(patientId, {isDischarged: true})
-    // TODO - enter discharge workflow
-    // allow edit medical conditions
-    // add VHT and caregiver info if not already complete  
-    // collect discharge variables
-    // calculate risk prediction & update risk assessment with discharge calc
-    // go to risk display - have buttons to go back to records
-    // 
-    await onRefresh(); // TODO remove
+  const handleEdit = async (id: string) => {
+    router.push({
+      pathname: '/editPatient',
+      params: { patientId: id}
+    })
+  }
+
+  const handleDischarge = async (id: string) => {
+    await storage.updatePatient(id, {isDischarged: true})
+    router.push({pathname: '/(discharge-sidenav)/dischargeData', params: {patientId: id}})
+  }
+
+  const handleArchive = async (id: string) => {
+    console.log('TODO: archiving record...')
+    alert('Event handler not implemented')
   }
 
   // If discharged patient use discharge riskC, if not discharged use admission risk category
@@ -130,7 +134,7 @@ export default function PatientRecords() {
           icon= 'plus'
           mode="outlined" 
           onPress={() => {
-            router.push('/(dataEntry-sidenav)/patientInformation')
+            router.push('/(admission-sidenav)/patientInformation')
           }}
         >
           Add Patient
@@ -242,8 +246,8 @@ export default function PatientRecords() {
               riskCategory={ risk.toLowerCase() }
               // riskProfile={p.riskProfile}
               // recommendedCareplan={p.recommendedCareplan}
-              onEdit={() => console.log('TODO: editing record...')}
-              onArchive={() => console.log('TODO: archiving record...')}
+              onEdit={() => handleEdit(p.patientId as string)}
+              onArchive={() => handleArchive(p.patientId as string)}
               onDischarge={() => handleDischarge(p.patientId as string)}              
             />
           )

@@ -4,6 +4,7 @@ export interface PatientData {
   // Metadata
   patientId?: string;
   admissionStartedAt: string | null;
+  admissionCompletedAt: string | null;
   
   // Patient Information (for all ages)
   surname: string;
@@ -71,7 +72,6 @@ export interface PatientData {
   isCaregiversPhone: boolean;
 
   // discharge info
-  dischargeDiagnosis?: string;
   spo2_discharge?: string;
   dischargeReason?: string;
   feedingWell_discharge?: boolean;
@@ -85,6 +85,7 @@ export interface PatientData {
 export const initialPatientData: PatientData = {
   // patient information
   admissionStartedAt: null,
+  admissionCompletedAt: null,
   surname: '',
   firstName: '',
   otherName: '',
@@ -149,7 +150,6 @@ export const initialPatientData: PatientData = {
   feedingWell: '',
   
   // discharge fields
-  dischargeDiagnosis: '',
   spo2_discharge: '',
   dischargeReason: '',
   feedingWell_discharge: undefined,

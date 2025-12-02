@@ -22,7 +22,7 @@ export abstract class ModelStrategy {
             const rawScore = this.calculateRawScore(patientData) // scales variables/interactions, multiply by coefficient, add offset  
             const riskScore = this.convertToRiskScore(rawScore) // scale raw score and convert to percentage
             const riskCategory = this.getRiskCategory(riskScore)
-
+            
             return {
                 riskScore,
                 riskCategory,

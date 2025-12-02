@@ -18,7 +18,7 @@ export default function AppBar() {
   const pathname = usePathname();
   const isHome = (pathname === '/');
 
-  const dataEntryRoutes = [
+  const admissionRoutes = [
     '/patientInformation',
     '/admissionClinicalData',
     '/medicalConditions',
@@ -27,7 +27,7 @@ export default function AppBar() {
     '/review'
   ]
   
-  const isDataEntryScreen = dataEntryRoutes.includes(pathname);
+  const isDataEntryScreen = admissionRoutes.includes(pathname);
   const dataWarningMessage = 
     'Incomplete admissions are automatically saved and can be resumed from the “Drafts” page.';
 
@@ -68,7 +68,7 @@ export default function AppBar() {
       } 
     } else {
       // no alert if not in data entry screen
-      router.push('/')
+      resetFormAndGo();
     }
             
   };

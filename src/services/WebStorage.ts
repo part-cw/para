@@ -59,4 +59,32 @@ export class WebStorage implements IStorageService {
         throw new Error("Method not implemented.");
     }
 
+    async logChanges(
+        patientId: string,
+        action: string,
+        fieldChanged: string | null,
+        oldValue: string | null,
+        newValue: string | null
+    ): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+
+    async logBulkChanges(
+        patientId: string,
+        changes: {
+            action: string;
+            fieldChanged: string | null;
+            oldValue: string | null;
+            newValue: string | null;}[]
+    ): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+
+    async doBulkUpdate(
+        patientId: string, 
+        updates: Partial<PatientData>, 
+        previousValues: Record<string, any>
+    ): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
  }

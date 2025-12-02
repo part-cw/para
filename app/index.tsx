@@ -15,7 +15,7 @@ export default function Index() {
           textColor={colors.onPrimary} 
           icon= 'plus'
           mode="elevated" 
-          onPress={() => {router.push('/(dataEntry-sidenav)/patientInformation')}}
+          onPress={() => {router.push('/(admission-sidenav)/patientInformation')}}
         >
           Add Patient
         </Button>

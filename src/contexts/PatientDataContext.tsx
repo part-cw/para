@@ -2,6 +2,7 @@ import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
+import { normalizeBoolean } from '../utils/normalizer';
 import { initialPatientData, PatientData } from './PatientData';
 import { useStorage } from './StorageContext';
 
@@ -15,13 +16,16 @@ interface PatientDataContextType {
       patientName: string;}>;
   startAdmission: () => void;
   loadDraft: (patientId: string) => Promise<void>;
+  loadPatient: (patientId: string) => Promise<void>;
   isDataLoaded: boolean;
   handleAgeChange: (isUnderSixMonths: boolean) => void;
   calculateAdmissionRisk: () => RiskPrediction | null;
   calculateDischargeRisk: () => RiskPrediction | null;
-  getCurrentRiskAssessment: () => RiskAssessment;
+  calculateAdmissionRiskWithData: (data: PatientData) => RiskPrediction | null;
+  getCurrentRiskAssessment: (patientId: string) => Promise<RiskAssessment | null>;
   getCurrentPatientId: () => string | null;
   riskAssessment: RiskAssessment;
+  admissionLastCalculated: string;
 }
 
 const PatientDataContext = createContext<PatientDataContextType | undefined>(undefined);
@@ -31,10 +35,10 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(true);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
+  const [admissionLastCalculated, setAdmissionLastCalculated] = useState<string>('')
   
   const { storage, isInitialized } = useStorage();
   const modelSelector = getModelSelectorInstance();
-
 
   // Autosave draft whenever patientData changes, wait 1000 ms
   useEffect(() => {
@@ -125,6 +129,27 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  /**
+   * Load specifc patient record 
+   */
+  const loadPatient = async (patientId: string) => {
+    try {
+      setIsDataLoaded(false)
+      const data = await storage.getPatient(patientId);
+      if (!data) throw new Error(`Patient ${patientId} not found`);
+      
+      setPatientData(data);
+      setCurrentPatientId(patientId);
+      await getCurrentRiskAssessment(patientId);
+      console.log(`📋 Loaded patient ${patientId} data`);
+    } catch (error) {
+        console.error('Error loading patient data:', error);
+        throw error;
+    } finally {
+        setIsDataLoaded(true);
+    }
+  }
+
 
   /**
    * Update data .. triggers autosave via useEffect
@@ -180,10 +205,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const clearPatientData = () => {
     setPatientData(initialPatientData);
     setCurrentPatientId(null)
+    setRiskAssessment({});
+    setAdmissionLastCalculated('');
   };
 
    /**
-   * Submit patient (convert draft to submitted patient) - patient ID stays the same
+   * Submit patient (convert draft to submitted patient) and calcuclated risk prediction at admission - patient ID stays the same
    * 
    */
   const savePatientData = async (): 
@@ -191,27 +218,28 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       if (!currentPatientId) throw new Error('No patient ID available for submission');
     
     try {
-      // Calculate final risk assessments before saving
-      // TODO make this work with discharge risks; only calculate risk if we have all required info??
+      // Calculate risk assessments before saving
       const admissionRisk = calculateAdmissionRisk()
       const finalRiskAssessment: RiskAssessment = {
         admission: admissionRisk|| undefined,
-        // discharge: calculateDischargeRisk(),
       };
 
       // Store patient name before clearing
       const patientName = `${patientData.firstName} ${patientData.surname}`;
+      const submissionDateTime = new Date().toISOString()
 
       // submit patient (isDraft change from 1 to 0)
-      await storage.submitPatient(currentPatientId);
+      await storage.submitPatient(currentPatientId, submissionDateTime);
 
       // Save risk prediction with admission model, if exists
       if (admissionRisk) {
-        await storage.saveRiskPrediction(currentPatientId, admissionRisk, 'admission');
+        await storage.saveRiskPrediction(currentPatientId, admissionRisk, 'admission', submissionDateTime);
       }
 
-      console.log('✅ Stored risk prediction for ${currentPatientId}:', finalRiskAssessment);
-      
+      setAdmissionLastCalculated(submissionDateTime);
+
+      console.log(`✅ Stored risk prediction for ${currentPatientId}:`, finalRiskAssessment);
+
       const submittedPatientId = currentPatientId;
       
       // Clear current state and create new draft for next patient
@@ -241,11 +269,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
 
   /**
-   * Calculate post-discharge mortality risk at admission time
+   * Calculate post-discharge mortality risk at admission time,
+   *  using patient data stored in context
    */
   const calculateAdmissionRisk = (): RiskPrediction | null => {
     const context: ModelContext = {
-      isUnderSixMonths: patientData.isUnderSixMonths,
+      isUnderSixMonths: normalizeBoolean(patientData.isUnderSixMonths),
       usageTime: 'admission'
     };
 
@@ -253,6 +282,25 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     const strategy = model && modelSelector.getStrategy(model?.modelName)
 
     return strategy && strategy?.calculateRisk(patientData)
+  };
+
+
+  /**
+   * Calculate post-discharge mortality risk at admission time; takes explicit data
+   */
+  const calculateAdmissionRiskWithData = (data: PatientData): RiskPrediction | null => {
+      const context: ModelContext = {
+          isUnderSixMonths: normalizeBoolean(data.isUnderSixMonths),
+          usageTime: 'admission'
+      };
+
+      console.log('!!! context', context)
+      console.log('!!! data', data)
+
+      const model = modelSelector.getModel(context);
+      const strategy = model && modelSelector.getStrategy(model?.modelName);
+
+      return strategy && strategy?.calculateRisk(data);
   };
 
   /**
@@ -270,7 +318,13 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return strategy && strategy?.calculateRisk(patientData)
   };
 
-  const getCurrentRiskAssessment = (): RiskAssessment => {
+  const getCurrentRiskAssessment = async (patientId: string): Promise<RiskAssessment | null> => {
+    if (!patientId) return null;
+
+    const { assessment, admissionLastCalculated } = await storage.getRiskAssessment(patientId)
+    setRiskAssessment(assessment);
+    setAdmissionLastCalculated(admissionLastCalculated);
+
     return riskAssessment;
   };
 
@@ -283,13 +337,16 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         savePatientData,
         startAdmission,
         loadDraft,
+        loadPatient: loadPatient,
         isDataLoaded,
         handleAgeChange,
         calculateAdmissionRisk,
         calculateDischargeRisk,
+        calculateAdmissionRiskWithData,
         getCurrentRiskAssessment,
         getCurrentPatientId,
-        riskAssessment
+        riskAssessment,
+        admissionLastCalculated
       }}
     >
       {children}

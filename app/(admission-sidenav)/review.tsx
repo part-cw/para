@@ -2,6 +2,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { formatChronicIllness } from '@/src/utils/formatUtils';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -353,26 +354,6 @@ export default function ReviewScreen() {
 
     const otherChronicIllnessSelected = patientData.chronicIllnesses?.includes('other')
 
-    const formatChronicIllness = (items: string[] = []): string => {
-        if (!items || items.length === 0) return 'Not provided';
-
-        // Capitalize the first letter of each illness and normalize spacing
-        const formatted = items.map(item => {
-            const trimmed = item.trim();
-            if (!trimmed) return null;
-
-            // Capitalize only the first letter (including after "other:")
-            const formattedText =
-            trimmed.length > 0
-                ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
-                : trimmed;
-
-            return `• ${formattedText}`;
-        }).filter(Boolean);
-
-        return formatted.join('\n');
-    };
-  
     return (
         <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
@@ -402,7 +383,7 @@ export default function ReviewScreen() {
                       onPress={() => handleAccordionPress('admissionClinicalData')}
                     >
                         {
-                            patientData.isUnderSixMonths
+                            patientData.isUnderSixMonths === true // TODO - test this page; make sure correct rows rendered
                             ?
                              <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>

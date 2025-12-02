@@ -44,7 +44,7 @@ export const GlobalStyles = StyleSheet.create({
 
     cardWrapper: {
         backgroundColor: AppTheme.colors.secondary,
-        marginBottom: 8,
+        marginBottom: 16,
     },
 
     sectionHeader: {
@@ -53,14 +53,6 @@ export const GlobalStyles = StyleSheet.create({
         marginTop: 15,
         marginBottom: 8,
     },
-    
-    // sideLabel: {
-    //     fontSize: 16,
-    //     marginLeft: 0,
-    //     marginRight: 20,
-    //     marginBottom: 20
-    //     // fontWeight: 'bold'
-    // },
 
     label: {
         fontSize: 16,
@@ -174,4 +166,46 @@ export const GlobalStyles = StyleSheet.create({
         // textAlign: 'left',
         color: '#000',
     },
+    editFieldContainer: {
+        backgroundColor: 'rgb(255, 245, 198)',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: 'rgb(248, 203, 0)'
+    },
+    modalContentWrapper: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 24,
+        width: '85%',
+        maxWidth: 400,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    modalHeader: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 16
+    },
+    modalSubheader: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 12,
+    },
+
+    modalText: {
+        fontSize: 16,
+        marginBottom: 20,
+        color: '#666'
+    }
 })
