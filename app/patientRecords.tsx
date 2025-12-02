@@ -226,7 +226,7 @@ export default function PatientRecords() {
           // deceased patients are a subcategory of discharged
           const status = 
             p.isDischarged 
-            ? (p.dischargeReason === 'deceased' ? 'deceased' : 'discharged') 
+            ? (p.dischargeStatus === 'deceased' ? 'deceased' : 'discharged') 
             : 'active';
 
           {/*

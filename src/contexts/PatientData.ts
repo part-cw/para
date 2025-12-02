@@ -73,8 +73,8 @@ export interface PatientData {
 
   // discharge info
   spo2_discharge?: string;
-  dischargeReason?: string;
-  feedingWell_discharge?: boolean;
+  dischargeStatus?: string;
+  feedingStatus_discharge?: string;
 
   // status flags
   isDraftAdmission?: boolean,
@@ -151,6 +151,6 @@ export const initialPatientData: PatientData = {
   
   // discharge fields
   spo2_discharge: '',
-  dischargeReason: '',
-  feedingWell_discharge: undefined,
+  dischargeStatus: '',
+  feedingStatus_discharge: '',
 };

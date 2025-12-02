@@ -688,8 +688,8 @@ export class SQLiteStorage implements IStorageService {
             
             // Discharge variables
             { name: 'spo2_discharge', value: data.spo2_discharge, type: 'numeric', usage: 'discharge' },
-            { name: 'feedingWell_discharge', value: data.feedingWell_discharge !== null ? (data.feedingWell_discharge ? '1' : '0') : null, type: 'boolean', usage: 'discharge' },
-            { name: 'dischargeReason', value: data.dischargeReason, type: 'text', usage: 'discharge' },
+            { name: 'feedingStatus_discharge', value: data.feedingStatus_discharge !== null ? (data.feedingStatus_discharge ? '1' : '0') : null, type: 'boolean', usage: 'discharge' },
+            { name: 'dischargeStatus', value: data.dischargeStatus, type: 'text', usage: 'discharge' },
         ];
 
         for (const variable of variables) {
@@ -1116,7 +1116,7 @@ export class SQLiteStorage implements IStorageService {
             'hivStatus', 'temperature', 'temperatureSquared', 'rrate', 'lastHospitalized',
             'eyeMovement', 'motorResponse', 'verbalResponse', 'bcsScore', 'abnormalBCS',
             'illnessDuration', 'neonatalJaundice', 'bulgingFontanelle', 'feedingWell',
-            'spo2_discharge', 'feedingWell_discharge', 'dischargeReason'
+            'spo2_discharge', 'feedingStatus_discharge', 'dischargeStatus'
         ];
 
         for (const key of clinicalKeys) {
@@ -1130,8 +1130,7 @@ export class SQLiteStorage implements IStorageService {
 
     private determineVariableType(varName: string): string {
         const numericVars = ['waz', 'temperatureSquared', 'bcsScore'];
-        const booleanVars = ['neonatalJaundice', 'bulgingFontanelle', 'feedingWell', 
-                           'feedingWell_discharge', 'abnormalBCS'];
+        const booleanVars = ['neonatalJaundice', 'bulgingFontanelle', 'feedingWell', 'abnormalBCS'];
         // const jsonVars = ['eyeMovement', 'motorResponse', 'verbalResponse'];
 
         if (numericVars.includes(varName)) return 'numeric';
@@ -1141,7 +1140,7 @@ export class SQLiteStorage implements IStorageService {
     }
 
     private determineUsageTime(varName: string): 'admission' | 'discharge' | 'both' {
-        const dischargeVars = ['spo2_discharge', 'feedingWell_discharge', 'dischargeReason'];
+        const dischargeVars = ['spo2_discharge', 'feedingStatus_discharge', 'dischargeStatus'];
         if (dischargeVars.includes(varName)) return 'discharge';
         return 'admission';
     }

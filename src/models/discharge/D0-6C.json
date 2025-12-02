@@ -1,5 +1,5 @@
 {
-    "modelName": "M6PD-C0-6",
+    "modelName": "D0-6C",
     "humanReadableName": "Smart Discharges Uganda Discharge Variable Model 0-6C",
     "description": "This Discharge variable model is for updating the admission risk score at the time of discharge for children under 6-months from the pool of clinical admission and discharge variables.",
     "usageTime": "discharge",
@@ -133,7 +133,7 @@
             "standardDeviation": 0.269978899816029
         },
         {
-            "name": "dischargeReason",
+            "name": "dischargeStatus",
             "displayName": "Discharge Status",
             "description": "",
             "type": "string",
@@ -146,20 +146,67 @@
                     "description": "The child is being routinely discharged"
                 },
                 {
+                    "value": "Deceased",
+                    "label": "deceased",
+                    "description": "The child died during hospital stay"
+                },
+                {
                     "value": "Referred to higher level of care",
                     "label": "referred to higher level of care",
                     "description": "The child is being refrerred to higher level of care at discharge",
-                    "coefficient": 0.00965,
-                    "mean": 0.593908629441624,
-                    "standardDeviation": 0.491175331936256
+                    "coefficient": 0.22276,
+                    "mean": 0.0489874,
+                    "standardDeviation": 0.215841689
                 },
                 {
                     "value": "Unplanned discharge",
                     "label": "unplanned discharge",
-                    "description": "The child is discharged against the medical advice",
-                    "coefficient": 0.14082,
-                    "mean": 0.10241863242759,
-                    "standardDeviation": 0.303243324842165
+                    "description": "The patient fled/escaped, or is discharged against the medical advice",
+                    "coefficient": 0.17218,
+                    "mean": 0.1115873,
+                    "standardDeviation": 0.314858022732009
+                }
+            ]
+        },
+        {
+            "name": "spo2_discharge",
+            "displayName": "SpO₂ at Discharge",
+            "description": "Oxygen saturation at discharge",
+            "type": "number",
+            "units": "percent",
+            "required": true,
+            "coefficient": -0.22606,
+            "mean": 95.17189,
+            "standardDeviation": 5.61097
+        },
+        {
+            "name": "feedingStatus_discharge",
+            "displayName": "Feeding Status",
+            "description": "Feeding status at discharge",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "oneOf": [
+                {
+                    "value": "Feeding well",
+                    "label": "Feeding well",
+                    "description": "The child is feeding well at discharge"
+                },
+                {
+                    "value": "Feeding poorly",
+                    "label": "feeding poorly",
+                    "description": "The child is feeding poorly at discharge",
+                    "coefficient": 0.18606,
+                    "mean": 0.058806,
+                    "standardDeviation": 0.235261247051018
+                },
+                {
+                    "value": "Not feeding at all",
+                    "label": "not feeding at all",
+                    "description": "The child is not feeding at all at discharge",
+                    "coefficient": 0.13729,
+                    "mean": 0.0113818,
+                    "standardDeviation": 0.106076645067423
                 }
             ]
         }
@@ -216,6 +263,71 @@
             "coefficient": 0.08841,
             "mean": 1.40292624664079,
             "standardDeviation": 1.82529283773414
+        },
+        {
+            "name": "ageDischargeHigherLevel",
+            "displayName": "Age in months x Child's is being referred to higher level of care",
+            "description": "Age interaction with discharge status, referred to higher level of care",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"dischargeStatus": "Referred to higher level of care"},
+            "dependencyType": "string",
+            "coefficient": 0.10041,
+            "mean": 0.0923366,
+            "standardDeviation": 0.573062
+        },
+        {
+            "name": "ageUnplannedDischarge",
+            "displayName": "Age in months x unlanned discharge",
+            "description": "Age interaction with discharge status, unplanned discharge",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"dischargeStatus": "Unplanned discharge"},
+            "dependencyType": "string",
+            "coefficient": 0.06765,
+            "mean": 0.208605,
+            "standardDeviation": 0.842246
+        },
+        {
+            "name": "ageFeedingPoorly_discharge",
+            "displayName": "Age in months * feeding poorly at discharge",
+            "description": "Age interaction with feeding poorly at discharge",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"feedingStatus_discharge": "Feeding poorly"},
+            "dependencyType": "string",
+            "coefficient": -0.08041,
+            "mean": 0.120345,
+            "standardDeviation": 0.667655 
+        },
+        {
+            "name": "ageNotFeeding_discharge",
+            "displayName": "Age in months * not feeding at discharge",
+            "description": "Age interaction with not feeding at discharge",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"feedingStatus_discharge": "Not feeding at all"},
+            "dependencyType": "string",
+            "coefficient": 0.05006,
+            "mean": 0.0160944,
+            "standardDeviation": 0.22337 
+        },
+        {
+            "name": "ageSpo2_discharge",
+            "displayName": "Age in months * spo2 at discharge",
+            "description": "Age interaction with child's oxygen saturation at discharge",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": "spo2_discharge",
+            "dependencyType": "number",
+            "coefficient": 0.02,
+            "mean": 203.53,
+            "standardDeviation": 177.701
         }
     ] 
 }
