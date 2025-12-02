@@ -48,7 +48,7 @@ export default function PatientRecords() {
       for (const patient of records) {
         if (patient.patientId) {
           try {
-            const assessment = await storage.getRiskAssessment(patient.patientId);
+            const { assessment } = await storage.getRiskAssessment(patient.patientId);
             assessments.set(patient.patientId, assessment);
           } catch (error) {
             console.warn(`Could not load risk assmessment for ${patient.patientId}`);
@@ -99,17 +99,9 @@ export default function PatientRecords() {
     })
   }
 
-  const handleDischarge = async (patientId: string) => {
-    await storage.updatePatient(patientId, {isDischarged: true})
-    alert('TODO - event handler implementation in progress')
-    // TODO - enter discharge workflow
-    // allow edit medical conditions
-    // add VHT and caregiver info if not already complete  
-    // collect discharge variables
-    // calculate risk prediction & update risk assessment with discharge calc
-    // go to risk display - have buttons to go back to records
-    // 
-    await onRefresh(); // TODO remove
+  const handleDischarge = async (id: string) => {
+    await storage.updatePatient(id, {isDischarged: true})
+    router.push({pathname: '/(discharge-sidenav)/dischargeData', params: {patientId: id}})
   }
 
   const handleArchive = async (id: string) => {
@@ -142,7 +134,7 @@ export default function PatientRecords() {
           icon= 'plus'
           mode="outlined" 
           onPress={() => {
-            router.push('/(dataEntry-sidenav)/patientInformation')
+            router.push('/(admission-sidenav)/patientInformation')
           }}
         >
           Add Patient
