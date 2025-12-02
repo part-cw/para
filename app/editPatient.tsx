@@ -13,6 +13,7 @@ import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ } from "@/src/utils/clinicalVariableCalculator";
 import { displayDob, formatDateString, formatName } from "@/src/utils/formatUtils";
 import { convertToYesNo, normalizeBoolean } from "@/src/utils/normalizer";
+import { computeAdmissionRiskUpdated } from "@/src/utils/riskHelpers";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -28,6 +29,7 @@ export default function EditPatientRecord() {
     const { 
         patientData, 
         riskAssessment, 
+        admissionLastCalculated,
         loadPatient, 
         calculateAdmissionRiskWithData, 
         clearPatientData,
@@ -37,23 +39,18 @@ export default function EditPatientRecord() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [recalculating, setRecalculating] = useState(false);
     
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null);
     const [pendingDobUpdates, setPendingDobUpdates] = useState<Partial<PatientData> | null>(null);
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
-
-    const [recalculating, setRecalculating] = useState(false);
-    const [riskUpdated, setRiskUpdated] = useState(false);
-    const [riskUpdateTime, setRiskUpdateTime] = useState<Date>();
-
+    
     const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
     const [neonatalJaundiceValue, setNeonatalJaundiceValue] = useState<string>('');
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
-
-    console.log('isdiahchage', patientData.isDischarged)
 
     // load patient data on mount  
     useEffect(() => {
@@ -152,10 +149,10 @@ export default function EditPatientRecord() {
             ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && {approxAgeInYears: ''}),
             ...(previous.ageInMonths !== newAgeInMonths && {ageInMonths: newAgeInMonths}),
             ...(previous.waz !== newWaz && {waz: newWaz}),
-            ...(previous.isDOBUnknown !== false && {isDOBUnknown: false} ),
-            ...(previous.isYearMonthUnknown !== false && {isYearMonthUnknown: false}),
+            ...(normalizeBoolean(previous.isDOBUnknown) !== false && {isDOBUnknown: false} ),
+            ...(normalizeBoolean(previous.isYearMonthUnknown) !== false && {isYearMonthUnknown: false}),
             ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
-            ...(!newIsNeonate && previous.neonatalJaundice && {neonatalJaundice: undefined}), // if new isNeonate false, set previous jaundice to null or undefined
+            ...(!newIsNeonate && previous.neonatalJaundice !== undefined && {neonatalJaundice: undefined}), // if new isNeonate false, set previous jaundice to null or undefined
             ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
         };
 
@@ -164,7 +161,8 @@ export default function EditPatientRecord() {
         setIsUpdating(false);
 
         // check if all neonatal info needs to be filled
-        if (newIsNeonate && !patientData?.neonatalJaundice) {
+        // if newIsNeonate is true AND different from previous, open jaundice modal
+        if (newIsNeonate && (newIsNeonate !== previous.isNeonate)) {
             setPendingDobUpdates(updates);
             setNeonatalJaundiceValue('') // clear any prevous value
             setShowNeonatalJaundiceModal(true);
@@ -251,10 +249,7 @@ export default function EditPatientRecord() {
                 updates ? { ...patientData, ...updates }: patientData;
 
             const admissionRisk = calculateAdmissionRiskWithData(dataForCalculation);
-            
             admissionRisk && await storage.saveRiskPrediction(patientId, admissionRisk, 'admission');
-            setRiskUpdated(true);
-            setRiskUpdateTime(new Date());
         } catch (error) {
             console.error('Error recalculating risk:', error);
             Alert.alert('Error', 'Failed to recalculate risk');
@@ -292,6 +287,7 @@ export default function EditPatientRecord() {
         const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
         const normalizedIsNeonate = patientData.isNeonate && normalizeBoolean(patientData.isNeonate);
         const isDischarged = normalizeBoolean(patientData.isDischarged as boolean) === true;
+        const isAdmissionRiskUpdated = computeAdmissionRiskUpdated(patientData.admissionCompletedAt, admissionLastCalculated)
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
@@ -390,10 +386,10 @@ export default function EditPatientRecord() {
                                     expandable={false}
                                 />
 
-                                {riskUpdated
+                                {isAdmissionRiskUpdated
                                     ?
                                     <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}>
-                                        Risk last updated {riskUpdateTime?.toDateString()} 
+                                        Risk last updated {new Date(admissionLastCalculated).toDateString()} 
                                     </Text>
                                     :
                                     <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}>
@@ -460,7 +456,7 @@ export default function EditPatientRecord() {
                                         </>
                                     </EditGroup>
                                     
-                                    <InfoRow label="Age" value={`${AgeCalculator.formatAge(patientData.ageInMonths)} old`} />
+                                    <InfoRow label="Est. Age" value={`${AgeCalculator.formatAge(patientData.ageInMonths)} old`} />
                                     <InfoRow label="Under 6 months" value={patientData.isUnderSixMonths ? 'Yes' : 'No'} />
                                 </View>
                             </List.Accordion>

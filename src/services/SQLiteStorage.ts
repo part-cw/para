@@ -22,6 +22,11 @@ type MedicalConditionsRow = {
   severeAnaemia: string;
 };
 
+type RiskAssessmentInfo = {
+    assessment: RiskAssessment,
+    admissionLastCalculated: string
+}
+
 
 export class SQLiteStorage implements IStorageService {
     private db: SQLite.SQLiteDatabase | null = null;
@@ -195,7 +200,10 @@ export class SQLiteStorage implements IStorageService {
 
     // ========== PATIENT OPERATIONS ==========
 
-    async submitPatient(patientId: string): Promise<void> {
+    /**
+     * convert patietn from draft to active and comlpetes admission worflow - mark completed with date argument or now
+     */
+    async submitPatient(patientId: string, date?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const now = new Date().toISOString();
@@ -205,7 +213,7 @@ export class SQLiteStorage implements IStorageService {
             UPDATE patients 
             SET isDraftAdmission = 0, admissionCompletedAt = ?, updatedAt = ?, admittedBy = ?
             WHERE patientId = ?
-        `, [now, now, CURRENT_USER,patientId]);
+        `, [date || now, now, CURRENT_USER,patientId]);
 
         await this.logChanges(patientId, 'SUBMIT', null, null, null);
         console.log(`✅ Patient ${patientId} submitted`);
@@ -510,7 +518,8 @@ export class SQLiteStorage implements IStorageService {
 
     // ========== RISK OPERATIONS ==========
 
-    async saveRiskPrediction(patientId: string, prediction: RiskPrediction, usageTime: 'admission' | 'discharge'): Promise<void> {
+    // saves current risk predictions at either current date or date argument
+    async saveRiskPrediction(patientId: string, prediction: RiskPrediction, usageTime: 'admission' | 'discharge', dateTime?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const now = new Date().toISOString();
@@ -533,7 +542,7 @@ export class SQLiteStorage implements IStorageService {
                 prediction.riskCategory,
                 patient.ageInMonths || 0,
                 patient.hivStatus || 'n/a',
-                now
+                dateTime || now
             ]);
 
             // TODO Save top predictors if available
@@ -554,16 +563,40 @@ export class SQLiteStorage implements IStorageService {
         console.log(`✅ Risk prediction saved for ${patientId} at ${usageTime}`);
     }
 
-    async getRiskAssessment(patientId: string): Promise<RiskAssessment> {
+    async getRiskAssessment(patientId: string): Promise<RiskAssessmentInfo> {
         if (!this.db) throw new Error('Database not initialized');
 
-        const predictions = await this.db.getAllAsync<any>(`
+        // get most recent admission risk prediction
+        const admission = await this.db.getFirstAsync<any>(`
             SELECT * FROM risk_predictions
-            WHERE patientId = ?
-            ORDER BY calculatedAt ASC -- TODO makesure most recent is last
+            WHERE patientId = ? AND usageTime = 'admission'
+            ORDER BY calculatedAt DESC
+            LIMIT 1
         `, [patientId]);
-        
-        return await this.buildRiskAssesment(predictions)        
+
+        // get most recent discharge risk prediction
+        const discharge = await this.db.getFirstAsync<any>(`
+            SELECT * FROM risk_predictions
+            WHERE patientId = ? AND usageTime = 'discharge'
+            ORDER BY calculatedAt DESC
+            LIMIT 1
+        `, [patientId]);
+
+        return {
+            assessment: {
+                admission: admission ? this.mapRiskPrediction(admission) : undefined,
+                discharge: discharge ? this.mapRiskPrediction(discharge) : undefined,
+            },
+            admissionLastCalculated: admission?.calculatedAt
+        }
+    }
+
+    private mapRiskPrediction(pred: any): RiskPrediction {
+        return {
+            model: pred.modelName,
+            riskScore: pred.riskScore,
+            riskCategory: pred.riskCategory,
+        }
     }
 
     private async buildRiskAssesment(predictions: any[]): Promise<RiskAssessment> {
@@ -952,6 +985,7 @@ export class SQLiteStorage implements IStorageService {
         return {
             patientId: patientRow.patientId,
             admissionStartedAt: patientRow.admissionStartedAt,
+            admissionCompletedAt: patientRow.admissionCompletedAt,
             surname: patientRow.surname,
             firstName: patientRow.firstName,
             otherName: patientRow.otherName || '',

@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import { PatientData } from "../contexts/PatientData";
-import { RiskAssessment, RiskPrediction } from "../models/types";
+import { RiskPrediction } from "../models/types";
 import { WebStorage } from "./WebStorage";
 
 
@@ -8,7 +8,7 @@ export interface IStorageService {
     init(): Promise<void>;
 
     // Patient operations
-    submitPatient(patientId: string): Promise<void>;
+    submitPatient(patientId: string, date?: string): Promise<void>;
     getPatient(patientId: string): Promise<PatientData | null>;
     updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void>;
     deletePatient(patientId: string): Promise<void>;
@@ -50,9 +50,10 @@ export interface IStorageService {
     saveRiskPrediction(
         patientId: string,
         prediction: RiskPrediction,
-        usageTime: 'admission' | 'discharge'
+        usageTime: 'admission' | 'discharge',
+        dateTime?: string
     ): Promise<void>;
-    getRiskAssessment(patientId: string): Promise<RiskAssessment>;
+    getRiskAssessment(patientId: string): Promise<any>;
     
     // Archive operations
     archivePatient(patientId: string): Promise<void>;

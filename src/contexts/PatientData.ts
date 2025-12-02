@@ -4,6 +4,7 @@ export interface PatientData {
   // Metadata
   patientId?: string;
   admissionStartedAt: string | null;
+  admissionCompletedAt: string | null;
   
   // Patient Information (for all ages)
   surname: string;
@@ -84,6 +85,7 @@ export interface PatientData {
 export const initialPatientData: PatientData = {
   // patient information
   admissionStartedAt: null,
+  admissionCompletedAt: null,
   surname: '',
   firstName: '',
   otherName: '',
