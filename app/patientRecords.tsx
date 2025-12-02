@@ -101,7 +101,10 @@ export default function PatientRecords() {
 
   const handleDischarge = async (id: string) => {
     await storage.updatePatient(id, {isDischarged: true})
-    router.push({pathname: '/(discharge-sidenav)/dischargeData', params: {patientId: id}})
+    router.push({
+      pathname: '/(discharge-sidenav)/dischargeData', 
+      params: {patientId: id}
+    })
   }
 
   const handleArchive = async (id: string) => {
