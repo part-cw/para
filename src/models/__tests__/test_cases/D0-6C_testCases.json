@@ -1,0 +1,122 @@
+[
+  [
+    {
+      "ageInMonths": 0.1,
+      "muac": 109,
+      "spo2_admission": 99,
+      "sex": "male",
+      "weight": 3.7,
+      "waz": 0.699999988079071,
+      "illnessDuration": "48 hours to 7 days",
+      "bulgingFontanelle": false,
+      "isNeonate": true,
+      "neonatalJaundice": true,
+      "feedingWell": false,
+      "dischargeStatus": "Referred to higher level of care",
+      "feedingStatus_discharge": "Not feeding at all",
+      "spo2_discharge": 99
+    },
+    {
+      "modelName": "D0-6C",
+      "raw_score": -1.25312929522363,
+      "riskScore": 22.215891293431,
+      "riskCategory": "Very High"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 3.8,
+      "muac": 90,
+      "spo2_admission": 93,
+      "sex": "female",
+      "weight": 3.07,
+      "waz": -5.96400022506714,
+      "illnessDuration": "48 hours to 7 days",
+      "bulgingFontanelle": false,
+      "isNeonate": false,
+      "neonatalJaundice": false,
+      "feedingWell": true,
+      "dischargeStatus": "Unplanned discharge",
+      "feedingStatus_discharge": "Feeding poorly",
+      "spo2_discharge": 97
+    },
+    {
+      "modelName": "D0-6C",
+      "raw_score": -0.777543859566455,
+      "riskScore": 31.4849481818533,
+      "riskCategory": "Very High"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 1.1,
+      "muac": 100,
+      "spo2_admission": 85,
+      "sex": "male",
+      "weight": 3.9,
+      "waz": -1.00399994850159,
+      "illnessDuration": "48 hours to 7 days",
+      "bulgingFontanelle": true,
+      "isNeonate": false,
+      "neonatalJaundice": false,
+      "feedingWell": true,
+      "dischargeStatus": "Routine discharge",
+      "feedingStatus_discharge": "Feeding well",
+      "spo2_discharge": 87
+    },
+    {
+      "modelName": "D0-6C",
+      "raw_score": -2.29116925483088,
+      "riskScore": 9.18569649961006,
+      "riskCategory": "High"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 1,
+      "muac": 124,
+      "spo2_admission": 99,
+      "sex": "female",
+      "weight": 4.5,
+      "waz": 0.527999997138977,
+      "illnessDuration": "Less than 48 hours",
+      "bulgingFontanelle": false,
+      "isNeonate": false,
+      "neonatalJaundice": false,
+      "feedingWell": false,
+      "dischargeStatus": "Routine discharge",
+      "feedingStatus_discharge": "Feeding well",
+      "spo2_discharge": 99
+    },
+    {
+      "modelName": "D0-6C",
+      "raw_score": -3.80336203951,
+      "riskScore": 2.1809430497545,
+      "riskCategory": "Moderate"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 5.3,
+      "muac": 100,
+      "spo2_admission": 99,
+      "sex": "male",
+      "weight": 3,
+      "waz": -7.77400016784668,
+      "illnessDuration": "7 days to 1 month",
+      "bulgingFontanelle": false,
+      "isNeonate": false,
+      "neonatalJaundice": false,
+      "feedingWell": false,
+      "dischargeStatus": "Unplanned discharge",
+      "feedingStatus_discharge": "Not feeding at all",
+      "spo2_discharge": 82
+    },
+    {
+      "modelName": "D0-6C",
+      "raw_score": 2.88094558198807,
+      "riskScore": 94.6896430946819,
+      "riskCategory": "Very High"
+    }
+  ]
+]

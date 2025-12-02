@@ -2,11 +2,12 @@ import { initialPatientData, PatientData } from '../../contexts/PatientData'
 import { calculateBcsScore, calculateWAZ, getTempSquared } from '../../utils/clinicalVariableCalculator'
 import model06 from '../admission/M6PD-C0-6.json'
 import model660 from '../admission/M6PD-C6-60.json'
+import modelD06 from '../discharge/D0-6C.json'
 import { LogisticRegressionStrategy } from '../ModelStrategy'
 import { RiskModel } from '../types'
+import d060_testCases from './test_cases/D0-6C_testCases.json'
 import testCases_06 from './test_cases/model0-6C_testCases.json'
 import testCases_660 from './test_cases/model6-60_testCases.json'
-
 
 describe('LogisticRegressionStrategy: 0-6C Model', () => {
     // using 0-6 clinical admission model
@@ -154,6 +155,68 @@ describe('LogisticRegressionStrategy: 6-60C Model', () => {
                 // Log for manual verification
                 console.log(`Test Case ${index + 1}:`)
                 console.log(`  Input: Age ${inputData.ageInMonths}mo, MUAC ${inputData.muac}mm, SpO2 ${inputData.spo2}%, WAZ ${patientData.waz?.toFixed(2)}`)
+                console.log(`  Expected: ${expectedOutput.riskScore}% (${expectedOutput.riskCategory})`)
+                console.log(`  Actual: ${result.riskScore}% (${result.riskCategory})`)
+                console.log('---')
+            })
+        })
+
+    });
+})
+
+describe.only('LogisticRegressionStrategy: Discharge Model 0-6C', () => {
+    // using 0-6 clinical admission model
+    const strategy = new LogisticRegressionStrategy(modelD06 as RiskModel)
+
+    const createPatientDataFromTestCase = (testCase: any): PatientData => {
+        return {
+            ...initialPatientData,
+            
+            // basic patient information
+            admissionStartedAt: '2024-01-01T00:00:00Z',
+            surname: 'Test',
+            firstName: 'Patient',
+            isUnderSixMonths: true,
+            
+            // Map test case fields to PatientData
+
+            // admission variables
+            ageInMonths: testCase.ageInMonths,
+            muac: testCase.muac.toString(),
+            spo2_admission: testCase.spo2_admission.toString(),
+            weight: testCase.weight.toString(),
+            sex: testCase.sex.toLowerCase(),
+            illnessDuration: testCase.illnessDuration,
+            bulgingFontanelle: testCase.bulgingFontanelle,
+            isNeonate: testCase.isNeonate,
+            neonatalJaundice: testCase.neonatalJaundice ?? false,
+            feedingWell: testCase.feedingWell,
+            waz: testCase.waz,
+
+            // discharge variables
+            dischargeStatus: testCase.dischargeStatus,
+            feedingStatus_discharge: testCase.feedingStatus_discharge,
+            spo2_discharge: testCase.spo2_discharge.toString()
+        }
+    }
+
+    describe('Reference Test Cases - Model Validation', () => {
+        d060_testCases.forEach((testCaseArray, index) => {
+            const [inputData, expectedOutput] = testCaseArray
+            
+            it(`should match reference case ${index + 1}: ${expectedOutput.riskCategory} risk`, () => {
+                const patientData = createPatientDataFromTestCase(inputData)
+                const result = strategy.calculateRisk(patientData)
+                
+                // Test risk score within reasonable tolerance (±0.5%)
+                expect(result.riskScore).toBeCloseTo(expectedOutput.riskScore as number, 1)
+                
+                // Test risk category matches
+                expect(result.riskCategory).toBe(expectedOutput.riskCategory)
+                
+                // Log for manual verification
+                console.log(`Test Case ${index + 1}:`)
+                console.log(`  Input: Age ${inputData.ageInMonths}mo, MUAC ${inputData.muac}mm, SpO2 ${inputData.spo2_admission}%, WAZ ${patientData.waz?.toFixed(2)}`)
                 console.log(`  Expected: ${expectedOutput.riskScore}% (${expectedOutput.riskCategory})`)
                 console.log(`  Actual: ${result.riskScore}% (${result.riskCategory})`)
                 console.log('---')
