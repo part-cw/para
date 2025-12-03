@@ -137,7 +137,7 @@ export function validateWeight(weight: string): ValidationResult {
  * @param months unrounded age in months
  * @param sex male or female
  * @param weight validated weight in kg
- * @returns 
+ * @returns weight-for-age z-score
  */
 export function calculateWAZ(months: number, sex: string, weight: number): number {
     let data;
@@ -166,7 +166,6 @@ export function calculateWAZ(months: number, sex: string, weight: number): numbe
         if (!data) throw new Error (`Growth standard for ${roundedMonth} month old ${sex.toLowerCase()} not found`)
     }
 
-    
     // calculate waz score if growth standard data found
     const l = data.L
     const m = data.M
