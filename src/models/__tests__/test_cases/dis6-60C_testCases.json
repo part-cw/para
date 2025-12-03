@@ -47,7 +47,7 @@
       "spo2_discharge": 84
     },
     {
-      "riskScore": 4.66823717128391,
+      "riskScore": 4.6347719934,
       "riskCategory": "Moderate"
     }
   ],
@@ -73,7 +73,7 @@
       "spo2_discharge": 99
     },
     {
-      "riskScore": 3.91424726617746,
+      "riskScore": 3.8859668867,
       "riskCategory": "Moderate"
     }
   ],
@@ -99,7 +99,7 @@
       "spo2_discharge": 99
     },
     {
-      "riskScore": 2.28304855395808,
+      "riskScore": 2.2662755917,
       "riskCategory": "Moderate"
     }
   ],
