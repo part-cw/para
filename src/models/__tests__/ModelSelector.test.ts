@@ -22,7 +22,7 @@ describe('ModelSelector', () => {
         
         it('should load expected number of models from registry', async () => {
             // TODO update exepcted value as we add more models to registry
-            expect(selector.getModelCount()).toBe(2);
+            expect(selector.getModelCount()).toBe(4);
         });
 
         it('should create strategies for all loaded models', async () => {
@@ -39,6 +39,8 @@ describe('ModelSelector', () => {
         
             expect(modelNames).toContain('M6PD-C0-6');
             expect(modelNames).toContain('M6PD-C6-60');
+            expect(modelNames).toContain('D0-6C');
+            expect(modelNames).toContain('D6-60C');
         });
 
         it('should handle loading when already loaded', async () => {
@@ -83,6 +85,34 @@ describe('ModelSelector', () => {
             expect(model?.isUnderSixMonths).toBe(false);
             expect(model?.usageTime).toBe('admission');
             expect(model?.modelName).toBe('M6PD-C6-60');
+        });
+
+        it('should return model for under six months discharge context', () => {
+            const context: ModelContext = {
+                isUnderSixMonths: true,
+                usageTime: 'discharge'
+            };
+            
+            const model = selector.getModel(context);
+            
+            expect(model).not.toBeNull();
+            expect(model?.isUnderSixMonths).toBe(true);
+            expect(model?.usageTime).toBe('discharge');
+            expect(model?.modelName).toBe('D0-6C');
+        });
+
+        it('should return model for 6-60 months discharge context', () => {
+            const context: ModelContext = {
+                isUnderSixMonths: false,
+                usageTime: 'discharge'
+            };
+            
+            const model = selector.getModel(context);
+            
+            expect(model).not.toBeNull();
+            expect(model?.isUnderSixMonths).toBe(false);
+            expect(model?.usageTime).toBe('discharge');
+            expect(model?.modelName).toBe('D6-60C');
         });
 
         it('should return null when no models match context', () => {
