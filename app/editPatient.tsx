@@ -543,9 +543,9 @@ export default function EditPatientRecord() {
                                 description={'Read-only'}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    <InfoRow label="Feeding well" value={convertToYesNo(patientData.feedingWell_discharge as boolean)} />
+                                    <InfoRow label="Feeding Status" value={patientData.feedingStatus_discharge ? patientData.feedingStatus_discharge : 'Not provided'} />
                                     <InfoRow label="SpO₂ at Discharge" value={patientData.spo2_discharge ? `${patientData.spo2_discharge} %` : 'Not provided'} />
-                                    <InfoRow label="Discharge Reason" value={patientData.dischargeReason ? `${patientData.dischargeReason}`: 'Not provided'} />
+                                    <InfoRow label="Discharge Reason" value={patientData.dischargeStatus ? `${patientData.dischargeStatus}`: 'Not provided'} />
                                 </View>
                             </List.Accordion>
                         </View>

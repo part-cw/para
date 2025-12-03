@@ -1,0 +1,132 @@
+[
+  [
+    {
+      "ageInMonths": 20.4,
+      "muac": 148,
+      "spo2_admission": 91,
+      "sex": "Female",
+      "weight": 11,
+      "waz": 0.263999998569489,
+      "eyeMovement": "Fails to watch or follow",
+      "motorResponse": "Withdraws limb from painful stimulus",
+      "verbalResponse": "Moan or abnormal cry with pain",
+      "abnormalBCS": true,
+      "lastHospitalized": "More than 1 year ago",
+      "rrate": 42,
+      "temperature": 37.3,
+      "temperatureSquared": 1391.29,
+      "hivStatus": "Negative",
+      "dischargeStatus": "Referred to higher level of care",
+      "feedingStatus_discharge": "Feeding poorly",
+      "spo2_discharge": 96
+    },
+    {
+      "riskScore": 10.688912,
+      "riskCategory": "Very High"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 9.3,
+      "muac": 135,
+      "spo2_admission": 93,
+      "sex": "Male",
+      "weight": 7.46,
+      "waz": -1.61000001430511,
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "abnormalBCS": false,
+      "lastHospitalized": "Never",
+      "rrate": 43,
+      "temperature": 38,
+      "temperatureSquared": 1444,
+      "hivStatus": "Negative",
+      "dischargeStatus": "Routine discharge",
+      "feedingStatus_discharge": "Feeding well",
+      "spo2_discharge": 84
+    },
+    {
+      "riskScore": 4.66823717128391,
+      "riskCategory": "Moderate"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 45.1,
+      "muac": 150,
+      "spo2_admission": 99,
+      "sex": "Female",
+      "weight": 10,
+      "waz": -3.47399997711182,
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "abnormalBCS": false,
+      "lastHospitalized": "Never",
+      "rrate": 40,
+      "temperature": 38.9,
+      "temperatureSquared": 1513.21,
+      "hivStatus": "Negative",
+      "dischargeStatus": "Unplanned discharge",
+      "feedingStatus_discharge": "Feeding well",
+      "spo2_discharge": 99
+    },
+    {
+      "riskScore": 3.91424726617746,
+      "riskCategory": "Moderate"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 36.4,
+      "muac": 158,
+      "spo2_admission": 99,
+      "sex": "Female",
+      "weight": 14.5,
+      "waz": 0.351999998092651,
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "abnormalBCS": false,
+      "lastHospitalized": "7 days to 1 month ago",
+      "rrate": 31,
+      "temperature": 36.2,
+      "temperatureSquared": 1310.44,
+      "hivStatus": "Negative",
+      "dischargeStatus": "Routine discharge",
+      "feedingStatus_discharge": "Feeding well",
+      "spo2_discharge": 99
+    },
+    {
+      "riskScore": 2.28304855395808,
+      "riskCategory": "Moderate"
+    }
+  ],
+  [
+    {
+      "ageInMonths": 57.8,
+      "muac": 138,
+      "spo2_admission": 99,
+      "sex": "Male",
+      "weight": 16,
+      "waz": -0.889999985694885,
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "abnormalBCS": false,
+      "lastHospitalized": "Less than 7 days ago",
+      "rrate": 29,
+      "temperature": 36.4,
+      "temperatureSquared": 1324.96,
+      "hivStatus": "Negative",
+      "dischargeStatus": "Unplanned discharge",
+      "feedingStatus_discharge": "Not feeding at all",
+      "spo2_discharge": 59
+    },
+    {
+      "riskScore": 77.769775,
+      "riskCategory": "Very High"
+    }
+  ]
+]

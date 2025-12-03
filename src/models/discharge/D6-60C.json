@@ -1,0 +1,321 @@
+{
+    "modelName": "D6-60C",
+    "humanReadableName": "Smart Discharges Uganda Discharge Variable Model 6-60C",
+    "description": "This Discharge variable model is for updating the admission risk score at the time of discharge for 6-60 months old from the pool of clinical admission and discharge variables.",
+    "usageTime": "discharge",
+    "isUnderSixMonths": false,
+    "modelType": "logistic_regression",
+    "inputType": "clinical",
+    "riskThresholds": {
+        "low": 0,
+        "moderate": 2,
+        "high": 5,
+        "veryHigh": 10
+    },
+    "rawScoreOffset": -3.41935,
+    "variables": [
+        {
+            "name": "waz",
+            "displayName": "WAZ",
+            "description": "The weight-for-age z-score (WAZ) of the child, based on the child's sex, age, and weight",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependencies": ["weight", "ageInMonths", "sex"],
+            "coefficient": -0.19818,
+            "mean": -1.29270335809903,
+            "standardDeviation": 1.70490215800172
+            
+        },
+        {
+            "name": "muac",
+            "displayName": "MUAC",
+            "description": "Mid-upper arm circumfrence in mm",
+            "type": "number",
+            "units": "mm",
+            "required": true,
+            "coefficient": -0.34888,
+            "mean": 139.252380952381,
+            "standardDeviation": 16.0800528137268
+        },
+        {
+            "name": "spo2_admission",
+            "displayName": "SpO₂",
+            "description": "Oxygen saturation at admission",
+            "type": "number",
+            "units": "percent",
+            "required": true,
+            "coefficient": -0.06376,
+            "mean": 94.2447204968944,
+            "standardDeviation": 6.47042334080947
+        },
+        {
+            "name": "ageInMonths",
+            "displayName": "Age",
+            "description": "Calculated age (in months, unrounded) of the child based on date of birth",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "coefficient": 0.00788,
+            "mean": 21.68049,
+            "standardDeviation": 13.70271
+        },
+        {
+            "name": "lastHospitalized",
+            "displayName": "Last Hospitalized",
+            "description": "Time since last admission",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "oneOf": [
+                {
+                    "value": "Never",
+                    "description": "Never hospitalized"
+                },
+                {
+                    "value": "Less than 7 days ago",
+                    "description": "Hospitalized less than 7 days ago",
+                    "coefficient": 0.06341,
+                    "mean": 0.0395445134575569,
+                    "standardDeviation": 0.19490667010038
+                },
+                {
+                    "value": "7 days to 1 month ago",
+                    "description": "Hospitalized 7 days to 1 month ago",
+                    "coefficient": 0.14412,
+                    "mean": 0.082815734989648,
+                    "standardDeviation": 0.275632034479257
+                },
+                {
+                    "value": "1 month to 1 year ago",
+                    "description":"Hospitalized 1 month to 1 year ago",
+                    "coefficient": 0.04959,
+                    "mean": 0.24472049689441,
+                    "standardDeviation": 0.429965871658695
+                },
+                {
+                    "value": "More than 1 year ago",
+                    "description": "Hospitalized more than 1 year ago",
+                    "coefficient": -0.07935,
+                    "mean": 0.0826086956521739,
+                    "standardDeviation": 0.275318347874769 
+                }
+            ]
+        },
+        {
+            "name": "rrate",
+            "displayName": "Respiratory Rate",
+            "description": "The patient's respitarory rate in beats per minute",
+            "type": "number",
+            "units": "bpm",
+            "required": true,
+            "coefficient": 0.04882,
+            "mean": 48.0724637681159,
+            "standardDeviation": 15.6631331953531
+        },
+        {
+            "name": "abnormalBCS",
+            "displayName": "Abnormal BCS",
+            "description": "Whether the child qualifies as abnormal on the Blanture Coma Scale (BCS) as determined by the responses to eye movement, motor response, and verbal response. If true, value = 1",
+            "type": "boolean",
+            "units": null,
+            "required": true,
+            "dependencies": ["bcsScore"],
+            "coefficient": 0.09547,
+            "mean": 0.084472049689441,
+            "standardDeviation": 0.2781232416193
+        },
+          {
+            "name": "temperature",
+            "displayName": "Temperature",
+            "description": "The temperature of the child in degrees Celcius (C)",
+            "type": "number",
+            "units": "°C",
+            "required": true,
+            "coefficient": -0.10524,
+            "mean": 37.7493271221532,
+            "standardDeviation": 1.16362878767576
+        },
+        {
+            "name": "temperatureSquared",
+            "displayName": "Temperature squared",
+            "description": "The square of the temperature of the child in degrees Celcius (C)",
+            "type": "number",
+            "units": "°C",
+            "required": true,
+            "dependencies": ["temperature"],
+            "coefficient": -0.09876,
+            "mean": 1426.36544979296,
+            "standardDeviation": 88.2784455728296
+        },
+        {
+            "name": "hivStatus",
+            "displayName": "HIV Status",
+            "description": "Whether the child's HIV status is positive",
+            "type": "boolean",
+            "units": null,
+            "required": true,
+            "coefficient": 0.12247,
+            "mean": 0.0298136645962733,
+            "standardDeviation": 0.17009056356318
+        },
+        {
+            "name": "dischargeStatus",
+            "displayName": "Discharge Status",
+            "description": "",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "oneOf": [
+                {
+                    "value": "Routine discharge",
+                    "label": "routine discharge",
+                    "description": "The child is being routinely discharged"
+                },
+                {
+                    "value": "Deceased",
+                    "label": "deceased",
+                    "description": "The child died during hospital stay"
+                },
+                {
+                    "value": "Referred to higher level of care",
+                    "label": "referred to higher level of care",
+                    "description": "The child is being refrerred to higher level of care at discharge",
+                    "coefficient": 0.11824,
+                    "mean": 0.020911,
+                    "standardDeviation": 0.143086443
+                },
+                {
+                    "value": "Unplanned discharge",
+                    "label": "unplanned discharge",
+                    "description": "The patient fled/escaped, or is discharged against the medical advice",
+                    "coefficient": 0.253,
+                    "mean": 0.121325,
+                    "standardDeviation": 0.326504586
+                }
+            ]
+        },
+        {
+            "name": "spo2_discharge",
+            "displayName": "SpO₂ at Discharge",
+            "description": "Oxygen saturation at discharge",
+            "type": "number",
+            "units": "percent",
+            "required": true,
+            "coefficient": -0.26047,
+            "mean": 96.49415,
+            "standardDeviation": 4.33957
+        },
+        {
+            "name": "feedingStatus_discharge",
+            "displayName": "Feeding Status",
+            "description": "Feeding status at discharge",
+            "type": "string",
+            "units": null,
+            "required": true,
+            "oneOf": [
+                {
+                    "value": "Feeding well",
+                    "label": "Feeding well",
+                    "description": "The child is feeding well at discharge"
+                },
+                {
+                    "value": "Feeding poorly",
+                    "label": "feeding poorly",
+                    "description": "The child is feeding poorly at discharge",
+                    "coefficient": 0.11676,
+                    "mean": 0.0715382,
+                    "standardDeviation": 0.257721722
+                },
+                {
+                    "value": "Not feeding at all",
+                    "label": "not feeding at all",
+                    "description": "The child is not feeding at all at discharge",
+                    "coefficient": 0.13953,
+                    "mean": 0.0126781,
+                    "standardDeviation": 0.111881034
+                }
+            ]
+        }
+    ],
+    "ageInteractions": [
+        {
+            "name": "ageAbnormalBcs",
+            "displayName": "Age x Abnormal BCS",
+            "description": "Age interaction with Abnormal BCS",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": "abnormalBCS",
+            "dependencyType": "boolean",
+            "coefficient": -0.04065,
+            "mean": 2.03354683467865,
+            "standardDeviation": 8.03141908397769
+        },
+        {
+            "name": "ageRrate",
+            "displayName": "Age x Respiratory Rate",
+            "description": "Age interaction with Respiratory rate",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": "rrate",
+            "dependencyType": "number",
+            "coefficient": 0.11924,
+            "mean": 989.760671623608,
+            "standardDeviation": 651.698260089369
+        },
+        {
+            "name": "ageHospitalizedUnderSevenDays",
+            "displayName": "Age in months x Last hospitalization less than 7 days ago",
+            "description" : "Age interaction with Last hospitalization less than 7 days ago",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"lastHospitalized": "Less than 7 days ago"},
+            "dependencyType": "string",
+            "coefficient": 0.01347,
+            "mean": 0.934105415757909,
+            "standardDeviation": 5.53005241532526
+        },
+        {
+            "name": "ageHospitalizedOneMonthToOneYear",
+            "displayName": "Age in months x Last hospitalization 1 month - 1 year ago",
+            "description" : "Age interaction with Last hospitalization 1 month to 1 year ago",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"lastHospitalized": "1 month to 1 year ago"},
+            "dependencyType": "string",
+            "coefficient": 0.07924,
+            "mean": 5.52683548662683,
+            "standardDeviation": 11.7224453431259
+        },
+        {
+            "name": "ageDischargeHigherLevel",
+            "displayName": "Age in months x Child's is being referred to higher level of care",
+            "description": "Age interaction with discharge status, referred to higher level of care",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"dischargeStatus": "Referred to higher level of care"},
+            "dependencyType": "string",
+            "coefficient": 0.08853,
+            "mean": 0.449187,
+            "standardDeviation": 3.68881
+        },
+        {
+            "name": "ageFeedingPoorly_discharge",
+            "displayName": "Age in months * feeding poorly at discharge",
+            "description": "Age interaction with feeding poorly at discharge",
+            "type": "number",
+            "units": null,
+            "required": true,
+            "dependency": {"feedingStatus_discharge": "Feeding poorly"},
+            "dependencyType": "string",
+            "coefficient": 0.05218,
+            "mean": 1.44639,
+            "standardDeviation": 6.1989 
+        }
+    ]
+}

@@ -1,5 +1,7 @@
 import M6PDC06 from './admission/M6PD-C0-6.json';
 import M6PDC660 from './admission/M6PD-C6-60.json';
+import D06C from './discharge/D0-6C.json';
+import D660C from './discharge/D6-60C.json';
 import { createModelStrategy, ModelStrategy } from './ModelStrategy';
 import { ModelContext, RiskModel } from './types';
 
@@ -18,10 +20,10 @@ const MODEL_REGISTRY = {
     },
     discharge: {
         under6months: [
-            // TODO add discharge under-6 models here
+            D06C
         ],
         over6months: [
-            // TODO Add discharge 6-60 month models here
+            D660C
         ]
     }
 };
