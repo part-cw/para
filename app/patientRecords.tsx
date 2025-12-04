@@ -99,8 +99,8 @@ export default function PatientRecords() {
     })
   }
 
+  // TODO add a discharge in progress flag? 
   const handleDischarge = async (id: string) => {
-    // await storage.updatePatient(id, {isDischarged: true})
     router.push({
       pathname: '/(discharge-sidenav)/dischargeData', 
       params: {patientId: id}
@@ -229,7 +229,7 @@ export default function PatientRecords() {
           // deceased patients are a subcategory of discharged
           const status = 
             p.isDischarged 
-            ? (p.dischargeStatus === 'deceased' ? 'deceased' : 'discharged') 
+            ? (p.dischargeStatus?.toLowerCase() === 'deceased' ? 'deceased' : 'discharged') 
             : 'active';
 
           {/*
