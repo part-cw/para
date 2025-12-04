@@ -9,6 +9,7 @@ export interface IStorageService {
 
     // Patient operations
     submitPatient(patientId: string, date?: string): Promise<void>;
+    dischargePatient(patientId: string, date?: string): Promise<void>;
     getPatient(patientId: string): Promise<PatientData | null>;
     updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void>;
     deletePatient(patientId: string): Promise<void>;
