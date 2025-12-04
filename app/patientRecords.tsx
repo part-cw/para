@@ -6,8 +6,8 @@ import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatName } from '@/src/utils/formatUtils';
 import { normalizeBoolean } from '@/src/utils/normalizer';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, Text, View } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, SegmentedButtons, useTheme } from 'react-native-paper';
@@ -26,10 +26,12 @@ export default function PatientRecords() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
 
-  // Load drafts on mount
-  useEffect(() => {
-    loadAllRecords();
-  }, []);
+  // Reload records when screen comes into focus (worms on mount or if navigate back to this page)
+  useFocusEffect(
+    useCallback(() => {
+        loadAllRecords();
+    }, [])
+  );
 
   useEffect(() => {
     filterRecords();
