@@ -64,6 +64,8 @@ export default function DischargeDataScreen() {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null);
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
+    const [initialDobUnknown, setInitialDobUnknown] = useState<boolean>(false);
+    const [initialHivUnknown, setInitialHivUnknown] = useState<boolean>(false);
 
     const validationErrors = getScreenErrors('dischargeData');
     const hasValidationErrors = validationErrors.length > 0;
@@ -71,9 +73,15 @@ export default function DischargeDataScreen() {
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
 
-    const hasDobUnknown = (patientData.isDOBUnknown !== true) || (patientData.isYearMonthUnknown !== true);
-    const hasHivUnknown = !patientData.isUnderSixMonths && (patientData.hivStatus?.toLowerCase() === 'unknown');
-    const hasUnknownAdmissionFields = hasDobUnknown || hasHivUnknown;
+    // cehck what was unknwon at admission
+    const wasDobUnknown = initialDobUnknown
+    const wasHivUnknown = initialHivUnknown
+
+    // Check if values are still unknown (not yet updated)
+    const isDobStillUnknown = wasDobUnknown && (!patientData.dob);
+    const isHivStillUnknown = wasHivUnknown && (patientData.hivStatus?.toLowerCase() === 'unknown');
+    const hasUnknownAdmissionFields = wasDobUnknown || wasHivUnknown;
+
 
     // load patient data on mount  
     useEffect(() => {
@@ -87,6 +95,20 @@ export default function DischargeDataScreen() {
             }
         };
     }, []);
+
+    // Capture initial state when patient data loads
+    useEffect(() => {
+        if (patientData && patientData.patientId) {
+            // Only set initial state once when data first loads
+            if (!initialDobUnknown && !initialHivUnknown) {
+                const dobUnknown = normalizeBoolean(patientData.isDOBUnknown || patientData.isYearMonthUnknown);
+                const hivUnknown = !patientData.isUnderSixMonths && (patientData.hivStatus?.toLowerCase() === 'unknown');
+                
+                setInitialDobUnknown(dobUnknown);
+                setInitialHivUnknown(hivUnknown);
+            }
+        }
+    }, [patientData.patientId]);
 
     // set validation errors whenever fields change
     useEffect(() => {
@@ -280,7 +302,7 @@ export default function DischargeDataScreen() {
         const confirmUpdate = () => new Promise<boolean>((resolve) => {
             Alert.alert(
                 'Confirm Update',
-                'Update HIV status? This will update the patient record.',
+                'Save HIV status? This will update the patient record.',
                 [
                     { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
                     { text: 'OK', onPress: () => resolve(true) }
@@ -315,6 +337,37 @@ export default function DischargeDataScreen() {
             setIsUpdatingUnknownFields(false);
         }
     };
+
+    const handleRouterBack = () => {
+        if (Platform.OS !== 'web') {
+            Alert.alert(
+                'Go Back to Patient Records?', 
+                `Are you sure you want to leave before completing discharge?`,
+                [
+                    {text: 'Cancel', style: 'cancel'}, 
+                    {text: 'OK', onPress: () => router.back()}
+                ]
+            )
+        } else {
+            console.log('TODO - implement alert for web?')
+        }
+       
+    }
+
+    const handleDischarge = (patientName: string) => {
+        const confirmDischarge = () => {
+            console.log('TODO')
+        }
+
+        Alert.alert(
+            'Confirm Discharge', 
+            `Are you sure you want to discharge patient ${patientName}? This action cannot be undone.`,
+            [
+                {text: 'Cancel', style: 'cancel'}, 
+                {text: 'Discharge', onPress: confirmDischarge}
+            ]
+        )
+    }
 
     
     // retrurns a loading screen with spinner
@@ -353,7 +406,7 @@ export default function DischargeDataScreen() {
                             </Text>
 
                             <Text style={[Styles.modalSubheader, {color: colors.primary}]}>
-                                Confirm discharge status?
+                                Confirm 'deceased' discharge status?
                             </Text>
 
                             <View style={{
@@ -416,7 +469,7 @@ export default function DischargeDataScreen() {
                                 title="Discharge Data"
                                 titleStyle={[Styles.accordionListTitle]}
                                 left={props => <List.Icon {...props} icon='transit-transfer'/>}
-                                description={hasValidationErrors ? 'Required: Enter all required fields' : ''}
+                                description={hasValidationErrors ? 'Required: Enter all required fields' : 'Required'}
                                 expanded={expandDischargeAccordion}
                                 onPress={() => setExpandDischargeAccordion((prev) => !prev)}
                             >
@@ -479,117 +532,180 @@ export default function DischargeDataScreen() {
                             </List.Accordion>
                         </View>
 
-                         {/* Unknown Fields Update Accordion */}
+                        {/* Unknown Fields Update/Display Accordion */}
                         {hasUnknownAdmissionFields && (
                             <View style={Styles.accordionListWrapper}>
                                 <List.Accordion
-                                    title="Update Admission Data"
+                                    title={isDobStillUnknown || isHivStillUnknown ? "Update Admission Data" : "Updated Admission Data"}
                                     left={props => <List.Icon {...props} icon="heart-pulse"/>}
-                                    description={hasUnknownAdmissionFields ? "Optional: Update unknown values" : ''}
+                                    description={
+                                        isDobStillUnknown || isHivStillUnknown 
+                                            ? "Optional: Update unknown values" 
+                                            : "Data has been updated"
+                                    }
                                     expanded={showUpdateUnknownFields}
                                     onPress={() => setShowUpdateUnknownFields(!showUpdateUnknownFields)}
                                 >
                                     <View style={Styles.accordionContentWrapper}>
-                                        <Text style={[Styles.modalText, { marginBottom: 16 }]}>
-                                            Some patient data was marked as unknown at admission. You can update this information now if it has become available.
-                                        </Text>
+                                        {(isDobStillUnknown || isHivStillUnknown) ? (
+                                            // Show editable fields if still unknown
+                                            <>
+                                                <Text style={[Styles.modalText, { marginBottom: 16 }]}>
+                                                    Some patient data was marked as unknown at admission. You can update this information now if it has become available.
+                                                </Text>
 
-                                        {hasDobUnknown && (
-                                            <Card style={{ marginBottom: 12, backgroundColor: colors.errorContainer }}>
-                                                                                               <Card.Content>
-                                                    <Text style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>
-                                                        Exact Date of Birth Unknown
-                                                    </Text>
-                                                    <Text variant="bodySmall" style={{ marginBottom: 12 }}>
-                                                        Current age is estimated at {AgeCalculator.formatAge(patientData.ageInMonths)} old. Enter exact DOB if known:
-                                                    </Text>
+                                                {isDobStillUnknown && (
+                                                    <Card style={{ marginBottom: 12, backgroundColor: colors.errorContainer }}>
+                                                        <Card.Content>
+                                                            <Text style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>
+                                                                Exact Date of Birth Unknown
+                                                            </Text>
+                                                            <Text variant="bodySmall" style={{ marginBottom: 12 }}>
+                                                                Current age is estimated at {AgeCalculator.formatAge(patientData.ageInMonths)} old. 
+                                                                Enter exact DOB if known:
+                                                            </Text>
 
-                                                    <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                                                        <TextInput 
-                                                            label="Date of Birth (YYYY-MM-DD)" 
-                                                            placeholder='Select date' 
-                                                            mode="outlined" 
-                                                            value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
-                                                            style={[Styles.textInput, {marginTop: 10}]}
-                                                            editable={false}
-                                                            pointerEvents="none"
-                                                        />
-                                                    </TouchableOpacity>
+                                                            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                                                <TextInput 
+                                                                    label="Date of Birth (YYYY-MM-DD)" 
+                                                                    placeholder='Select date' 
+                                                                    mode="outlined" 
+                                                                    value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
+                                                                    style={[Styles.textInput, {marginTop: 10}]}
+                                                                    editable={false}
+                                                                    pointerEvents="none"
+                                                                />
+                                                            </TouchableOpacity>
 
-                                                    {showDatePicker && (
-                                                        <DateTimePicker
-                                                            value={editedDOB || new Date()}
-                                                            mode="date"
-                                                            display={Platform.OS === "ios" ? "spinner" : "default"}
-                                                            onChange={handleDobChange}
-                                                            maximumDate={new Date()}
-                                                        />
-                                                    )}
-                                                </Card.Content>
+                                                            {showDatePicker && (
+                                                                <DateTimePicker
+                                                                    value={editedDOB || new Date()}
+                                                                    mode="date"
+                                                                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                                                                    onChange={handleDobChange}
+                                                                    maximumDate={new Date()}
+                                                                />
+                                                            )}
 
-                                            </Card>                                  
+                                                            <Button
+                                                                style={{ alignSelf: 'flex-end', marginTop: 8 }}
+                                                                icon='content-save-check'
+                                                                buttonColor={colors.primary}
+                                                                textColor={colors.onPrimary}
+                                                                mode='contained'
+                                                                onPress={handleSaveDob}
+                                                                loading={isUpdatingUnknownFields}
+                                                                disabled={!editedDOB || isUpdatingUnknownFields}
+                                                                compact
+                                                            >
+                                                                Save DOB
+                                                            </Button>
+                                                        </Card.Content>
+                                                    </Card>
+                                                )}
+
+                                                {isHivStillUnknown && (
+                                                    <Card style={{ marginBottom: 12, backgroundColor: colors.errorContainer }}>
+                                                        <Card.Content>
+                                                            <Text style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>
+                                                                HIV Status Unknown
+                                                            </Text>
+                                                            <Text variant="bodySmall" style={{ marginBottom: 12 }}>
+                                                                HIV status was marked as 'unknown' at admission. 
+                                                                If known, please confirm whether the patient is HIV-positive or negative.
+                                                            </Text>
+
+                                                            <Text style={[Styles.accordionSubheading, { fontWeight: 'bold', marginBottom: 8 }]}>
+                                                                Updated HIV Status:
+                                                            </Text>
+                                                            <RadioButtonGroup
+                                                                options={[
+                                                                    { label: 'Positive', value: 'positive' },
+                                                                    { label: 'Negative', value: 'negative' },
+                                                                ]}
+                                                                selected={editedHivStatus as string}
+                                                                onSelect={setEditedHivStatus}
+                                                            />
+
+                                                            <Button
+                                                                style={{ alignSelf: 'flex-end', marginTop: 8 }}
+                                                                icon='content-save-check'
+                                                                buttonColor={colors.primary}
+                                                                textColor={colors.onPrimary}
+                                                                mode='contained'
+                                                                onPress={handleSaveHivStatus}
+                                                                loading={isUpdatingUnknownFields}
+                                                                disabled={!editedHivStatus || editedHivStatus === 'unknown' || isUpdatingUnknownFields}
+                                                                compact
+                                                            >
+                                                                Save Status
+                                                            </Button>
+                                                        </Card.Content>
+                                                    </Card>
+                                                )}
+                                            </>
+                                        ) : (
+                                            // Show read-only updated values
+                                            <>
+                                                <Text style={[Styles.modalText, { marginBottom: 16 }]}>
+                                                    The following information was unknown at admission but has been updated during discharge:
+                                                </Text>
+
+                                                {wasDobUnknown && !isDobStillUnknown && (
+                                                    <Card style={{ marginBottom: 12, backgroundColor: colors.secondary }}>
+                                                        <Card.Content>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                                                <List.Icon icon="check-circle" color={colors.primary} />
+                                                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.primary, marginLeft: 10 }}>
+                                                                    Date of Birth Updated
+                                                                </Text>
+                                                            </View>
+                                                            <View style={{ paddingLeft: 40 }}>
+                                                                <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
+                                                                    <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
+                                                                    {patientData.dob 
+                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        : 'Not available'}
+                                                                </Text>
+                                                                <Text variant="bodyMedium">
+                                                                    <Text style={{ fontWeight: 'bold' }}>Age: </Text>
+                                                                    {AgeCalculator.formatAge(patientData.ageInMonths)} old
+                                                                </Text>
+                                                            </View>
+                                                        </Card.Content>
+                                                    </Card>
+                                                )}
+
+                                                {wasHivUnknown && !isHivStillUnknown && (
+                                                    <Card style={{ marginBottom: 12, backgroundColor: colors.secondary }}>
+                                                        <Card.Content>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                                                <List.Icon icon="check-circle" color={colors.primary} />
+                                                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.primary, marginLeft: 10 }}>
+                                                                    HIV Status Updated
+                                                                </Text>
+                                                            </View>
+                                                            <View style={{ paddingLeft: 40 }}>
+                                                                <Text variant="bodyMedium">
+                                                                    <Text style={{ fontWeight: 'bold' }}>New Value: </Text>
+                                                                    {patientData.hivStatus && (patientData.hivStatus?.charAt(0).toUpperCase() + patientData.hivStatus?.slice(1))}
+                                                                </Text>
+                                                            </View>
+                                                        </Card.Content>
+                                                    </Card>
+                                                )}
+
+                                                <Text variant="bodySmall" style={{ fontStyle: 'italic', color: colors.onSurfaceVariant, marginTop: 8 }}>
+                                                    These values are now locked and cannot be edited further during discharge.
+                                                </Text>
+                                            </>
                                         )}
-
-                                        {/* {hasHivUnknown && ( */}
-                                            <Card style={{ marginBottom: 12, backgroundColor: colors.errorContainer }}>
-                                                <Card.Content>
-                                                    <Text style={{ fontWeight: 'bold', marginBottom: 8, fontSize: 16 }}>
-                                                        HIV Status Unknown
-                                                    </Text>
-                                                    <Text variant="bodySmall" style={{ marginBottom: 12 }}>
-                                                        HIV status was marked as 'unknown' at admission. 
-                                                        If known, please confirm whether the patient is HIV-positive or negative.
-                                                    </Text>
-
-                                                    <Text style={[Styles.accordionSubheading, { fontWeight: 'bold', marginBottom: 8 }]}>
-                                                        Updated HIV Status:
-                                                    </Text>
-                                                    <RadioButtonGroup
-                                                        options={[
-                                                            { label: 'Positive', value: 'positive' },
-                                                            { label: 'Negative', value: 'negative' },
-                                                        ]}
-                                                        selected={editedHivStatus as string}
-                                                        onSelect={setEditedHivStatus}
-                                                    />
-
-                                                    {/* <Button
-                                                        style={{ alignSelf: 'flex-end', marginTop: 8 }}
-                                                        icon='content-save-check'
-                                                        buttonColor={colors.primary}
-                                                        textColor={colors.onPrimary}
-                                                        mode='contained'
-                                                        onPress={handleSaveHivStatus}
-                                                        loading={isUpdatingUnknownFields}
-                                                        disabled={!editedHivStatus || editedHivStatus === 'unknown' || isUpdatingUnknownFields}
-                                                        compact
-                                                    >
-                                                       Save
-                                                    </Button> */}
-                                                </Card.Content>
-                                            </Card>
-                                        {/* )} */}
-
-                                        <Button
-                                            style={{ alignSelf: 'center', marginBottom: 10 }}
-                                            icon='content-save-check'
-                                            buttonColor={colors.primary}
-                                            textColor={colors.onPrimary}
-                                            mode='contained'
-                                            onPress={handleSaveDob}
-                                            loading={isUpdatingUnknownFields}
-                                            disabled={!editedDOB || isUpdatingUnknownFields}
-                                            compact
-                                        >
-                                            Save Changes
-                                        </Button>
                                     </View>
                                 </List.Accordion>
                             </View>
                         )}
 
                         {/* Confirm Medical Info Accordion */}
-                        {/* TODO - verify accordion was opened and content reviewd - change color and maybe symbol */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title="Review Medical Diagnoses"
@@ -616,6 +732,7 @@ export default function DischargeDataScreen() {
                                 title="CHW Referral"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="doctor"/>}
+                                description={'Required'}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <VHTReferralSection
@@ -639,6 +756,7 @@ export default function DischargeDataScreen() {
                                 title="Caregiver Contact Information"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="account-child"/>}
+                                description={'Required'}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <CaregiverContactSection
@@ -675,18 +793,8 @@ export default function DischargeDataScreen() {
                         labelPrevious="Patient Records"
                         labelNext="Complete Discharge"
                         disabledNext={hasValidationErrors}
-                        onPrevious={() => router.back()}
-                        onNext={() => {
-                                Alert.alert(
-                                    'Discharge Patient', 
-                                    `Are you sure you want to discharge ${fullname}? This action cannot be undone.`,
-                                    [
-                                        {text: 'Cancel', style: 'cancel'}, 
-                                        {text: 'Discharge', onPress: () => console.log('TODO - trigger risk calculation')}
-                                    ]
-                                )
-                            }
-                        }
+                        onPrevious={handleRouterBack}
+                        onNext={() => handleDischarge(fullname)}
                     />
                 </ScrollView>
             </SafeAreaView>
