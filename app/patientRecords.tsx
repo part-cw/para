@@ -104,7 +104,7 @@ export default function PatientRecords() {
   // TODO add a discharge in progress flag? 
   const handleDischarge = async (id: string) => {
     router.push({
-      pathname: '/(discharge-sidenav)/dischargeData', 
+      pathname: '/dischargeData', 
       params: {patientId: id}
     })
   }
