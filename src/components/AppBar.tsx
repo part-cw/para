@@ -27,10 +27,15 @@ export default function AppBar() {
     '/review'
   ]
   
-  const isDataEntryScreen = admissionRoutes.includes(pathname);
+  const isAdmissionScreen = admissionRoutes.includes(pathname);
   const dataWarningMessage = 
     'Incomplete admissions are automatically saved and can be resumed from the “Drafts” page.';
+ 
+  const dischargeRoute = '/dischargeData'
+  const isDischargeScreen =  pathname === dischargeRoute
 
+  console.log('pathname', pathname)
+  
   const handleGoHome = () => {
      const resetStorage = async () => {  
         const patientId = patientData.patientId;
@@ -48,7 +53,7 @@ export default function AppBar() {
     
     const hasMinimalData = patientData.surname && patientData.firstName  
 
-    if (isDataEntryScreen) {
+    if (isAdmissionScreen) {
       if (!hasMinimalData) {
         resetStorage();
         resetFormAndGo();
@@ -66,8 +71,19 @@ export default function AppBar() {
             { text: "Go Home", onPress: () => resetFormAndGo() }]
         );
       } 
+    } else if (isDischargeScreen) {
+      const dischargeWarning = 'Are you sure you want to leave screen without discharging patient?'
+      if (Platform.OS !== 'web') {
+        Alert.alert(
+        "Exit discharge?", dischargeWarning,
+          [{ text: "Cancel", style: "cancel" },
+            { text: "Go Home", onPress: () => resetFormAndGo() }])
+      } else {
+        if (window.confirm(dischargeWarning)) resetFormAndGo();
+      }
+
     } else {
-      // no alert if not in data entry screen
+      // no alert if not in admision or discharge screen
       resetFormAndGo();
     }
             
