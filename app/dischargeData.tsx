@@ -5,18 +5,18 @@ import { CaregiverContactSection } from "@/src/components/sections/CaregiverCont
 import { MedicalConditionsSection } from "@/src/components/sections/EditableMedicalConditions";
 import { VHTReferralSection } from "@/src/components/sections/VhtReferralSection";
 import ValidatedTextInput, { INPUT_TYPES } from "@/src/components/ValidatedTextInput";
-import ValidationSummary from "@/src/components/ValidationSummary";
 import { usePatientData } from "@/src/contexts/PatientDataContext";
 import { useStorage } from "@/src/contexts/StorageContext";
 import { useValidation } from "@/src/contexts/ValidationContext";
+import { dischargeFormSchema } from "@/src/forms/dischargeFormSchema";
 import { displayNames } from "@/src/forms/displayNames";
 import { spo2DischargeInfo } from "@/src/forms/infoText";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ, validateOxygenSaturationRange } from "@/src/utils/clinicalVariableCalculator";
 import { formatDateString, formatName } from "@/src/utils/formatUtils";
-import { isValidNumericFormat } from "@/src/utils/inputValidator";
 import { normalizeBoolean } from "@/src/utils/normalizer";
+import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -25,15 +25,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import { Button, Card, IconButton, List, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-    // allow edit medical conditions - DONE
-    // collect discharge variables - DONE
-    // add VHT and caregiver info if not already complete  - NEXT SCREENS
-    // calculate risk prediction & update risk assessment with discharge calc -- REVIEW PAGE
-    // set isDischarged to true:   await storage.updatePatient(id, {isDischarged: true}) -- HERE AND REVIEW
-    // go to risk display - have buttons to go back to records 
 
-    // TODO: if over six months and HIV still unknown ask if they want to update it to a known value
-    // TODO: if DOB still unknown ask ifthey want ot update it to a known value
 export default function DischargeDataScreen() {
     const { colors } = useTheme()
     const { storage } = useStorage();
@@ -54,7 +46,6 @@ export default function DischargeDataScreen() {
     
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
     const [showDeceasedModal, setShowDeceasedModal] = useState<boolean>(false);
     const [expandDischargeAccordion, setExpandDischargeAccordion] = useState<boolean>(true); 
     
@@ -67,13 +58,21 @@ export default function DischargeDataScreen() {
     const [initialDobUnknown, setInitialDobUnknown] = useState<boolean>(false);
     const [initialHivUnknown, setInitialHivUnknown] = useState<boolean>(false);
 
-    const validationErrors = getScreenErrors('dischargeData');
-    const hasValidationErrors = validationErrors.length > 0;
+    // track errors and reviewed sections
+    const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set(['dischargeData'])); // discharge data automatically reviewed becase accordion starts out open
+    const [sectionValidations, setSectionValidations] = useState<{[key: string]: { isValid: boolean; errors: string[] }}>({});
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    console.log('reviewedSections', reviewedSections)
+    console.log('sectionvalidaitons', sectionValidations)
     
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
+    console.log('patietnID', patientId)
 
-    // cehck what was unknwon at admission
+
+    // check what was unknown at admission
     const wasDobUnknown = initialDobUnknown
     const wasHivUnknown = initialHivUnknown
 
@@ -86,14 +85,6 @@ export default function DischargeDataScreen() {
     // load patient data on mount  
     useEffect(() => {
         loadPatientData();
-
-        // Clear errors when component unmounts or navigates away
-        return () => {
-            // Only clear if no errors exist
-            if (validateAllFields().length === 0) {
-                setValidationErrors('dischargeData', []);
-            }
-        };
     }, []);
 
     // Capture initial state when patient data loads
@@ -110,18 +101,7 @@ export default function DischargeDataScreen() {
         }
     }, [patientData.patientId]);
 
-    // set validation errors whenever fields change
-    useEffect(() => {
-        const errorMessages = validateAllFields();
-        setValidationErrors('dischargeData', errorMessages)
-
-        if (hasValidationErrors) {
-            setShowErrorSummary(true)
-        } else {
-            setShowErrorSummary(false)
-        }
-    }, [dischargeStatus, spo2_discharge, feedingStatus_discharge, hasValidationErrors]);
-
+    // track whether to display deceased modal
     useEffect(() => {
         if (dischargeStatus?.toLowerCase() === 'deceased') {
             setShowDeceasedModal(true);
@@ -142,34 +122,157 @@ export default function DischargeDataScreen() {
         }
     }
 
-    const validateAllFields = () => {
-        const errors: string[] = []
+    // Validate discharge data section
+    const validateDischargeData = () => {
+        const errors: string[] = [];
 
         if (!dischargeStatus) {
             errors.push('Discharge status is required');
-        } 
-
-        if (dischargeStatus && dischargeStatus.toLowerCase() !== 'deceased' && !feedingStatus_discharge) {
-            errors.push('Feeding status is required');
         }
 
-        if (dischargeStatus && dischargeStatus.toLowerCase() !== 'deceased' && !spo2_discharge) {
-            errors.push('Discharge spo₂ is required');
-        }
+        if (dischargeStatus && dischargeStatus.toLowerCase() !== 'deceased') {
+            if (!feedingStatus_discharge) {
+                errors.push('Feeding status is required');
+            }
 
-        if (spo2_discharge) {
-            if (!isValidNumericFormat(spo2_discharge)) {
-                errors.push('Discharge spO₂ is required and must be a valid number');
+            if (!spo2_discharge) {
+                errors.push('Discharge SpO₂ is required');
             } else {
-                const spo2Validation= validateOxygenSaturationRange(spo2_discharge);
-                if (!spo2Validation.isValid) {
-                    spo2Validation.errorMessage && errors.push(spo2Validation.errorMessage);
+                const spo2Validation = validateOxygenSaturationRange(spo2_discharge);
+                if (!spo2Validation.isValid && spo2Validation.errorMessage) {
+                    errors.push(spo2Validation.errorMessage);
                 }
             }
         }
 
-       return errors;
-    }
+        return errors;
+    };
+
+    // Validate VHT Referral section
+    const validateVHTReferral = () => {
+        const errors: string[] = [];
+        
+        if (!patientData.village || patientData.village.trim() === '') {
+            errors.push('Village is required');
+        }
+        
+        if (!patientData.vhtName || patientData.vhtName.trim() === '') {
+            errors.push('CHW name is required');
+        }
+        
+        if (!patientData.vhtTelephone || patientData.vhtTelephone.trim() === '') {
+            errors.push('CHW telephone is required');
+        }
+        
+        return errors;
+    };
+
+    // Validate Caregiver Contact section
+    const validateCaregiverContact = () => {
+        const errors: string[] = [];
+        
+        if (!patientData.caregiverName || patientData.caregiverName.trim() === '') {
+            errors.push('Caregiver name is required');
+        }
+        
+        if (patientData.caregiverTel && patientData.caregiverTel.trim() !== '') {
+            if (!patientData.confirmTel || patientData.confirmTel.trim() === '') {
+                errors.push('Confirm telephone is required');
+            } else if (patientData.caregiverTel !== patientData.confirmTel) {
+                errors.push('Telephone numbers must match');
+            }
+        }
+        
+        return errors;
+    };
+
+    // Validate Medical Conditions section - TODO remove? these fields should already be filled
+    const validateMedicalConditions = () => {
+        const errors: string[] = [];
+        const requiredConditions = [
+            'pneumonia', 
+            'severeAnaemia', 
+            'diarrhea', 
+            'malaria', 
+            'sepsis', 
+            'meningitis_encephalitis'
+        ];
+        
+        for (const condition of requiredConditions) {
+            const value = patientData[condition as keyof typeof patientData];
+            if (!value || (typeof value === 'string' && value.trim() === '')) {
+                errors.push(`${displayNames[condition] || condition} is required`);
+            }
+        }
+        
+        if (!patientData.chronicIllnesses || patientData.chronicIllnesses.length === 0) {
+            errors.push('Chronic illnesses selection is required');
+        }
+        
+        return errors;
+    };
+
+    // Update all section validations whenever relevant data changes
+    useEffect(() => {
+        const newValidations: typeof sectionValidations = {};
+        
+        // Discharge Data
+        const dischargeDataErrors = validateDischargeData();
+        newValidations['dischargeData'] = {
+            isValid: dischargeDataErrors.length === 0,
+            errors: dischargeDataErrors
+        };
+        
+        // Update Admission Data (always valid - unknown values are also accepted)
+        newValidations['updateAdmissionData'] = {
+            isValid: true,
+            errors: []
+        };
+        
+        // Medical Conditions
+        const medConditionsErrors = validateMedicalConditions();
+        newValidations['medicalConditions'] = {
+            isValid: medConditionsErrors.length === 0,
+            errors: medConditionsErrors
+        };
+        
+        // VHT Referral
+        const vhtErrors = validateVHTReferral();
+        newValidations['vhtReferral'] = {
+            isValid: vhtErrors.length === 0,
+            errors: vhtErrors
+        };
+        
+        // Caregiver Contact
+        const caregiverErrors = validateCaregiverContact();
+        newValidations['caregiverContact'] = {
+            isValid: caregiverErrors.length === 0,
+            errors: caregiverErrors
+        };
+        
+        setSectionValidations(newValidations);
+    }, [
+        dischargeStatus,
+        feedingStatus_discharge,
+        spo2_discharge,
+        patientData.village,
+        patientData.vhtName,
+        patientData.vhtTelephone,
+        patientData.caregiverName,
+        patientData.caregiverTel,
+        patientData.confirmTel,
+        patientData.pneumonia,
+        patientData.severeAnaemia,
+        patientData.diarrhea,
+        patientData.malaria,
+        patientData.sepsis,
+        patientData.meningitis_encephalitis,
+        patientData.chronicIllnesses,
+        isDobStillUnknown,
+        isHivStillUnknown,
+        hasUnknownAdmissionFields
+    ]);
+
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -354,9 +457,95 @@ export default function DischargeDataScreen() {
        
     }
 
+    const handleAccordionPress = (sectionId: string) => {
+        setReviewedSections(prev => new Set([...prev, sectionId]));
+    };
+
     const handleDischarge = (patientName: string) => {
-        const confirmDischarge = () => {
-            console.log('TODO')
+        // Check for any invalid sections
+        const invalidSections = Object.entries(sectionValidations)
+            .filter(([sectionId, validation]) => {
+                // Skip updateAdmissionData if no unknown fields
+                if (sectionId === 'updateAdmissionData' && !hasUnknownAdmissionFields) {
+                    return false;
+                }
+                return !validation.isValid;
+            })
+            .map(([sectionId]) => sectionId);
+        
+        if (invalidSections.length > 0) {
+            const sectionNames = invalidSections
+                .map(id => displayNames[id] || id)
+                .join(', ');
+            
+            const errorMessages = invalidSections
+                .map(id => {
+                    const errors = sectionValidations[id]?.errors || [];
+                    if (errors.length > 0) {
+                        return `\n\n${displayNames[id]}:\n- ${errors.join('\n- ')}`;
+                    }
+                    return '';
+                })
+                .join('');
+            
+            const message = `Please fix the following errors before discharge:${errorMessages}`;
+            
+            if (Platform.OS === 'web') {
+                alert(message);
+                return;
+            }
+            
+            Alert.alert('Missing Required Information', message);
+            return;
+        }
+
+
+        // Check that all required sections have been reviewed
+        const allRequiredSections = dischargeFormSchema
+            .filter(s => s.isRequired)
+            .map(s => s.sectionName);
+        
+        const unreviewedRequired = allRequiredSections.filter(
+            section => !reviewedSections.has(section)
+        );
+
+        // Special handling for updateAdmissionData - only needs review if there are unknown fields
+        const needsReview = unreviewedRequired.filter(section => {
+            if (section === 'updateAdmissionData') {
+                return hasUnknownAdmissionFields;
+            }
+            return true;
+        });
+
+        // display alert if any section need review
+        if (needsReview.length > 0) {
+            const sectionNames = needsReview
+                .map(s => displayNames[s])
+                .join(', ');
+            
+            if (Platform.OS === 'web') {
+                alert(`Unreviewed Sections\n\nPlease review all required sections before discharge: ${sectionNames}`);
+                return;
+            }
+            
+            Alert.alert(
+                'Unreviewed Sections',
+                `Please review all required sections before discharge: ${sectionNames}`
+            );
+            return;
+        }
+
+        const confirmDischarge = async () => {
+            try {
+                setIsSubmitting(true);
+                await completeDischarge();
+                router.replace('../riskDisplay'); // TODO - use router.push instead?
+            } catch (error) {
+                console.error('Error completing discharge:', error);
+                Alert.alert('Error', 'Failed to complete discharge. Please try again.');
+            } finally {
+                setIsSubmitting(false);
+            }
         }
 
         Alert.alert(
@@ -368,6 +557,92 @@ export default function DischargeDataScreen() {
             ]
         )
     }
+
+    // ==== HELPERS ====
+
+    const getAccordionIcon = (sectionId: string) => {
+        const isReviewed = reviewedSections.has(sectionId);
+        const validation = sectionValidations[sectionId];
+        const section = dischargeFormSchema.find(s => s.sectionName === sectionId);
+        
+        // Special case for updateAdmissionData - if no unknown fields, show complete
+        if (sectionId === 'updateAdmissionData' && !hasUnknownAdmissionFields && reviewedSections.has('updateAdmissionData')) {
+            return 'check-circle-outline';
+        }
+        
+        if (isReviewed &&  validation?.isValid) {
+            return 'check-circle-outline';
+        }
+        
+        if (!isReviewed) {
+            // If not reviewed, show warning (optional) or error (required)
+            return section?.isRequired ? 'error-outline' : 'warning';
+        }
+        
+        // Reviewed but not complete
+        return section?.isRequired ? 'error-outline' : 'warning';
+    };
+
+    const getAccordionIconColor = (sectionId: string) => {
+        const isReviewed = reviewedSections.has(sectionId);
+        const validation = sectionValidations[sectionId];
+        const section = dischargeFormSchema.find(s => s.sectionName === sectionId);
+        
+        // Special case for updateAdmissionData
+        if (sectionId === 'updateAdmissionData' && !hasUnknownAdmissionFields && reviewedSections.has('updateAdmissionData')) {
+            return 'green';
+        }
+
+        if (isReviewed && validation.isValid) return 'green'        
+        if (!isReviewed) return section?.isRequired ? 'red' : 'orange';
+        
+        // Reviewed but not complete
+        return section?.isRequired ? 'red' : 'orange';
+    };
+
+    const CustomAccordionIcon = ({ sectionId }: { sectionId: string }) => (
+        <MaterialIcons 
+            name={getAccordionIcon(sectionId) as any}
+            size={24} 
+            color={getAccordionIconColor(sectionId)}
+            style={{ marginLeft: 16, marginTop: 5 }}
+        />
+    );
+
+    const getAccordionDescription = (sectionId: string) => {
+        const isReviewed = reviewedSections.has(sectionId);
+        const validation = sectionValidations[sectionId];
+        const section = dischargeFormSchema.find(s => s.sectionName === sectionId);
+        
+        // Special case for updateAdmissionData
+        if (sectionId === 'updateAdmissionData') {
+            if (!hasUnknownAdmissionFields) {
+                return 'No updates needed';
+            }
+            if (isDobStillUnknown || isHivStillUnknown) {
+                return 'Optional: Update unknown values';
+            }
+            return 'Data has been updated';
+        }
+        
+        // For all other sections
+        if (isReviewed && validation?.isValid) {
+            return section?.isRequired ? 'Required: Complete' : 'Optional: Complete';
+        }
+        
+        if (!isReviewed && !validation?.isValid) {
+            const errorCount = validation?.errors?.length || 0;
+            return `Review section${errorCount > 0 ? ` - ${errorCount} error${errorCount > 1 ? 's' : ''}` : ''}`;
+        }
+        
+        if (isReviewed && !validation?.isValid) {
+            const errorCount = validation?.errors?.length || 0;
+            return `Fix ${errorCount} error${errorCount > 1 ? 's' : ''}`;
+        }
+        
+        // Not reviewed but valid
+        return section?.isRequired ? 'Required: Review section' : 'Optional: Review section';
+    };
 
     
     // retrurns a loading screen with spinner
@@ -466,10 +741,10 @@ export default function DischargeDataScreen() {
                         {/* Discharge Data Info*/}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
-                                title="Discharge Data"
+                                title={"Discharge Data"}
                                 titleStyle={[Styles.accordionListTitle]}
-                                left={props => <List.Icon {...props} icon='transit-transfer'/>}
-                                description={hasValidationErrors ? 'Required: Enter all required fields' : 'Required'}
+                                left={props => <CustomAccordionIcon sectionId="dischargeData" />}
+                                description={getAccordionDescription('dischargeData')}
                                 expanded={expandDischargeAccordion}
                                 onPress={() => setExpandDischargeAccordion((prev) => !prev)}
                             >
@@ -481,7 +756,7 @@ export default function DischargeDataScreen() {
                                         {value: 'Unplanned discharge', key: 'unplanned'},
                                         {value: 'Deceased', key: 'deceased'},
                                     ]} 
-                                    label={"Discharge Status (required)"} 
+                                    label={`${displayNames['dischargeStatus']} (required)`} 
                                     placeholder='Select option below'
                                     onSelect={(item) => updatePatientData({ dischargeStatus: item.value })}
                                     search={false}
@@ -489,7 +764,7 @@ export default function DischargeDataScreen() {
                                 />
 
                                 <View>
-                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Feeding Status at Discharge <Text style={Styles.required}>*</Text></Text>
+                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>{displayNames['feedingStatus_discharge']} <Text style={Styles.required}>*</Text></Text>
                                     <Text>{displayNames['feedingStatusQuestion']}</Text>
                                     <RadioButtonGroup 
                                         options={[
@@ -497,13 +772,13 @@ export default function DischargeDataScreen() {
                                             { label: 'Feeding poorly', value: 'feeding poorly'},
                                             { label: 'Not feeding at all', value: 'not feeding at all'}
                                         ]} 
-                                        selected={patientData.feedingStatus_discharge || null} 
+                                        selected={feedingStatus_discharge || null} 
                                         onSelect={(value) => updatePatientData({ feedingStatus_discharge: value})}
                                     />
                                 </View>
 
                                 <View style={{flexDirection:'row', alignItems: 'center'}}>
-                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Oxygen Saturation at Discharge <Text style={Styles.required}>*</Text></Text>
+                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>{displayNames['spo2_discharge']} <Text style={Styles.required}>*</Text></Text>
                                     <IconButton
                                         icon="help-circle-outline"
                                         size={20}
@@ -516,12 +791,12 @@ export default function DischargeDataScreen() {
                                 
                                 <ValidatedTextInput 
                                     label={'SpO₂ (required)'}
-                                    value={patientData.spo2_discharge as string} 
+                                    value={spo2_discharge as string} 
                                     onChangeText={(value) => updatePatientData({ spo2_discharge: value })}
                                     inputType={INPUT_TYPES.NUMERIC}
                                     isRequired={true}
                                     customValidator={(value) => validateOxygenSaturationRange(value).isValid}
-                                    customErrorMessage={patientData.spo2_discharge && validateOxygenSaturationRange(patientData.spo2_discharge ).errorMessage } 
+                                    customErrorMessage={spo2_discharge && validateOxygenSaturationRange(spo2_discharge).errorMessage } 
                                     right={<TextInput.Affix text="%" />}                             
                                 />
 
@@ -537,14 +812,13 @@ export default function DischargeDataScreen() {
                             <View style={Styles.accordionListWrapper}>
                                 <List.Accordion
                                     title={isDobStillUnknown || isHivStillUnknown ? "Update Admission Data" : "Updated Admission Data"}
-                                    left={props => <List.Icon {...props} icon="heart-pulse"/>}
-                                    description={
-                                        isDobStillUnknown || isHivStillUnknown 
-                                            ? "Optional: Update unknown values" 
-                                            : "Data has been updated"
-                                    }
+                                    left={props => <CustomAccordionIcon sectionId="updateAdmissionData" />}
+                                    description={getAccordionDescription('updateAdmissionData')}
                                     expanded={showUpdateUnknownFields}
-                                    onPress={() => setShowUpdateUnknownFields(!showUpdateUnknownFields)}
+                                    onPress={() => {
+                                        setShowUpdateUnknownFields(!showUpdateUnknownFields)
+                                        handleAccordionPress('updateAdmissionData')
+                                    }}
                                 >
                                     <View style={Styles.accordionContentWrapper}>
                                         {(isDobStillUnknown || isHivStillUnknown) ? (
@@ -710,8 +984,9 @@ export default function DischargeDataScreen() {
                             <List.Accordion
                                 title="Review Medical Diagnoses"
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="medical-bag"/>}
-                                description={'Optional: Update medical conditions'}
+                                left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
+                                description={getAccordionDescription('medicalConditions')}
+                                onPress={() => handleAccordionPress('medicalConditions')}
                                 
                             >
                                 <View style={Styles.accordionContentWrapper}>
@@ -729,10 +1004,11 @@ export default function DischargeDataScreen() {
                          {/* CHW Accordion */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
-                                title="CHW Referral"
+                                title={displayNames['vhtReferral']}
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="doctor"/>}
-                                description={'Required'}
+                                left={props => <CustomAccordionIcon sectionId="vhtReferral" />}
+                                description={getAccordionDescription('vhtReferral')}
+                                onPress={() => handleAccordionPress('vhtReferral')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <VHTReferralSection
@@ -753,10 +1029,11 @@ export default function DischargeDataScreen() {
                         {/* Caregiver Contact Accordion*/}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
-                                title="Caregiver Contact Information"
+                                title={displayNames['caregiverContact']}
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="account-child"/>}
-                                description={'Required'}
+                                left={props => <CustomAccordionIcon sectionId="caregiverContact" />}
+                                description={getAccordionDescription('caregiverContact')}
+                                onPress={() => handleAccordionPress('caregiverContact')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <CaregiverContactSection
@@ -776,23 +1053,12 @@ export default function DischargeDataScreen() {
                         </View>
                     </View>
 
-                    {/* Display error summary*/}
-                    { showErrorSummary &&
-                        <ValidationSummary 
-                            errors={validationErrors}
-                            variant='error'
-                            title= 'ALERT: Fix Errors Below'
-                        />
-                    }
-                
-
                     {/* Pagination controls */}
                     <PaginationControls
                         showPrevious={true}
                         showNext={true}
                         labelPrevious="Patient Records"
                         labelNext="Complete Discharge"
-                        disabledNext={hasValidationErrors}
                         onPrevious={handleRouterBack}
                         onNext={() => handleDischarge(fullname)}
                     />

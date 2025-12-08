@@ -40,6 +40,11 @@ export const displayNames: Record<string, string> = {
     spo2_admission: 'SpO₂',
     weight: 'Weight',
 
+    // Discharge Data
+    spo2_discharge: 'Oxygen Saturation at Discharge',
+    dischargeStatus: 'Discharge Status',
+    feedingStatus_discharge: 'Feeding Status at Discharge',
+
     // Medical Conditions
     medicalConditions: 'Medical Conditions',
     severeAnaemia: 'Severe anaemia',
@@ -54,11 +59,11 @@ export const displayNames: Record<string, string> = {
     sickYoungInfant: 'Sick young infant',
 
     // vhtReferral info
-    vhtReferral: 'VHT Referral',
+    vhtReferral: 'CHW Referral',
     village: 'Village',
     subvillage: 'Subvillage',
-    vhtName: 'VHT Name', 
-    vhtTelephone: 'VHT Telephone',
+    vhtName: 'CHW Name', 
+    vhtTelephone: 'CHW Telephone',
 
     // caregiverContact
     caregiverContact: 'Caregiver Contact Information',

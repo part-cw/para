@@ -11,7 +11,59 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, Card, List, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// HELPERS AND RESUABLE CARDS
+export const InfoCard = () => (
+    <Card style={[Styles.cardWrapper, { marginBottom: 16, padding: 8 }]}>
+        <Card.Content>
+        <Text variant='bodyLarge' style={{ fontWeight: 'bold', marginBottom: 8 }}>
+            Expand each section to review information:
+        </Text>
 
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+            <MaterialIcons name="error-outline" size={18} color="orange" style={{ marginRight: 6 }} />
+            <Text>Alert marks incomplete or unreviewed sections</Text>
+        </View>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <MaterialIcons name="check-circle-outline" size={18} color="green" style={{ marginRight: 6 }} />
+            <Text>Check marks completed & reviewed sections</Text>
+        </View>
+
+        <Text style={{ marginBottom: 4 }}>
+            If any data is incorrect or missing, navigate to that section and fix it.
+        </Text>
+        <Text>
+            If all information is correct, click <Text style={{ fontWeight: 'bold' }}>"Submit"</Text>
+        </Text>
+        </Card.Content>
+    </Card>
+);
+
+export const isEmptyField = (value: any): boolean => {
+    if (value === null || value === undefined) {
+        return true;
+    }
+
+    if (typeof(value) === 'string') {
+        return value.trim() === ''
+    }
+
+    // everything else (numbers, objects, arrays, booleans) -- treat as NOT empty
+    // TODO handle objects and arrays (if these types are ever added to PatientData type)
+    return false
+}
+
+export const formatMissingFieldsMessage = (missingSectionFields: {[key: string]: string[]}) => {
+    let message = 'The following information is missing:\n\n'
+    
+    for (const [sectionTitle, fields] of Object.entries(missingSectionFields)) {
+        message += `${sectionTitle.toUpperCase()}: ${fields.join(', ')}\n\n`
+    }
+    
+    return message.trim()
+}
+
+// ACTUAL REVIEW SCREEN
 export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData } = usePatientData();
@@ -150,29 +202,6 @@ export default function ReviewScreen() {
         return {requiredMissing, nonRequiredMissing};
     }
 
-    const isEmptyField = (value: any): boolean => {
-        if (value === null || value === undefined) {
-            return true;
-        }
-
-        if (typeof(value) === 'string') {
-            return value.trim() === ''
-        }
-
-        // everything else (numbers, objects, arrays, booleans) -- treat as NOT empty
-        // TODO handle objects and arrays (if these types are ever added to PatientData type)
-        return false
-    }
-
-    const formatMissingFieldsMessage = (missingSectionFields: {[key: string]: string[]}) => {
-        let message = 'The following information is missing:\n\n'
-        
-        for (const [sectionTitle, fields] of Object.entries(missingSectionFields)) {
-            message += `${sectionTitle.toUpperCase()}: ${fields.join(', ')}\n\n`
-        }
-        
-        return message.trim()
-    }
 
     const handleAccordionPress = (sectionId: string) => {
         setReviewedSections(prev => new Set([...prev, sectionId]));
@@ -297,32 +326,7 @@ export default function ReviewScreen() {
         return 'Not provided';
     };
 
-    const InfoCard = () => (
-        <Card style={[Styles.cardWrapper, { marginBottom: 16, padding: 8 }]}>
-            <Card.Content>
-            <Text variant='bodyLarge' style={{ fontWeight: 'bold', marginBottom: 8 }}>
-                Expand each section to review information:
-            </Text>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <MaterialIcons name="error-outline" size={18} color="orange" style={{ marginRight: 6 }} />
-                <Text>Alert marks incomplete or unreviewed sections</Text>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                <MaterialIcons name="check-circle-outline" size={18} color="green" style={{ marginRight: 6 }} />
-                <Text>Check marks completed & reviewed sections</Text>
-            </View>
-
-            <Text style={{ marginBottom: 4 }}>
-                If any data is incorrect or missing, navigate to that section and fix it.
-            </Text>
-            <Text>
-                If all information is correct, click <Text style={{ fontWeight: 'bold' }}>"Submit"</Text>
-            </Text>
-            </Card.Content>
-        </Card>
-    );
+    
 
     const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
