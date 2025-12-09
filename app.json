@@ -4,7 +4,7 @@
     "slug": "para",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/images/smart-discharges-logo_script.png",
+    "icon": "./src/assets/images/icon_sd-logo_noscript.png",
     "backgroundColor": "#ffffff",
     "scheme": "para",
     "userInterfaceStyle": "automatic",
@@ -19,8 +19,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.para",
-      "softwareKeyboardLayoutMode": "pan",
-      "windowSoftInputMode": "adjustResize"
+      "softwareKeyboardLayoutMode": "pan"
     },
     "plugins": [
       "expo-router",
