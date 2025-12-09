@@ -284,7 +284,7 @@ describe('LogisticRegressionStrategy: Discharge Model 6-60C', () => {
                 const result = strategy.calculateRisk(patientData)
                 
                 // Test risk score within reasonable tolerance (±0.01)
-                expect(result.riskScore).toBeCloseTo(expectedOutput.riskScore as number, 1)
+                expect(result.riskScore).toBeCloseTo(expectedOutput.riskScore as number, 2)
                 
                 // Test risk category matches
                 expect(result.riskCategory).toBe(expectedOutput.riskCategory)

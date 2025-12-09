@@ -88,9 +88,11 @@ export default function EditPatientRecord() {
      * TODO: implement re-admit workflow (retain prev info to save time for users) 
      */
     const handleUpdateDob = () => {
-        // calculcate new age values
-        const newAgeInMonths = AgeCalculator.calculateAgeInMonths(editedDOB, '', '', '');
-        const newAgeInDays = editedDOB && AgeCalculator.getAgeInDaysFromDob(editedDOB);
+        // calculate new age values - use admission start time for age calculation 
+        const admissionDate = new Date(patientData.admissionStartedAt as string);
+        const newAgeInMonths = AgeCalculator.calculateAgeInMonthsAtAdmission(editedDOB as Date, admissionDate);
+        const newAgeInDays = editedDOB && AgeCalculator.getAgeInDaysAtAdmission(editedDOB, admissionDate);
+        
         const newIsUnderSixMonths = newAgeInMonths < 6
         const newIsNeonate = (typeof newAgeInDays === 'number') && (newAgeInDays < 30);
         const newIsSickYoungInfant = (typeof newAgeInDays === 'number') && (newAgeInDays < 28);

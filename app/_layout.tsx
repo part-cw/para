@@ -1,6 +1,7 @@
 import AppBar from "@/src/components/AppBar";
 import { PatientDataProvider } from "@/src/contexts/PatientDataContext";
 import { StorageProvider } from "@/src/contexts/StorageContext";
+import { ValidationProvider } from "@/src/contexts/ValidationContext";
 import { initializeModels } from "@/src/models/modelSelectorInstance";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -68,15 +69,17 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StorageProvider>
           <PatientDataProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-            <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-              <PaperProvider theme={AppTheme}>
-                <AppBar/>
-                <Stack screenOptions={{headerShown: false,}}/>
-              </PaperProvider>
-            </View>
-            </GestureHandlerRootView>
-          </PatientDataProvider>
+            <ValidationProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+                  <PaperProvider theme={AppTheme}>
+                    <AppBar/>
+                    <Stack screenOptions={{headerShown: false,}}/>
+                  </PaperProvider>
+                </View>
+              </GestureHandlerRootView>
+            </ValidationProvider>
+          </PatientDataProvider>          
         </StorageProvider>
       </SafeAreaProvider>
   );

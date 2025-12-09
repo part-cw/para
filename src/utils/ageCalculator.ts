@@ -14,7 +14,7 @@ export class AgeCalculator {
     /**
      * 
      * @param years age in years, calculated from one of: DOB, (MOB and YOB), or approx age
-     * @returns age in months, unrounded
+     * @returns age in months, unrounded, calculated NOW
      */
     static calculateAgeInMonths(
         dob: Date|null, 
@@ -25,6 +25,32 @@ export class AgeCalculator {
         const months = 12 * this.calculateAgeInYears(dob, yob, mob, approxAge)
         return months
     }
+
+    /**
+     * @param dob entered DOB or created from birthYear and birthMonth
+     * @param admission date of admission - from patient object
+     * @returns admission age in months, unrounded
+     */
+    static calculateAgeInMonthsAtAdmission(dob: Date, admission: Date): number {
+        const diffDays = this.getAgeInDaysAtAdmission(dob, admission);
+        const diffYears = diffDays / this.daysPerYear
+        const months = 12 * diffYears
+        
+        return months;
+    }
+
+      /**
+     * @param dob entered DOB or created from birthYear and birthMonth
+     * @param admission date of admission - from patient object
+     * @returns admission age in days, unrounded
+     */
+    static getAgeInDaysAtAdmission(dob: Date, admission: Date): number {
+        const diffTime = admission.getTime() - dob.getTime(); // get time is ms
+        const diffDays = diffTime / this.msPerDay;
+        
+        return diffDays;
+    }
+
 
     /**
      * 
@@ -166,6 +192,7 @@ export class AgeCalculator {
         monthToIndex: AgeCalculator.monthToIndex,
         createDob: AgeCalculator.createDob,
         getAgeInYearsFromDOB: AgeCalculator.getAgeInYearsFromDOB,
+        calculateAgeInMonthsAtAdmission: AgeCalculator.calculateAgeInMonthsAtAdmission
     };
 
 }

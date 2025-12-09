@@ -19,17 +19,6 @@ export default function RiskDisplay() {
   const patientId = params.patientId as string;
   const patientName = params.patientName as string;
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
-
-  // load patient data if needed -- TODO: uncomment or remove?
-  // useEffect(() => {
-  //   const loadPatientDetails = async () => {
-  //     if (patientId) {
-  //       const fullPatient = await storage.getPatient(patientId);
-  //       // Use for additional display if needed
-  //     }
-  //   };
-  //   loadPatientDetails();
-  // }, [patientId]);
   
   // Handle missing data
   if (!riskAssessment || !patientId || !patientName) {
@@ -72,7 +61,7 @@ export default function RiskDisplay() {
           <View style={{padding: 20}}>
             <View style={{margin: 10, flexDirection: 'row',  flexWrap: 'wrap'}}>
               <Text style={{fontSize: 16, fontWeight: 'bold', flexShrink: 1}}>
-                Calculated risk level at admission time for{' '}
+                Calculated risk level at {!discharge ? 'discharge' : 'admission'} time for{' '}
               </Text>
               <Text style={{fontSize: 16, fontWeight: 'bold', flexShrink: 1,  color: colors.primary}}>
                 {patientName}:

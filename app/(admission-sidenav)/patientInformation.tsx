@@ -223,7 +223,7 @@ export default function PatientInformationScreen() {
         return () => {
             // Only clear if no errors exist
             if (validateAllFields().length === 0) {
-                setValidationErrors('admissionClinicalData', []);
+                setValidationErrors('patientInformation', []);
             }
         };
     }, []);

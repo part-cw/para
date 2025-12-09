@@ -219,6 +219,25 @@ export class SQLiteStorage implements IStorageService {
         console.log(`✅ Patient ${patientId} submitted`);
     }
 
+     /**
+     * convert patietn from active to discharged and complete the workflow - mark completed with date argument or now
+     */
+    async dischargePatient(patientId: string, date?: string): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const now = new Date().toISOString();
+
+        // flip isDischarged flag and add metadata
+        await this.db.runAsync(`
+            UPDATE patients 
+            SET isDischarged = 1, dischargedAt = ?, updatedAt = ?, dischargedBy = ?
+            WHERE patientId = ?
+        `, [date || now, date || now, CURRENT_USER,patientId]);
+
+        await this.logChanges(patientId, 'DISCHARGED', null, null, null);
+        console.log(`✅ Patient ${patientId} discharged`);
+    }
+
     async getPatient(patientId: string): Promise<PatientData | null> {
         if (!this.db) throw new Error('Database not initialized');
 

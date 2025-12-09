@@ -14,6 +14,10 @@ interface PatientDataContextType {
       patientId: string;
       riskAssessment: RiskAssessment;
       patientName: string;}>;
+  completeDischarge: () => Promise<{
+    patientId: string;
+    riskAssessment: RiskAssessment;
+    patientName: string;}>;
   startAdmission: () => void;
   loadDraft: (patientId: string) => Promise<void>;
   loadPatient: (patientId: string) => Promise<void>;
@@ -260,6 +264,51 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+   /**
+   * Discharge patient and calcuclated risk prediction at discharge if patient not deceased
+   * 
+   */
+  const completeDischarge = async (): 
+    Promise<{patientId: string; riskAssessment: RiskAssessment; patientName: string;}> => {
+      if (!currentPatientId) throw new Error('No patient ID available for submission');
+    
+    try {
+      const discharge = calculateDischargeRisk()
+      const finalRiskAssessment: RiskAssessment = {
+        admission: riskAssessment.admission,
+        discharge: discharge|| undefined
+      };
+
+      // Store patient name before clearing
+      const patientName = `${patientData.firstName} ${patientData.surname}`;
+      const dischargeDateTime = new Date().toISOString()
+
+      await storage.dischargePatient(currentPatientId, dischargeDateTime);
+
+      if (discharge) {
+        await storage.saveRiskPrediction(currentPatientId, discharge, 'discharge', dischargeDateTime);
+      }
+
+      console.log(`✅ Stored risk prediction for ${currentPatientId}:`, finalRiskAssessment);
+
+      const submittedPatientId = currentPatientId;
+      
+      // Clear current state 
+      clearPatientData();
+      
+      console.log('✅ Cleared current local state');
+      
+      return {
+        patientId: submittedPatientId,
+        riskAssessment: finalRiskAssessment,
+        patientName 
+      };
+    } catch (error) {
+      console.error('Error discharging patient data:', error);
+      throw error;
+    }
+  };
+
   /**
    * Get current patient ID
    */
@@ -294,9 +343,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
           usageTime: 'admission'
       };
 
-      console.log('!!! context', context)
-      console.log('!!! data', data)
-
       const model = modelSelector.getModel(context);
       const strategy = model && modelSelector.getStrategy(model?.modelName);
 
@@ -308,7 +354,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    */
   const calculateDischargeRisk = (): RiskPrediction | null => {
     const context: ModelContext = {
-      isUnderSixMonths: patientData.isUnderSixMonths,
+      isUnderSixMonths: normalizeBoolean(patientData.isUnderSixMonths),
       usageTime: 'discharge'
     };
 
@@ -335,6 +381,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         updatePatientData,
         clearPatientData,
         savePatientData,
+        completeDischarge,
         startAdmission,
         loadDraft,
         loadPatient: loadPatient,
