@@ -33,8 +33,6 @@ export default function AppBar() {
  
   const dischargeRoute = '/dischargeData'
   const isDischargeScreen =  pathname === dischargeRoute
-
-  console.log('pathname', pathname)
   
   const handleGoHome = () => {
      const resetStorage = async () => {  

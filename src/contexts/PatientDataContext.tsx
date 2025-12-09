@@ -273,26 +273,23 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       if (!currentPatientId) throw new Error('No patient ID available for submission');
     
     try {
-      // TODO Add discharge predictiojn to risk assessments if status not deceased
-      // const discharge = calculateDischargeRisk()
-      // const finalRiskAssessment: RiskAssessment = {
-      //   discharge: discharge|| undefined,
-      // };
+      const discharge = calculateDischargeRisk()
+      const finalRiskAssessment: RiskAssessment = {
+        admission: riskAssessment.admission,
+        discharge: discharge|| undefined
+      };
 
       // Store patient name before clearing
       const patientName = `${patientData.firstName} ${patientData.surname}`;
       const dischargeDateTime = new Date().toISOString()
 
-      console.log('!!! discharging patient')
-      // discharge patient
       await storage.dischargePatient(currentPatientId, dischargeDateTime);
 
-      // TODO Save risk prediction with admission model, if exists
-      // if (discharge) {
-      //   await storage.saveRiskPrediction(currentPatientId, discharge, 'discharge', dischargeDateTime);
-      // }
+      if (discharge) {
+        await storage.saveRiskPrediction(currentPatientId, discharge, 'discharge', dischargeDateTime);
+      }
 
-      // console.log(`✅ Stored risk prediction for ${currentPatientId}:`, finalRiskAssessment);
+      console.log(`✅ Stored risk prediction for ${currentPatientId}:`, finalRiskAssessment);
 
       const submittedPatientId = currentPatientId;
       
@@ -303,7 +300,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       
       return {
         patientId: submittedPatientId,
-        riskAssessment: {}, // stub
+        riskAssessment: finalRiskAssessment,
         patientName 
       };
     } catch (error) {
@@ -346,9 +343,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
           usageTime: 'admission'
       };
 
-      console.log('!!! context', context)
-      console.log('!!! data', data)
-
       const model = modelSelector.getModel(context);
       const strategy = model && modelSelector.getStrategy(model?.modelName);
 
@@ -360,7 +354,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    */
   const calculateDischargeRisk = (): RiskPrediction | null => {
     const context: ModelContext = {
-      isUnderSixMonths: patientData.isUnderSixMonths,
+      isUnderSixMonths: normalizeBoolean(patientData.isUnderSixMonths),
       usageTime: 'discharge'
     };
 

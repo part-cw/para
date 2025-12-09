@@ -7,7 +7,6 @@ import { VHTReferralSection } from "@/src/components/sections/VhtReferralSection
 import ValidatedTextInput, { INPUT_TYPES } from "@/src/components/ValidatedTextInput";
 import { usePatientData } from "@/src/contexts/PatientDataContext";
 import { useStorage } from "@/src/contexts/StorageContext";
-import { useValidation } from "@/src/contexts/ValidationContext";
 import { dischargeFormSchema } from "@/src/forms/dischargeFormSchema";
 import { displayNames } from "@/src/forms/displayNames";
 import { spo2DischargeInfo } from "@/src/forms/infoText";
@@ -29,7 +28,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function DischargeDataScreen() {
     const { colors } = useTheme()
     const { storage } = useStorage();
-    const { setValidationErrors, getScreenErrors } = useValidation();
     const { 
         patientData, 
         riskAssessment, 
@@ -61,16 +59,10 @@ export default function DischargeDataScreen() {
     // track errors and reviewed sections
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set(['dischargeData'])); // discharge data automatically reviewed becase accordion starts out open
     const [sectionValidations, setSectionValidations] = useState<{[key: string]: { isValid: boolean; errors: string[] }}>({});
-
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    console.log('reviewedSections', reviewedSections)
-    console.log('sectionvalidaitons', sectionValidations)
     
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
-    console.log('patietnID', patientId)
-
 
     // check what was unknown at admission
     const wasDobUnknown = initialDobUnknown
@@ -539,7 +531,14 @@ export default function DischargeDataScreen() {
             try {
                 setIsSubmitting(true);
                 await completeDischarge();
-                router.replace('../riskDisplay'); // TODO - use router.push instead?
+                router.push({
+                    pathname: '/riskDisplay',
+                    params: {
+                        patientId: patientId,
+                        patientName: patientName,
+                        riskAssessment: JSON.stringify(riskAssessment)
+                    }
+                });
             } catch (error) {
                 console.error('Error completing discharge:', error);
                 Alert.alert('Error', 'Failed to complete discharge. Please try again.');
@@ -878,6 +877,31 @@ export default function DischargeDataScreen() {
                                                     </Card>
                                                 )}
 
+                                                {wasDobUnknown && !isDobStillUnknown && (
+                                                    <Card style={{ marginBottom: 12, backgroundColor: colors.secondary }}>
+                                                        <Card.Content>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                                                <List.Icon icon="check-circle" color={colors.primary} />
+                                                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.primary, marginLeft: 10 }}>
+                                                                    Date of Birth Updated
+                                                                </Text>
+                                                            </View>
+                                                            <View style={{ paddingLeft: 40 }}>
+                                                                <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
+                                                                    <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
+                                                                    {patientData.dob 
+                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        : 'Not available'}
+                                                                </Text>
+                                                                <Text variant="bodyMedium">
+                                                                    <Text style={{ fontWeight: 'bold' }}>Age: </Text>
+                                                                    {AgeCalculator.formatAge(patientData.ageInMonths)} old
+                                                                </Text>
+                                                            </View>
+                                                        </Card.Content>
+                                                    </Card>
+                                                )}
+
                                                 {isHivStillUnknown && (
                                                     <Card style={{ marginBottom: 12, backgroundColor: colors.errorContainer }}>
                                                         <Card.Content>
@@ -914,6 +938,25 @@ export default function DischargeDataScreen() {
                                                             >
                                                                 Save Status
                                                             </Button>
+                                                        </Card.Content>
+                                                    </Card>
+                                                )}
+
+                                                {wasHivUnknown && !isHivStillUnknown && (
+                                                    <Card style={{ marginBottom: 12, backgroundColor: colors.secondary }}>
+                                                        <Card.Content>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                                                <List.Icon icon="check-circle" color={colors.primary} />
+                                                                <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.primary, marginLeft: 10 }}>
+                                                                    HIV Status Updated
+                                                                </Text>
+                                                            </View>
+                                                            <View style={{ paddingLeft: 40 }}>
+                                                                <Text variant="bodyMedium">
+                                                                    <Text style={{ fontWeight: 'bold' }}>New Value: </Text>
+                                                                    {patientData.hivStatus && (patientData.hivStatus?.charAt(0).toUpperCase() + patientData.hivStatus?.slice(1))}
+                                                                </Text>
+                                                            </View>
                                                         </Card.Content>
                                                     </Card>
                                                 )}
