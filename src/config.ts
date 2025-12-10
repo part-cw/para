@@ -7,3 +7,4 @@ export const ACTIVE_SITE = 'SITE';
 export const DEVICE_ID_KEY = 'A'
 export const CURRENT_USER = 'Muna'
 export const MAX_PATIENT_AGE = 5.5;
+export const RRATE_INTEGRATION_ENABLED = false; 

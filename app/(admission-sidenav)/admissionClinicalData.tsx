@@ -4,6 +4,7 @@ import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import ValidationSummary from '@/src/components/ValidationSummary';
+import { RRATE_INTEGRATION_ENABLED } from '@/src/config';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
@@ -722,16 +723,17 @@ export default function AdmissionClinicalDataScreen() {
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     {/* TODO add url to rrate app */}
-                                    <Button 
-                                        style={{ alignSelf: 'center'}}
-                                        buttonColor={colors.primary} 
-                                        textColor={colors.onPrimary} 
-                                        mode="elevated" 
-                                        disabled={true}
-                                        onPress={() => {}}
-                                    >
-                                        Record from RRate
-                                    </Button>
+                                    { RRATE_INTEGRATION_ENABLED &&
+                                        <Button 
+                                            style={{ alignSelf: 'center'}}
+                                            buttonColor={colors.primary} 
+                                            textColor={colors.onPrimary} 
+                                            mode="elevated" 
+                                            onPress={() => {}} // TODO handle onPress
+                                        >
+                                            Record from RRate
+                                        </Button>
+                                    }
 
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
