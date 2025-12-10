@@ -1,4 +1,5 @@
 import { EditGroup } from "@/src/components/EditFieldGroup";
+import NeonatalJaundiceModal from "@/src/components/JaundiceSelectionModal";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
 import RiskCard from "@/src/components/RiskCard";
 import { CaregiverContactSection } from "@/src/components/sections/CaregiverContactSection";
@@ -17,7 +18,7 @@ import { computeAdmissionRiskUpdated } from "@/src/utils/riskHelpers";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Platform, RefreshControl, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, RefreshControl, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, List, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -286,7 +287,8 @@ export default function EditPatientRecord() {
 
     if (patientData) {
         const hivIsEditable = !patientData.isDischarged && (patientData.hivStatus === 'unknown');
-        const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
+        // const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
+        const ageIsEditable = true;
         const normalizedIsNeonate = patientData.isNeonate && normalizeBoolean(patientData.isNeonate);
         const isDischarged = normalizeBoolean(patientData.isDischarged as boolean) === true;
         const isAdmissionRiskUpdated = computeAdmissionRiskUpdated(patientData.admissionCompletedAt, admissionLastCalculated)
@@ -304,58 +306,15 @@ export default function EditPatientRecord() {
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
                 {/* Neonatal jaundice modal */}
-                <Modal
-                    visible={showNeonatalJaundiceModal}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={() => {  
-                        setPendingDobUpdates(null);
-                        setShowNeonatalJaundiceModal(false);
-                    }}
-                >
-                    <View style={Styles.modalOverlay}>
-                        <View style={Styles.modalContentWrapper}>
-                            <Text style={[Styles.modalHeader, {color: colors.primary}]}>
-                                Neonatal Jaundice Required
-                            </Text>
-                            
-                            <Text style={Styles.modalText}>
-                                The patient is now classified as a neonate. Please provide neonatal jaundice status before proceeding with risk recalculation.
-                            </Text>
-
-                            <Text style={[Styles.modalSubheader, {color: colors.primary}]}>
-                                Does the patient have neonatal jaundice?
-                            </Text>
-
-                            <RadioButtonGroup
-                                options={[
-                                    { label: 'Yes', value: 'yes' },
-                                    { label: 'No', value: 'no' }
-                                ]}
-                                selected={neonatalJaundiceValue}
-                                onSelect={setNeonatalJaundiceValue}
-                            />
-
-                            <View style={{
-                                flexDirection: 'row',
-                                gap: 10,
-                                marginTop: 20
-                            }}>
-                                <Button
-                                    mode="contained"
-                                    onPress={handleSaveNeonatalJaundice}
-                                    buttonColor={colors.primary}
-                                    textColor={colors.onPrimary}
-                                    style={{ flex: 1 }}
-                                    loading={isUpdating}
-                                    disabled={!neonatalJaundiceValue || isUpdating}
-                                >
-                                    Save & Continue
-                                </Button>
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
+                <NeonatalJaundiceModal 
+                    showModal={showNeonatalJaundiceModal} 
+                    onRequestClose={() => null} // TODO figure out what to do here
+                    selected={neonatalJaundiceValue} 
+                    onSelect={setNeonatalJaundiceValue} 
+                    onSave={handleSaveNeonatalJaundice}
+                    isSaving={isUpdating}
+                    saveDisabled={!neonatalJaundiceValue || isUpdating}
+                />
 
                 <ScrollView 
                     contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
