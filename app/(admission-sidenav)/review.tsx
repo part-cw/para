@@ -283,7 +283,6 @@ export default function ReviewScreen() {
                                             params: {
                                                 patientId: patientId,
                                                 patientName: patientName,
-                                                // Serialize the risk assessment
                                                 riskAssessment: JSON.stringify(riskAssessment)
                                             }
                                         })

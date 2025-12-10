@@ -30,7 +30,6 @@ export default function DischargeDataScreen() {
     const { storage } = useStorage();
     const { 
         patientData, 
-        riskAssessment, 
         loadPatient, 
         completeDischarge,
         updatePatientData
@@ -69,7 +68,7 @@ export default function DischargeDataScreen() {
     const wasHivUnknown = initialHivUnknown
 
     // Check if values are still unknown (not yet updated)
-    const isDobStillUnknown = wasDobUnknown && (!patientData.dob);
+    const isDobStillUnknown = wasDobUnknown && (patientData.isDOBUnknown);
     const isHivStillUnknown = wasHivUnknown && (patientData.hivStatus?.toLowerCase() === 'unknown');
     const hasUnknownAdmissionFields = wasDobUnknown || wasHivUnknown;
 
@@ -281,7 +280,7 @@ export default function DischargeDataScreen() {
         setShowDeceasedModal(false)
         setLoading(true);
 
-        completeDischarge();
+        await completeDischarge();
         // TODO reopen modal on storage error?
 
         setLoading(false)
@@ -533,7 +532,7 @@ export default function DischargeDataScreen() {
         const confirmDischarge = async () => {
             try {
                 setIsSubmitting(true);
-                await completeDischarge();
+                const { riskAssessment } = await completeDischarge();
                 router.push({
                     pathname: '/riskDisplay',
                     params: {

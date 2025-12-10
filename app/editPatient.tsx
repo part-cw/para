@@ -291,6 +291,16 @@ export default function EditPatientRecord() {
         const isDischarged = normalizeBoolean(patientData.isDischarged as boolean) === true;
         const isAdmissionRiskUpdated = computeAdmissionRiskUpdated(patientData.admissionCompletedAt, admissionLastCalculated)
 
+        const admPrediction = riskAssessment.admission;
+        const disPrediction = riskAssessment.discharge;
+        const currRiskScore = disPrediction ? disPrediction.riskScore : admPrediction?.riskScore;
+        const currRiskCategory = disPrediction ? disPrediction.riskCategory : admPrediction?.riskCategory;
+        
+        const predictionDescription =
+            disPrediction ?  'Prediction calculated at discharge'
+                          :  isAdmissionRiskUpdated ?  `Risk last updated ${new Date(admissionLastCalculated).toDateString()}` 
+                                                    : 'Prediction calculated at admission';
+                                                
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
                 {/* Neonatal jaundice modal */}
@@ -366,38 +376,29 @@ export default function EditPatientRecord() {
                                 {formatName(patientData.firstName, patientData.surname, patientData.otherName).toUpperCase()}
                             </Text>
                             <Text style={[Styles.pageHeaderTitle, { flex: 0} ]}>
-                                View/Edit Profile
+                                {isDischarged ? 'View Profile' : 'View/Edit Profile'}
                             </Text>
                             
                         </View>
                     </View>
                     
                     <View style={{margin: 15}}>
-                        {/* Risk Predictions Accordion */}
+                        {/* Risk Prediction Card */}
                         <View style={Styles.accordionListWrapper}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
                                 <List.Icon icon="chart-areaspline" color={colors.primary} />
                                 <Text style={Styles.cardTitle}>Current Risk Prediction</Text>
                             </View>
                             <View style={Styles.accordionContentWrapper}>
-                                {/* TODO - show admission and discharge or only most recent? */}
                                 <RiskCard
-                                    title={riskAssessment.admission?.riskCategory}
-                                    variant={riskAssessment.admission?.riskCategory.toLowerCase()}
-                                    content={`Risk score = ${riskAssessment.admission?.riskScore}%`}
+                                    title={currRiskCategory?.toUpperCase()}
+                                    variant={currRiskCategory?.toLowerCase()}
+                                    content={`Risk score = ${currRiskScore}%`}
                                     expandable={false}
                                 />
-
-                                {isAdmissionRiskUpdated
-                                    ?
-                                    <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}>
-                                        Risk last updated {new Date(admissionLastCalculated).toDateString()} 
-                                    </Text>
-                                    :
-                                    <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}>
-                                        Prediction calculated at {riskAssessment.discharge ? 'discharge' : 'admission'} 
-                                    </Text>
-                                }
+                                <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}> 
+                                    {predictionDescription} 
+                                </Text>
                             </View>
                         </View>
 

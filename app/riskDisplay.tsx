@@ -7,11 +7,9 @@ import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, useTheme } from 'react-native-paper';
 
-// TODO - make this also work for discharge risk
 
 export default function RiskDisplay() {
   const { colors } = useTheme();
-  // const { storage } = useStorage();
   
   const params = useLocalSearchParams();
 
@@ -44,6 +42,9 @@ export default function RiskDisplay() {
 
   const admission = riskAssessment.admission;
   const discharge = riskAssessment.discharge;
+
+  const riskScore = discharge ? discharge.riskScore : admission?.riskScore;
+  const riskCategory = discharge ? discharge.riskCategory : admission?.riskCategory;
   
   return (
     <>
@@ -61,7 +62,7 @@ export default function RiskDisplay() {
           <View style={{padding: 20}}>
             <View style={{margin: 10, flexDirection: 'row',  flexWrap: 'wrap'}}>
               <Text style={{fontSize: 16, fontWeight: 'bold', flexShrink: 1}}>
-                Calculated risk level at {!discharge ? 'discharge' : 'admission'} time for{' '}
+                Calculated risk level at {!discharge ? 'admission' : 'discharge'} time for{' '}
               </Text>
               <Text style={{fontSize: 16, fontWeight: 'bold', flexShrink: 1,  color: colors.primary}}>
                 {patientName}:
@@ -69,9 +70,9 @@ export default function RiskDisplay() {
             </View>
 
               <RiskCard
-                title={admission?.riskCategory.toUpperCase()}
-                variant={admission?.riskCategory.toLowerCase()}
-                content={`Risk score = ${admission?.riskScore}%`}
+                title={riskCategory?.toUpperCase()}
+                variant={riskCategory?.toLowerCase()}
+                content={`Risk score = ${riskScore}%`}
                 expandable={false}
               >
                 {/* TODO - fix children */}
@@ -89,11 +90,11 @@ export default function RiskDisplay() {
                 </Button>
               </RiskCard>
             
-            <Text style={{fontSize: 16, fontWeight: 'bold', margin: 10}}>Risk Profile:</Text>
+            <Text style={{fontSize: 16, fontWeight: 'bold', margin: 10}}>{!discharge ? 'Admission Diagnosis' : 'Dicharge Diagnosis'}</Text>
             
             {/* TODO - map conditions to profile */}
             <RiskCard
-                title='Profile A'
+                title='Relevant Morbidities'
                 expandable={false}
                 content='Conditions 1, 2, 3'
             >
