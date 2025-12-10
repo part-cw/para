@@ -1,3 +1,4 @@
+import NeonatalJaundiceModal from "@/src/components/JaundiceSelectionModal";
 import PaginationControls from "@/src/components/PaginationControls";
 import RadioButtonGroup from "@/src/components/RadioButtonGroup";
 import SearchableDropdown from "@/src/components/SearchableDropdown";
@@ -58,6 +59,11 @@ export default function DischargeDataScreen() {
     // track errors and reviewed sections
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set(['dischargeData'])); // discharge data automatically reviewed becase accordion starts out open
     const [sectionValidations, setSectionValidations] = useState<{[key: string]: { isValid: boolean; errors: string[] }}>({});
+    
+    // track jaundice states for when dob update cause isNeonate = true;
+    const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
+    const [neonatalJaundiceValue, setNeonatalJaundiceValue] = useState<string>('');
+   
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     const params = useLocalSearchParams();
@@ -376,6 +382,15 @@ export default function DischargeDataScreen() {
 
             // Update storage
             await storage.doBulkUpdate(patientId, updates, previous);
+            setIsUpdatingUnknownFields(false);
+
+            // check if all neonatal info needs to be filled
+            // if newIsNeonate is true AND different from previous, open jaundice modal
+            if (newIsNeonate && (newIsNeonate !== previous.isNeonate)) {
+                setNeonatalJaundiceValue('') // clear any prevous value
+                setShowNeonatalJaundiceModal(true);
+                return;
+            } 
 
             // Refresh the UI
             await onRefresh();
@@ -449,6 +464,33 @@ export default function DischargeDataScreen() {
             console.log('TODO - implement alert for web?')
         }
        
+    }
+
+    const handleSaveNeonatalJaundice = async () => {
+        if (!neonatalJaundiceValue) {
+            Alert.alert('Required', 'Please select a value for neonatal jaundice');
+            return;
+        }
+
+        try {
+            const prevJaundice = patientData?.neonatalJaundice as string;
+            const jaundiceUpdate = { neonatalJaundice: neonatalJaundiceValue };
+
+            // Update neonatal jaundice in storage
+            setIsUpdatingUnknownFields(true);
+            await storage.updatePatient(patientId, jaundiceUpdate);
+            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'));
+            
+            setIsUpdatingUnknownFields(false);
+            setShowNeonatalJaundiceModal(false);
+            
+            await onRefresh();
+            Alert.alert('Success', 'Neonatal jaundice status updated successfully.')
+        } catch (error) {
+            console.error('Error updating neonatal jaundice:', error);
+            Alert.alert('Error', 'Failed to update neonatal jaundice');
+            setIsUpdatingUnknownFields(false);
+        }
     }
 
     const handleAccordionPress = (sectionId: string) => {
@@ -661,7 +703,17 @@ export default function DischargeDataScreen() {
 
         return (
             <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
-                 {/* Deceased modal */}
+                <NeonatalJaundiceModal 
+                    showModal={showNeonatalJaundiceModal} 
+                    onRequestClose={() => null} // TODO figure out what to do here
+                    selected={neonatalJaundiceValue} 
+                    onSelect={setNeonatalJaundiceValue} 
+                    onSave={handleSaveNeonatalJaundice}
+                    isSaving={isUpdatingUnknownFields}
+                    saveDisabled={!neonatalJaundiceValue}
+                />
+                
+                {/* Deceased modal */}
                 <Modal
                     visible={showDeceasedModal}
                     transparent={true}
