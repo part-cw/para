@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from '../utils/normalizer';
+import { Diagnosis, initialDiagnosis } from './Diagnosis';
 import { initialPatientData, PatientData } from './PatientData';
 import { useStorage } from './StorageContext';
 
@@ -13,6 +14,7 @@ interface PatientDataContextType {
   savePatientData: () => Promise<{
       patientId: string;
       riskAssessment: RiskAssessment;
+      diagnosis: Diagnosis;
       patientName: string;}>;
   completeDischarge: () => Promise<{
     patientId: string;
@@ -28,7 +30,9 @@ interface PatientDataContextType {
   calculateAdmissionRiskWithData: (data: PatientData) => RiskPrediction | null;
   getCurrentRiskAssessment: (patientId: string) => Promise<RiskAssessment | null>;
   getCurrentPatientId: () => string | null;
+  getCurrentDiagnosis: (patientId: string) => Promise<Diagnosis | null>;
   riskAssessment: RiskAssessment;
+  diagnosis: Diagnosis;
   admissionLastCalculated: string;
 }
 
@@ -39,6 +43,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(true);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
+  const [diagnosis, setDiagnosis] = useState<Diagnosis>(initialDiagnosis);
   const [admissionLastCalculated, setAdmissionLastCalculated] = useState<string>('')
   
   const { storage, isInitialized } = useStorage();
@@ -218,7 +223,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * 
    */
   const savePatientData = async (): 
-    Promise<{patientId: string; riskAssessment: RiskAssessment; patientName: string;}> => {
+    Promise<{
+      patientId: string; 
+      riskAssessment: RiskAssessment;
+      diagnosis: Diagnosis; 
+      patientName: string;
+    }> => {
       if (!currentPatientId) throw new Error('No patient ID available for submission');
     
     try {
@@ -227,6 +237,9 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const finalRiskAssessment: RiskAssessment = {
         admission: admissionRisk|| undefined,
       };
+
+      // TODO get diagnosis
+      const currDiagnosis = await getCurrentDiagnosis(currentPatientId);
 
       // Store patient name before clearing
       const patientName = `${patientData.firstName} ${patientData.surname}`;
@@ -256,6 +269,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       return {
         patientId: submittedPatientId,
         riskAssessment: finalRiskAssessment,
+        diagnosis: currDiagnosis || initialDiagnosis,
         patientName 
       };
     } catch (error) {
@@ -269,7 +283,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * 
    */
   const completeDischarge = async (): 
-    Promise<{patientId: string; riskAssessment: RiskAssessment; patientName: string;}> => {
+    Promise<{patientId: string; riskAssessment: RiskAssessment; diagnosis: Diagnosis; patientName: string;}> => {
       if (!currentPatientId) throw new Error('No patient ID available for submission');
     
     try {
@@ -284,6 +298,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const dischargeDateTime = new Date().toISOString()
 
       await storage.dischargePatient(currentPatientId, dischargeDateTime);
+      const currDiagnosis = await getCurrentDiagnosis(currentPatientId);
+
 
       if (discharge) {
         await storage.saveRiskPrediction(currentPatientId, discharge, 'discharge', dischargeDateTime);
@@ -301,6 +317,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       return {
         patientId: submittedPatientId,
         riskAssessment: finalRiskAssessment,
+        diagnosis: currDiagnosis || initialDiagnosis,
         patientName 
       };
     } catch (error) {
@@ -315,7 +332,6 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const getCurrentPatientId = (): string | null => {
     return currentPatientId;
   };
-
 
   /**
    * Calculate post-discharge mortality risk at admission time,
@@ -374,6 +390,21 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     return riskAssessment;
   };
 
+   /**
+   * 
+   * @returns current patient diagnosis based on positive and suspected conditions
+   */
+  const getCurrentDiagnosis = async (patientId: string): Promise<Diagnosis | null> => {
+    if (!patientId) return null;
+
+
+    const diagnosis = await storage.getDiagnosis(patientId)
+    setDiagnosis(diagnosis);
+    
+    return diagnosis;
+  }
+
+
   return (
     <PatientDataContext.Provider
       value={{
@@ -392,6 +423,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         calculateAdmissionRiskWithData,
         getCurrentRiskAssessment,
         getCurrentPatientId,
+        getCurrentDiagnosis,
+        diagnosis,
         riskAssessment,
         admissionLastCalculated
       }}

@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-import { getStorageService, IStorageService } from '../services/StorageService';
+import { getStorageInstance } from '../services/StorageInstance';
+import { IStorageService } from '../services/StorageService';
 
 interface StorageContextType {
   storage: IStorageService;
@@ -10,7 +11,7 @@ interface StorageContextType {
 const StorageContext = createContext<StorageContextType | undefined>(undefined);
 
 export function StorageProvider({ children }: { children: ReactNode }) {
-  const [storage] = useState<IStorageService>(() => getStorageService());
+  const [storage] = useState<IStorageService>(() => getStorageInstance());
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

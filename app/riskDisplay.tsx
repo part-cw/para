@@ -1,4 +1,5 @@
 import RiskCard from '@/src/components/RiskCard';
+import { Diagnosis } from '@/src/contexts/Diagnosis';
 import { RiskAssessment } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,7 +18,9 @@ export default function RiskDisplay() {
   const patientId = params.patientId as string;
   const patientName = params.patientName as string;
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
-  
+  const diagnosis: Diagnosis | null = params.diagnosis ? JSON.parse(params.diagnosis as string) : null;
+
+
   // Handle missing data
   if (!riskAssessment || !patientId || !patientName) {
     return (
@@ -45,6 +48,68 @@ export default function RiskDisplay() {
 
   const riskScore = discharge ? discharge.riskScore : admission?.riskScore;
   const riskCategory = discharge ? discharge.riskCategory : admission?.riskCategory;
+
+  // Get top 3 conditions to display with guaranteed critical conditions
+  const getTopConditions = (): { display: string[]; hasMore: boolean; hiddenCount: number } => {
+    if (!diagnosis || (diagnosis.positive.length === 0 && diagnosis.suspected.length === 0)) {
+      return { display: [], hasMore: false, hiddenCount: 0 };
+    }
+    
+    // Critical conditions that MUST always be shown if present
+    const criticalConditions = [
+      'Sick Young Infant',
+      'Severe Acute Malnutrition (SAM)',
+      'Severe Anaemia'
+    ];
+
+    // Separate conditions into critical and other
+    const critical: string[] = [];
+    const other: string[] = [];
+
+    // Process positive conditions
+    diagnosis.positive.forEach(condition => {
+      if (criticalConditions.includes(condition)) {
+        critical.push(condition);
+      } else {
+        other.push(condition);
+      }
+    });
+
+    // Process suspected conditions  
+    diagnosis.suspected.forEach(condition => {
+      const displayCondition = `${condition} (suspected)`;
+      if (criticalConditions.includes(condition)) {
+        critical.push(displayCondition);
+      } else {
+        other.push(displayCondition);
+      }
+    });
+    
+    // Build display list: critical conditions first, then fill remaining slots
+    const displayList: string[] = [...critical];
+    const remainingSlots = 3 - critical.length;
+    
+    if (remainingSlots > 0) {
+      displayList.push(...other.slice(0, remainingSlots));
+    }
+
+    const totalConditions = critical.length + other.length;
+    const hiddenCount = totalConditions - displayList.length;
+    
+    return {
+      display: displayList,
+      hasMore: hiddenCount > 0,
+      hiddenCount
+    };
+  };
+
+  // Get count of all conditions for display
+  const getTotalConditionsCount = (): number => {
+    if (!diagnosis) return 0;
+    return diagnosis.positive.length + diagnosis.suspected.length;
+  };
+
+  const conditionsData = getTopConditions();
   
   return (
     <>
@@ -94,9 +159,10 @@ export default function RiskDisplay() {
             
             {/* TODO - map conditions to profile */}
             <RiskCard
-                title='Relevant Morbidities'
-                expandable={false}
-                content='Conditions 1, 2, 3'
+                title={getTotalConditionsCount() > 0 ? 'Relevant Morbidities' : 'No Conditions Recorded'}
+                expandable={false} // TODO change to true once careplan implenetd
+                content={conditionsData.display.length === 0 ? 'No conditions recorded' : undefined}
+
             >
               {/* TODO - fix children */}
               <Text>

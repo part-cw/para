@@ -574,13 +574,14 @@ export default function DischargeDataScreen() {
         const confirmDischarge = async () => {
             try {
                 setIsSubmitting(true);
-                const { riskAssessment } = await completeDischarge();
+                const { riskAssessment, diagnosis } = await completeDischarge(); // TODO get diagnosis
                 router.push({
                     pathname: '/riskDisplay',
                     params: {
                         patientId: patientId,
                         patientName: patientName,
-                        riskAssessment: JSON.stringify(riskAssessment)
+                        riskAssessment: JSON.stringify(riskAssessment),
+                        diagnosis: JSON.stringify(diagnosis)
                     }
                 });
             } catch (error) {
