@@ -671,9 +671,9 @@ export class SQLiteStorage implements IStorageService {
 
             // Handle diarrhea specially (has specific types)
             if (column === 'diarrhea' && typeof value === "string") {
-                if (value.startsWith('acute')) {
+                if (value.includes('acute')) {
                     positive.push('Diarrhea (Acute)');
-                } else if (value.startsWith('persistent')) {
+                } else if (value.includes('persistent')) {
                     positive.push('Diarrhea (Persistent)');
                 }
                 // Skip "not acute or persistent" - that's negative

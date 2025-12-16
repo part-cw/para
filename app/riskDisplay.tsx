@@ -20,7 +20,7 @@ export default function RiskDisplay() {
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
   const diagnosis: Diagnosis | null = params.diagnosis ? JSON.parse(params.diagnosis as string) : null;
 
-
+  console.log('diagnosis', diagnosis)
   // Handle missing data
   if (!riskAssessment || !patientId || !patientName) {
     return (
@@ -58,7 +58,7 @@ export default function RiskDisplay() {
     // Critical conditions that MUST always be shown if present
     const criticalConditions = [
       'Sick Young Infant',
-      'Severe Acute Malnutrition (SAM)',
+      'Severe Malnutrition',
       'Severe Anaemia'
     ];
 
@@ -77,11 +77,11 @@ export default function RiskDisplay() {
 
     // Process suspected conditions  
     diagnosis.suspected.forEach(condition => {
-      const displayCondition = `${condition} (suspected)`;
+      // const displayCondition = `${condition} (suspected)`;
       if (criticalConditions.includes(condition)) {
-        critical.push(displayCondition);
+        critical.push(`${condition} (suspected)`);
       } else {
-        other.push(displayCondition);
+        other.push(`${condition} (suspected)`);
       }
     });
     
@@ -110,6 +110,7 @@ export default function RiskDisplay() {
   };
 
   const conditionsData = getTopConditions();
+  console.log('coinditions', conditionsData)
   
   return (
     <>
@@ -161,8 +162,42 @@ export default function RiskDisplay() {
             <RiskCard
                 title={getTotalConditionsCount() > 0 ? 'Relevant Morbidities' : 'No Conditions Recorded'}
                 expandable={false} // TODO change to true once careplan implenetd
-                content={conditionsData.display.length === 0 ? 'No conditions recorded' : undefined}
-
+                content={
+                  conditionsData.display.length === 0 ? (
+                    'No conditions recorded'
+                  ) : (
+                    <View style={{ marginTop: 4, marginBottom: 8 }}>
+                      {conditionsData.display.map((condition, index) => (
+                        <View 
+                          key={index}
+                          style={{ 
+                            flexDirection: 'row', 
+                            alignItems: 'flex-start',
+                            marginBottom: 6
+                          }}
+                        >
+                          <Text style={{ fontSize: 16, marginRight: 8, lineHeight: 22 }}>•</Text>
+                          <Text style={{ fontSize: 16, flex: 1, lineHeight: 22 }}>
+                            {condition}
+                          </Text>
+                        </View>
+                      ))}
+                      
+                      {/* Show count of additional conditions */}
+                      {conditionsData.hasMore && (
+                        <Text style={{ 
+                          fontSize: 14, 
+                          fontStyle: 'italic', 
+                          color: '#666',
+                          marginTop: 4,
+                          marginLeft: 20
+                        }}>
+                          +{conditionsData.hiddenCount} more condition{conditionsData.hiddenCount > 1 ? 's' : ''}
+                        </Text>
+                      )}
+                    </View>
+                  )
+              }
             >
               {/* TODO - fix children */}
               <Text>

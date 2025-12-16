@@ -19,6 +19,7 @@ interface PatientDataContextType {
   completeDischarge: () => Promise<{
     patientId: string;
     riskAssessment: RiskAssessment;
+    diagnosis: Diagnosis;
     patientName: string;}>;
   startAdmission: () => void;
   loadDraft: (patientId: string) => Promise<void>;
