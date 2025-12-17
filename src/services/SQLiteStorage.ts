@@ -1,5 +1,6 @@
 import * as SQLite from "expo-sqlite";
 import { CURRENT_USER } from "../config";
+import { Diagnosis } from "../contexts/Diagnosis";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from "../utils/normalizer";
@@ -581,6 +582,181 @@ export class SQLiteStorage implements IStorageService {
 
         console.log(`✅ Risk prediction saved for ${patientId} at ${usageTime}`);
     }
+
+    async getDiagnosis(patientId: string): Promise<Diagnosis> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const conditionsMap = await this.getMedicalConditions(patientId);
+        
+        const { positive, suspected } = this.parseConditions(conditionsMap);
+
+        // Prioritize conditions for display (most severe/important first)
+        const prioritizedPositive = this.prioritizeConditions(positive);
+        const prioritizedSuspected = this.prioritizeConditions(suspected);
+
+        // TODO: CAREPLAN INTEGRATION
+        // Future implementation should:
+        // 1. Query careplan_interventions table for each condition in (positive + suspected)
+        // 2. Return all associated interventions with priority/urgency
+        // 3. Frontend will display top 3 conditions but careplan will use ALL conditions
+        // 
+        // Potential schema:
+        // CREATE TABLE careplan_interventions (
+        //     id INTEGER PRIMARY KEY,
+        //     condition TEXT NOT NULL,              -- e.g., "Pneumonia", "Severe Anaemia"
+        //     intervention TEXT NOT NULL,           -- e.g., "Oxygen therapy", "Iron supplementation"
+        //     priority INTEGER DEFAULT 1,           -- 1=critical, 2=high, 3=medium
+        //     description TEXT
+        // );
+
+        return {
+            positive: prioritizedPositive,
+            suspected: prioritizedSuspected,
+        }; 
+    }
+
+    private prioritizeConditions(conditions: string[]): string[] {
+        // TODO Define priority order (higher index = higher priority)
+        // for now, I've given sick young infant, severe anaemaia, and severe malnutrion hightest priortiy
+        const priorityMap: {[key: string]: number} = {
+            'Sick Young Infant': 10,
+            'Severe Anaemia': 10,
+            'Severe Acute Malnutrition (SAM)': 10,
+            'Moderate Acute Malnutrition (MAM)': 9,
+            'Sepsis': 9,
+            'Meningitis/Encephalitis': 9,
+            'Pneumonia': 9,
+            'Malaria': 9,
+            'Diarrhea (Acute)': 9,
+            'Diarrhea (Persistent)': 9,
+            'HIV': 9,
+            'Tuberculosis': 9,
+            'Sickle Cell Anaemia': 9,
+            'Social vulnerability/Extreme poverty': 9,
+        };
+
+        return conditions.sort((a, b) => {
+            const priorityA = priorityMap[a] || 0;
+            const priorityB = priorityMap[b] || 0;
+            return priorityB - priorityA; // Higher priority first
+        });
+    }
+
+    private parseConditions(conditions: {[key: string]: any }): { positive: string[]; suspected: string[] } {
+        const positive: string[] = [];
+        const suspected: string[] = [];
+
+        // Map database field names to display names
+        const displayNameMap: {[key: string]: string} = {
+            'pneumonia': 'Pneumonia',
+            'severeAnaemia': 'Severe Anaemia',
+            'diarrhea': 'Diarrhea',
+            'malaria': 'Malaria',
+            'sepsis': 'Sepsis',
+            'meningitis_encephalitis': 'Meningitis/Encephalitis',
+            'malnutritionStatus': 'Malnutrition',
+            'sickYoungInfant': 'Sick Young Infant'
+        };
+
+        // Process each condition
+        for (const [column, rawValue] of Object.entries(conditions)) {
+            // Skip non-condition fields
+            if (column === 'chronicIllnesses' || column === 'otherChronicIllness') {
+                continue;
+            }
+
+            const value = typeof rawValue === "string" ? rawValue.toLowerCase().trim() : rawValue;
+            const displayName = displayNameMap[column];
+
+            if (!displayName) continue;
+
+            // Handle diarrhea specially
+            if (column === 'diarrhea' && typeof value === "string") {
+                if (value.includes('not') || value.includes('neither')) {
+                    // skip 'not' or 'neither' acute or persistent' 
+                    continue;
+                } else if (value.includes('acute')) {
+                    positive.push('Diarrhea (Acute)');
+                } else if (value.includes('persistent')) {
+                    positive.push('Diarrhea (Persistent)');
+                }
+            }
+
+            // Check for positive conditions
+            if (typeof value === "string") {
+                // Match "yes", "yes - positive diagnosis", etc.
+                if (value === "yes" || value.startsWith("yes -") || value.startsWith("yes-") || value.includes('positive diagnosis')) {
+                    positive.push(displayName);
+                } else if (value === "suspected" || value.includes('suspected')) {
+                    suspected.push(displayName);
+                }
+                // Skip "no", "no - negative diagnosis", "unsure" - these are not diagnoses
+            }
+
+            // Handle boolean fields (i.e. sickYoungInfant)
+            if (typeof rawValue === "boolean" && normalizeBoolean(rawValue) === true) {
+                positive.push(displayName);
+            }
+
+            // Handle malnutrition status specifically
+            if (column === 'malnutritionStatus' && value) {
+                if (value === 'severe') {
+                    positive.push('Severe Acute Malnutrition (SAM)');
+                } else if (value === 'moderate') {
+                    positive.push('Moderate Acute Malnutrition (MAM)');
+                }
+                
+            }
+        }
+
+        // Process chronic illnesses
+        const chronicList: string[] = [];
+        let hasNoneOrUnsure = false;
+
+        if (Array.isArray(conditions.chronicIllnesses)) {
+            for (const item of conditions.chronicIllnesses) {
+                if (!item) continue;
+
+                const normalized = item.trim().toLowerCase();
+
+                // Skip "none" and "unsure" - these are not actual conditions
+                if (normalized === "none" || normalized === "unsure") {
+                    hasNoneOrUnsure = true;
+                    continue;
+                }
+                
+                // Skip "other" - we'll get the actual conditions from otherChronicIllness field
+                if (normalized === "other") {
+                    continue;
+                }
+
+                // Add actual chronic illness (HIV, Tuberculosis, sickle cell anaemia, extreme poverty)
+                chronicList.push(item.trim());
+            }
+        }
+
+        // Add conditions from otherChronicIllness field (comma-separated list)
+        // Only add these if "none" or "unsure" wasn't selected
+        if (!hasNoneOrUnsure && conditions.otherChronicIllness) {
+            const other = conditions.otherChronicIllness;
+            if (typeof other === "string" && other.trim()) {
+                const extra = other
+                    .split(",")
+                    .map(s => s.trim())
+                    .filter(Boolean);
+                chronicList.push(...extra);
+            }
+        }
+
+        // Merge chronic illnesses into positive diagnoses
+        const allPositive = [...positive, ...chronicList];
+
+        return {
+            positive: allPositive,
+            suspected
+        };
+    }
+
 
     async getRiskAssessment(patientId: string): Promise<RiskAssessmentInfo> {
         if (!this.db) throw new Error('Database not initialized');

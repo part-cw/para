@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { Diagnosis } from "../contexts/Diagnosis";
 import { PatientData } from "../contexts/PatientData";
 import { RiskPrediction } from "../models/types";
 import { WebStorage } from "./WebStorage";
@@ -55,6 +56,7 @@ export interface IStorageService {
         dateTime?: string
     ): Promise<void>;
     getRiskAssessment(patientId: string): Promise<any>;
+    getDiagnosis(patientId: string): Promise<Diagnosis>;
     
     // Archive operations
     archivePatient(patientId: string): Promise<void>;

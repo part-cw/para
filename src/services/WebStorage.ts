@@ -1,4 +1,5 @@
 
+import { Diagnosis } from "../contexts/Diagnosis";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from "../models/types";
 import { IStorageService } from "./StorageService";
@@ -52,6 +53,10 @@ export class WebStorage implements IStorageService {
     getRiskAssessment(patientId: string): Promise<RiskAssessment> {
         throw new Error("Method not implemented.");
     }
+    getDiagnosis(patientId: string): Promise<Diagnosis> {
+        throw new Error("Method not implemented.");
+    }
+    
     archivePatient(patientId: string): Promise<void> {
         throw new Error("Method not implemented.");
     }

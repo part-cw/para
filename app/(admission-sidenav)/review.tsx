@@ -269,7 +269,7 @@ export default function ReviewScreen() {
             setIsSubmitting(true);
 
             // Save patient data permanently and get the final patient ID
-            const { patientId, riskAssessment, patientName } = await savePatientData();
+            const { patientId, riskAssessment, diagnosis, patientName } = await savePatientData();
 
             if (Platform.OS !== 'web') {
                 Alert.alert(
@@ -283,7 +283,8 @@ export default function ReviewScreen() {
                                             params: {
                                                 patientId: patientId,
                                                 patientName: patientName,
-                                                riskAssessment: JSON.stringify(riskAssessment)
+                                                riskAssessment: JSON.stringify(riskAssessment),
+                                                diagnosis: JSON.stringify(diagnosis)
                                             }
                                         })
                         }
@@ -296,7 +297,8 @@ export default function ReviewScreen() {
                     params: {
                         patientId: patientId,
                         patientName: patientName,
-                        riskAssessment: JSON.stringify(riskAssessment)
+                        riskAssessment: JSON.stringify(riskAssessment),
+                        diagnosis: JSON.stringify(diagnosis)
                     }
                 });
             }
