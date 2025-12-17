@@ -287,8 +287,7 @@ export default function EditPatientRecord() {
 
     if (patientData) {
         const hivIsEditable = !patientData.isDischarged && (patientData.hivStatus === 'unknown');
-        // const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
-        const ageIsEditable = true;
+        const ageIsEditable = !patientData.isDischarged && ((patientData.isDOBUnknown) || (!patientData.isDOBUnknown && patientData.isYearMonthUnknown));
         const normalizedIsNeonate = patientData.isNeonate && normalizeBoolean(patientData.isNeonate);
         const isDischarged = normalizeBoolean(patientData.isDischarged as boolean) === true;
         const isAdmissionRiskUpdated = computeAdmissionRiskUpdated(patientData.admissionCompletedAt, admissionLastCalculated)

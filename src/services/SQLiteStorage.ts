@@ -612,16 +612,17 @@ export class SQLiteStorage implements IStorageService {
         return {
             positive: prioritizedPositive,
             suspected: prioritizedSuspected,
-            diarrhea: conditionsMap["diarrhea"] || undefined
         }; 
     }
 
     private prioritizeConditions(conditions: string[]): string[] {
         // TODO Define priority order (higher index = higher priority)
+        // for now, I've given sick young infant, severe anaemaia, and severe malnutrion hightest priortiy
         const priorityMap: {[key: string]: number} = {
             'Sick Young Infant': 10,
             'Severe Anaemia': 10,
-            'Severe Malnutrition': 10,
+            'Severe Acute Malnutrition (SAM)': 10,
+            'Moderate Acute Malnutrition (MAM)': 9,
             'Sepsis': 9,
             'Meningitis/Encephalitis': 9,
             'Pneumonia': 9,
@@ -631,7 +632,7 @@ export class SQLiteStorage implements IStorageService {
             'HIV': 9,
             'Tuberculosis': 9,
             'Sickle cell anaemia': 9,
-            'Social vulnerability/Extreme poverty': 9
+            'Social vulnerability/Extreme poverty': 9,
         };
 
         return conditions.sort((a, b) => {
@@ -669,15 +670,16 @@ export class SQLiteStorage implements IStorageService {
 
             if (!displayName) continue;
 
-            // Handle diarrhea specially (has specific types)
+            // Handle diarrhea specially
             if (column === 'diarrhea' && typeof value === "string") {
-                if (value.includes('acute')) {
+                if (value.includes('not') || value.includes('neither')) {
+                    // skip 'not' or 'neither' acute or persistent' 
+                    continue;
+                } else if (value.includes('acute')) {
                     positive.push('Diarrhea (Acute)');
                 } else if (value.includes('persistent')) {
                     positive.push('Diarrhea (Persistent)');
                 }
-                // Skip "not acute or persistent" - that's negative
-                continue;
             }
 
             // Check for positive conditions
@@ -697,8 +699,13 @@ export class SQLiteStorage implements IStorageService {
             }
 
             // Handle malnutrition status specifically
-            if (column === 'malnutritionStatus' && value && value === 'severe') {
-                positive.push('Severe Malnutrition');
+            if (column === 'malnutritionStatus' && value) {
+                if (value === 'severe') {
+                    positive.push('Severe Acute Malnutrition (SAM)');
+                } else if (value === 'moderate') {
+                    positive.push('Moderate Acute Malnutrition (MAM)');
+                }
+                
             }
         }
 
