@@ -4,6 +4,7 @@ import { RiskAssessment } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, useTheme } from 'react-native-paper';
@@ -11,7 +12,8 @@ import { Button, useTheme } from 'react-native-paper';
 
 export default function RiskDisplay() {
   const { colors } = useTheme();
-  
+  const [isConditionsExpanded, setIsConditionsExpanded] = useState<boolean>(false);
+
   const params = useLocalSearchParams();
 
   // parse params
@@ -20,7 +22,6 @@ export default function RiskDisplay() {
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
   const diagnosis: Diagnosis | null = params.diagnosis ? JSON.parse(params.diagnosis as string) : null;
 
-  console.log('diagnosis', diagnosis)
   // Handle missing data
   if (!riskAssessment || !patientId || !patientName) {
     return (
@@ -50,15 +51,15 @@ export default function RiskDisplay() {
   const riskCategory = discharge ? discharge.riskCategory : admission?.riskCategory;
 
   // Get top 3 conditions to display with guaranteed critical conditions
-  const getTopConditions = (): { display: string[]; hasMore: boolean; hiddenCount: number } => {
+  const getTopConditions = (): { display: string[];  remaining: string[]; hasMore: boolean; hiddenCount: number } => {
     if (!diagnosis || (diagnosis.positive.length === 0 && diagnosis.suspected.length === 0)) {
-      return { display: [], hasMore: false, hiddenCount: 0 };
+      return { display: [], remaining: [], hasMore: false, hiddenCount: 0 };
     }
     
     // Critical conditions that MUST always be shown if present
     const criticalConditions = [
       'Sick Young Infant',
-      'Severe Malnutrition',
+      'Severe Acute Malnutrition (SAM)',
       'Severe Anaemia'
     ];
 
@@ -77,7 +78,6 @@ export default function RiskDisplay() {
 
     // Process suspected conditions  
     diagnosis.suspected.forEach(condition => {
-      // const displayCondition = `${condition} (suspected)`;
       if (criticalConditions.includes(condition)) {
         critical.push(`${condition} (suspected)`);
       } else {
@@ -93,11 +93,13 @@ export default function RiskDisplay() {
       displayList.push(...other.slice(0, remainingSlots));
     }
 
+    const remainingConditions = other.slice(remainingSlots > 0 ? remainingSlots : 0);
     const totalConditions = critical.length + other.length;
     const hiddenCount = totalConditions - displayList.length;
     
     return {
       display: displayList,
+      remaining: remainingConditions,
       hasMore: hiddenCount > 0,
       hiddenCount
     };
@@ -110,7 +112,6 @@ export default function RiskDisplay() {
   };
 
   const conditionsData = getTopConditions();
-  console.log('coinditions', conditionsData)
   
   return (
     <>
@@ -139,6 +140,7 @@ export default function RiskDisplay() {
                 title={riskCategory?.toUpperCase()}
                 variant={riskCategory?.toLowerCase()}
                 content={`Risk score = ${riskScore}%`}
+                containerStyle={{alignItems: 'center'}}
                 expandable={false}
               >
                 {/* TODO - fix children */}
@@ -158,10 +160,11 @@ export default function RiskDisplay() {
             
             <Text style={{fontSize: 16, fontWeight: 'bold', margin: 10}}>{!discharge ? 'Admission Diagnosis' : 'Dicharge Diagnosis'}</Text>
             
-            {/* TODO - map conditions to profile */}
+            {/* TODO - map conditions to interventions */}
             <RiskCard
                 title={getTotalConditionsCount() > 0 ? 'Relevant Morbidities' : 'No Conditions Recorded'}
-                expandable={false} // TODO change to true once careplan implenetd
+                expandable={conditionsData.hasMore} // expands if more than 3 conditions
+                onExpandChange={setIsConditionsExpanded}
                 content={
                   conditionsData.display.length === 0 ? (
                     'No conditions recorded'
@@ -169,22 +172,27 @@ export default function RiskDisplay() {
                     <View style={{ marginTop: 4, marginBottom: 8 }}>
                       {conditionsData.display.map((condition, index) => (
                         <View 
-                          key={index}
+                          key={`display-${index}`}
                           style={{ 
-                            flexDirection: 'row', 
                             alignItems: 'flex-start',
+                            flexDirection: 'row',
                             marginBottom: 6
                           }}
                         >
-                          <Text style={{ fontSize: 16, marginRight: 8, lineHeight: 22 }}>•</Text>
-                          <Text style={{ fontSize: 16, flex: 1, lineHeight: 22 }}>
+                          <MaterialIcons 
+                            name="check-circle" 
+                            size={12} 
+                            color={colors.primary}
+                            style={{ marginRight: 8, marginTop: 5 }}
+                          />
+                          <Text style={{ fontSize: 16, lineHeight: 22 }}>
                             {condition}
                           </Text>
                         </View>
                       ))}
                       
                       {/* Show count of additional conditions */}
-                      {conditionsData.hasMore && (
+                      {!isConditionsExpanded && conditionsData.hasMore && (
                         <Text style={{ 
                           fontSize: 14, 
                           fontStyle: 'italic', 
@@ -199,10 +207,33 @@ export default function RiskDisplay() {
                   )
               }
             >
-              {/* TODO - fix children */}
-              <Text>
-                Recommended careplan
-              </Text>
+              {/* Show remaining conditions when expanded */}
+              {conditionsData.remaining.length > 0 && (
+                <View style={{ marginTop: -15, marginBottom: 8}}>
+                  {conditionsData.remaining.map((condition, index) => (
+                    <View 
+                      key={`remaining-${index}`}
+                      style={{ 
+                        alignItems: 'flex-start',
+                        flexDirection: 'row',
+                        marginBottom: 6
+                      }}
+                    >
+                      <MaterialIcons 
+                        name="check-circle" 
+                        size={12} 
+                        color={colors.primary}
+                        style={{ marginRight: 8, marginTop: 5 }}
+                      />
+                      <Text style={{ fontSize: 16, lineHeight: 22 }}>
+                        {condition}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* TODO - add view careplan button */}
             </RiskCard>
 
             <Button

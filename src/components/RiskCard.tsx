@@ -11,6 +11,7 @@ interface RiskCardProps {
   variant?: 'low' | 'moderate' | 'high' | 'very high' | string;
   expandable?: boolean
   initiallyExpanded?: boolean;
+  onExpandChange?: (isExpanded: boolean) => void;
   content?: string | React.ReactNode;
   contentStyle?: StyleProp<TextStyle>;
   children?: React.ReactNode
@@ -26,7 +27,8 @@ const RiskCard: React.FC<RiskCardProps> = ({
   initiallyExpanded = false,
   content,
   contentStyle,
-  children
+  children,
+  onExpandChange
 }) => {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
   
@@ -89,7 +91,6 @@ const RiskCard: React.FC<RiskCardProps> = ({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
-    alignItems: 'center'
   };
 
   const defaultTitleStyle: TextStyle = {
@@ -100,14 +101,17 @@ const RiskCard: React.FC<RiskCardProps> = ({
   };
 
   const defaultTextStyle: TextStyle = {
-    // color: variantColors.textColor, // TODO change to black?
-    fontSize: 16, // TODO change to 16?
+    fontSize: 16,
     lineHeight: 20,
     marginBottom: 4,
   };
 
   const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+    if (onExpandChange) {
+      onExpandChange(newExpandedState);
+    }
   };
 
   const renderContent = () => {
@@ -156,8 +160,8 @@ const RiskCard: React.FC<RiskCardProps> = ({
 
         {renderContent()}
 
-       {isExpanded && 
-            <View style={{ marginTop: 8 }}>
+       {isExpanded && children &&
+            <View style={{ marginTop: 8}}>
                 {children}
             </View>
         }

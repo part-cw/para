@@ -631,7 +631,7 @@ export class SQLiteStorage implements IStorageService {
             'Diarrhea (Persistent)': 9,
             'HIV': 9,
             'Tuberculosis': 9,
-            'Sickle cell anaemia': 9,
+            'Sickle Cell Anaemia': 9,
             'Social vulnerability/Extreme poverty': 9,
         };
 
