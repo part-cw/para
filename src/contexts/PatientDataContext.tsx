@@ -57,10 +57,11 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     // Only save if user has entered at least SOME required data
     const hasMinimalData = 
         patientData.surname && 
-        patientData.firstName
+        patientData.firstName &&
+        patientData.ageInMonths
 
     if (!hasMinimalData) {
-        console.log('⏳ Skipping auto-save - no data entered yet');
+        console.log('⏳ Skipping auto-save - not enough data entered yet');
         return;
     }
 
