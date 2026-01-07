@@ -352,6 +352,7 @@ export default function EditPatientRecord() {
                                     title={currRiskCategory?.toUpperCase()}
                                     variant={currRiskCategory?.toLowerCase()}
                                     content={`Risk score = ${currRiskScore}%`}
+                                    containerStyle={{alignItems: 'center'}}
                                     expandable={false}
                                 />
                                 <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}> 

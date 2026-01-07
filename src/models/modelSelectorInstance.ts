@@ -15,7 +15,7 @@ export function getModelSelectorInstance() {
     return modelSelector
 }
 
-// called at startup
+// called at startup in app/_layout.tsx
 export async function initializeModels(): Promise<ModelSelector> {
     const selector = getModelSelectorInstance();
     
