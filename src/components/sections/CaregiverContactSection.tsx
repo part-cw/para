@@ -69,6 +69,7 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
 
     const telephoneInfo = "If the patient's caregiver does not have a phone, enter the number of a relative or friend who lives nearby";
     const telephoneCheckboxInfo = "Do not select this option if the entered telephone number belongs to anyone other than the patient's caregiver (e.g. friend, neighbour, or other relative)";
+    const receiveReminderInfo = "If selected, the caregiver will receive reminders for scheduled post-discharge follow-ups."
 
     const confirmClear = () => {
         if (Platform.OS === 'web') {
@@ -166,11 +167,22 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
                         />
                     </View>
 
-                    <Checkbox
-                        label={'Receive reminders by text message'}
-                        checked={sendReminders || false}
-                        onChange={handleSendRemindersToggle}
-                    />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{flex: 1}}>
+                            <Checkbox
+                                label={'Receive reminders by text message'}
+                                checked={sendReminders || false}
+                                onChange={handleSendRemindersToggle}
+                            />
+                        </View>
+                         <IconButton
+                            icon="help-circle-outline"
+                            size={20}
+                            iconColor={colors.primary}
+                            onPress={() => { alert(receiveReminderInfo) }}
+                        />
+                    </View>
+                    
                 </View>
             }
 
