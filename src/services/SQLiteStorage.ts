@@ -69,6 +69,18 @@ export class SQLiteStorage implements IStorageService {
 
     async initializeSchema(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
+
+        // DEVELOPMENT ONLY: Force schema recreation
+        // TODO Remove this in production or use a proper migration system
+        await this.db.execAsync(`
+            DROP TABLE IF EXISTS patients;
+            DROP TABLE IF EXISTS medical_conditions;
+            DROP TABLE IF EXISTS clinical_variables;
+            DROP TABLE IF EXISTS risk_predictions;
+            DROP TABLE IF EXISTS top_predictors;
+            DROP TABLE IF EXISTS audit_log;
+        `);
+    
         
         await this.db.execAsync(`
             PRAGMA foreign_keys = ON;
@@ -79,7 +91,7 @@ export class SQLiteStorage implements IStorageService {
                 surname                 TEXT NOT NULL,
                 firstName               TEXT NOT NULL,
                 otherName               TEXT,
-                sex                     TEXT,  --  add this? NOT NULL CHECK (sex IN ('male', 'female'))
+                sex                     TEXT,
                 dob                     TEXT,
                 birthYear               TEXT,
                 birthMonth              TEXT,
@@ -101,7 +113,8 @@ export class SQLiteStorage implements IStorageService {
                 caregiverTel            TEXT,
                 confirmTel              TEXT,
                 sendReminders           INTEGER DEFAULT 0,
-                isCaregiversPhone       INTEGER DEFAULT 0, -- TODO - default to true (1)
+                isCaregiversPhone       INTEGER DEFAULT 1,
+                phoneOwner              TEXT,
 
                 -- Metadata & status flags
                 admissionStartedAt      TEXT NOT NULL,
@@ -338,13 +351,13 @@ export class SQLiteStorage implements IStorageService {
                     patientId, surname, firstName, otherName, sex, 
                     dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isDOBUnknown, isYearMonthUnknown, isUnderSixMonths, isNeonate,
                     village, subvillage, vhtName, vhtTelephone, 
-                    caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone,
+                    caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone, phoneOwner,
                     admissionStartedAt, updatedAt, isDraftAdmission
                 ) 
                 VALUES (
                     ?, ?, ?, ?, ?,              -- name/sex
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- age demographics
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
                     ?, ?, ?                     -- metadata
                 )
             `, [
@@ -371,6 +384,7 @@ export class SQLiteStorage implements IStorageService {
                 data.confirmTel|| null, 
                 data.sendReminders ? 1 : 0, 
                 data.isCaregiversPhone ? 1 : 0,
+                data.phoneOwner || null,
                 data.admissionStartedAt || timestamp, 
                 timestamp, 
                 isDraft ? 1 : 0
@@ -1205,6 +1219,7 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: patientRow.confirmTel,
             sendReminders: patientRow.sendReminders,
             isCaregiversPhone: patientRow.isCaregiversPhone,
+            phoneOwner: patientRow.phoneOwner,
             
             isDraftAdmission: patientRow.isDraftAdmission,
             isDischarged: patientRow.isDischarged,
@@ -1250,6 +1265,7 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: 'confirmTel',
             sendReminders: 'sendReminders',
             isCaregiversPhone: 'isCaregiversPhone',
+            phoneOwner: 'phoneOwner',
             isDischarged: 'isDischarged',
             isArchived: 'isArchived',
             isDraftAdmission: 'isDraftAdmission'

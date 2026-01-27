@@ -70,6 +70,7 @@ export interface PatientData {
   confirmTel: string;
   sendReminders: boolean;
   isCaregiversPhone: boolean;
+  phoneOwner: string;
 
   // discharge info
   spo2_discharge?: string;
@@ -124,6 +125,7 @@ export const initialPatientData: PatientData = {
   confirmTel: '',
   isCaregiversPhone: false,
   sendReminders: false,
+  phoneOwner: '',
 
   // clinical variables:
   weight: '',
