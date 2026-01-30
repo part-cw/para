@@ -3,22 +3,27 @@ import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextI
 import { useCaregiverContact } from '@/src/hooks/useCaregiverContact';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { confirmPhoneErrorMessage, isValidPhoneNumber, telephoneErrorMessage } from '@/src/utils/inputValidator';
+import { convertToYesNo, normalizeBoolean } from '@/src/utils/normalizer';
 import React from 'react';
 import { Alert, Platform, View } from 'react-native';
 import { Button, Card, IconButton, Text } from 'react-native-paper';
+import RadioButtonGroup from '../RadioButtonGroup';
+import SearchableDropdown from '../SearchableDropdown';
 
 interface CaregiverContactSectionProps {
     caregiverName?: string;
     caregiverTel?: string;
     confirmTel?: string;
     sendReminders?: boolean;
-    isCaregiversPhone?: boolean;
+    isCaregiversPhone?: boolean | null;
+    phoneOwner?: string,
     onUpdate: (updates: {
         caregiverName?: string;
         caregiverTel?: string;
         confirmTel?: string;
         sendReminders?: boolean;
-        isCaregiversPhone?: boolean;
+        isCaregiversPhone?: boolean | null;
+        phoneOwner?: string;
     }) => void;
     colors: any;
     mode?: 'admission' | 'edit' | 'discharge';
@@ -33,6 +38,7 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
     confirmTel,
     sendReminders,
     isCaregiversPhone,
+    phoneOwner,
     onUpdate,
     colors,
     mode = 'admission',
@@ -48,6 +54,7 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
         handleConfirmTelChange,
         handleSendRemindersToggle,
         handleIsCaregiversPhoneToggle,
+        handlePhoneOwnerChange,
         clearSelections,
         hasErrors
     } = useCaregiverContact({
@@ -56,6 +63,7 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
         confirmTel,
         sendReminders,
         isCaregiversPhone,
+        phoneOwner,
         onUpdate,
         mode
     });
@@ -67,9 +75,24 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
         }
     }, [hasErrors, pageErrors, onValidationChange]);
 
+
+    const telephoneOwnerQuestion = "Does this phone number belong to the patient's caregiver?"
     const telephoneInfo = "If the patient's caregiver does not have a phone, enter the number of a relative or friend who lives nearby";
-    const telephoneCheckboxInfo = "Do not select this option if the entered telephone number belongs to anyone other than the patient's caregiver (e.g. friend, neighbour, or other relative)";
+    const telephoneCheckboxInfo = "Confirm whether the entered phone number belongs to the child's caregiver with whom he/she lives.";
+    
     const receiveReminderInfo = "If selected, the caregiver will receive reminders for scheduled post-discharge follow-ups."
+    const reminderQuestion = "Do you consent to receive reminders?"
+
+    const phoneOwnerOptions = [
+        { value: 'Other relative of the patient', key: 'other-relative'},
+        { value: 'Friend or neighbour', key: 'friend/neighbour'},
+    ];
+
+    // Convert key to value for display
+    const getPhoneOwnerValue = (key: string | undefined) => {
+        if (!key) return '';
+        return phoneOwnerOptions.find(opt => opt.key === key)?.value || '';
+    };
 
     const confirmClear = () => {
         if (Platform.OS === 'web') {
@@ -151,37 +174,59 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
             { caregiverTel?.trim() &&
                 <View style={{ marginLeft: 8, marginRight: 8 }}>
                     <Text style={Styles.sectionHeader}>Additional Information</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <View style={{flex: 1}}>
-                            <Checkbox
-                                label={'Phone number belongs to caregiver'}
-                                checked={isCaregiversPhone || false}
-                                onChange={handleIsCaregiversPhoneToggle}
+                    <View>
+                        <View style={{flexDirection:'row', alignItems: 'center'}}>
+                            <Text style={[Styles.accordionSubheading, {fontWeight: 'bold', flex: 1}]}>{telephoneOwnerQuestion} <Text style={Styles.required}>*</Text></Text>
+                            <IconButton
+                                icon="help-circle-outline"
+                                size={20}
+                                iconColor={colors.primary}
+                                onPress={() => {
+                                    Platform.OS !== 'web' ? Alert.alert('Confirm telephone owner', telephoneCheckboxInfo) : alert(telephoneCheckboxInfo)
+                                }}
                             />
                         </View>
-                        <IconButton
-                            icon="help-circle-outline"
-                            size={20}
-                            iconColor={colors.primary}
-                            onPress={() => { alert(telephoneCheckboxInfo) }}
+                        <RadioButtonGroup 
+                            options={[
+                                { label: 'Yes', value: 'yes'},
+                                { label: 'No', value: 'no'},
+                            ]} 
+                            selected={isCaregiversPhone === null ? null : convertToYesNo(normalizeBoolean(isCaregiversPhone as boolean))} 
+                            onSelect={(value) => {
+                                handleIsCaregiversPhoneToggle(value)
+                            }}
                         />
+                        {normalizeBoolean(isCaregiversPhone as boolean) === false &&
+                            <SearchableDropdown 
+                                data={phoneOwnerOptions} 
+                                label={'Select telephone owner'}
+                                search={false} 
+                                value={getPhoneOwnerValue(phoneOwner)}
+                                onSelect={(selected) => {
+                                    handlePhoneOwnerChange(selected.key)}
+                                }  
+                                style={{paddingTop: 10}}                          
+                            />
+                        }
                     </View>
-
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <View style={{flex: 1}}>
-                            <Checkbox
-                                label={'Receive reminders by text message'}
-                                checked={sendReminders || false}
-                                onChange={handleSendRemindersToggle}
+                    
+                    <View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={[Styles.accordionSubheading, {fontWeight: 'bold', flex: 1}]}>{reminderQuestion}</Text>
+                            <IconButton
+                                icon="help-circle-outline"
+                                size={20}
+                                iconColor={colors.primary}
+                                onPress={() => { alert(receiveReminderInfo) }}
                             />
                         </View>
-                         <IconButton
-                            icon="help-circle-outline"
-                            size={20}
-                            iconColor={colors.primary}
-                            onPress={() => { alert(receiveReminderInfo) }}
+                        <Checkbox
+                            label={"Yes, receive reminders by text message"}
+                            checked={sendReminders || false}
+                            onChange={handleSendRemindersToggle}
                         />
                     </View>
+                    
                     
                 </View>
             }

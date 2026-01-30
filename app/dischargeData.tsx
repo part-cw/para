@@ -1140,6 +1140,7 @@ export default function DischargeDataScreen() {
                                         confirmTel={patientData.confirmTel}
                                         sendReminders={patientData.sendReminders}
                                         isCaregiversPhone={patientData.isCaregiversPhone}
+                                        phoneOwner={patientData.phoneOwner}
                                         onUpdate={updatePatientData}
                                         colors={colors}
                                         mode="edit"

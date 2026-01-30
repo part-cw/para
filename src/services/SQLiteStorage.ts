@@ -68,19 +68,7 @@ export class SQLiteStorage implements IStorageService {
     // }
 
     async initializeSchema(): Promise<void> {
-        if (!this.db) throw new Error('Database not initialized');
-
-        // DEVELOPMENT ONLY: Force schema recreation
-        // TODO Remove this in production or use a proper migration system
-        await this.db.execAsync(`
-            DROP TABLE IF EXISTS patients;
-            DROP TABLE IF EXISTS medical_conditions;
-            DROP TABLE IF EXISTS clinical_variables;
-            DROP TABLE IF EXISTS risk_predictions;
-            DROP TABLE IF EXISTS top_predictors;
-            DROP TABLE IF EXISTS audit_log;
-        `);
-    
+        if (!this.db) throw new Error('Database not initialized');    
         
         await this.db.execAsync(`
             PRAGMA foreign_keys = ON;
@@ -113,7 +101,7 @@ export class SQLiteStorage implements IStorageService {
                 caregiverTel            TEXT,
                 confirmTel              TEXT,
                 sendReminders           INTEGER DEFAULT 0,
-                isCaregiversPhone       INTEGER DEFAULT 1,
+                isCaregiversPhone       INTEGER,
                 phoneOwner              TEXT,
 
                 -- Metadata & status flags
@@ -383,7 +371,7 @@ export class SQLiteStorage implements IStorageService {
                 data.caregiverTel || null, 
                 data.confirmTel|| null, 
                 data.sendReminders ? 1 : 0, 
-                data.isCaregiversPhone ? 1 : 0,
+                data.isCaregiversPhone  !== null ? (data.isCaregiversPhone ? 1 : 0) : null,
                 data.phoneOwner || null,
                 data.admissionStartedAt || timestamp, 
                 timestamp, 
@@ -1279,6 +1267,8 @@ export class SQLiteStorage implements IStorageService {
                     patientFields[dbColumn] = value.toISOString();
                 } else if (typeof value === 'boolean') {
                     patientFields[dbColumn] = value ? 1 : 0;
+                } else if (value === null) {
+                    patientFields[dbColumn] = null; 
                 } else {
                     patientFields[dbColumn] = value;
                 }

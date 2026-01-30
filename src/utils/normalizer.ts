@@ -35,7 +35,7 @@ export const convertToYesNo = (input: boolean | string) => {
     if (input === undefined) return '';
 
     if (typeof input === 'string') {
-        if (input === '') return ''
+        if (input === '') return null
 
         const truthy = ['true', 'yes'];
         const falsy = ['false', 'no'];

@@ -69,7 +69,7 @@ export interface PatientData {
   caregiverTel: string;
   confirmTel: string;
   sendReminders: boolean;
-  isCaregiversPhone: boolean;
+  isCaregiversPhone: boolean | null;
   phoneOwner: string;
 
   // discharge info
@@ -123,7 +123,7 @@ export const initialPatientData: PatientData = {
   caregiverName: '',
   caregiverTel: '',
   confirmTel: '',
-  isCaregiversPhone: false,
+  isCaregiversPhone: null,
   sendReminders: false,
   phoneOwner: '',
 

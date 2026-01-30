@@ -7,13 +7,15 @@ interface UseCaregiverContactProps {
     caregiverTel?: string;
     confirmTel?: string;
     sendReminders?: boolean;
-    isCaregiversPhone?: boolean;
+    isCaregiversPhone?: boolean | null;
+    phoneOwner?: string;
     onUpdate: (updates: {
         caregiverName?: string;
         caregiverTel?: string;
         confirmTel?: string;
         sendReminders?: boolean;
-        isCaregiversPhone?: boolean;
+        isCaregiversPhone?: boolean | null;
+        phoneOwner?: string;
     }) => void;
     mode?: 'admission' | 'edit' | 'discharge';
 }
@@ -24,11 +26,23 @@ export const useCaregiverContact = ({
     confirmTel,
     sendReminders,
     isCaregiversPhone,
+    phoneOwner,
     onUpdate,
     mode='admission'
 }: UseCaregiverContactProps) => {
 
     const [ pageErrors, setPageErrors] = useState<string[]>([])
+    const [ previousTel, setPreviousTel ] = useState(caregiverTel);
+
+    // Reset phone ownership when tel is first entered
+    useEffect(() => {
+        if (!previousTel && caregiverTel && caregiverTel.trim()) {
+            // Phone was just entered for the first time
+            onUpdate({ isCaregiversPhone: null });
+        }
+        setPreviousTel(caregiverTel);
+    }, [caregiverTel]);
+
 
     const isSameTelephone = caregiverTel === confirmTel;
 
@@ -54,13 +68,33 @@ export const useCaregiverContact = ({
             }
         } 
 
+        // Require phone ownership selection if phone is entered
+        if (caregiverTel && caregiverTel.trim() !== '' && typeof(isCaregiversPhone) !== 'boolean') {
+            errors.push('Please confirm whether this phone belongs to the caregiver');
+        }
+
+        // Require phone owner if "No" is selected ???
+        // if (isCaregiversPhone === false && !phoneOwner) {
+        //     errors.push('Please specify who owns this phone number');
+        // }
+
         return errors;
     };
 
     useEffect(() => {
         const errMessages = validateFields()
         setPageErrors(errMessages)
-    }, [caregiverName, caregiverTel, confirmTel, mode])
+    }, [caregiverName, caregiverTel, confirmTel, mode, isCaregiversPhone, phoneOwner])
+
+    // Clear errors when component unmounts or navigates away
+    useEffect(() => {
+        return () => {
+            // Only clear if no errors exist
+            if (validateFields().length === 0) {
+                setPageErrors([]);
+            }
+        };
+    }, []);
 
     // HANDLERS
     const handleCaregiverNameChange = (value: string) => {
@@ -79,9 +113,14 @@ export const useCaregiverContact = ({
         onUpdate({ sendReminders: !sendReminders });
     };
 
-    const handleIsCaregiversPhoneToggle = () => {
-        onUpdate({ isCaregiversPhone: !isCaregiversPhone });
+    const handleIsCaregiversPhoneToggle = (value: string) => {
+        const boolValue = value === 'yes' ? true : value === 'no' ? false : null;
+        onUpdate({ isCaregiversPhone: boolValue });
     };
+
+    const handlePhoneOwnerChange = (value: string) => {
+        onUpdate({phoneOwner: value})
+    }
 
     const clearSelections = () => {
         onUpdate({
@@ -89,7 +128,8 @@ export const useCaregiverContact = ({
             caregiverTel: '',
             confirmTel: '',
             sendReminders: false,
-            isCaregiversPhone: false
+            isCaregiversPhone: null,
+            phoneOwner: ''
         });
     };
 
@@ -117,6 +157,7 @@ export const useCaregiverContact = ({
         sendReminders,
         pageErrors,
         isSameTelephone,
+        phoneOwner,
 
         // Handlers
         handleCaregiverNameChange,
@@ -124,6 +165,7 @@ export const useCaregiverContact = ({
         handleConfirmTelChange,
         handleSendRemindersToggle,
         handleIsCaregiversPhoneToggle,
+        handlePhoneOwnerChange,
         clearSelections,
 
         // Validation
