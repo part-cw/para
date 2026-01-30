@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { normalizeBoolean } from '../utils/normalizer';
 import Checkbox from './Checkbox';
 
 type Option = {
@@ -46,7 +47,7 @@ export default function CheckboxGroup({
           <Checkbox
             key={option.value}
             label={option.label}
-            checked= {isChecked}
+            checked= {normalizeBoolean(isChecked)}
             onChange={() => handleCheckboxToggle(option.value)}
           />
         )

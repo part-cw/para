@@ -2,6 +2,7 @@ import { GlobalStyles as Style } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { normalizeBoolean } from '../utils/normalizer';
 
 type Props = {
   label: string;
@@ -16,7 +17,7 @@ export default function Checkbox({ label, checked, onChange }: Props) {
     <Pressable style={Style.checkboxContainer} onPress={onChange}>
       <View style={[Style.checkbox, checked && Style.checked]}>
         {/* need explicit check in case prop is undefined */}
-        {checked === true && <MaterialIcons name="check" size={18} color="white" />}
+        {normalizeBoolean(checked) === true && <MaterialIcons name="check" size={18} color="white" />}
       </View>
       <Text style={{ fontSize: 16 }}>{label}</Text>
     </Pressable>
