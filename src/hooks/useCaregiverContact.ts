@@ -69,7 +69,7 @@ export const useCaregiverContact = ({
         } 
 
         // Require phone ownership selection if phone is entered
-        if (caregiverTel && caregiverTel.trim() !== '' && typeof(isCaregiversPhone) !== 'boolean') {
+        if (caregiverTel && caregiverTel.trim() !== '' && isCaregiversPhone === null) {
             errors.push('Please confirm whether this phone belongs to the caregiver');
         }
 

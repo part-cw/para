@@ -10,6 +10,17 @@ import { Button, Card, IconButton, Text } from 'react-native-paper';
 import RadioButtonGroup from '../RadioButtonGroup';
 import SearchableDropdown from '../SearchableDropdown';
 
+export const phoneOwnerOptions = [
+        { value: 'Other relative of the patient', key: 'other-relative'},
+        { value: 'Friend or neighbour', key: 'friend/neighbour'},
+    ];
+
+// Convert key to value for display
+export const getPhoneOwnerValue = (key: string | undefined) => {
+    if (!key) return '';
+    return phoneOwnerOptions.find(opt => opt.key === key)?.value || '';
+};
+
 interface CaregiverContactSectionProps {
     caregiverName?: string;
     caregiverTel?: string;
@@ -82,17 +93,6 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
     
     const receiveReminderInfo = "If selected, the caregiver will receive reminders for scheduled post-discharge follow-ups."
     const reminderQuestion = "Do you consent to receive reminders?"
-
-    const phoneOwnerOptions = [
-        { value: 'Other relative of the patient', key: 'other-relative'},
-        { value: 'Friend or neighbour', key: 'friend/neighbour'},
-    ];
-
-    // Convert key to value for display
-    const getPhoneOwnerValue = (key: string | undefined) => {
-        if (!key) return '';
-        return phoneOwnerOptions.find(opt => opt.key === key)?.value || '';
-    };
 
     const confirmClear = () => {
         if (Platform.OS === 'web') {
