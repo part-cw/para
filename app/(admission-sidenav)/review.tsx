@@ -449,7 +449,7 @@ export default function ReviewScreen() {
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="VHT Referral"
+                      title="CHW Referral"
                       titleStyle={Styles.accordionListTitle}
                       left={props => <CustomAccordionIcon sectionId="vhtReferral" />}
                       onPress={() => handleAccordionPress('vhtReferral')}
@@ -459,7 +459,7 @@ export default function ReviewScreen() {
                             <InfoRow label="Village" value={patientData.village || 'Not provided'} />
                             <InfoRow label="Subvillage" value={patientData.subvillage || 'Not provided'} />
                             
-                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>VHT Contact Information</Text>
+                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>CHW Contact Information</Text>
                             <InfoRow label="Name" value={patientData.vhtName || 'Not provided'} />
                             <InfoRow label="Telephone" value={patientData.vhtTelephone || 'Not provided'} />
                         </View>

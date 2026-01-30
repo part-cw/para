@@ -134,7 +134,7 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                     <SearchableDropdown
                         data={allVHTs}
                         label={mode === 'discharge' ? "Name (required)" : "Name"}
-                        placeholder='Search or enter VHT name'
+                        placeholder='Search or enter CHW name'
                         onSelect={handleVHTSelect}
                         onAddItem={handleAddVHT}
                         value={vhtName || ''}
@@ -142,7 +142,7 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                     <SearchableDropdown
                         data={allNumbers}
                         label="Telephone"
-                        placeholder='Search or enter VHT telephone number'
+                        placeholder='Search or enter CHW telephone number'
                         onSelect={handleTelSelect}
                         onAddItem={handleAddTel}
                         value={vhtTelephone || ''}
