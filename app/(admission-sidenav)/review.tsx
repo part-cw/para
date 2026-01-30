@@ -1,3 +1,4 @@
+import { getPhoneOwnerValue } from '@/src/components/sections/CaregiverContactSection';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
@@ -478,6 +479,7 @@ export default function ReviewScreen() {
                             {(patientData.caregiverTel !== '') &&
                             <>
                                 <InfoRow label="Telephone belongs to caregiver" value={patientData.isCaregiversPhone ? 'Yes' : 'No'} />
+                                <InfoRow label="Phone owner" value={getPhoneOwnerValue(patientData.phoneOwner)} />
                                 <InfoRow label="Receive reminders" value={patientData.sendReminders ? 'Yes' : 'No'} />
                             </>
                             }
