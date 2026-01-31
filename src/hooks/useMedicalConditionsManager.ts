@@ -136,6 +136,17 @@ export const useMedicalConditionsManager = ({
             return;
         }
 
+        // Handle 'unsure' selection
+         if (wasAdded.includes('unsure')) {
+            setEditedChronicIllness(['unsure']);
+            return;
+        }
+
+        if (wasRemoved.includes('unsure')) {
+            setEditedChronicIllness([]);
+            return;
+        }
+
         // TODO delete this - should never reach this case
         // Handle "other" being added while "none" exists 
         // if (selected.includes('none') && selected.length > 1) {

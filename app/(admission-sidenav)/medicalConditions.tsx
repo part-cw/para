@@ -81,17 +81,24 @@ export default function MedicalConditionsScreen() {
         }
     }, [])
 
-    const isNoneSelected = chronicIllness?.includes('none') || false;
-
     const handleChronicIllnessChange = (selected: string[]) => {
         const isOtherSelected = selected.some(item => item.startsWith('other'))
         const clickedNone = selected.includes('none') && !chronicIllness?.includes('none');
+        const clickedUnsure = selected.includes('unsure') && !chronicIllness?.includes('unsure');
       
         if (clickedNone) {
             updatePatientData({
                 chronicIllnesses: ['none'],
                 otherChronicIllness: ''
             });
+            return;
+        }
+
+        if (clickedUnsure) {
+            updatePatientData({
+               chronicIllnesses: ['unsure'],
+               otherChronicIllness: '' 
+            })
             return;
         }
 
@@ -102,6 +109,8 @@ export default function MedicalConditionsScreen() {
         updatePatientData({chronicIllnesses: selected})
     };
 
+    const isNoneSelected = chronicIllness?.includes('none') || false;
+    const isUnsureSelected = chronicIllness?.includes('unsure') || false;
     const chronicIllnessOptions =
      [
         {label: 'HIV', value: 'HIV'},
@@ -121,6 +130,14 @@ export default function MedicalConditionsScreen() {
                 disabled: opt.value === 'none' ? false : true
             }));
         }
+
+        if (isUnsureSelected) {
+            return chronicIllnessOptions.map(opt => ({
+                ...opt,
+                disabled: opt.value === 'unsure' ? false : true
+            }));
+        }
+
         return chronicIllnessOptions;
     };
 

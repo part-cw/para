@@ -62,6 +62,7 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
 
     const otherChronicIllnessSelected = patientData.chronicIllnesses?.includes('other');
     const isNoneSelected = editedChronicIllness.includes('none') || false;
+    const isUnsureSelected = editedChronicIllness.includes('unsure') || false;
 
     const chronicIllnessOptions =
      [
@@ -80,6 +81,13 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
                 ...opt,
                 disabled: opt.value === 'none' ? false : true
             }));
+        }
+
+        if (isUnsureSelected) {
+            return chronicIllnessOptions.map(opt => ({
+                ...opt,
+                disabled: opt.value === 'unsure' ? false : true
+            }))
         }
         return chronicIllnessOptions;
     };
