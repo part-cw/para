@@ -115,7 +115,10 @@ export const useCaregiverContact = ({
 
     const handleIsCaregiversPhoneToggle = (value: string) => {
         const boolValue = value === 'yes' ? true : value === 'no' ? false : null;
-        onUpdate({ isCaregiversPhone: boolValue });
+        onUpdate({ 
+            isCaregiversPhone: boolValue,
+            phoneOwner: boolValue ? '' : phoneOwner // set phoneOwner to '' if isCaregiversPhone === true, otherwise, maintain prev phoneOwner
+        });
     };
 
     const handlePhoneOwnerChange = (value: string) => {
