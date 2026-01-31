@@ -4,7 +4,7 @@ import { PatientData } from "../../contexts/PatientData";
 import { useMedicalConditionsManager } from "../../hooks/useMedicalConditionsManager";
 import { IStorageService } from "../../services/StorageService";
 import { GlobalStyles as Styles } from "../../themes/styles";
-import { formatChronicIllness, getOtherChronicIllnessList } from "../../utils/formatUtils";
+import { capitalizeFirstLetter, formatChronicIllness, getOtherChronicIllnessList } from "../../utils/formatUtils";
 import CheckboxGroup from "../CheckboxGroup";
 import { EditGroup } from "../EditFieldGroup";
 import RadioButtonGroup from "../RadioButtonGroup";
@@ -110,8 +110,22 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
                     </View>
                 </View>
             </Modal>
+            
+            <EditGroup 
+                fieldLabel={"Malnutrition Status"} 
+                fieldValue={capitalizeFirstLetter(patientData.malnutritionStatus as string) || 'Not provided'} 
+                canEdit={false}     
+                children={undefined}       
+            />
 
-             {/* Pneumonia */}
+            <EditGroup 
+                fieldLabel={"Sick Young Infant"} 
+                fieldValue={patientData.sickYoungInfant ? 'Yes' : 'No'} 
+                canEdit={false}     
+                children={undefined}       
+            />
+
+            {/* Pneumonia */}
             <EditGroup
                 fieldLabel="Pneumonia"
                 fieldValue={patientData.pneumonia || 'Not provided'}
