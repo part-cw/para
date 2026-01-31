@@ -113,8 +113,8 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                         onSelect={handleVillageSelect}
                         onAddItem={handleAddVillage}
                         value={village || ''}
-                        isOpen={openDropdown === 'village'}
-                        onToggle={(open: boolean) => setOpenDropdown(open ? 'village' : '')}
+                        // isOpen={openDropdown === 'village'}
+                        // onToggle={(open: boolean) => setOpenDropdown(open ? 'village' : '')}
                     />
                     <TextInput
                         label="Subvillage"
