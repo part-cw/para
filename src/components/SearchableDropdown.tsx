@@ -68,6 +68,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
+  const textInputRef = React.useRef<TextInput>(null);
+
   
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults && !data.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim()); // or use allData?
@@ -103,7 +105,12 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         useNativeDriver:false,
         easing: Easing.out(Easing.ease)
         
-    }).start()
+    }).start(() => {
+      // focus input after animation complete 
+      if (search && textInputRef.current) {
+        textInputRef.current.focus();
+      }
+    })
   }
 
   const slideup = () => {   
@@ -328,13 +335,15 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         
           <View style={styles.inputRow}>
             <TextInput 
+              ref={textInputRef} 
               style={styles.textInput}
               placeholder={!showFloatingLabel ? label : placeholder}
               onChangeText={handleTextChange}
               onBlur={handleBlur}
               value={searchText}
-              keyboardType={keyboard}>
-            </TextInput>
+              keyboardType={keyboard}
+              autoFocus={search}
+            />
             <View style={styles.iconContainer}>
               { showClearIcon &&
                 <IconButton
