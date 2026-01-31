@@ -41,6 +41,7 @@ export default function EditPatientRecord() {
     const [refreshing, setRefreshing] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [recalculating, setRecalculating] = useState(false);
+    const [expanded, setExpanded] = useState<string>('');
     
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null);
@@ -368,6 +369,8 @@ export default function EditPatientRecord() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="account"/>}
                                 description={ageIsEditable ? '' : 'Read-only'}
+                                expanded={expanded === 'patientInfo'}
+                                onPress={() => setExpanded(expanded === 'patientInfo' ? '' : 'patientInfo')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <InfoRow label="Full Name" value={formatName(patientData.firstName, patientData.surname, patientData.otherName)} />
@@ -432,6 +435,8 @@ export default function EditPatientRecord() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="heart-pulse"/>}
                                 description={hivIsEditable ? '' : 'Read-only'}
+                                expanded={expanded === 'admissionClinicalData'}
+                                onPress={() => setExpanded(expanded === 'admissionClinicalData' ? '' : 'admissionClinicalData')}
                             >
                                 {
                                     patientData.isUnderSixMonths
@@ -504,6 +509,8 @@ export default function EditPatientRecord() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="transit-transfer"/>}
                                 description={'Read-only'}
+                                expanded={expanded === 'dischargeData'}
+                                onPress={() => setExpanded(expanded === 'dischargeData' ? '' : 'dischargeData')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <InfoRow label="Feeding Status" value={patientData.feedingStatus_discharge ? patientData.feedingStatus_discharge : 'Not provided'} />
@@ -521,6 +528,8 @@ export default function EditPatientRecord() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="medical-bag"/>}
                                 description={patientData.isDischarged ? 'Read-only' : ''}
+                                expanded={expanded === 'medicalConditions'}
+                                onPress={() => setExpanded(expanded === 'medicalConditions' ? '' : 'medicalConditions')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <MedicalConditionsSection 
@@ -541,6 +550,8 @@ export default function EditPatientRecord() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="doctor"/>}
                                 description={isDischarged ? 'Read-only' : ''}
+                                expanded={expanded === 'chwReferral'}
+                                onPress={() => setExpanded(expanded === 'chwReferral' ? '' : 'chwReferral')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     {!isDischarged
@@ -578,6 +589,8 @@ export default function EditPatientRecord() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="account-child"/>}
                                 description={isDischarged ? 'Read-only' : ''}
+                                expanded={expanded === 'caregiverContact'}
+                                onPress={() => setExpanded(expanded === 'caregiverContact' ? '' : 'caregiverContact')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     {!isDischarged
