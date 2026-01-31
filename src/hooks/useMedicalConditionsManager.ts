@@ -131,30 +131,36 @@ export const useMedicalConditionsManager = ({
             return;
         }
 
-        // Handle "other" being added while "none" exists
-        if (selected.includes('none') && selected.length > 1) {
-            const withoutNone = selected.filter(item => item !== 'none');
-            setEditedChronicIllness(withoutNone);
-            
-            if (wasAdded.includes('other')) {
-                Alert.alert(
-                    'Other Chronic Condition',
-                    'Enter one or multiple conditions, if known, or click cancel',
-                    [
-                        {
-                            text: 'Cancel',
-                            style: 'cancel',
-                            onPress: () => {
-                                // remove 'other' if user cancels
-                                setEditedChronicIllness(withoutNone.filter(item => item !== 'other'));
-                            }
-                        },
-                        { text: 'Add Condition', onPress: () => setShowOtherChronicIllnessModal(true) }
-                    ]
-                );
-            }
+        if (wasRemoved.includes('none')) {
+            setEditedChronicIllness([]);
             return;
         }
+
+        // TODO delete this - should never reach this case
+        // Handle "other" being added while "none" exists 
+        // if (selected.includes('none') && selected.length > 1) {
+        //     const withoutNone = selected.filter(item => item !== 'none');
+        //     setEditedChronicIllness(withoutNone);
+            
+        //     if (wasAdded.includes('other')) {
+        //         Alert.alert(
+        //             'Other Chronic Condition',
+        //             'Enter one or multiple conditions, if known, or click cancel',
+        //             [
+        //                 {
+        //                     text: 'Cancel',
+        //                     style: 'cancel',
+        //                     onPress: () => {
+        //                         // remove 'other' if user cancels
+        //                         setEditedChronicIllness(withoutNone.filter(item => item !== 'other'));
+        //                     }
+        //                 },
+        //                 { text: 'Add Condition', onPress: () => setShowOtherChronicIllnessModal(true) }
+        //             ]
+        //         );
+        //     }
+        //     return;
+        // }
 
         // Normal selection - update state
         setEditedChronicIllness(selected);

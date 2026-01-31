@@ -61,6 +61,28 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
     });
 
     const otherChronicIllnessSelected = patientData.chronicIllnesses?.includes('other');
+    const isNoneSelected = editedChronicIllness.includes('none') || false;
+
+    const chronicIllnessOptions =
+     [
+        {label: 'HIV', value: 'HIV'},
+        {label: 'Tuberculosis', value: 'Tuberculosis'},
+        {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
+        {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
+        {label: 'Unsure', value: 'unsure'},
+        {label: 'None', value: 'none'},
+        {label: 'Other', value: 'other'}
+    ]
+
+    const getChronicIllnessOptions = () => {
+        if (isNoneSelected) {
+            return chronicIllnessOptions.map(opt => ({
+                ...opt,
+                disabled: opt.value === 'none' ? false : true
+            }));
+        }
+        return chronicIllnessOptions;
+    };
 
     return (
         <>
@@ -319,15 +341,7 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
                 canEdit={!patientData.isDischarged}
             >
                 <CheckboxGroup 
-                    options={[
-                        {label: 'HIV', value: 'HIV'},
-                        {label: 'Tuberculosis', value: 'Tuberculosis'},
-                        {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
-                        {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
-                        {label: 'Unsure', value: 'unsure'},
-                        {label: 'None', value: 'none'},
-                        {label: 'Other', value: 'other'}
-                    ]} 
+                    options={getChronicIllnessOptions()} 
                     selected={editedChronicIllness}
                     onSelectionChange={handleChronicIllnessChange}
                 />
@@ -349,7 +363,7 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
             {(editedChronicIllness.includes('other') || otherChronicIllnessSelected) && (
                 <View style={{ marginTop: 10 }}>
 
-                        {/* Add new illness form */}
+                    {/* Add new illness form */}
                     {!patientData.isDischarged && (
                         <EditGroup
                             fieldLabel="Other Conditions"
