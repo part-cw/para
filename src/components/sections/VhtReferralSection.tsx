@@ -2,7 +2,7 @@ import SearchableDropdown from '@/src/components/SearchableDropdown';
 import { useVHTReferral } from '@/src/hooks/useVHTReferral';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { formatPhoneNumber, validatePhoneNumber } from '@/src/utils/inputValidator';
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, Platform, View } from 'react-native';
 import { Button, Card, List, Text, TextInput } from 'react-native-paper';
 
@@ -58,6 +58,8 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
         onUpdate
     });
 
+    const [openDropdown, setOpenDropdown] = useState<string>('');
+
     // Trigger validation for discharge mode
     React.useEffect(() => {
         if (mode === 'discharge' && onValidationChange) {
@@ -111,6 +113,8 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                         onSelect={handleVillageSelect}
                         onAddItem={handleAddVillage}
                         value={village || ''}
+                        isOpen={openDropdown === 'village'}
+                        onToggle={(open: boolean) => setOpenDropdown(open ? 'village' : '')}
                     />
                     <TextInput
                         label="Subvillage"
@@ -138,6 +142,8 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                         onSelect={handleVHTSelect}
                         onAddItem={handleAddVHT}
                         value={vhtName || ''}
+                        // isOpen={openDropdown === 'vhtName'}
+                        // onToggle={(open: boolean) => setOpenDropdown(open ? 'vhtName' : '')}
                     />
                     <SearchableDropdown
                         data={allNumbers}
@@ -150,6 +156,8 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                         formatter={(value) => formatPhoneNumber(value)}
                         showError={true}
                         keyboard='phone-pad'
+                        // isOpen={openDropdown === 'vhtTel'}
+                        // onToggle={(open: boolean) => setOpenDropdown(open ? 'vhtTel' : '')}
                     />
                 </View>
             </View>

@@ -40,6 +40,8 @@ interface SearchableDropdownProps {
   formatter?: (value: string) => string; // TODO - remove formatter?
   showError?: boolean;
   keyboard?: KeyboardTypeOptions;
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void; 
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -55,9 +57,11 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   validator,
   formatter,
   showError = true,
-  keyboard = 'default'
+  keyboard = 'default',
+  isOpen: controlledIsOpen,
+  onToggle,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [searchText, setSearchText] = useState(value);
   const [isSearching, setIsSearching] = useState(false)
@@ -69,6 +73,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const animatedvalue = React.useRef(new Animated.Value(0)).current;
   const labelAnim = React.useRef(new Animated.Value(searchText ? 1 : 0)).current;
   const textInputRef = React.useRef<TextInput>(null);
+  const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
 
   
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
@@ -97,7 +102,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   
   // adapted from react-native-dropdown-select-list
   const slidedown = () => {
-    setIsOpen(true)
+    const newOpenState = true;
+
+    // Update internal state if not controlled
+    if (controlledIsOpen === undefined) {
+      setInternalIsOpen(newOpenState);
+    }
+
+    // Notify parent
+    onToggle?.(newOpenState);
+
     setIsFocused(true)
     Animated.timing(animatedvalue,{
         toValue: maxHeight,
@@ -114,6 +128,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   }
 
   const slideup = () => {   
+    const newOpenState = false;
     Animated.timing(animatedvalue,{
         toValue:0,
         duration:300,
@@ -121,7 +136,13 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
         easing: Easing.out(Easing.ease)
         
     }).start(() => {
-      setIsOpen(false)
+      // Update internal state if not controlled
+      if (controlledIsOpen === undefined) {
+        setInternalIsOpen(newOpenState);
+      }
+      // Notify parent
+      onToggle?.(newOpenState);
+
       setIsFocused(false)
       setIsSearching(false)
     })
