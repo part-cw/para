@@ -6,6 +6,7 @@ import Checkbox from './Checkbox';
 type Option = {
   label: string;
   value: string;
+  disabled?: boolean;
 };
 
 type Props = {
@@ -23,7 +24,9 @@ export default function CheckboxGroup({
   label,
 }: Props) {
 
-  const handleCheckboxToggle = (value: string) => {
+  const handleCheckboxToggle = (value: string, isDisabled: boolean) => {
+    if (isDisabled) return; // cannot toggle disabled options
+
     const isSelected = selected.includes(value)
 
     if (isSelected) {
@@ -42,14 +45,23 @@ export default function CheckboxGroup({
 
       {options.map((option) => {
         const isChecked = selected.includes(option.value)
+        const isDisabled = option.disabled || false;
+
 
         return (
+          <View 
+            key={option.value}
+            style={[
+              isDisabled && { opacity: 0.4 } // disabled options are greyed out
+            ]}
+          >
           <Checkbox
             key={option.value}
             label={option.label}
             checked= {normalizeBoolean(isChecked)}
-            onChange={() => handleCheckboxToggle(option.value)}
+            onChange={() => handleCheckboxToggle(option.value, isDisabled)}
           />
+          </View>
         )
       })}
 
