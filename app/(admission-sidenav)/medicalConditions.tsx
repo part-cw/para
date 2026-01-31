@@ -81,14 +81,47 @@ export default function MedicalConditionsScreen() {
         }
     }, [])
 
+    const isNoneSelected = chronicIllness?.includes('none') || false;
+
     const handleChronicIllnessChange = (selected: string[]) => {
         const isOtherSelected = selected.some(item => item.startsWith('other'))
+        const clickedNone = selected.includes('none') && !chronicIllness?.includes('none');
+      
+        if (clickedNone) {
+            updatePatientData({
+                chronicIllnesses: ['none'],
+                otherChronicIllness: ''
+            });
+            return;
+        }
 
         if (!isOtherSelected) {
             updatePatientData({otherChronicIllness: ''})
         } 
  
         updatePatientData({chronicIllnesses: selected})
+    };
+
+    const chronicIllnessOptions =
+     [
+        {label: 'HIV', value: 'HIV'},
+        {label: 'Tuberculosis', value: 'Tuberculosis'},
+        {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
+        {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
+        {label: 'Unsure', value: 'unsure'},
+        {label: 'None', value: 'none'},
+        {label: 'Other', value: 'other'}
+    ]
+
+
+    const getChronicIllnessOptions = () => {
+        if (isNoneSelected) {
+            return chronicIllnessOptions.map(opt => ({
+                ...opt,
+                disabled: opt.value === 'none' ? false : true
+            }));
+        }
+        return chronicIllnessOptions;
     };
 
     
@@ -202,15 +235,7 @@ export default function MedicalConditionsScreen() {
                     <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Conditions/Vulnerabilities <Text style={Styles.required}>*</Text></Text>
                     <Text>{displayNames['chronicIllnessQuestion']}</Text>
                     <CheckboxGroup 
-                        options={[
-                            {label: 'HIV', value: 'HIV'},
-                            {label: 'Tuberculosis', value: 'Tuberculosis'},
-                            {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
-                            {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
-                            {label: 'Unsure', value: 'unsure'},
-                            {label: 'None', value: 'none'},
-                            {label: 'Other', value: 'other'}
-                        ]} 
+                        options={getChronicIllnessOptions()} 
                         selected={chronicIllness as string[]} 
                         onSelectionChange={handleChronicIllnessChange}
                     />
