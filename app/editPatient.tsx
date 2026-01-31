@@ -13,7 +13,7 @@ import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ } from "@/src/utils/clinicalVariableCalculator";
 import { displayDob, formatDateString, formatName } from "@/src/utils/formatUtils";
-import { convertToYesNo, normalizeBoolean } from "@/src/utils/normalizer";
+import { normalizeBoolean } from "@/src/utils/normalizer";
 import { computeAdmissionRiskUpdated } from "@/src/utils/riskHelpers";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from "expo-router";
@@ -439,9 +439,9 @@ export default function EditPatientRecord() {
                                     <View style={Styles.accordionContentWrapper}>
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
                                         <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
-                                        {normalizedIsNeonate === true && <InfoRow label="Neonatal Jaundice" value={convertToYesNo(patientData.neonatalJaundice as string)} />}
-                                        <InfoRow label="Bugling fontanelle" value={convertToYesNo(patientData.bulgingFontanelle as string)} />
-                                        <InfoRow label="Feeding well" value={convertToYesNo(patientData.feedingWell as string)} />
+                                        {normalizedIsNeonate === true && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} />}
+                                        <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
+                                        <InfoRow label="Feeding well" value={patientData.feedingWell ? 'Yes' : 'No'} />
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                         <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
                                         <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />

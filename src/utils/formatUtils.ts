@@ -59,3 +59,10 @@ export const getOtherChronicIllnessList = (otherIllness: string | undefined): st
     if (!otherIllness || otherIllness.trim() === '') return [];
     return otherIllness.split(',').map(item => item.trim()).filter(Boolean);
 };
+
+export const capitalizeFirstLetter = (input: string) => {
+  if (typeof input !== 'string' || input.length === 0) {
+    return ''; // Handles empty strings or non-string input
+  }
+  return input.charAt(0).toUpperCase() + input.slice(1);
+}
