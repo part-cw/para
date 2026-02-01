@@ -326,7 +326,12 @@ export default function PatientInformationScreen() {
                                     })
                                 })
                             }}
-                    />  
+                    /> 
+                    {(Boolean(isDOBUnknown) && Boolean(isUnderSixMonths)) &&
+                        <Text style={{fontStyle: 'italic', color: colors.primary, marginLeft: 10}}> 
+                            Please enter your best estimation for DOB
+                        </Text>
+                    } 
                     {
                         (!isDOBUnknown || isUnderSixMonths)
                         ?

@@ -58,7 +58,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     const hasMinimalData = 
         patientData.surname && 
         patientData.firstName &&
-        patientData.ageInMonths
+        typeof(patientData.ageInMonths) === 'number'
 
     if (!hasMinimalData) {
         console.log('⏳ Skipping auto-save - not enough data entered yet');

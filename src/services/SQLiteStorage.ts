@@ -68,7 +68,7 @@ export class SQLiteStorage implements IStorageService {
     // }
 
     async initializeSchema(): Promise<void> {
-        if (!this.db) throw new Error('Database not initialized');
+        if (!this.db) throw new Error('Database not initialized');    
         
         await this.db.execAsync(`
             PRAGMA foreign_keys = ON;
@@ -79,7 +79,7 @@ export class SQLiteStorage implements IStorageService {
                 surname                 TEXT NOT NULL,
                 firstName               TEXT NOT NULL,
                 otherName               TEXT,
-                sex                     TEXT,  --  add this? NOT NULL CHECK (sex IN ('male', 'female'))
+                sex                     TEXT,
                 dob                     TEXT,
                 birthYear               TEXT,
                 birthMonth              TEXT,
@@ -101,7 +101,8 @@ export class SQLiteStorage implements IStorageService {
                 caregiverTel            TEXT,
                 confirmTel              TEXT,
                 sendReminders           INTEGER DEFAULT 0,
-                isCaregiversPhone       INTEGER DEFAULT 0, -- TODO - default to true (1)
+                isCaregiversPhone       INTEGER,
+                phoneOwner              TEXT,
 
                 -- Metadata & status flags
                 admissionStartedAt      TEXT NOT NULL,
@@ -338,13 +339,13 @@ export class SQLiteStorage implements IStorageService {
                     patientId, surname, firstName, otherName, sex, 
                     dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isDOBUnknown, isYearMonthUnknown, isUnderSixMonths, isNeonate,
                     village, subvillage, vhtName, vhtTelephone, 
-                    caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone,
+                    caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone, phoneOwner,
                     admissionStartedAt, updatedAt, isDraftAdmission
                 ) 
                 VALUES (
                     ?, ?, ?, ?, ?,              -- name/sex
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- age demographics
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
                     ?, ?, ?                     -- metadata
                 )
             `, [
@@ -370,7 +371,8 @@ export class SQLiteStorage implements IStorageService {
                 data.caregiverTel || null, 
                 data.confirmTel|| null, 
                 data.sendReminders ? 1 : 0, 
-                data.isCaregiversPhone ? 1 : 0,
+                data.isCaregiversPhone  !== null ? (data.isCaregiversPhone ? 1 : 0) : null,
+                data.phoneOwner || null,
                 data.admissionStartedAt || timestamp, 
                 timestamp, 
                 isDraft ? 1 : 0
@@ -1205,6 +1207,7 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: patientRow.confirmTel,
             sendReminders: patientRow.sendReminders,
             isCaregiversPhone: patientRow.isCaregiversPhone,
+            phoneOwner: patientRow.phoneOwner,
             
             isDraftAdmission: patientRow.isDraftAdmission,
             isDischarged: patientRow.isDischarged,
@@ -1250,6 +1253,7 @@ export class SQLiteStorage implements IStorageService {
             confirmTel: 'confirmTel',
             sendReminders: 'sendReminders',
             isCaregiversPhone: 'isCaregiversPhone',
+            phoneOwner: 'phoneOwner',
             isDischarged: 'isDischarged',
             isArchived: 'isArchived',
             isDraftAdmission: 'isDraftAdmission'
@@ -1263,6 +1267,8 @@ export class SQLiteStorage implements IStorageService {
                     patientFields[dbColumn] = value.toISOString();
                 } else if (typeof value === 'boolean') {
                     patientFields[dbColumn] = value ? 1 : 0;
+                } else if (value === null) {
+                    patientFields[dbColumn] = null; 
                 } else {
                     patientFields[dbColumn] = value;
                 }

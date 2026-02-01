@@ -45,10 +45,9 @@ export default function DischargeDataScreen() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showDeceasedModal, setShowDeceasedModal] = useState<boolean>(false);
-    const [expandDischargeAccordion, setExpandDischargeAccordion] = useState<boolean>(true); 
+    const [expandedAccordion, setExpandedAccordion] = useState<string>('dischargeData');
     
     // Add state for updating and editing unknown fields
-    const [showUpdateUnknownFields, setShowUpdateUnknownFields] = useState<boolean>(false);
     const [isUpdatingUnknownFields, setIsUpdatingUnknownFields] = useState<boolean>(false);    
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null);
@@ -799,8 +798,11 @@ export default function DischargeDataScreen() {
                                 titleStyle={[Styles.accordionListTitle]}
                                 left={props => <CustomAccordionIcon sectionId="dischargeData" />}
                                 description={getAccordionDescription('dischargeData')}
-                                expanded={expandDischargeAccordion}
-                                onPress={() => setExpandDischargeAccordion((prev) => !prev)}
+                                expanded={expandedAccordion === 'dischargeData'}
+                                onPress={() => {
+                                    setExpandedAccordion(expandedAccordion === 'dischargeData' ? '' : 'dischargeData');
+                                    handleAccordionPress('dischargeData');
+                                }}
                             >
                             <View style={Styles.accordionContentWrapper}>
                                 <SearchableDropdown 
@@ -868,10 +870,10 @@ export default function DischargeDataScreen() {
                                     title={isDobStillUnknown || isHivStillUnknown ? "Update Admission Data" : "Updated Admission Data"}
                                     left={props => <CustomAccordionIcon sectionId="updateAdmissionData" />}
                                     description={getAccordionDescription('updateAdmissionData')}
-                                    expanded={showUpdateUnknownFields}
+                                    expanded={expandedAccordion === 'updateAdmissionData'}
                                     onPress={() => {
-                                        setShowUpdateUnknownFields(!showUpdateUnknownFields)
-                                        handleAccordionPress('updateAdmissionData')
+                                        setExpandedAccordion(expandedAccordion === 'updateAdmissionData' ? '' : 'updateAdmissionData'); // 👈 Toggle
+                                        handleAccordionPress('updateAdmissionData');
                                     }}
                                 >
                                     <View style={Styles.accordionContentWrapper}>
@@ -1084,8 +1086,11 @@ export default function DischargeDataScreen() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
                                 description={getAccordionDescription('medicalConditions')}
-                                onPress={() => handleAccordionPress('medicalConditions')}
-                                
+                                expanded={expandedAccordion === 'medicalConditions'}
+                                onPress={() => {
+                                    setExpandedAccordion(expandedAccordion === 'medicalConditions' ? '' : 'medicalConditions')
+                                    handleAccordionPress('medicalConditions')}
+                                }
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <MedicalConditionsSection 
@@ -1106,7 +1111,11 @@ export default function DischargeDataScreen() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <CustomAccordionIcon sectionId="vhtReferral" />}
                                 description={getAccordionDescription('vhtReferral')}
-                                onPress={() => handleAccordionPress('vhtReferral')}
+                                expanded={expandedAccordion === 'vhtReferral'}
+                                onPress={() => {
+                                    setExpandedAccordion(expandedAccordion === 'vhtReferral' ? '' : 'vhtReferral')
+                                    handleAccordionPress('vhtReferral')}
+                                }
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <VHTReferralSection
@@ -1131,7 +1140,12 @@ export default function DischargeDataScreen() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <CustomAccordionIcon sectionId="caregiverContact" />}
                                 description={getAccordionDescription('caregiverContact')}
-                                onPress={() => handleAccordionPress('caregiverContact')}
+                                expanded = {expandedAccordion === 'caregiverContact'}
+                                onPress={() => {
+                                    setExpandedAccordion(expandedAccordion === 'caregiverContact' ? '' : 'caregiverContact')
+                                    handleAccordionPress('caregiverContact')}
+                                }
+                                
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <CaregiverContactSection
@@ -1140,6 +1154,7 @@ export default function DischargeDataScreen() {
                                         confirmTel={patientData.confirmTel}
                                         sendReminders={patientData.sendReminders}
                                         isCaregiversPhone={patientData.isCaregiversPhone}
+                                        phoneOwner={patientData.phoneOwner}
                                         onUpdate={updatePatientData}
                                         colors={colors}
                                         mode="edit"

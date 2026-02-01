@@ -1,8 +1,10 @@
+import { getPhoneOwnerValue } from '@/src/components/sections/CaregiverContactSection';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { formatChronicIllness } from '@/src/utils/formatUtils';
+import { capitalizeFirstLetter, formatChronicIllness } from '@/src/utils/formatUtils';
+import { normalizeBoolean } from '@/src/utils/normalizer';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -68,7 +70,7 @@ export default function ReviewScreen() {
     const { colors } = useTheme()
     const { patientData, savePatientData } = usePatientData();
 
-
+    const [ expandedAccordion, setExpandedAccordion] = useState<string>('');
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set());
     const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -369,7 +371,11 @@ export default function ReviewScreen() {
                       title="Patient Information"
                       titleStyle={Styles.accordionListTitle}
                       left={props => <CustomAccordionIcon sectionId="patientInformation" />}
-                      onPress={() => handleAccordionPress('patientInformation')}
+                      expanded={expandedAccordion === 'patientInformation'}
+                      onPress={() => {
+                        setExpandedAccordion(expandedAccordion === 'patientInformation' ? '' : 'patientInformation')
+                        handleAccordionPress('patientInformation')}
+                      }
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Full Name" value={`${patientData.firstName} ${patientData.otherName} ${patientData.surname}`.trim()} />
@@ -385,17 +391,21 @@ export default function ReviewScreen() {
                       title="Admission Clinical Data"
                       titleStyle={Styles.accordionListTitle}
                       left={props => <CustomAccordionIcon sectionId="admissionClinicalData" />}
-                      onPress={() => handleAccordionPress('admissionClinicalData')}
+                      expanded={expandedAccordion === 'admissionClinicalData'}
+                      onPress={() => {
+                        setExpandedAccordion(expandedAccordion === 'admissionClinicalData' ? '' : 'admissionClinicalData')
+                        handleAccordionPress('admissionClinicalData')}
+                      }
                     >
                         {
-                            patientData.isUnderSixMonths === true // TODO - test this page; make sure correct rows rendered
+                            normalizeBoolean(patientData.isUnderSixMonths) === true
                             ?
                              <View style={Styles.accordionContentWrapper}>
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
                                 <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
-                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice as string} />}
-                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle as string} />
-                                <InfoRow label="Feeding well?" value={patientData.feedingWell as string} />
+                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} /> } 
+                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
+                                <InfoRow label="Feeding well?" value={patientData.feedingWell ? 'Yes' : 'No'} />
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
@@ -429,9 +439,15 @@ export default function ReviewScreen() {
                       title="Common Medical Conditions"
                       titleStyle={Styles.accordionListTitle}
                       left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
-                      onPress={() => handleAccordionPress('medicalConditions')}
+                      expanded={expandedAccordion === 'medicalConditions'}
+                      onPress={() => {
+                        setExpandedAccordion(expandedAccordion === 'medicalConditions' ? '' : 'medicalConditions')
+                        handleAccordionPress('medicalConditions')}
+                      }
                     >
                         <View style={Styles.accordionContentWrapper}>
+                            <InfoRow label="Malnutrition Status" value={capitalizeFirstLetter(patientData.malnutritionStatus as string) || 'Not provided'} />
+                            <InfoRow label="Sick Young Infant" value={patientData.sickYoungInfant ? 'Yes' : 'No'} />
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.severeAnaemia || 'Not provided'} />
                             <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
@@ -448,17 +464,21 @@ export default function ReviewScreen() {
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="VHT Referral"
+                      title="CHW Referral"
                       titleStyle={Styles.accordionListTitle}
                       left={props => <CustomAccordionIcon sectionId="vhtReferral" />}
-                      onPress={() => handleAccordionPress('vhtReferral')}
+                      expanded={expandedAccordion === 'vhtReferral'}
+                      onPress={() => {
+                        setExpandedAccordion(expandedAccordion === 'vhtReferral' ? '' : 'vhtReferral')
+                        handleAccordionPress('vhtReferral')}
+                      }
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Patient Address</Text>
                             <InfoRow label="Village" value={patientData.village || 'Not provided'} />
                             <InfoRow label="Subvillage" value={patientData.subvillage || 'Not provided'} />
                             
-                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>VHT Contact Information</Text>
+                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>CHW Contact Information</Text>
                             <InfoRow label="Name" value={patientData.vhtName || 'Not provided'} />
                             <InfoRow label="Telephone" value={patientData.vhtTelephone || 'Not provided'} />
                         </View>
@@ -470,7 +490,11 @@ export default function ReviewScreen() {
                       title="Caregiver Contact Information"
                       titleStyle={Styles.accordionListTitle}
                       left={props => <CustomAccordionIcon sectionId="caregiverContact" />}
-                      onPress={() => handleAccordionPress('caregiverContact')}
+                      expanded={expandedAccordion === 'caregiverContact'}
+                      onPress={() => {
+                        setExpandedAccordion(expandedAccordion === 'caregiverContact' ? '' : 'caregiverContact')
+                        handleAccordionPress('caregiverContact')}
+                      }
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Head of Household" value={patientData.caregiverName || 'Not provided'} />
@@ -478,6 +502,7 @@ export default function ReviewScreen() {
                             {(patientData.caregiverTel !== '') &&
                             <>
                                 <InfoRow label="Telephone belongs to caregiver" value={patientData.isCaregiversPhone ? 'Yes' : 'No'} />
+                                <InfoRow label="Phone owner" value={getPhoneOwnerValue(patientData.phoneOwner)} />
                                 <InfoRow label="Receive reminders" value={patientData.sendReminders ? 'Yes' : 'No'} />
                             </>
                             }

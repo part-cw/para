@@ -22,7 +22,8 @@ export default function CaregiverContactScreen() {
         caregiverTel,
         confirmTel,
         sendReminders,
-        isCaregiversPhone
+        isCaregiversPhone,
+        phoneOwner
     } = patientData
 
 
@@ -44,6 +45,7 @@ export default function CaregiverContactScreen() {
                     confirmTel={confirmTel}
                     sendReminders={sendReminders}
                     isCaregiversPhone={isCaregiversPhone}
+                    phoneOwner={phoneOwner}
                     onUpdate={updatePatientData}
                     colors={colors}
                     mode="admission"

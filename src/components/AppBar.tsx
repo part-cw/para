@@ -49,7 +49,7 @@ export default function AppBar() {
         router.push('/');
       };
     
-    const hasMinimalData = patientData.surname && patientData.firstName && patientData.ageInMonths
+    const hasMinimalData = patientData.surname && patientData.firstName && typeof(patientData.ageInMonths) === 'number'
 
     if (isAdmissionScreen) {
       if (!hasMinimalData) {

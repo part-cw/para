@@ -33,10 +33,10 @@ export function EditGroup({
     return (
         <>
             <View style={{flexDirection: 'row', marginBottom: 8, alignItems: 'center'}}>
-                <Text style={styles.fieldLabel}>
+                <Text style={[styles.fieldLabel, {flex: 1}]}>
                     {fieldLabel}
                 </Text>
-                <Text style={styles.fieldValue}>
+                <Text style={[styles.fieldValue, {marginLeft: 10}]}>
                     {fieldValue}
                 </Text>
 

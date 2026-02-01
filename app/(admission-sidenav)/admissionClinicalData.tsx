@@ -25,6 +25,8 @@ export default function AdmissionClinicalDataScreen() {
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
     const { setValidationErrors, setValidationWarnings, getScreenErrors, getScreenWarnings } = useValidation();
+    // const [expandedAccordion, setExpandedAccordion] = useState<string>(''); // TODO - only one accordion open at a time?
+    
 
     const validationErrors = getScreenErrors('admissionClinicalData')
     const hasValidationErrors = validationErrors.length > 0;
@@ -429,6 +431,10 @@ export default function AdmissionClinicalDataScreen() {
                                 title="Health History & Observations"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="history" />}
+                                // expanded={expandedAccordion === 'healthHistory'}
+                                // onPress={() => 
+                                //     setExpandedAccordion(expandedAccordion === 'healthHistory' ? '' : 'healthHistory')
+                                // }
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <SearchableDropdown 
@@ -498,6 +504,10 @@ export default function AdmissionClinicalDataScreen() {
                                 title="Body Measurements & Vitals"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="heart-pulse" />}
+                                // expanded={expandedAccordion === 'vitals'}
+                                // onPress={() => 
+                                //     setExpandedAccordion(expandedAccordion === 'vitals' ? '' : 'vitals')
+                                // }
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <ValidatedTextInput 

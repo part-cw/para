@@ -7,7 +7,7 @@ import { Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
-// TODO:
+// TODO - confirm these are still issues:
 //  - village required - error if left blank 
 //  - make sure only one dropdown open at a time
 // - make sure unable to add invalid number
