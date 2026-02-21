@@ -4,9 +4,11 @@ import {
   formatPhoneNumber,
   formatText,
   isValidNumericFormat,
+  isValidPassword,
   isValidPhoneNumber,
   isValidTextFormat,
   numericErrorMessage,
+  passwordErrorMessage,
   telephoneErrorMessage,
   textErrorMessage,
 } from '@/src/utils/inputValidator';
@@ -17,7 +19,8 @@ import { TextInput, TextInputProps } from 'react-native-paper';
 const INPUT_TYPES = {
   TEXT: 'text',
   NUMERIC: 'numeric', 
-  PHONE: 'phone'
+  PHONE: 'phone',
+  PASSWORD: 'password'
 };
 
 type InputType = typeof INPUT_TYPES[keyof typeof INPUT_TYPES];
@@ -84,6 +87,12 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
           validator: isValidTextFormat,
           formatter: formatText,
           errorMessage: textErrorMessage
+        };
+       case INPUT_TYPES.PASSWORD:
+        return {
+          validator: isValidPassword,
+          formatter: formatText,
+          errorMessage: passwordErrorMessage
         };
       default:
         return {

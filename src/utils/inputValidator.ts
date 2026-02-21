@@ -41,6 +41,19 @@ export function isValidTextFormat(input: string): boolean {
 }
 
 /**
+ *  Determines if password is valid. 
+ *  Must be at least 8 characters and be a combo of letters and numbres, no spaces
+ */ 
+export function isValidPassword(input: string): boolean {
+    const meetsMinChars = input.length >= 8 
+    const hasLetter = /[a-zA-Z]/.test(input);
+    const hasNumber = /[0-9]/.test(input);
+    const hasNoSpaces = !/\s/.test(input);
+
+    return meetsMinChars && hasLetter && hasNumber && hasNoSpaces
+}
+
+/**
  * Formats a phone number string.
  * - Single number: "0123456789"
  * - Multiple numbers separated by "/": "0123456789/0987654321"
@@ -234,7 +247,7 @@ export function isValidPhoneNumber(input: string): boolean {
         return true;
     };
 
-
+    export const passwordErrorMessage = 'Password must be at least 8 characters long and include both letters and numbers. No spaces'
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";
     export const ageRangeErrorMessage = `Age must be between 0 and ${MAX_PATIENT_AGE} years. Patients over ${MAX_PATIENT_AGE} years are not eligible for this program`;
