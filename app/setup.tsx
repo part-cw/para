@@ -20,8 +20,6 @@ export default function SetupScreen() {
     const [confirmPassword, setConfirmPassword] = useState<string>('')
     const [loading, setLoading] = useState(false);
 
-    // TODO add password requirements
-
     const handleSetup = async () => {
         if (!adminUsername.trim() || !adminPassword.trim()) {
             Alert.alert('Error', 'Enter valid username or password');

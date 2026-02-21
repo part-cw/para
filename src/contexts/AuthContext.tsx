@@ -20,6 +20,7 @@ interface AuthContextType {
   currentUser: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  needsSetup: boolean | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   createUser: (userData: Omit<User, 'id' | 'createdAt'>, password: string) => Promise<void>;
@@ -36,6 +37,38 @@ const USERS_DB_KEY = 'users_database';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkSetupStatus();
+  }, []);
+
+  const checkSetupStatus = async () => {
+    try {
+      // Check if current user exists
+      const userJson = await SecureStore.getItemAsync(CURRENT_USER_KEY);
+      if (userJson) {
+        const user = JSON.parse(userJson);
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        setNeedsSetup(false);
+        return;
+      }
+
+      // Check if any users exist
+      const dbJson = await SecureStore.getItemAsync(USERS_DB_KEY);
+      if (!dbJson) {
+        setNeedsSetup(true); // No users exist - need setup
+      } else {
+        const dbArray = JSON.parse(dbJson);
+        const db = new Map(dbArray);
+        setNeedsSetup(db.size === 0); // Need setup if no users
+      }
+    } catch (error) {
+      console.error('Error checking setup status:', error);
+      setNeedsSetup(true); // Assume setup needed on error
+    }
+  };
 
   useEffect(() => {
     loadCurrentUser();
@@ -118,7 +151,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userData: Omit<User, 'id' | 'createdAt'>,
     password: string
   ) => {
-    if (!currentUser || currentUser.role !== 'admin') {
+    // Allow creating first user without being logged in
+    const isFirstUser = needsSetup === true;
+    
+    if (!isFirstUser && (!currentUser || currentUser.role !== 'admin')) {
       throw new Error('Only admin can create users');
     }
 
@@ -131,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const newUser: User = {
       ...userData,
-      id: `user_${Date.now()}`,
+      id: `user_${Date.now()}`, // TODO - change to site-date?
       createdAt: new Date().toISOString()
     };
 
@@ -139,6 +175,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     db.set(newUser.username, { user: newUser, passwordHash });
     
     await saveUsersDatabase(db);
+
+    // If this was the first user, update setup status
+    if (isFirstUser) {
+      setNeedsSetup(false);
+    }
   };
 
   const updateUserProfile = async (updates: Partial<User>) => {
@@ -195,6 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentUser,
         isAuthenticated,
         isAdmin: currentUser?.role === 'admin',
+        needsSetup,
         login,
         logout,
         createUser,
