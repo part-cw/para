@@ -91,7 +91,7 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
        case INPUT_TYPES.PASSWORD:
         return {
           validator: isValidPassword,
-          formatter: formatText,
+          formatter: (val: string) => val.trim(),
           errorMessage: passwordErrorMessage
         };
       default:
