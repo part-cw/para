@@ -1,3 +1,4 @@
+import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -15,8 +16,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
 //   TODO
-//   1. password requirements - min digits, combo of letters, nums, special char?
-//   2. forgot password option -- talk to account administrator
+//   1. forgot password option -- talk to account administrator
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
@@ -61,11 +61,12 @@ export default function LoginScreen() {
           autoCorrect={false}
         />
         
-        <TextInput
+        <ValidatedTextInput
           label="Password"
           value={password}
           onChangeText={setPassword}
           mode="outlined"
+          inputType='password'
           secureTextEntry={!showPassword}
           right={
             <TextInput.Icon
