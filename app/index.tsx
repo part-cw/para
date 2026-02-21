@@ -1,47 +1,30 @@
-import { router } from "expo-router";
-import { View } from "react-native";
-import { Button, useTheme } from 'react-native-paper';
+// app/index.tsx - ROOT ENTRY POINT
+import { useAuth } from '@/src/contexts/AuthContext';
+import { Redirect } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
 
+export default function RootIndex() {
+  const { isAuthenticated, needsSetup } = useAuth();
 
-export default function Index() {
-  const { colors } = useTheme();
+  // Redirect to setup if needed
+  if (needsSetup === true) {
+    return <Redirect href="/setup" />;
+  }
 
+  // Redirect to login if not authenticated
+  if (isAuthenticated === false) {
+    return <Redirect href="/login" />;
+  }
+
+  // Redirect to protected home if authenticated
+  if (isAuthenticated === true) {
+    return <Redirect href="/(protected)" />;  // Goes to protected/index.tsx
+  }
+
+  // Loading
   return (
-    <>
-      <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: 20, paddingTop: 50}}>
-        <Button 
-          style={{ alignSelf: 'center', marginVertical: 10 }}
-          buttonColor={colors.primary} 
-          textColor={colors.onPrimary} 
-          icon= 'plus'
-          mode="elevated" 
-          onPress={() => {router.push('/(admission-sidenav)/patientInformation')}}
-        >
-          Add Patient
-        </Button>
-
-        <Button 
-          style={[{ alignSelf: 'center' }, {marginVertical: 10}]}
-          buttonColor={colors.primary} 
-          textColor={colors.onPrimary} 
-          icon= 'account-group'
-          mode="elevated" 
-          onPress={() => {router.push('/patientRecords')}}
-        >
-          Patient Records
-        </Button>
-
-        <Button 
-          style={[{ alignSelf: 'center' }, {marginVertical: 10}]}
-          buttonColor={colors.primary} 
-          textColor={colors.onPrimary} 
-          icon= 'folder'
-          mode="elevated" 
-          onPress={() => {router.push('/drafts')}}
-        >
-          Resume Drafts
-        </Button>
-      </View>
-    </>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <ActivityIndicator size="large" />
+    </View>
   );
 }

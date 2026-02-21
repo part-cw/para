@@ -58,7 +58,7 @@ export default function DraftAdmissions() {
       
       // navigate to data entry screen with params
       router.push({
-        pathname: '/(admission-sidenav)/patientInformation',
+        pathname: '/(protected)/(admission-sidenav)/patientInformation',
         params: {
           resuming: 'true',
           draftId: id
@@ -148,7 +148,7 @@ export default function DraftAdmissions() {
           icon= 'plus'
           mode="outlined" 
           onPress={() => {
-            router.push('/(admission-sidenav)/patientInformation')
+            router.push('/(protected)/(admission-sidenav)/patientInformation')
           }}
         >
           Add Patient

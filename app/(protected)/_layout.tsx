@@ -1,4 +1,7 @@
+import AppBar from '@/src/components/AppBar';
 import { useAuth } from '@/src/contexts/AuthContext';
+import { PatientDataProvider } from '@/src/contexts/PatientDataContext';
+import { ValidationProvider } from '@/src/contexts/ValidationContext';
 import { Redirect, Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
@@ -26,15 +29,22 @@ export default function ProtectedLayout() {
 
   // User is authenticated - render protected routes
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="adminSettings" />
-      <Stack.Screen name="patientRecords" />
-      <Stack.Screen name="drafts" />
-      <Stack.Screen name="editPatient" />
-      <Stack.Screen name="dischargeData" />
-      <Stack.Screen name="riskDisplay" />
-      <Stack.Screen name="(admission-sidenav)" />
-    </Stack>
+    <PatientDataProvider>
+      <ValidationProvider>
+        <View style={{ flex: 1 }}>
+          <AppBar />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            {/* <Stack.Screen name="adminSettings" /> */}
+            <Stack.Screen name="patientRecords" />
+            <Stack.Screen name="drafts" />
+            <Stack.Screen name="editPatient" />
+            <Stack.Screen name="dischargeData" />
+            <Stack.Screen name="riskDisplay" />
+            <Stack.Screen name="(admission-sidenav)" />
+          </Stack>
+        </View>
+      </ValidationProvider>
+    </PatientDataProvider>
   );
 }

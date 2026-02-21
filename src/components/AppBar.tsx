@@ -31,7 +31,7 @@ export default function AppBar() {
   const dataWarningMessage = 
     'Incomplete admissions are automatically saved and can be resumed from the “Drafts” page.';
  
-  const dischargeRoute = '/dischargeData'
+  const dischargeRoute = '/(protected)/dischargeData'
   const isDischargeScreen =  pathname === dischargeRoute
   
   const handleGoHome = () => {
@@ -46,7 +46,7 @@ export default function AppBar() {
 
     const resetFormAndGo = () => {      
         clearPatientData();
-        router.push('/');
+        router.push('/(protected)');
       };
     
     const hasMinimalData = patientData.surname && patientData.firstName && typeof(patientData.ageInMonths) === 'number'

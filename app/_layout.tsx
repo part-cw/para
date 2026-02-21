@@ -1,9 +1,6 @@
-import AppBar from "@/src/components/AppBar";
 import { AuthProvider } from "@/src/contexts/AuthContext";
 import { ConfigProvider } from "@/src/contexts/ConfigContext";
-import { PatientDataProvider } from "@/src/contexts/PatientDataContext";
 import { StorageProvider } from "@/src/contexts/StorageContext";
-import { ValidationProvider } from "@/src/contexts/ValidationContext";
 import { initializeModels } from "@/src/models/modelSelectorInstance";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -73,25 +70,25 @@ export default function RootLayout() {
       <AuthProvider>
         <ConfigProvider>
           <StorageProvider>
-            <PatientDataProvider>
-              <ValidationProvider>
+            {/* <PatientDataProvider>
+              <ValidationProvider> */}
                 <GestureHandlerRootView style={{ flex: 1 }}>
                   <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
                     <PaperProvider theme={AppTheme}>
-                      <AppBar />
+                      {/* <AppBar /> */}
                       <Stack screenOptions={{ headerShown: false }}>
                         {/* Public routes */}
                         <Stack.Screen name="login" />
                         <Stack.Screen name="setup" />
-                        
+                        <Stack.Screen name="index" />
                         {/* Protected routes */}
                         <Stack.Screen name="(protected)" />
                       </Stack>
                     </PaperProvider>
                   </View>
                 </GestureHandlerRootView>
-              </ValidationProvider>
-            </PatientDataProvider>
+              {/* </ValidationProvider>
+            </PatientDataProvider> */}
           </StorageProvider>
         </ConfigProvider>
       </AuthProvider>
