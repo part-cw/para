@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from '../utils/normalizer';
+import { useAuth } from './AuthContext';
 import { Diagnosis, initialDiagnosis } from './Diagnosis';
 import { initialPatientData, PatientData } from './PatientData';
 import { useStorage } from './StorageContext';
@@ -48,6 +49,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [admissionLastCalculated, setAdmissionLastCalculated] = useState<string>('')
   
   const { storage, isInitialized } = useStorage();
+  const { currentUser } = useAuth();
   const modelSelector = getModelSelectorInstance();
 
   // Autosave draft whenever patientData changes, wait 1000 ms
@@ -67,7 +69,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
     const timeoutId = setTimeout(async () => {
       try {
-        await storage.saveDraft(patientData, currentPatientId);
+        await storage.saveDraft(patientData, currentPatientId, currentUser?.id || 'unknown');
         console.log('🔄 Auto-saved draft:', currentPatientId);
       } catch (error) {
         console.error('Error auto-saving draft:', error);

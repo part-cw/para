@@ -13,6 +13,7 @@ export default function SetupScreen() {
     const { createUser } = useAuth();
     const { height } = useWindowDimensions();
     
+    const [displayName, setDisplayName] = useState<string>('');
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
     const [adminUsername, setAdminUsername] = useState<string>('');
@@ -44,7 +45,7 @@ export default function SetupScreen() {
             {
                 username: adminUsername.trim(),
                 role: 'admin',
-                displayName: '',
+                displayName: displayName.trim(),
                 email: '',
             },
             adminPassword
@@ -84,6 +85,14 @@ export default function SetupScreen() {
                     <Text variant="bodyMedium" style={styles.subtitle}>
                         Create an administrator account to get started
                     </Text>
+
+                    <TextInput
+                        label="Display Name"
+                        value={displayName}
+                        onChangeText={setDisplayName}
+                        mode="outlined"
+                        style={styles.input}
+                    />
 
                     <TextInput
                         label="Admin Username"

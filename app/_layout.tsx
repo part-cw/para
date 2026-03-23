@@ -33,9 +33,6 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    // Prevent splash screen from auto-hiding immediately
-    // SplashScreen.preventAutoHideAsync();
-
     if (modelsLoaded) {
       // Hide splash screen after a short delay (or immediately if you prefer)
       const hideSplash = async () => {
@@ -70,12 +67,9 @@ export default function RootLayout() {
       <AuthProvider>
         <ConfigProvider>
           <StorageProvider>
-            {/* <PatientDataProvider>
-              <ValidationProvider> */}
                 <GestureHandlerRootView style={{ flex: 1 }}>
                   <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
                     <PaperProvider theme={AppTheme}>
-                      {/* <AppBar /> */}
                       <Stack screenOptions={{ headerShown: false }}>
                         {/* Public routes */}
                         <Stack.Screen name="login" />
@@ -87,8 +81,6 @@ export default function RootLayout() {
                     </PaperProvider>
                   </View>
                 </GestureHandlerRootView>
-              {/* </ValidationProvider>
-            </PatientDataProvider> */}
           </StorageProvider>
         </ConfigProvider>
       </AuthProvider>

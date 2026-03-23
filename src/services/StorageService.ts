@@ -9,8 +9,8 @@ export interface IStorageService {
     init(): Promise<void>;
 
     // Patient operations
-    submitPatient(patientId: string, date?: string): Promise<void>;
-    dischargePatient(patientId: string, date?: string): Promise<void>;
+    submitPatient(patientId: string, userId: string, date?: string): Promise<void>;
+    dischargePatient(patientId: string, userId: string, date?: string): Promise<void>;
     getPatient(patientId: string): Promise<PatientData | null>;
     updatePatient(patientId: string, updates: Partial<PatientData>): Promise<void>;
     deletePatient(patientId: string): Promise<void>;
@@ -19,7 +19,8 @@ export interface IStorageService {
         action: string,
         fieldChanged: string | null,
         oldValue: string | null,
-        newValue: string | null
+        newValue: string | null,
+        userId: string,
     ): Promise<void> 
 
     logBulkChanges(
@@ -28,17 +29,19 @@ export interface IStorageService {
             action: string;
             fieldChanged: string | null;
             oldValue: string | null;
-            newValue: string | null;}[]
+            newValue: string | null;}[],
+        userId: string
     ): Promise<void>
 
     doBulkUpdate(
         patientId: string, 
+        userId: string,
         updates: Partial<PatientData>, 
         previousValues: Record<string, any>
     ): Promise<void>
   
     // Draft operations
-    saveDraft(data: PatientData, draftId: string): Promise<void>;
+    saveDraft(data: PatientData, draftId: string, userId: string): Promise<void>;
     getDraft(draftId: string): Promise<PatientData | null>; // pass in draft id?
     deleteDraft(draftId: string): Promise<void>;
     deleteAllDrafts(): Promise<void>
