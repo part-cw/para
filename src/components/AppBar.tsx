@@ -109,6 +109,11 @@ export default function AppBar() {
       router.push('/(protected)/settings');
   };
 
+  const handleEditProfile = () => {
+      setMenuVisible(false)
+      router.push('/(protected)/editProfile');
+  };
+
   return (
     <Appbar.Header 
       style={[styles.header, {backgroundColor: colors.primary}]}
@@ -185,7 +190,7 @@ export default function AppBar() {
 
                 <Menu.Item
                     leadingIcon='account'
-                    onPress={() => console.log('TODO')}
+                    onPress={handleEditProfile}
                     title='Edit Profile'
                     titleStyle={{ color: colors.onSurface }}
                 />

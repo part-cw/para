@@ -7,6 +7,7 @@ import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// TODO - allow edit user feat to edit password
 export default function CreateUserScreen() {
   const { colors } = useTheme();
   const { currentUser, isAdmin, createUser, getAllUsers, deleteUser, logout } = useAuth();

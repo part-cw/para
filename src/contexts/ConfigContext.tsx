@@ -2,6 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface AppConfig {
+  country: string;
   activeDistrict: string;
   activeSite: string;
   deviceIdKey: string;
@@ -16,6 +17,7 @@ interface ConfigContextType {
 }
 
 const DEFAULT_CONFIG: AppConfig = {
+  country: 'Uganda',
   activeDistrict: 'buikwe', // TODO - change this
   activeSite: 'SITE',
   deviceIdKey: 'A',
