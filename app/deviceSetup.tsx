@@ -98,16 +98,19 @@ export default function DeviceSetupScreen() {
                     value={country}
                     search={true}
                 />
-                    
+                
+                {/* TODO - change this to SearchableDropDown component that filters based on selected country */}
                 <TextInput
                     label={`${country === 'Kenya'? 'County' : 'District'} (required)`}
                     value={activeDistrict}
                     onChangeText={setActiveDistrict}
                     mode="outlined"
                     style={styles.input}
-                    placeholder="e.g., Buikwe"
+                    placeholder={`e.g. ${country === 'Kenya' ? 'Mombasa' : 'Buikwe'
+                    }`}
                 />
 
+                {/* TODO - change this to SearchableDropDown component that filters based on selected district */}
                 <TextInput
                     label="Site Name (required)"
                     value={activeSite}
