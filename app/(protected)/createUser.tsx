@@ -13,9 +13,9 @@ export default function CreateUserScreen() {
 
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [position, setPosition] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
-
   const [confirmPassword, setConfirmPassword] = useState<string>('')
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
@@ -49,6 +49,7 @@ export default function CreateUserScreen() {
           username: username.trim(),
           displayName: displayName.trim(),
           role: 'user', // Regular user
+          position: position.trim() || '',
           email: ''
         },
         password
@@ -77,15 +78,6 @@ export default function CreateUserScreen() {
           <Card.Title title="Enter User Information" />
           <Card.Content>
             <TextInput
-              label="Username"
-              value={username}
-              onChangeText={setUsername}
-              mode="outlined"
-              style={styles.input}
-              autoCapitalize="none"
-            />
-
-            <TextInput
               label="Display Name"
               value={displayName}
               onChangeText={setDisplayName}
@@ -93,7 +85,23 @@ export default function CreateUserScreen() {
               style={styles.input}
             />
 
-             <ValidatedTextInput 
+            <TextInput
+              label="User Position (optional)"
+              value={position}
+              onChangeText={setPosition}
+              mode="outlined"
+              placeholder='e.g. Nurse or Researcher'
+              style={styles.input}
+            />
+            <TextInput
+              label="Username"
+              value={username}
+              onChangeText={setUsername}
+              mode="outlined"
+              style={styles.input}
+              autoCapitalize="none"
+            />
+            <ValidatedTextInput 
                 label="Password"
                 value={password}
                 onChangeText={setPassword}

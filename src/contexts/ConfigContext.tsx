@@ -12,7 +12,7 @@ export interface AppConfig {
 interface ConfigContextType {
   config: AppConfig;
   updateConfig: (updates: Partial<AppConfig>) => Promise<void>;
-  resetToDefaults: () => Promise<void>;
+  isConfigured: boolean;
 }
 
 const DEFAULT_CONFIG: AppConfig = {
@@ -29,6 +29,7 @@ const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
 export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
+  const [isConfigured, setIsConfigured] = useState(false);
 
   useEffect(() => {
     loadConfig();
@@ -38,10 +39,11 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       const configJson = await SecureStore.getItemAsync(CONFIG_KEY);
       if (configJson) {
-        setConfig(JSON.parse(configJson));
+        const loadedConfig = JSON.parse(configJson);
+        setConfig(loadedConfig);
+        setIsConfigured(!!loadedConfig.activeSite); // Configured if site is set - TODO make it more precise
       } else {
-        // First time - save defaults
-        await SecureStore.setItemAsync(CONFIG_KEY, JSON.stringify(DEFAULT_CONFIG));
+        setIsConfigured(false);
       }
     } catch (error) {
       console.error('Error loading config:', error);
@@ -52,15 +54,11 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const newConfig = { ...config, ...updates };
     setConfig(newConfig);
     await SecureStore.setItemAsync(CONFIG_KEY, JSON.stringify(newConfig));
-  };
-
-  const resetToDefaults = async () => {
-    setConfig(DEFAULT_CONFIG);
-    await SecureStore.setItemAsync(CONFIG_KEY, JSON.stringify(DEFAULT_CONFIG));
+    setIsConfigured(!!newConfig.activeSite);
   };
 
   return (
-    <ConfigContext.Provider value={{ config, updateConfig, resetToDefaults }}>
+    <ConfigContext.Provider value={{ config, updateConfig, isConfigured }}>
       {children}
     </ConfigContext.Provider>
   );

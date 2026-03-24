@@ -8,7 +8,8 @@ export interface User {
   id: string;
   username: string;
   displayName: string;
-  role: UserRole;
+  role: UserRole; // Actual role (admin or user)
+  activeRole?: UserRole; // Current active role (for admin switching)
   email?: string;
   createdAt: string;
   // Profile fields
@@ -28,6 +29,7 @@ interface AuthContextType {
   updateUserProfile: (updates: Partial<User>) => Promise<void>;
   getAllUsers: () => Promise<User[]>;
   deleteUser: (userId: string) => Promise<void>;
+  switchRole: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,6 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     checkSetupStatus();
   }, []);
+
+  console.log('current user,', currentUser?.displayName, currentUser?.username, currentUser?.id)
 
   const checkSetupStatus = async () => {
     try {
@@ -128,10 +132,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
+      const userWithActiveRole = {
+          ...userEntry.user,
+          activeRole: userEntry.user.role
+      };
+
       // Login successful
-      setCurrentUser(userEntry.user);
+      setCurrentUser(userWithActiveRole);
       setIsAuthenticated(true);
-      await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(userEntry.user));
+      await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(userWithActiveRole));
       
       return true;
     } catch (error) {
@@ -179,6 +188,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isFirstUser) {
       setNeedsSetup(false);
     }
+  };
+
+  const switchRole = async () => {
+        if (!currentUser || currentUser.role !== 'admin') {
+            console.warn('Only admins can switch roles');
+            return;
+        }
+
+        const newActiveRole: UserRole = currentUser.activeRole === 'admin' ? 'user' : 'admin';
+        const updatedUser: User = { ...currentUser, activeRole: newActiveRole };
+        
+        setCurrentUser(updatedUser);
+        await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(updatedUser));
   };
 
   const updateUserProfile = async (updates: Partial<User>) => {
@@ -241,7 +263,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createUser,
         updateUserProfile,
         getAllUsers,
-        deleteUser
+        deleteUser,
+        switchRole
       }}
     >
       {children}

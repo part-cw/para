@@ -72,6 +72,7 @@ export default function RootLayout() {
                     <PaperProvider theme={AppTheme}>
                       <Stack screenOptions={{ headerShown: false }}>
                         {/* Public routes */}
+                        <Stack.Screen name="deviceSetup" />
                         <Stack.Screen name="login" />
                         <Stack.Screen name="setup" />
                         <Stack.Screen name="index" />

@@ -1,12 +1,19 @@
 // app/index.tsx - ROOT ENTRY POINT
 import { useAuth } from '@/src/contexts/AuthContext';
+import { useConfig } from '@/src/contexts/ConfigContext';
 import { Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
 export default function RootIndex() {
   const { isAuthenticated, needsSetup } = useAuth();
+  const {isConfigured } = useConfig();
 
-  // Redirect to setup if needed
+  // Check if device is configured
+  if (isConfigured === false) {
+        return <Redirect href="/deviceSetup" />;
+    }
+
+  // Redirect to admin setup if needed
   if (needsSetup === true) {
     return <Redirect href="/setup" />;
   }

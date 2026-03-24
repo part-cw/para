@@ -12,7 +12,7 @@ export default function HomeScreen() {
   return (
     <>
       <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: 20, paddingTop: 50}}>
-        {!isAdmin && (
+        {currentUser?.activeRole === 'user' && (
         <>
           <Button 
             style={{ alignSelf: 'center', marginVertical: 10 }}
@@ -50,7 +50,7 @@ export default function HomeScreen() {
         )}
 
         {/* Admin-only button - for testing */}
-        {isAdmin && (
+        {currentUser?.activeRole === 'admin' && (
           <>
             <Button 
               style={{ alignSelf: 'center', marginVertical: 10 }}
@@ -69,9 +69,9 @@ export default function HomeScreen() {
               textColor={colors.onSecondary} 
               icon='cog'
               mode="elevated" 
-              onPress={() => router.push('/')} // TODO
+              onPress={() => router.push('/(protected)/settings')}
             >
-              Admin Settings
+              Settings
             </Button>
           </>
         )}
