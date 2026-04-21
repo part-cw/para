@@ -46,8 +46,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkSetupStatus();
   }, []);
 
-  console.log('current user,', currentUser?.displayName, currentUser?.username, currentUser?.id)
-
   const checkSetupStatus = async () => {
     try {
       // Check if current user exists

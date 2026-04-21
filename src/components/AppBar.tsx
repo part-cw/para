@@ -91,8 +91,6 @@ export default function AppBar() {
             
   };
 
-  console.log('menu visible', menuVisible)
-
   const handleLogout = async () => {
       setMenuVisible(false)
       await logout();
@@ -106,12 +104,12 @@ export default function AppBar() {
 
   const handleSettings = () => {
       setMenuVisible(false)
-      router.push('/(protected)/settings');
+      router.push('/(protected)/(appbar-menu)/settings');
   };
 
   const handleEditProfile = () => {
       setMenuVisible(false)
-      router.push('/(protected)/editProfile');
+      router.push('/(protected)/(appbar-menu)/editProfile');
   };
 
   return (
