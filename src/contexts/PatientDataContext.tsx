@@ -51,6 +51,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const { storage, isInitialized } = useStorage();
   const { currentUser } = useAuth();
   const modelSelector = getModelSelectorInstance();
+  const userId = currentUser?.displayName || currentUser?.username || 'unknown'
 
   // Autosave draft whenever patientData changes, wait 1000 ms
   useEffect(() => {
@@ -69,7 +70,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
     const timeoutId = setTimeout(async () => {
       try {
-        await storage.saveDraft(patientData, currentPatientId, currentUser?.id || 'unknown');
+        await storage.saveDraft(patientData, currentPatientId, userId);
         console.log('🔄 Auto-saved draft:', currentPatientId);
       } catch (error) {
         console.error('Error auto-saving draft:', error);
@@ -250,7 +251,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const submissionDateTime = new Date().toISOString()
 
       // submit patient (isDraft change from 1 to 0)
-      await storage.submitPatient(currentPatientId, submissionDateTime);
+      await storage.submitPatient(currentPatientId, userId, submissionDateTime);
 
       // Save risk prediction with admission model, if exists
       if (admissionRisk) {
@@ -301,7 +302,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const patientName = `${patientData.firstName} ${patientData.surname}`;
       const dischargeDateTime = new Date().toISOString()
 
-      await storage.dischargePatient(currentPatientId, dischargeDateTime);
+      await storage.dischargePatient(currentPatientId, userId, dischargeDateTime);
       const currDiagnosis = await getCurrentDiagnosis(currentPatientId);
 
 

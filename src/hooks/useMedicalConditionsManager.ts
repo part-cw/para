@@ -6,6 +6,7 @@ import { displayNames } from '../forms/displayNames';
 import { IStorageService } from '../services/StorageService';
 
 interface UseMedicalConditionsManagerProps {
+    userId: string;
     patientId: string;
     patientData: PatientData;
     storage: IStorageService;
@@ -13,6 +14,7 @@ interface UseMedicalConditionsManagerProps {
 }
 
 export const useMedicalConditionsManager = ({
+    userId,
     patientId,
     patientData,
     storage,
@@ -91,7 +93,7 @@ export const useMedicalConditionsManager = ({
                 setIsUpdating(true);
                 
                 await storage.updatePatient(patientId, { [fieldName]: newValue });
-                await storage.logChanges(patientId, 'UPDATE', fieldName, previousValue, newValue);
+                await storage.logChanges(patientId, 'UPDATE', fieldName, previousValue, newValue, userId);
                 
                 setIsUpdating(false);
                 setEditValue(''); // Clear edit state
@@ -147,32 +149,6 @@ export const useMedicalConditionsManager = ({
             return;
         }
 
-        // TODO delete this - should never reach this case
-        // Handle "other" being added while "none" exists 
-        // if (selected.includes('none') && selected.length > 1) {
-        //     const withoutNone = selected.filter(item => item !== 'none');
-        //     setEditedChronicIllness(withoutNone);
-            
-        //     if (wasAdded.includes('other')) {
-        //         Alert.alert(
-        //             'Other Chronic Condition',
-        //             'Enter one or multiple conditions, if known, or click cancel',
-        //             [
-        //                 {
-        //                     text: 'Cancel',
-        //                     style: 'cancel',
-        //                     onPress: () => {
-        //                         // remove 'other' if user cancels
-        //                         setEditedChronicIllness(withoutNone.filter(item => item !== 'other'));
-        //                     }
-        //                 },
-        //                 { text: 'Add Condition', onPress: () => setShowOtherChronicIllnessModal(true) }
-        //             ]
-        //         );
-        //     }
-        //     return;
-        // }
-
         // Normal selection - update state
         setEditedChronicIllness(selected);
 
@@ -223,7 +199,7 @@ export const useMedicalConditionsManager = ({
                     previous.otherChronicIllness = patientData.otherChronicIllness;
                 }
 
-                await storage.doBulkUpdate(patientId, updates, previous);
+                await storage.doBulkUpdate(patientId, userId, updates, previous);
 
                 setIsUpdating(false);
                 await onRefresh();
@@ -310,7 +286,7 @@ export const useMedicalConditionsManager = ({
                     chronicIllnesses: patientData?.chronicIllnesses || []
                 };
 
-                await storage.doBulkUpdate(patientId, storageUpdates, previousStorageValues);
+                await storage.doBulkUpdate(patientId, userId, storageUpdates, previousStorageValues);
 
                 setIsUpdating(false);
                 setEditedOtherChronicIllness('');
@@ -383,7 +359,8 @@ export const useMedicalConditionsManager = ({
                     'UPDATE',
                     'otherChronicIllness',
                     patientData?.otherChronicIllness || '',
-                    updatedValue
+                    updatedValue,
+                    userId
                 );
 
                 setIsUpdating(false);

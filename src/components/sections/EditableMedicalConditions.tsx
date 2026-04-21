@@ -10,6 +10,7 @@ import { EditGroup } from "../EditFieldGroup";
 import RadioButtonGroup from "../RadioButtonGroup";
 
 interface MedicalConditionsSectionProps {
+    userId: string;
     patientId: string;
     patientData: PatientData;
     storage: IStorageService;
@@ -19,6 +20,7 @@ interface MedicalConditionsSectionProps {
 }
 
 export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  = ({
+    userId,
     patientId,
     patientData,
     storage,
@@ -54,6 +56,7 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
         canEditCondition,
         getAllowedOptions
     } = useMedicalConditionsManager({
+        userId,
         patientId,
         patientData,
         storage,

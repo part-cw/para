@@ -55,6 +55,7 @@ export default function EditPatientRecord() {
 
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
+    const userId = currentUser?.displayName || currentUser?.username || 'unknown'
 
     // load patient data on mount  
     useEffect(() => {
@@ -163,7 +164,7 @@ export default function EditPatientRecord() {
         };
 
         setIsUpdating(true);
-        await storage.doBulkUpdate(patientId, currentUser?.username as string, updates, previous); // TODO use user id or display name?
+        await storage.doBulkUpdate(patientId, userId, updates, previous);
         setIsUpdating(false);
 
         // check if all neonatal info needs to be filled
@@ -193,7 +194,7 @@ export default function EditPatientRecord() {
             // Update neonatal jaundice in storage
             setIsUpdating(true);
             await storage.updatePatient(patientId, jaundiceUpdate);
-            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'), currentUser?.username as string);
+            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'), userId);
             setIsUpdating(false);
 
             setShowNeonatalJaundiceModal(false);
@@ -224,7 +225,7 @@ export default function EditPatientRecord() {
 
             // update hivStatus in storage
             await storage.updatePatient(patientId, updates)
-            await storage.logChanges(patientId, 'UPDATE', 'hivStatus', prev as string, editedHivStatus as string, currentUser?.username as string)
+            await storage.logChanges(patientId, 'UPDATE', 'hivStatus', prev as string, editedHivStatus as string, userId)
 
             setIsUpdating(false);
 
@@ -535,6 +536,7 @@ export default function EditPatientRecord() {
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <MedicalConditionsSection 
+                                        userId={userId}
                                         patientId={patientId} 
                                         patientData={patientData} 
                                         storage={storage} 
