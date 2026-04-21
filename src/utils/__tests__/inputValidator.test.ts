@@ -1,4 +1,4 @@
-import { formatPhoneNumber, formatText, isValidPhoneNumber, isValidTextFormat, isValidYearInput } from "../inputValidator";
+import { formatPhoneNumber, formatText, isValidPhoneNumber, isValidTextFormat, isValidYearInput, validateDeviceId } from "../inputValidator";
 
 describe('toProperCase', () => {
   it('trims spaces and capitalizes words', () => {
@@ -189,4 +189,31 @@ describe('isValidYearInput', () => {
   it('returns false for input with 3 digits and decimal', () => {
     expect(isValidYearInput('20.2')).toBe(false);
   });
+
+  describe('isValidDeviceId', () => {
+    it('returns true for valid 2-char id', () => {
+      expect(validateDeviceId('AA')).toBe(true);
+    });
+
+    it('returns true for valid 1-char id', () => {
+      expect(validateDeviceId('A')).toBe(true);
+    });
+
+    it('returns false for empty id', () => {
+      expect(validateDeviceId('')).toBe(false);
+    });
+
+    it('returns false for numeric ids', () => {
+      expect(validateDeviceId('1')).toBe(false);
+    });
+
+    it('returns false for ids longer than 2 char', () => {
+      expect(validateDeviceId('ABC')).toBe(false);
+    });
+
+    it('returns true for valid lowercase ids', () => {
+      expect(validateDeviceId('ab')).toBe(true);
+    });
+  });
+
 });

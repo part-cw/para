@@ -6,6 +6,7 @@ import { CaregiverContactSection } from "@/src/components/sections/CaregiverCont
 import { MedicalConditionsSection } from "@/src/components/sections/EditableMedicalConditions";
 import { VHTReferralSection } from "@/src/components/sections/VhtReferralSection";
 import ValidatedTextInput, { INPUT_TYPES } from "@/src/components/ValidatedTextInput";
+import { useAuth } from "@/src/contexts/AuthContext";
 import { usePatientData } from "@/src/contexts/PatientDataContext";
 import { useStorage } from "@/src/contexts/StorageContext";
 import { dischargeFormSchema } from "@/src/forms/dischargeFormSchema";
@@ -29,6 +30,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function DischargeDataScreen() {
     const { colors } = useTheme()
     const { storage } = useStorage();
+    const { currentUser } = useAuth();
     const { 
         patientData, 
         loadPatient, 
@@ -67,6 +69,7 @@ export default function DischargeDataScreen() {
     
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
+    const userId = currentUser?.displayName || currentUser?.username || 'unknown'
 
     // check what was unknown at admission
     const wasDobUnknown = initialDobUnknown
@@ -380,7 +383,7 @@ export default function DischargeDataScreen() {
             };
 
             // Update storage
-            await storage.doBulkUpdate(patientId, updates, previous);
+            await storage.doBulkUpdate(patientId, userId, updates, previous);
             setIsUpdatingUnknownFields(false);
 
             // check if all neonatal info needs to be filled
@@ -434,7 +437,7 @@ export default function DischargeDataScreen() {
 
             // Update storage
             await storage.updatePatient(patientId, updates);
-            await storage.logChanges(patientId, 'UPDATE', 'hivStatus', prev as string, editedHivStatus as string);
+            await storage.logChanges(patientId, 'UPDATE', 'hivStatus', prev as string, editedHivStatus as string, userId);
 
             // Refresh the UI
             await onRefresh();
@@ -478,7 +481,7 @@ export default function DischargeDataScreen() {
             // Update neonatal jaundice in storage
             setIsUpdatingUnknownFields(true);
             await storage.updatePatient(patientId, jaundiceUpdate);
-            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'));
+            await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'), userId);
             
             setIsUpdatingUnknownFields(false);
             setShowNeonatalJaundiceModal(false);
@@ -1099,6 +1102,7 @@ export default function DischargeDataScreen() {
                                         storage={storage} 
                                         onRefresh={onRefresh} 
                                         colors={colors}
+                                        userId={userId}
                                     />
                                 </View>
                             </List.Accordion>

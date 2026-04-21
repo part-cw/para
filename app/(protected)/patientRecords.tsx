@@ -139,7 +139,7 @@ export default function PatientRecords() {
           icon= 'plus'
           mode="outlined" 
           onPress={() => {
-            router.push('/(admission-sidenav)/patientInformation')
+            router.push('/(protected)/(admission-sidenav)/patientInformation')
           }}
         >
           Add Patient

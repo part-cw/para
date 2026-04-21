@@ -1,5 +1,4 @@
 import * as SQLite from "expo-sqlite";
-import { CURRENT_USER } from "../config";
 import { Diagnosis } from "../contexts/Diagnosis";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from '../models/types';
@@ -205,7 +204,7 @@ export class SQLiteStorage implements IStorageService {
     /**
      * convert patietn from draft to active and comlpetes admission worflow - mark completed with date argument or now
      */
-    async submitPatient(patientId: string, date?: string): Promise<void> {
+    async submitPatient(patientId: string, userId: string, date?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const now = new Date().toISOString();
@@ -215,16 +214,16 @@ export class SQLiteStorage implements IStorageService {
             UPDATE patients 
             SET isDraftAdmission = 0, admissionCompletedAt = ?, updatedAt = ?, admittedBy = ?
             WHERE patientId = ?
-        `, [date || now, now, CURRENT_USER,patientId]);
+        `, [date || now, now, userId, patientId]);
 
-        await this.logChanges(patientId, 'SUBMIT', null, null, null);
-        console.log(`✅ Patient ${patientId} submitted`);
+        await this.logChanges(patientId, 'SUBMIT', null, null, null, userId);
+        console.log(`✅ Patient ${patientId} submitted by ${userId}`);
     }
 
      /**
      * convert patietn from active to discharged and complete the workflow - mark completed with date argument or now
      */
-    async dischargePatient(patientId: string, date?: string): Promise<void> {
+    async dischargePatient(patientId: string, userId: string, date?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const now = new Date().toISOString();
@@ -234,9 +233,9 @@ export class SQLiteStorage implements IStorageService {
             UPDATE patients 
             SET isDischarged = 1, dischargedAt = ?, updatedAt = ?, dischargedBy = ?
             WHERE patientId = ?
-        `, [date || now, date || now, CURRENT_USER,patientId]);
+        `, [date || now, date || now, userId,patientId]);
 
-        await this.logChanges(patientId, 'DISCHARGED', null, null, null);
+        await this.logChanges(patientId, 'DISCHARGED', null, null, null, userId);
         console.log(`✅ Patient ${patientId} discharged`);
     }
 
@@ -298,13 +297,13 @@ export class SQLiteStorage implements IStorageService {
         }
     }
 
-    async doBulkUpdate(patientId: string, updates: Partial<PatientData>, previousValues: Record<string, any>): Promise<void> {
+    async doBulkUpdate(patientId: string, userId: string, updates: Partial<PatientData>, previousValues: Record<string, any>): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const now = new Date().toISOString();
 
         await this.db.withTransactionAsync(async () => {
-            await this.logBulkUpdates(patientId, updates, previousValues, now);
+            await this.logBulkUpdates(patientId, userId, updates, previousValues, now);
             await this.updatePatient(patientId, updates, now, false);
         });
         
@@ -327,7 +326,7 @@ export class SQLiteStorage implements IStorageService {
      * inserts new patient info into patients, medical_conditions, and clinical_varibales tables
      * and updates audit log
      */
-    async insertNewPatient(data: PatientData, patientId: string, timestamp: string, isDraft: boolean): Promise<void> {
+    async insertNewPatient(data: PatientData, patientId: string, userId: string, timestamp: string, isDraft: boolean): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const now = new Date().toISOString()
@@ -401,14 +400,14 @@ export class SQLiteStorage implements IStorageService {
             ]);
         });
 
-        await this.logChanges(patientId, 'CREATE', null, null, null);
+        await this.logChanges(patientId, 'CREATE', null, null, null, userId);
         console.log(`✅ New patient ${patientId} created`);
     }
 
 
     // ========== DRAFT OPERATIONS ==========
 
-    async saveDraft(data: PatientData, patientId: string): Promise<void> {
+    async saveDraft(data: PatientData, patientId: string, userId: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
         
         const now = new Date().toISOString();
@@ -425,7 +424,7 @@ export class SQLiteStorage implements IStorageService {
             await this.updatePatient(patientId, data);
         } else {
             // NEW DRAFT: Use INSERT
-            await this.insertNewPatient(data, patientId, now, true);
+            await this.insertNewPatient(data, patientId, userId, now, true);
         }
     }
 
@@ -1062,7 +1061,8 @@ export class SQLiteStorage implements IStorageService {
         action: string,
         fieldChanged: string | null,
         oldValue: string | null,
-        newValue: string | null
+        newValue: string | null,
+        userId: string,
     ): Promise<void> {
         if (!this.db) return;
 
@@ -1071,7 +1071,7 @@ export class SQLiteStorage implements IStorageService {
                 INSERT INTO audit_log (
                     patientId, action, fieldChanged, oldValue, newValue, changedBy
                 ) VALUES (?, ?, ?, ?, ?, ?)
-            `, [patientId, action, fieldChanged, oldValue, newValue, CURRENT_USER]);
+            `, [patientId, action, fieldChanged, oldValue, newValue, userId]);
         } catch (error) {
             console.warn('Failed to log audit:', error);
         }
@@ -1079,6 +1079,7 @@ export class SQLiteStorage implements IStorageService {
 
     private async logBulkUpdates(
         patientId: string,
+        userId: string,
         updates: Partial<PatientData>,
         previousValues: Record<string, any>,
         now: string
@@ -1124,7 +1125,7 @@ export class SQLiteStorage implements IStorageService {
                 c.fieldChanged,
                 c.oldValue,
                 c.newValue,
-                CURRENT_USER,
+                userId,
                 now
             ]);
 
@@ -1144,7 +1145,8 @@ export class SQLiteStorage implements IStorageService {
             action: string;
             fieldChanged: string | null;
             oldValue: string | null;
-            newValue: string | null;}[]
+            newValue: string | null;}[],
+        userId: string
     ): Promise<void> {
         if (!this.db) throw new Error ('Databse not initialized');
 
@@ -1162,7 +1164,7 @@ export class SQLiteStorage implements IStorageService {
                 change.fieldChanged,
                 change.oldValue,
                 change.newValue,
-                CURRENT_USER,
+                userId,
             ]);
 
             await this.db.runAsync(`

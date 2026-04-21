@@ -90,6 +90,7 @@ export class WebStorage implements IStorageService {
 
     async doBulkUpdate(
         patientId: string, 
+        userId: string,
         updates: Partial<PatientData>, 
         previousValues: Record<string, any>
     ): Promise<void> {
