@@ -6,7 +6,7 @@ import { Button, useTheme } from 'react-native-paper';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
-  const { currentUser, isAdmin, logout } = useAuth();
+  const { currentUser } = useAuth();
 
 
   return (
@@ -69,7 +69,7 @@ export default function HomeScreen() {
               textColor={colors.onSecondary} 
               icon='cog'
               mode="elevated" 
-              onPress={() => router.push('/(protected)/settings')}
+              onPress={() => router.push('/(protected)/(appbar-menu)/settings')}
             >
               Settings
             </Button>

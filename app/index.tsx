@@ -10,8 +10,8 @@ export default function RootIndex() {
 
   // Check if device is configured
   if (isConfigured === false) {
-        return <Redirect href="/deviceSetup" />;
-    }
+    return <Redirect href="/deviceSetup" />;
+  }
 
   // Redirect to admin setup if needed
   if (needsSetup === true) {
@@ -25,7 +25,7 @@ export default function RootIndex() {
 
   // Redirect to protected home if authenticated
   if (isAuthenticated === true) {
-    return <Redirect href="/(protected)" />;  // Goes to protected/index.tsx
+    return <Redirect href="/(protected)" />;
   }
 
   // Loading
