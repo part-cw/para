@@ -247,6 +247,23 @@ export function isValidPhoneNumber(input: string): boolean {
         return true;
     };
 
+    export function validateDeviceId(input: string): boolean {
+        if (!input || !input.trim()) {
+            return false; // Required field
+        }
+
+        if (!isValidDeviceId(input)) {
+            return false;
+        }
+
+        return true
+    }
+
+    export function isValidDeviceId(id: string): boolean {
+        return /^[A-Za-z]{1,2}$/.test(id);
+    }
+
+    export const deviceIdErrorMessage = 'Device ID must be 1-2 characters and be comprised of letters only'
     export const passwordErrorMessage = 'Password must be at least 8 characters long and include both letters and numbers. No spaces'
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";

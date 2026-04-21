@@ -1,5 +1,7 @@
 import SearchableDropdown from '@/src/components/SearchableDropdown';
+import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useConfig } from '@/src/contexts/ConfigContext';
+import { deviceIdErrorMessage, validateDeviceId } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, View } from 'react-native';
@@ -52,6 +54,7 @@ export default function DeviceSetupScreen() {
         try {
             setSaving(true);
             await updateConfig({
+                country: country.trim(),
                 activeDistrict: activeDistrict.trim(),
                 activeSite: activeSite.trim(),
                 deviceIdKey: deviceIdKey.trim(),
@@ -100,18 +103,17 @@ export default function DeviceSetupScreen() {
                 />
                 
                 {/* TODO - change this to SearchableDropDown component that filters based on selected country */}
-                <TextInput
+                <ValidatedTextInput
                     label={`${country === 'Kenya'? 'County' : 'District'} (required)`}
                     value={activeDistrict}
                     onChangeText={setActiveDistrict}
                     mode="outlined"
                     style={styles.input}
-                    placeholder={`e.g. ${country === 'Kenya' ? 'Mombasa' : 'Buikwe'
-                    }`}
+                    placeholder={`e.g. ${country === 'Kenya' ? 'Mombasa' : 'Buikwe'}`}
                 />
 
                 {/* TODO - change this to SearchableDropDown component that filters based on selected district */}
-                <TextInput
+                <ValidatedTextInput
                     label="Site Name (required)"
                     value={activeSite}
                     onChangeText={setActiveSite}
@@ -120,14 +122,16 @@ export default function DeviceSetupScreen() {
                     placeholder="Enter name of hospital site"
                 />
 
-                <TextInput
+                <ValidatedTextInput
                     label="Device ID (required)"
-                    value={deviceIdKey}
+                    value={deviceIdKey.toUpperCase()}
                     onChangeText={setDeviceIdKey}
                     mode="outlined"
                     style={styles.input}
                     placeholder="e.g., A"
                     autoCapitalize="characters"
+                    customValidator={() => validateDeviceId(deviceIdKey.toUpperCase())}
+                    customErrorMessage={deviceIdErrorMessage}
                 />
 
                 <TextInput
