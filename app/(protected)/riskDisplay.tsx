@@ -141,7 +141,7 @@ export default function RiskDisplay() {
                 variant={riskCategory?.toLowerCase()}
                 content={`Risk score = ${riskScore}%`}
                 containerStyle={{alignItems: 'center'}}
-                expandable={false}
+                expandable={false} // TODO - set to true one top predictors display is complete
               >
                 {/* TODO - fix children */}
                 <Text>
@@ -193,15 +193,17 @@ export default function RiskDisplay() {
                       
                       {/* Show count of additional conditions */}
                       {!isConditionsExpanded && conditionsData.hasMore && (
-                        <Text style={{ 
-                          fontSize: 14, 
-                          fontStyle: 'italic', 
-                          color: '#666',
-                          marginTop: 4,
-                          marginLeft: 20
-                        }}>
-                          +{conditionsData.hiddenCount} more condition{conditionsData.hiddenCount > 1 ? 's' : ''}
-                        </Text>
+                        // <TouchableOpacity onPress={() => setIsConditionsExpanded(true)}>
+                          <Text style={{ 
+                            fontSize: 14, 
+                            fontStyle: 'italic', 
+                            color: '#666',
+                            marginTop: 4,
+                            marginLeft: 20
+                          }}>
+                            +{conditionsData.hiddenCount} more condition{conditionsData.hiddenCount > 1 ? 's' : ''}
+                          </Text>
+                        // </TouchableOpacity>
                       )}
                     </View>
                   )

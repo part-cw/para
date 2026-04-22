@@ -128,44 +128,40 @@ const RiskCard: React.FC<RiskCardProps> = ({
 
  return (
     <View style={[defaultContainerStyle, containerStyle]}>
-        {expandable 
-            ?
-            <TouchableOpacity 
-                onPress={toggleExpanded}
-                style={{ 
-                    flexDirection: 'row', 
-                    justifyContent: 'center', 
-                    position: 'relative',
-                    width: '100%'}}
-                activeOpacity={0.7}
-            >
-                <Text style={[defaultTitleStyle, titleStyle]}>
-                        {title}
-                </Text>
-                <View style={{ position: 'absolute', right: 0 }}>
-                    <Icon 
-                        source={isExpanded ? 'chevron-double-up' : 'chevron-double-down'}
-                        size={24}
-                        color={variantColors.textColor}
-                    />
-                </View>
-            </TouchableOpacity>
-            :
-            <>
-                <Text style={[defaultTitleStyle, titleStyle]}>
-                            {title}
-                </Text>
-            </>
-        }
+      <Text style={[defaultTitleStyle, titleStyle, {alignSelf: 'center'}]}>
+              {title}
+      </Text>
 
-        {renderContent()}
+      {renderContent()}
 
-       {isExpanded && children &&
-            <View style={{ marginTop: 8}}>
-                {children}
+      {isExpanded && children &&
+        <View style={{ marginTop: 8}}>
+          {children}
+        </View>
+      }
+
+      {expandable &&
+        <TouchableOpacity 
+            onPress={toggleExpanded}
+            style={{ 
+                flexDirection: 'row', 
+                justifyContent: 'center', 
+                position: 'relative',
+                width: '100%'}}
+            activeOpacity={0.7}
+        >
+            {/* <Text style={[defaultTitleStyle, titleStyle]}>
+                    {title}
+            </Text> */}
+            <View style={{ position: 'absolute', right: 0, bottom: 5 }}>
+                <Icon 
+                    source={isExpanded ? 'chevron-double-up' : 'chevron-double-down'}
+                    size={24}
+                    color={variantColors.textColor}
+                />
             </View>
-        }
-
+        </TouchableOpacity>
+      }
     </View>
   );
 };
