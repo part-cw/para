@@ -3,14 +3,14 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO - allow edit user feat to edit password
 export default function CreateUserScreen() {
   const { colors } = useTheme();
-  const { currentUser, isAdmin, createUser, getAllUsers, deleteUser, logout } = useAuth();
+  const { isAdmin, createUser } = useAuth();
 
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -21,21 +21,13 @@ export default function CreateUserScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<any[]>([]);
 
   // Redirect if not admin
   React.useEffect(() => {
     if (!isAdmin) {
       router.replace('/');
-    } else {
-      loadUsers();
     }
   }, [isAdmin]);
-
-  const loadUsers = async () => {
-    const allUsers = await getAllUsers();
-    setUsers(allUsers);
-  };
 
   const handleCreateUser = async () => {
     if (!username.trim() || !displayName.trim() || !password.trim()) {
@@ -60,7 +52,7 @@ export default function CreateUserScreen() {
       setUsername('');
       setDisplayName('');
       setPassword('');
-      await loadUsers();
+      setConfirmPassword('');
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create user');
     } finally {
@@ -146,47 +138,6 @@ export default function CreateUserScreen() {
             >
               Create User
             </Button>
-          </Card.Content>
-        </Card>
-
-        <Card style={Styles.cardWrapper}>
-          <Card.Title title="Existing Users" />
-          <Card.Content>
-            {users.map(user => (
-              <View key={user.id} style={styles.userItem}>
-                <View style={{ flex: 1 }}>
-                  <Text variant="bodyLarge">{user.displayName}</Text>
-                  <Text variant="bodySmall" style={{ color: '#666' }}>
-                    @{user.username} • {user.role}
-                  </Text>
-                </View>
-                {user.id !== currentUser?.id && (
-                  <Button
-                    mode="outlined"
-                    textColor={colors.error}
-                    onPress={() => {
-                      Alert.alert(
-                        'Delete User',
-                        `Delete user "${user.displayName}"?`,
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          {
-                            text: 'Delete',
-                            style: 'destructive',
-                            onPress: async () => {
-                              await deleteUser(user.id);
-                              await loadUsers();
-                            }
-                          }
-                        ]
-                      );
-                    }}
-                  >
-                    Delete
-                  </Button>
-                )}
-              </View>
-            ))}
           </Card.Content>
         </Card>
 
