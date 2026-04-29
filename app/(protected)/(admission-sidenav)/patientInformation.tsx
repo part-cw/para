@@ -4,7 +4,7 @@ import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import ValidationSummary from '@/src/components/ValidationSummary';
-import { MAX_PATIENT_AGE } from '@/src/config';
+import { useConfig } from '@/src/contexts/ConfigContext';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
@@ -29,6 +29,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function PatientInformationScreen() {
     const { height } = useWindowDimensions();
     const { colors } = useTheme();
+    const { config } = useConfig();
 
     // Check if resuming a draft
     const params = useLocalSearchParams();
@@ -169,7 +170,7 @@ export default function PatientInformationScreen() {
             sickYoungInfant: (() => {
                 // Check if value is valid before calculating sickYoungInfant
                 const numericValue = parseFloat(value.trim())
-                if (isNaN(numericValue) || numericValue < 0 || numericValue > MAX_PATIENT_AGE) {
+                if (isNaN(numericValue) || numericValue < 0 || numericValue > config.maxPatientAge) {
                     // Don't update sickYoungInfant for invalid values, keep current state
                     return patientData.sickYoungInfant;
                 }

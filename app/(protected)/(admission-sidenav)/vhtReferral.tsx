@@ -50,8 +50,8 @@ export default function VHTReferralScreen() {
             <PaginationControls
                 showPrevious={true}
                 showNext={true}
-                onPrevious={() => router.push('/(admission-sidenav)/medicalConditions')}
-                onNext={() => router.push('/(admission-sidenav)/caregiverContact')}
+                onPrevious={() => router.push('/(protected)/(admission-sidenav)/medicalConditions')}
+                onNext={() => router.push('/(protected)/(admission-sidenav)/caregiverContact')}
             />  
         </SafeAreaView>
     );
