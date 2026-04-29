@@ -281,7 +281,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newPasswordHash = await hashPassword(newPassword);
       userEntry.passwordHash = newPasswordHash;
 
-      db.set(selectedUser.username, { user: selectedUser, passwordHash: newPasswordHash });
+      db.set(selectedUser.username, userEntry);
       await saveUsersDatabase(db);
 
       console.log(`🔐 Password reset for user ${selectedUser.username || selectedUser.displayName} at ${new Date().toISOString()}`);
