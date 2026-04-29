@@ -6,7 +6,6 @@ import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatName } from '@/src/utils/formatUtils';
 import { normalizeBoolean } from '@/src/utils/normalizer';
-import { PatientIdGenerator } from '@/src/utils/patientIdGenerator';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, RefreshControl, Text, View } from "react-native";
@@ -71,10 +70,10 @@ export default function DraftAdmissions() {
     }
   };
 
+  // deleting drafts removes patient from DB - no id recycling takes place
   const handleDelete = async (id: string, name?: string) => {
     const confirmDelete = async () => {
       try {
-        await PatientIdGenerator.recyclePatientId(id);
         await storage.deleteDraft(id);
 
         // reload page
