@@ -109,6 +109,7 @@ export default function PatientRecords() {
     })
   }
 
+  // TODO - send data to RedCap
   const handleArchive = async (id: string) => {
     console.log('TODO: archiving record...')
     alert('Event handler not implemented')
