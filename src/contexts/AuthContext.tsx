@@ -284,7 +284,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       db.set(selectedUser.username, userEntry);
       await saveUsersDatabase(db);
 
-      console.log(`🔐 Password reset for user ${selectedUser.username || selectedUser.displayName} at ${new Date().toISOString()}`);
+      console.log(`🔐 Password reset for user ${selectedUser.displayName || selectedUser.username} at ${new Date().toISOString()}`);
     }catch (error) {
       console.error('Error resetting password:', error);
       throw error;

@@ -1,11 +1,10 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
-import { ACTIVE_SITE, DEVICE_ID_KEY } from '../config';
+import type { AppConfig } from '../contexts/ConfigContext';
 
 export class PatientIdGenerator {
   private static readonly PATIENT_COUNTER_KEY = 'patient_counter';  
   private static readonly RECYCLED_IDS_KEY = 'recycled_patient_ids';
-  private static deviceId: string =  DEVICE_ID_KEY
 
   /**
    * Generate a unique patient ID (format: SITE-DEVICE-####)
@@ -13,28 +12,35 @@ export class PatientIdGenerator {
    * DEVICE = Device ID (A to Z, set by admin - in config.ts)
    * #### = Sequential patient number for that device
    */
-  static async generatePatientId(): Promise<string> {
+  static async generatePatientId(config: AppConfig): Promise<string> {
     try {
-      const site = ACTIVE_SITE
-      const patientNumber = await this.getNextPatientNumber();
+      // check if there are any recycled ids to use
+      const recycledId = await this.getRecycledId(config);
       
-      const patientId = `${site}-${this.deviceId}-${patientNumber.toString().padStart(4, '0')}`;
+      if (recycledId) {
+        console.log(`Reusing recycled patient ID: ${recycledId}`);
+        return recycledId;
+      }
+
+      const patientNumber = await this.getNextPatientNumber(config);
+      
+      const patientId = `${config.activeSite}-${config.deviceIdKey}-${patientNumber.toString().padStart(4, '0')}`;
       console.log(`Generated patient ID: ${patientId}`);
 
       return patientId;
     } catch (error) {
       console.error('Failed to generate patient ID:', error);
       // Fallback to timestamp-based ID if all else fails
-      return this.generateFallbackId();
+      return this.generateFallbackId(config);
     }
   } 
 
   /**
    * Get the next patient number for this device and increment counter
    */
-  private static async getNextPatientNumber(): Promise<number> {
+  private static async getNextPatientNumber(config: AppConfig): Promise<number> {
     try {
-      const storageKey = `${this.PATIENT_COUNTER_KEY}_${this.deviceId}`;
+      const storageKey = `${this.PATIENT_COUNTER_KEY}_${config.deviceIdKey}`;
       let counter: number;
 
       if (Platform.OS === 'web') {
@@ -66,9 +72,9 @@ export class PatientIdGenerator {
    /**
    * Add an unsed ID to the pool of recycled ids
    */
-  static async recyclePatientId(id: string) {  
+  static async recyclePatientId(id: string, config: AppConfig) {  
     try {
-      const storageKey = `${this.RECYCLED_IDS_KEY}_${this.deviceId}`;
+      const storageKey = `${this.RECYCLED_IDS_KEY}_${config.deviceIdKey}`;
       const recycledIds = await this.getAllRecycledIds(storageKey);
       
       // Add to pool if not already there
@@ -91,9 +97,9 @@ export class PatientIdGenerator {
    /**
    * Get a recycled ID from the pool (FIFO - first in, first out)
    */
-  private static async getRecycledId(): Promise<string | null> {
+  private static async getRecycledId(config: AppConfig): Promise<string | null> {
     try {
-      const storageKey = `${this.RECYCLED_IDS_KEY}_${this.deviceId}`;
+      const storageKey = `${this.RECYCLED_IDS_KEY}_${config.deviceIdKey}`;
       const recycledIds = await this.getAllRecycledIds(storageKey);
 
       if (recycledIds.length === 0) {
@@ -154,12 +160,11 @@ export class PatientIdGenerator {
   /**
    * Generate fallback patient ID when all else fails
    */
-  private static generateFallbackId(): string {
-    const site = ACTIVE_SITE
+  private static generateFallbackId(config: AppConfig): string {
     const dateStr = this.getCurrentDateString();
     const randomNum = Math.floor(Math.random() * 9999) + 1;
     
-    return `${site}-FALL-${dateStr}-${randomNum.toString().padStart(4, '0')}`;
+    return `${config.activeSite}-FALL-${dateStr}-${randomNum.toString().padStart(4, '0')}`;
   }
 
 }

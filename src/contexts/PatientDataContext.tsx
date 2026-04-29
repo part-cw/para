@@ -4,6 +4,7 @@ import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from '../utils/normalizer';
 import { useAuth } from './AuthContext';
+import { useConfig } from './ConfigContext';
 import { Diagnosis, initialDiagnosis } from './Diagnosis';
 import { initialPatientData, PatientData } from './PatientData';
 import { useStorage } from './StorageContext';
@@ -50,6 +51,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   
   const { storage, isInitialized } = useStorage();
   const { currentUser } = useAuth();
+  const { config } = useConfig();
   const modelSelector = getModelSelectorInstance();
   const userId = currentUser?.displayName || currentUser?.username || 'unknown'
 
@@ -105,7 +107,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
   const createNewDraft = async () => {
     try {
-      const patientId = await PatientIdGenerator.generatePatientId();
+      const patientId = await PatientIdGenerator.generatePatientId(config);
       const newDraftData = {
         ...initialPatientData,
         patientId: patientId,
