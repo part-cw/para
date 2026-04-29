@@ -1,8 +1,17 @@
+import { AppConfig } from "@/src/contexts/ConfigContext";
 import { AgeCalculator } from "../ageCalculator";
 
 
 describe('AgeCalculator', () => {
   const FIXED_DATE = new Date('2025-08-26T00:00:00Z'); // control today's date
+  const config: AppConfig = {
+    country: 'Uganda',
+    activeDistrict: 'buikwe',
+    activeSite: 'SITE',
+    deviceIdKey: 'A',
+    maxPatientAge: 5,
+    rrateIntegrationEnabled: false
+  }
 
   beforeAll(() => {
     jest.useFakeTimers();
@@ -151,19 +160,19 @@ describe('AgeCalculator', () => {
   describe('getAgeInMonths', () => {
     it('should calculate age in months from dob', () => {
       const dob = new Date('2023-08-26');
-      const months = AgeCalculator.calculateAgeInMonths(dob, '', '', '');
+      const months = AgeCalculator.calculateAgeInMonths(dob, '', '', '', config);
       expect(months).toBeCloseTo(24, 1); // ~24 months
     });
 
     it('should calculate age in months from years', () => {
-      const months = AgeCalculator.calculateAgeInMonths(null, '', '', '3');
+      const months = AgeCalculator.calculateAgeInMonths(null, '', '', '3', config);
       const expected = 3*12
       expect(months).toBe(expected);
     });
 
     it('should calculate approx age in months from yob and mob', () => {
       // current date set to Aug 26 2025
-      const months = AgeCalculator.calculateAgeInMonths(null, '2025', 'July', '');
+      const months = AgeCalculator.calculateAgeInMonths(null, '2025', 'July', '', config);
       expect(months).toBeGreaterThan(1)
       expect(months).toBeLessThan(2);
     });
@@ -172,7 +181,7 @@ describe('AgeCalculator', () => {
       const newDate = new Date('2025-08-15T00:00:00Z')
       jest.setSystemTime(newDate);
 
-      const months = AgeCalculator.calculateAgeInMonths(null, '2025', 'July', '');
+      const months = AgeCalculator.calculateAgeInMonths(null, '2025', 'July', '', config);
       expect(months).toBeCloseTo(1, 1)
     });
   });

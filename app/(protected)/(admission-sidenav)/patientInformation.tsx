@@ -119,7 +119,7 @@ export default function PatientInformationScreen() {
             errors.push(ageRequiredError)
         } else {
             try {
-                const age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge);
+                const age = AgeCalculator.calculateAgeInMonths(dob, birthYear, birthMonth, approxAge, config);
                 updatePatientData({
                     ageInMonths: age,
                     isNeonate: dob && AgeCalculator.getAgeInDaysFromDob(dob) < 30
@@ -409,11 +409,11 @@ export default function PatientInformationScreen() {
                                     inputType={INPUT_TYPES.NUMERIC}
                                     isRequired={true}
                                     right={<TextInput.Affix text="years old" />}
-                                    customValidator={validateApproxAge}
+                                    customValidator={(input) => validateApproxAge(input, config)}
                                     showErrorOnTyping={true} 
                                     onBlur={() => {
                                         // Only format if the value is valid
-                                        if (validateApproxAge(approxAge)) {
+                                        if (validateApproxAge(approxAge, config)) {
                                             handleApproxAgeChange(formatNumericInput(approxAge));
                                         }
                                     }}
