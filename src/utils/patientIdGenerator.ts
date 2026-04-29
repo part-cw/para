@@ -15,14 +15,6 @@ export class PatientIdGenerator {
    */
   static async generatePatientId(): Promise<string> {
     try {
-      // check if there are any recycled ids to use
-      const recycledId = await this.getRecycledId();
-      
-      if (recycledId) {
-        console.log(`Reusing recycled patient ID: ${recycledId}`);
-        return recycledId;
-      }
-
       const site = ACTIVE_SITE
       const patientNumber = await this.getNextPatientNumber();
       
