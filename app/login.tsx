@@ -2,7 +2,7 @@ import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, View } from 'react-native';
+import { Alert, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,9 +14,6 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-//   TODO
-//   1. forgot password option -- talk to account administrator
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
@@ -87,6 +84,19 @@ export default function LoginScreen() {
         >
           Login
         </Button>
+
+        <TouchableOpacity onPress={() => {
+            Platform.OS !== 'web' 
+            ?
+            Alert.alert('Password Reset','Contact your site administrator to reset your password.')
+            :
+            window.confirm('Contact your site administrator to reset your password.')
+          }
+          }>
+          <Text style={[styles.text, {color: colors.primary}]}>
+            Forgot your password?
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -112,7 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: 25
   },
   button: {
-    marginTop: 24
+    marginTop: 20
   },
   logoContainer: {
     alignItems: 'center',
@@ -122,5 +132,12 @@ const styles = StyleSheet.create({
     maxHeight: 350,
     height: 200,
     aspectRatio: 733 / 1043
+  },
+  text: {
+    marginTop: 20,
+    marginBottom: 20,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '700'
   }
 });

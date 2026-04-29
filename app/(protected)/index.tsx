@@ -65,6 +65,17 @@ export default function HomeScreen() {
 
             <Button 
               style={{ alignSelf: 'center', marginVertical: 10 }}
+              buttonColor={colors.primary} 
+              textColor={colors.onPrimary} 
+              icon='account-cog'
+              mode="elevated" 
+              onPress={() => router.push('/(protected)/manageUsers')}
+            >
+              Manage Users
+            </Button>
+
+            <Button 
+              style={{ alignSelf: 'center', marginVertical: 10 }}
               buttonColor={colors.secondary} 
               textColor={colors.onSecondary} 
               icon='cog'

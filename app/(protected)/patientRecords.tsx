@@ -204,24 +204,6 @@ export default function PatientRecords() {
           />
         </View>
 
-        {/* Search Bar -- TODO uncomment and continue implementation */}
-        {/* <View style={{paddingHorizontal: 16, paddingVertical: 5}}>
-          <Searchbar
-            placeholder="Search by name or ID"
-            onChangeText={() => console.log('blah')}
-            value={''}
-            style={{
-              backgroundColor: colors.secondary, 
-              height: 40, 
-              width: '60%',
-            }} 
-            inputStyle={{fontSize: 14, padding: 0, alignSelf: 'center'}}
-            iconColor={colors.primary}
-            elevation={1}
-          />
-        </View> */}
-
-
         {filteredPatients.map((p) => {
           const name = formatName(p.firstName, p.surname, p.otherName);
           const age = AgeCalculator.formatAge(p.ageInMonths as number);
