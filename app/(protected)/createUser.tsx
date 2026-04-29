@@ -51,6 +51,7 @@ export default function CreateUserScreen() {
       Alert.alert('Success', `User "${displayName}" created!`);
       setUsername('');
       setDisplayName('');
+      setPosition('');
       setPassword('');
       setConfirmPassword('');
     } catch (error) {
