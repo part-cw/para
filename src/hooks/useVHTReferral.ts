@@ -1,6 +1,5 @@
 import { DropdownItem } from '@/src/components/SearchableDropdown';
 import { validatePhoneNumber } from '@/src/utils/inputValidator';
-import { vhtData as allData } from '@/src/utils/vhtDataLoader';
 import {
     filterTelephoneNumbers,
     filterVHTs,
@@ -9,7 +8,9 @@ import {
     getVhtDropdownItems,
     getVillageDropdownItems
 } from '@/src/utils/vhtDataProcessor';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useConfig } from '../contexts/ConfigContext';
+import { getVhtDataByDistrict } from '../utils/vhtDataLoader';
 
 interface UseVHTReferralProps {
     village?: string;
@@ -24,6 +25,7 @@ interface UseVHTReferralProps {
     }) => void;
 }
 
+// TODO - TEST THIS HOOK 
 export const useVHTReferral = ({
     village,
     subvillage,
@@ -31,13 +33,40 @@ export const useVHTReferral = ({
     vhtTelephone,
     onUpdate
 }: UseVHTReferralProps) => {
-    const [villages, setVillages] = useState<DropdownItem[]>(() => getVillageDropdownItems(allData));
-    const [vhts, setVHTs] = useState<DropdownItem[]>(() => getVhtDropdownItems(allData));
-    const [telNumbers, setTelNumbers] = useState<DropdownItem[]>(() => getTelephoneDropdownItems(allData));
+
+    const { config } = useConfig();
+
+    const allData = useMemo(() => 
+        getVhtDataByDistrict(config.activeDistrict),
+        [config.activeDistrict]
+    );
+
+    // TODO - this is new - make sure it still works
+    const [villages, setVillages] = useState<DropdownItem[]>([]);
+    const [vhts, setVHTs] = useState<DropdownItem[]>([]);
+    const [telNumbers, setTelNumbers] = useState<DropdownItem[]>([]);
+
+    useEffect(() => {
+        setVillages(getVillageDropdownItems(allData));
+        setVHTs(getVhtDropdownItems(allData));
+        setTelNumbers(getTelephoneDropdownItems(allData));
+    }, [allData]);
+
+    // TODO - commented out stuff is old ()
+    // const [villages, setVillages] = useState<DropdownItem[]>(() => getVillageDropdownItems(allData));
+    // const [vhts, setVHTs] = useState<DropdownItem[]>(() => getVhtDropdownItems(allData));
+    // const [telNumbers, setTelNumbers] = useState<DropdownItem[]>(() => getTelephoneDropdownItems(allData));
 
     const [addedVillages, setAddedVillages] = useState<DropdownItem[]>([]);
     const [addedVHTs, setAddedVHTs] = useState<DropdownItem[]>([]);
     const [addedNumbers, setAddedNumbers] = useState<DropdownItem[]>([]);
+
+    // NEW: in case admin changes district of device - TODO check that this is correct
+    useEffect(() => {
+        setAddedVillages([]);
+        setAddedVHTs([]);
+        setAddedNumbers([]);
+    }, [config.activeDistrict]);
 
     const allVillages = [...villages, ...addedVillages];
     const allVHTs = [...vhts, ...addedVHTs];
