@@ -4,7 +4,7 @@ import { StorageProvider } from "@/src/contexts/StorageContext";
 import { initializeModels } from "@/src/models/modelSelectorInstance";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider as PaperProvider } from "react-native-paper";
@@ -43,12 +43,6 @@ export default function RootLayout() {
     }
   }, [modelsLoaded]);
 
-  const onLayoutRootView = useCallback(async () => {
-    if (modelsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [modelsLoaded]);
-
   if (!modelsLoaded) {
     return null;
   }
@@ -66,23 +60,23 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <ConfigProvider>
-          <StorageProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-                    <PaperProvider theme={AppTheme}>
-                      <Stack screenOptions={{ headerShown: false }}>
-                        {/* Public routes */}
-                        <Stack.Screen name="deviceSetup" />
-                        <Stack.Screen name="login" />
-                        <Stack.Screen name="setup" />
-                        <Stack.Screen name="index" />
-                        {/* Protected routes */}
-                        <Stack.Screen name="(protected)" />
-                      </Stack>
-                    </PaperProvider>
-                  </View>
-                </GestureHandlerRootView>
-          </StorageProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <View style={{ flex: 1 }}>
+                <PaperProvider theme={AppTheme}>
+                  <StorageProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      {/* Public routes */}
+                      <Stack.Screen name="deviceSetup" />
+                      <Stack.Screen name="login" />
+                      <Stack.Screen name="setup" />
+                      <Stack.Screen name="index" />
+                      {/* Protected routes */}
+                      <Stack.Screen name="(protected)" />
+                    </Stack>
+                  </StorageProvider>
+                </PaperProvider>
+              </View>
+            </GestureHandlerRootView>
         </ConfigProvider>
       </AuthProvider>
     </SafeAreaProvider>
