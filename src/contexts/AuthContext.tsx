@@ -20,7 +20,7 @@ export interface User {
 
 interface AuthContextType {
   currentUser: User | null;
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
   isAdmin: boolean;
   needsSetup: boolean | null;
   login: (username: string, password: string) => Promise<boolean>;
@@ -41,54 +41,35 @@ const USERS_DB_KEY = 'users_database';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
 
   useEffect(() => {
-    checkSetupStatus();
+    const run = async () => {
+      await checkSetupStatus();
+    }
+    run();
   }, []);
 
   const checkSetupStatus = async () => {
     try {
-      // Check if current user exists
-      const userJson = await SecureStore.getItemAsync(CURRENT_USER_KEY);
-      if (userJson) {
-        const user = JSON.parse(userJson);
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-        setNeedsSetup(false);
-        return;
-      }
+      // Always clear any persisted session on launch - forces re-login
+      await SecureStore.deleteItemAsync(CURRENT_USER_KEY);
+      setIsAuthenticated(false);
 
-      // Check if any users exist
+      // If no persised user, reach here -- check if any users exist in db
       const dbJson = await SecureStore.getItemAsync(USERS_DB_KEY);
-      if (!dbJson) {
-        setNeedsSetup(true); // No users exist - need setup
+      if (!dbJson) { 
+        setNeedsSetup(true);
       } else {
         const dbArray = JSON.parse(dbJson);
         const db = new Map(dbArray);
-        setNeedsSetup(db.size === 0); // Need setup if no users
+        setNeedsSetup(db.size === 0); // Need setup if no users (ie db empty)
       }
     } catch (error) {
       console.error('Error checking setup status:', error);
-      setNeedsSetup(true); // Assume setup needed on error
-    }
-  };
-
-  useEffect(() => {
-    loadCurrentUser();
-  }, []);
-
-  const loadCurrentUser = async () => {
-    try {
-      const userJson = await SecureStore.getItemAsync(CURRENT_USER_KEY);
-      if (userJson) {
-        const user = JSON.parse(userJson);
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-      }
-    } catch (error) {
-      console.error('Error loading current user:', error);
+      setNeedsSetup(true); 
+      setIsAuthenticated(false);
     }
   };
 
@@ -203,6 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(updatedUser));
   };
 
+  // TODO figure out why active role sets to null after profile update
   const updateUserProfile = async (updates: Partial<User>) => {
     if (!currentUser) {
       throw new Error('No user logged in');
@@ -215,15 +197,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('User not found');
     }
 
+    // console.log('~~~AuthContext, updateUserProfile, userEntry', userEntry)
+
     // Users can only update their own profile
     // Admins can update role/password of others, but that requires separate method
     const updatedUser = { ...userEntry.user, ...updates };
+    // console.log('~~~updateUserProfile, updatedUser', updatedUser)
     userEntry.user = updatedUser;
+    // console.log('~~~updateUserProfile, userEntry.user', userEntry.user)
     
     db.set(currentUser.username, userEntry);
     await saveUsersDatabase(db);
     
     setCurrentUser(updatedUser);
+    // console.log('currentUser useState', currentUser)
     await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(updatedUser));
   };
 
