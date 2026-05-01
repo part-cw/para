@@ -9,7 +9,7 @@ export interface User {
   username: string;
   displayName: string;
   role: UserRole; // Actual role (admin or user)
-  activeRole?: UserRole; // Current active role (for admin switching)
+  activeRole: UserRole; // Current active role (for admin switching)
   email?: string;
   createdAt: string;
   // Profile fields
@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await SecureStore.deleteItemAsync(CURRENT_USER_KEY);
       setIsAuthenticated(false);
 
-      // If no persised user, reach here -- check if any users exist in db
+      // Check if any users exist in db
       const dbJson = await SecureStore.getItemAsync(USERS_DB_KEY);
       if (!dbJson) { 
         setNeedsSetup(true);
@@ -171,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // only available to admins
   const switchRole = async () => {
         if (!currentUser || currentUser.role !== 'admin') {
             console.warn('Only admins can switch roles');
@@ -184,7 +185,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(updatedUser));
   };
 
-  // TODO figure out why active role sets to null after profile update
   const updateUserProfile = async (updates: Partial<User>) => {
     if (!currentUser) {
       throw new Error('No user logged in');
@@ -197,24 +197,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('User not found');
     }
 
-    // console.log('~~~AuthContext, updateUserProfile, userEntry', userEntry)
-
     // Users can only update their own profile
-    // Admins can update role/password of others, but that requires separate method
-    const updatedUser = { ...userEntry.user, ...updates };
-    // console.log('~~~updateUserProfile, updatedUser', updatedUser)
+    const updatedUser = { ...userEntry.user, ...updates, activeRole: userEntry.user.role };
     userEntry.user = updatedUser;
-    // console.log('~~~updateUserProfile, userEntry.user', userEntry.user)
     
     db.set(currentUser.username, userEntry);
     await saveUsersDatabase(db);
     
     setCurrentUser(updatedUser);
-    // console.log('currentUser useState', currentUser)
     await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(updatedUser));
   };
 
-  // TODO fix this implelentsaion
   // Allows admins to change roles of other users (switch from admin to user and vice versa)
   const updateAnyUserProfile = async (selectedUser: User, updates: Partial<User>) => {
     if (!currentUser || currentUser.role !== 'admin') {
