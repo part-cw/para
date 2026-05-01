@@ -42,6 +42,7 @@ export default function CreateUserScreen() {
           username: username.trim(),
           displayName: displayName.trim(),
           role: 'user', // Regular user
+          activeRole: 'user',
           position: position.trim() || '',
           email: ''
         },
