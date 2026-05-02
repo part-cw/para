@@ -281,13 +281,13 @@ export default function MedicalConditionsScreen() {
             <PaginationControls
                 showPrevious={true}
                 showNext={true}
-                onPrevious={() => router.push('/(admission-sidenav)/admissionClinicalData')}
+                onPrevious={() => router.push('/(protected)/(admission-sidenav)/admissionClinicalData')}
                 onNext={() => {
                     if (hasValidationErrors) {
                         setShowErrorSummary(true)
                     } else {
                         setShowErrorSummary(false)
-                        router.push('/(admission-sidenav)/vhtReferral')
+                        router.push('/(protected)/(admission-sidenav)/vhtReferral')
                     }
                 }}
             /> 

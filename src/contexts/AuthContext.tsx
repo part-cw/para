@@ -9,7 +9,7 @@ export interface User {
   username: string;
   displayName: string;
   role: UserRole; // Actual role (admin or user)
-  activeRole?: UserRole; // Current active role (for admin switching)
+  activeRole: UserRole; // Current active role (for admin switching)
   email?: string;
   createdAt: string;
   // Profile fields
@@ -20,7 +20,7 @@ export interface User {
 
 interface AuthContextType {
   currentUser: User | null;
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
   isAdmin: boolean;
   needsSetup: boolean | null;
   login: (username: string, password: string) => Promise<boolean>;
@@ -41,54 +41,35 @@ const USERS_DB_KEY = 'users_database';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
 
   useEffect(() => {
-    checkSetupStatus();
+    const run = async () => {
+      await checkSetupStatus();
+    }
+    run();
   }, []);
 
   const checkSetupStatus = async () => {
     try {
-      // Check if current user exists
-      const userJson = await SecureStore.getItemAsync(CURRENT_USER_KEY);
-      if (userJson) {
-        const user = JSON.parse(userJson);
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-        setNeedsSetup(false);
-        return;
-      }
+      // Always clear any persisted session on launch - forces re-login
+      await SecureStore.deleteItemAsync(CURRENT_USER_KEY);
+      setIsAuthenticated(false);
 
-      // Check if any users exist
+      // Check if any users exist in db
       const dbJson = await SecureStore.getItemAsync(USERS_DB_KEY);
-      if (!dbJson) {
-        setNeedsSetup(true); // No users exist - need setup
+      if (!dbJson) { 
+        setNeedsSetup(true);
       } else {
         const dbArray = JSON.parse(dbJson);
         const db = new Map(dbArray);
-        setNeedsSetup(db.size === 0); // Need setup if no users
+        setNeedsSetup(db.size === 0); // Need setup if no users (ie db empty)
       }
     } catch (error) {
       console.error('Error checking setup status:', error);
-      setNeedsSetup(true); // Assume setup needed on error
-    }
-  };
-
-  useEffect(() => {
-    loadCurrentUser();
-  }, []);
-
-  const loadCurrentUser = async () => {
-    try {
-      const userJson = await SecureStore.getItemAsync(CURRENT_USER_KEY);
-      if (userJson) {
-        const user = JSON.parse(userJson);
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-      }
-    } catch (error) {
-      console.error('Error loading current user:', error);
+      setNeedsSetup(true); 
+      setIsAuthenticated(false);
     }
   };
 
@@ -190,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // only available to admins
   const switchRole = async () => {
         if (!currentUser || currentUser.role !== 'admin') {
             console.warn('Only admins can switch roles');
@@ -216,8 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Users can only update their own profile
-    // Admins can update role/password of others, but that requires separate method
-    const updatedUser = { ...userEntry.user, ...updates };
+    const updatedUser = { ...userEntry.user, ...updates, activeRole: userEntry.user.role };
     userEntry.user = updatedUser;
     
     db.set(currentUser.username, userEntry);
@@ -227,7 +208,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await SecureStore.setItemAsync(CURRENT_USER_KEY, JSON.stringify(updatedUser));
   };
 
-  // TODO fix this implelentsaion
   // Allows admins to change roles of other users (switch from admin to user and vice versa)
   const updateAnyUserProfile = async (selectedUser: User, updates: Partial<User>) => {
     if (!currentUser || currentUser.role !== 'admin') {
@@ -284,7 +264,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       db.set(selectedUser.username, userEntry);
       await saveUsersDatabase(db);
 
-      console.log(`🔐 Password reset for user ${selectedUser.username || selectedUser.displayName} at ${new Date().toISOString()}`);
+      console.log(`🔐 Password reset for user ${selectedUser.displayName || selectedUser.username} at ${new Date().toISOString()}`);
     }catch (error) {
       console.error('Error resetting password:', error);
       throw error;

@@ -43,7 +43,7 @@ export default function AppBar() {
         const patientId = patientData.patientId;
 
         if (patientId) {
-          await PatientIdGenerator.recyclePatientId(patientId)
+          await PatientIdGenerator.recyclePatientId(patientId, config) // only reuses Ids if have not yet entered draft state
           await storage.deletePatient(patientId)
         }
       };

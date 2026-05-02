@@ -4,7 +4,7 @@ import RadioButtonGroup from '@/src/components/RadioButtonGroup';
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput, { INPUT_TYPES } from '@/src/components/ValidatedTextInput';
 import ValidationSummary from '@/src/components/ValidationSummary';
-import { RRATE_INTEGRATION_ENABLED } from '@/src/config';
+import { useConfig } from '@/src/contexts/ConfigContext';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
@@ -24,9 +24,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function AdmissionClinicalDataScreen() {  
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
-    const { setValidationErrors, setValidationWarnings, getScreenErrors, getScreenWarnings } = useValidation();
-    // const [expandedAccordion, setExpandedAccordion] = useState<string>(''); // TODO - only one accordion open at a time?
-    
+    const { config } = useConfig();
+    const { setValidationErrors, setValidationWarnings, getScreenErrors, getScreenWarnings } = useValidation();    
 
     const validationErrors = getScreenErrors('admissionClinicalData')
     const hasValidationErrors = validationErrors.length > 0;
@@ -733,7 +732,7 @@ export default function AdmissionClinicalDataScreen() {
                                         right={<TextInput.Affix text="bpm" />}                             
                                     />
                                     {/* TODO add url to rrate app */}
-                                    { RRATE_INTEGRATION_ENABLED &&
+                                    { config.rrateIntegrationEnabled &&
                                         <Button 
                                             style={{ alignSelf: 'center'}}
                                             buttonColor={colors.primary} 
@@ -881,7 +880,7 @@ export default function AdmissionClinicalDataScreen() {
                       setShowErrorSummary(true)
                     } else {
                         setShowErrorSummary(false)
-                        router.push('/(admission-sidenav)/medicalConditions')}
+                        router.push('/(protected)/(admission-sidenav)/medicalConditions')}
                     }
                 }
             />

@@ -5,11 +5,10 @@ import { capitalizeFirstLetter } from '@/src/utils/formatUtils';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function EditProfileScreen() {
-    const { colors } = useTheme();
     const { currentUser, updateUserProfile } = useAuth();
 
     if (!currentUser) {
@@ -219,14 +218,6 @@ export default function EditProfileScreen() {
                         User ID: {currentUser.id}
                     </Text>
                 </View>
-
-                <Button
-                    mode="outlined"
-                    onPress={() => router.back()}
-                    style={styles.backButton}
-                >
-                    Back
-                </Button>
             </ScrollView>
         </SafeAreaView>
     );

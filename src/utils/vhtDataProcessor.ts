@@ -87,7 +87,9 @@ export function filterVHTs(
     });
 
     return (
-        Array.from(filteredVhts).map((name, index) => ({
+        Array.from(filteredVhts)
+        .sort()
+        .map((name, index) => ({
             key: `${index}`,
             value: formatText(name),
         }))
@@ -116,7 +118,9 @@ export function filterVillages(
     });
 
     return (
-        Array.from(filteredVillages).map((village, index) => ({
+        Array.from(filteredVillages)
+        .sort((a,b) => a.localeCompare(b))
+        .map((village, index) => ({
             key: `${index}`,
             value: formatText(village),
         }))

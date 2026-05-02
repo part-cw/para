@@ -3,7 +3,7 @@
  * 
  */
 
-import { MAX_PATIENT_AGE } from "../config";
+import { AppConfig } from "../contexts/ConfigContext";
 import { ageRangeErrorMessage, isValidAgeRange } from "./inputValidator";
 
 export class AgeCalculator {
@@ -20,9 +20,10 @@ export class AgeCalculator {
         dob: Date|null, 
         yob: string, 
         mob: string, 
-        approxAge: string): number {
+        approxAge: string,
+        config: AppConfig): number {
 
-        const months = 12 * this.calculateAgeInYears(dob, yob, mob, approxAge)
+        const months = 12 * this.calculateAgeInYears(dob, yob, mob, approxAge, config)
         return months
     }
 
@@ -64,13 +65,14 @@ export class AgeCalculator {
         dob: Date|null, 
         birthYear: string, 
         birthMonth: string, 
-        approxAge: string
+        approxAge: string,
+        config: AppConfig
     ): number {
         if (dob && !birthYear && !birthMonth && !approxAge) {
             const age = this.getAgeInYearsFromDOB(dob)
             
             if (age < 0) throw new Error("DOB cannot be in the future");
-            if (age > MAX_PATIENT_AGE) throw new Error(ageRangeErrorMessage)
+            if (age > config.maxPatientAge) throw new Error(ageRangeErrorMessage(config))
             
             return age;
 
@@ -79,7 +81,7 @@ export class AgeCalculator {
             const age = this.getAgeInYearsFromDOB(newDob)
 
             if (age < 0) throw new Error("DOB (calculated from birth year/month) cannot be in the future")            
-            if (age > MAX_PATIENT_AGE) throw new Error(ageRangeErrorMessage)
+            if (age > config.maxPatientAge) throw new Error(ageRangeErrorMessage(config))
             
             return age;
 
@@ -87,7 +89,7 @@ export class AgeCalculator {
             const age = Number(approxAge.trim())
 
             if (!age) throw new Error('Approximate age is not a valid number.')
-            if(!isValidAgeRange(age)) throw new Error(ageRangeErrorMessage)
+            if(!isValidAgeRange(age, config)) throw new Error(ageRangeErrorMessage(config))
             
             const parsed = Number(approxAge);
             return parsed

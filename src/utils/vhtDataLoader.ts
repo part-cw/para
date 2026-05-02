@@ -1,19 +1,28 @@
 import buikweData from '@/src/data/vht_list/buikwe.json';
 import testData from '@/src/data/vht_list/test.json';
+import { VhtDataObject } from './vhtDataProcessor';
 
-import { ACTIVE_DISTRICT } from '../config';
-
-// Loads the correct VHT data based on district
-// TODO district selected by admin and stored in ASYNC storage?? 
-// currently  or stored in env_flag in config file
-
+/**
+ * District/County -> VHT dataset map
+ * Keys should match config.activeDistrict (case-insensitive)
+ */
 const vhtDataMap: Record<string, any> = {
   buikwe: buikweData,
   test: testData, // TODO - delete testData
 };
 
-export const vhtData = vhtDataMap[ACTIVE_DISTRICT];
+/**
+ * Returns VHT dataset for the selected district.
+ *
+ * Always returns an array (never null/undefined)
+ * so downstream processors can safely do .forEach(), .map(), etc.
+ */
+export function getVhtDataByDistrict(district: string): VhtDataObject[] {
+  if (!district?.trim()) {
+    return [];
+  }
 
-// export function getVhtData(districtName: string) {
-//   return vhtDataMap[districtName.toLowerCase()] || null;
-// }
+  const normalizedDistrict = district.trim().toLowerCase();
+
+  return vhtDataMap[normalizedDistrict] ?? [];
+}

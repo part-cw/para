@@ -8,7 +8,6 @@ export default function HomeScreen() {
   const { colors } = useTheme();
   const { currentUser } = useAuth();
 
-
   return (
     <>
       <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: 20, paddingTop: 50}}>

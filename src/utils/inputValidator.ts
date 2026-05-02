@@ -3,7 +3,7 @@ Functions to validate text input and convert entered text to proper form
 */
 
 import { ValidationResult } from "../components/SearchableDropdown";
-import { MAX_PATIENT_AGE } from "../config";
+import { AppConfig } from "../contexts/ConfigContext";
 
 // TODO - add input validation for weight, muac, temp, rrate, spo2
 
@@ -151,9 +151,9 @@ export function isValidPhoneNumber(input: string): boolean {
     /**
      * Age-specific validation (positive integers only) - must be 0-5.5 years old
      */
-    export function isValidAgeRange(input: number): boolean {
+    export function isValidAgeRange(input: number, config: AppConfig): boolean {
         // const age = Number(input.trim());
-        return input >= 0 && input <= MAX_PATIENT_AGE;
+        return input >= 0 && input <= config.maxPatientAge;
     }
 
     // Numeric validation
@@ -234,13 +234,13 @@ export function isValidPhoneNumber(input: string): boolean {
         return true;
     }
 
-    export function validateApproxAge(input: string): boolean {
+    export function validateApproxAge(input: string, config: AppConfig): boolean {
         if (!input || !input.trim()) {
             return false; // Required field
         }
                 
         // Check if it's a valid number format
-        if (!isValidNumericFormat(input, 0, MAX_PATIENT_AGE)) {
+        if (!isValidNumericFormat(input, 0, config.maxPatientAge)) {
             return false;
         }
 
@@ -267,7 +267,7 @@ export function isValidPhoneNumber(input: string): boolean {
     export const passwordErrorMessage = 'Password must be at least 8 characters long and include both letters and numbers. No spaces'
     export const textErrorMessage = 'Text must be 2 characters or more, and can only contain letters, spaces, hyphens, exclamation marks or apostrophes.'
     export const numericErrorMessage = "Must be a valid number";
-    export const ageRangeErrorMessage = `Age must be between 0 and ${MAX_PATIENT_AGE} years. Patients over ${MAX_PATIENT_AGE} years are not eligible for this program`;
+    export const ageRangeErrorMessage = (config: AppConfig): string => `Age must be between 0 and ${config.maxPatientAge} years. Patients over ${config.maxPatientAge} years are not eligible for this program`;
     export const telephoneErrorMessage = 'Invalid phone number format. Use format: 0xxxxxxxxx (10 digits starting with 0) or +xxx... (international)';
     export const confirmPhoneErrorMessage = 'Phone number must match and be in valid format'
     export const dateErrorMessage = 'Date must be in format YYYYMMDD'

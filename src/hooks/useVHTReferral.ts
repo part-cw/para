@@ -1,6 +1,5 @@
 import { DropdownItem } from '@/src/components/SearchableDropdown';
 import { validatePhoneNumber } from '@/src/utils/inputValidator';
-import { vhtData as allData } from '@/src/utils/vhtDataLoader';
 import {
     filterTelephoneNumbers,
     filterVHTs,
@@ -9,7 +8,9 @@ import {
     getVhtDropdownItems,
     getVillageDropdownItems
 } from '@/src/utils/vhtDataProcessor';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useConfig } from '../contexts/ConfigContext';
+import { getVhtDataByDistrict } from '../utils/vhtDataLoader';
 
 interface UseVHTReferralProps {
     village?: string;
@@ -23,7 +24,6 @@ interface UseVHTReferralProps {
         vhtTelephone?: string;
     }) => void;
 }
-
 export const useVHTReferral = ({
     village,
     subvillage,
@@ -31,144 +31,261 @@ export const useVHTReferral = ({
     vhtTelephone,
     onUpdate
 }: UseVHTReferralProps) => {
-    const [villages, setVillages] = useState<DropdownItem[]>(() => getVillageDropdownItems(allData));
-    const [vhts, setVHTs] = useState<DropdownItem[]>(() => getVhtDropdownItems(allData));
-    const [telNumbers, setTelNumbers] = useState<DropdownItem[]>(() => getTelephoneDropdownItems(allData));
 
+    const { config } = useConfig();
+
+    const allData = useMemo(() => 
+        getVhtDataByDistrict(config.activeDistrict),
+        [config.activeDistrict]
+    );
+
+    const isResettingRef = useRef(false);
+    const [localCleared, setLocalCleared] = useState(false);
+
+
+    // ====== User-added values =======
     const [addedVillages, setAddedVillages] = useState<DropdownItem[]>([]);
     const [addedVHTs, setAddedVHTs] = useState<DropdownItem[]>([]);
     const [addedNumbers, setAddedNumbers] = useState<DropdownItem[]>([]);
 
-    const allVillages = [...villages, ...addedVillages];
-    const allVHTs = [...vhts, ...addedVHTs];
-    const allNumbers = [...telNumbers, ...addedNumbers];
-
-    // Handle village selection change
+    // Reset on district change - TODO NEW
     useEffect(() => {
-        const isUserAddedVillage = !!addedVillages.find(v => v.value === village);
-        const isUserAddedNumber = !!addedNumbers.find(n => n.value === vhtTelephone);
+        // setAddedVillages([]);
+        // setAddedVHTs([]);
+        // setAddedNumbers([]);
+        clearSelections();
+    }, [config.activeDistrict]);
 
-        const filteredVHTs = (isUserAddedVillage && !vhtTelephone) || (isUserAddedNumber && !village)
-            ? getVhtDropdownItems(allData)
-            : filterVHTs(allData, village, vhtTelephone);
+    // ======= Base dropdowns (unfiltered) ========
+    const baseVHTs = useMemo(
+        () => getVhtDropdownItems(allData),
+        [allData]
+    );
 
-        setVHTs(filteredVHTs);
+    const baseNumbers = useMemo(
+        () => getTelephoneDropdownItems(allData),
+        [allData]
+    );
 
-        // Auto-select VHT if only one option AND no VHT currently selected
-        if (filteredVHTs.length === 1 && !vhtName) {
-            onUpdate({ vhtName: filteredVHTs[0].value });
+    const baseVillages = useMemo(
+        () => getVillageDropdownItems(allData),
+        [allData]
+    );
+
+
+    // ======= Flags for custom values =======
+    const isCustomVillage = useMemo(
+        () => addedVillages.some(v => v.value === village),
+        [addedVillages, village]
+    );
+
+    const isCustomNumber = useMemo(
+        () => addedNumbers.some(n => n.value === vhtTelephone),
+        [addedNumbers, vhtTelephone]
+    );
+
+    // ======= Filtered lists (bidrectional logic) =======
+    const villages = useMemo(() => {
+        if (localCleared || (!vhtName && !vhtTelephone)) {
+            return [...baseVillages, ...addedVillages];
         }
-    }, [village, vhtTelephone]);
 
-    // Handle VHT selection change
+        const filtered = filterVillages(allData, vhtName, vhtTelephone);
+        return [...filtered, ...addedVillages];
+    }, [allData, vhtName, vhtTelephone, addedVillages, baseVillages,localCleared]);
+
+    const vhts = useMemo(() => {
+        if (localCleared || (!village && !vhtTelephone)) {
+            return [...baseVHTs, ...addedVHTs];
+        }
+
+        const filtered =
+            (isCustomVillage && !vhtTelephone) ||
+            (isCustomNumber && !village)
+                ? baseVHTs
+                : filterVHTs(allData, village, vhtTelephone);
+
+        return [...filtered, ...addedVHTs];
+    }, [
+        allData,
+        village,
+        vhtTelephone,
+        addedVHTs,
+        baseVHTs,
+        isCustomVillage,
+        isCustomNumber,
+        localCleared
+    ]);
+
+    const telNumbers = useMemo(() => {
+        if (localCleared || (!village && !vhtName)) {
+            return [...baseNumbers, ...addedNumbers];
+        }
+
+        const filtered =
+            isCustomVillage && !vhtTelephone
+                ? baseNumbers
+                : filterTelephoneNumbers(allData, vhtName, village);
+
+        return [...filtered, ...addedNumbers];
+    }, [
+        allData,
+        village,
+        vhtName,
+        vhtTelephone,
+        addedNumbers,
+        baseNumbers,
+        isCustomVillage,
+        localCleared
+    ]);
+
+    // Clear localCleared once props have caught up
     useEffect(() => {
-        const filteredVillages = filterVillages(allData, vhtName, vhtTelephone);
-        setVillages(filteredVillages);
-
-        // Auto-select village if only one option AND no village currently selected
-        if (filteredVillages.length === 1 && !village) {
-            onUpdate({ village: filteredVillages[0].value });
+        if (localCleared && !village && !vhtName && !vhtTelephone) {
+            setLocalCleared(false);
         }
-    }, [vhtName, vhtTelephone]);
+    }, [localCleared, village, vhtName, vhtTelephone]);
 
-    // Handle telephone filtering
+    // ======= Auto-select logic ======= 
     useEffect(() => {
-        const isUserAddedVillage = !!addedVillages.find(v => v.value === village);
-
-        const filteredNumbers = (isUserAddedVillage && !vhtTelephone)
-            ? getTelephoneDropdownItems(allData)
-            : filterTelephoneNumbers(allData, vhtName, village);
-
-        setTelNumbers(filteredNumbers);
-
-        // Auto-populate tel if only option
-        if (filteredNumbers.length === 1 && !vhtTelephone) {
-            onUpdate({ vhtTelephone: filteredNumbers[0].value });
+        if (isResettingRef.current) return;
+        if (villages.length === 1 && !village) {
+            onUpdate({ village: villages[0].value });
         }
-    }, [village, vhtName]);
+    }, [villages, village, onUpdate]);
 
-    // ========= HANDLERS ==============
-    const handleAddVillage = (newVillage: DropdownItem) => {
-        setAddedVillages(prev => [...prev, newVillage]);
-    };
-
-    const handleAddVHT = (newVHT: DropdownItem) => {
-        setAddedVHTs(prev => [...prev, newVHT]);
-    };
-
-    const handleAddTel = (newNumber: DropdownItem) => {
-        const validation = validatePhoneNumber(newNumber.value);
-        if (validation.isValid) {
-            const formattedNumber = {
-                ...newNumber,
-                value: validation.formattedValue || newNumber.value
-            };
-            setAddedNumbers(prev => [...prev, formattedNumber]);
-            console.log('Added valid phone number:', formattedNumber.value);
-        } else {
-            console.error('Attempted to add invalid phone number:', newNumber.value);
+    useEffect(() => {
+        if (isResettingRef.current) return;
+        if (vhts.length === 1 && !vhtName) {
+            onUpdate({ vhtName: vhts[0].value });
         }
-    };
+    }, [vhts, vhtName, onUpdate]);
 
-    const handleVillageSelect = (selectedVillage: DropdownItem) => {
-        onUpdate({ village: selectedVillage.value || '' });
-    };
+    useEffect(() => {
+        if (isResettingRef.current) return;
+        if (telNumbers.length === 1 && !vhtTelephone) {
+            onUpdate({ vhtTelephone: telNumbers[0].value });
+        }
+    }, [telNumbers, vhtTelephone, onUpdate]);
 
-    const handleVHTSelect = (selectedVHT: DropdownItem) => {
-        onUpdate({ vhtName: selectedVHT.value || '' });
-    };
 
-    const handleTelSelect = (selectedTel: DropdownItem) => {
-        onUpdate({ vhtTelephone: selectedTel.value || '' });
-    };
+    // ========= ADD HANDLERS (with dedup + formatting) ============
+    const handleAddVillage = useCallback((item: DropdownItem) => {
+        setAddedVillages(prev =>
+        prev.some(v => v.value === item.value)
+            ? prev
+            : [...prev, item]
+        );
+    }, []);
 
-    const handleSubvillageChange = (value: string) => {
+    const handleAddVHT = useCallback((item: DropdownItem) => {
+        setAddedVHTs(prev =>
+        prev.some(v => v.value === item.value)
+            ? prev
+            : [...prev, item]
+        );
+    }, []);
+
+    const handleAddTel = useCallback((item: DropdownItem) => {
+        const validation = validatePhoneNumber(item.value);
+
+        if (!validation.isValid) return;
+
+        const formatted = {
+        ...item,
+        value: validation.formattedValue || item.value,
+        };
+
+        setAddedNumbers(prev =>
+        prev.some(n => n.value === formatted.value)
+            ? prev
+            : [...prev, formatted]
+        );
+    }, []);
+
+    // ========= SELECT HANDLERS ==============
+    const handleVillageSelect = useCallback(
+        (item: DropdownItem) => {
+        onUpdate({ village: item.value || '' });
+        },
+        [onUpdate]
+    );
+
+    const handleVHTSelect = useCallback(
+        (item: DropdownItem) => {
+        onUpdate({ vhtName: item.value || '' });
+        },
+        [onUpdate]
+    );
+
+    const handleTelSelect = useCallback(
+        (item: DropdownItem) => {
+        onUpdate({ vhtTelephone: item.value || '' });
+        },
+        [onUpdate]
+    );
+
+    const handleSubvillageChange = useCallback(
+        (value: string) => {
         onUpdate({ subvillage: value });
-    };
+        },
+        [onUpdate]
+    );
 
-    const handleSubvillageBlur = () => {
+    const handleSubvillageBlur = useCallback(() => {
         onUpdate({ subvillage: subvillage?.trim() });
-    };
+    }, [subvillage, onUpdate]);
 
-    const clearSelections = () => {
+    const clearSelections = useCallback(() => {
+        isResettingRef.current = true;
+        setLocalCleared(true);
+        setAddedVillages([]);
+        setAddedVHTs([]);
+        setAddedNumbers([]);
+
         onUpdate({
             village: '',
             subvillage: '',
             vhtName: '',
-            vhtTelephone: ''
+            vhtTelephone: '',
         });
-    };
 
-    // Validation function for discharge
-    const validateForDischarge = (): { isValid: boolean; errors: string[] } => {
+        // Reset the flag after a tick, not on value change
+        setTimeout(() => isResettingRef.current = false, 100);
+    }, [onUpdate]);
+
+    // ========== Validation for discharge =============
+    const validateForDischarge = useCallback(() => {
         const errors: string[] = [];
 
-        if (!village || village.trim() === '') {
+        if (!village?.trim()) {
             errors.push('Village is required');
         }
 
-        if (!vhtName || vhtName.trim() === '') {
+        if (!vhtName?.trim()) {
             errors.push('VHT name is required');
         }
 
-        if (vhtTelephone && vhtTelephone.trim() !== '') {
+        if (vhtTelephone?.trim()) {
             const validation = validatePhoneNumber(vhtTelephone);
             if (!validation.isValid) {
-                errors.push(validation.errorMessage || 'Invalid phone number');
+                errors.push(
+                validation.errorMessage || 'Invalid phone number'
+                );
             }
         }
 
         return {
             isValid: errors.length === 0,
-            errors
+            errors,
         };
-    };
+    }, [village, vhtName, vhtTelephone]);
 
     return {
         // Data
-        allVillages,
-        allVHTs,
-        allNumbers,
+        allVillages: villages,
+        allVHTs: vhts,
+        allNumbers: telNumbers,
         village,
         subvillage,
         vhtName,

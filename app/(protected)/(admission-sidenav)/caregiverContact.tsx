@@ -69,13 +69,13 @@ export default function CaregiverContactScreen() {
             <PaginationControls
                 showPrevious={true}
                 showNext={true}
-                onPrevious={() => router.push('/(admission-sidenav)/vhtReferral')}
+                onPrevious={() => router.push('/(protected)/(admission-sidenav)/vhtReferral')}
                 onNext={() => {
                     if (pageErrors.length > 0) {
                         setShowErrorSummary(true)
                     } else {
                         setShowErrorSummary(false)
-                        router.push('/(admission-sidenav)/review')
+                        router.push('/(protected)/(admission-sidenav)/review')
                     }
                 }}
             />            

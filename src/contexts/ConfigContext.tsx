@@ -13,7 +13,7 @@ export interface AppConfig {
 interface ConfigContextType {
   config: AppConfig;
   updateConfig: (updates: Partial<AppConfig>) => Promise<void>;
-  isConfigured: boolean;
+  isConfigured: boolean | null;
 }
 
 const DEFAULT_CONFIG: AppConfig = {
@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: AppConfig = {
   activeDistrict: 'buikwe', // TODO - change this
   activeSite: 'SITE',
   deviceIdKey: 'A',
-  maxPatientAge: 5.5,
+  maxPatientAge: 5.1,
   rrateIntegrationEnabled: false
 };
 
@@ -31,7 +31,7 @@ const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
 export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
-  const [isConfigured, setIsConfigured] = useState(false);
+  const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
 
   useEffect(() => {
     loadConfig();
@@ -43,12 +43,13 @@ export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (configJson) {
         const loadedConfig = JSON.parse(configJson);
         setConfig(loadedConfig);
-        setIsConfigured(!!loadedConfig.activeSite); // Configured if site is set - TODO make it more precise
+        setIsConfigured(!!loadedConfig.activeSite); // Configured if site is set - TODO make it more precise?
       } else {
         setIsConfigured(false);
       }
     } catch (error) {
       console.error('Error loading config:', error);
+      setIsConfigured(false); // assume not configured if error loading
     }
   };
 
