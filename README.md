@@ -30,7 +30,7 @@ After launching, you can open the app on another platform simultaneously by pres
 
 ### Prerequisites
 - Android emulator set up and running
-- A DB viewer — [TablePlus](https://tableplus.com/) is recommended (or your favourite db manager), or install the [SQLite Viewer](https://marketplace.visualstudio.com/items?itemName=qwtel.sqlite-viewer) extension in VS Code
+- A DB viewer — [TablePlus](https://tableplus.com/) (or your favourite db manager) is recommended, or install the [SQLite Viewer](https://marketplace.visualstudio.com/items?itemName=qwtel.sqlite-viewer) extension in VS Code
 
 ### Steps
 
@@ -49,9 +49,18 @@ After launching, you can open the app on another platform simultaneously by pres
    - **TablePlus** (recommended) — drag and drop the `.db` file onto the dock icon, or go to File → Open
    - **VS Code** — open the file directly with the SQLite Viewer extension installed
    - **Terminal** (no install needed, macOS only):
-```bash
-        sqlite3 scripts/db/para.db
-```
-  `.tables` lists all tables · `.quit` to exit
+
+      ```bash
+            sqlite3 scripts/db/para.db
+      ```
+      This allows you to run SQL from your Terminal.
+      
+      Useful commands:
+        - `.tables` — list all tables
+        - `.schema <table>` — show table structure
+        - `SELECT * FROM <table>;` — view all rows in a table
+        - `.quit` — exit
+
+        For more, see the [SQLite CLI reference](https://www.sqlite.org/cli.html).
 
 > **Note:** `adb` only works for Android emulators and USB-connected Android devices with debugging enabled. It does not work for iOS. See `scripts/pull-dbs.sh` for details. 
