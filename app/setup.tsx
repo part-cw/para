@@ -44,6 +44,7 @@ export default function SetupScreen() {
             {
                 username: adminUsername.trim(),
                 role: 'admin',
+                activeRole: 'admin',
                 displayName:'',
                 email: '',
             },
