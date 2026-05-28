@@ -1,3 +1,4 @@
+import * as SecureStore from 'expo-secure-store';
 import * as SQLite from "expo-sqlite";
 import { Diagnosis } from "../contexts/Diagnosis";
 import { PatientData } from "../contexts/PatientData";
@@ -34,37 +35,36 @@ export class SQLiteStorage implements IStorageService {
     private readonly DB_NAME = 'para.db';
     private readonly ENCRYPTION_KEY_STORAGE = 'db_encryption_key';
 
-
-    async init(): Promise<void> {
-        // TODO uncomment encryption stuff add PRAGMA config to app.json. See https://docs.expo.dev/versions/latest/sdk/sqlite/#configuration-in-app-config
-        // this.encryptionKey = await this.getOrCreateEncryptionKey();
+async init(): Promise<void> {
+        this.encryptionKey = await this.getOrCreateEncryptionKey();
         
         this.db = await SQLite.openDatabaseAsync(this.DB_NAME);
 
-        // Enable encryption (if supported)
-        // try {
-        //     await this.db.execAsync(`PRAGMA key = '${this.encryptionKey}';`);
-        // } catch (error) {
-        //     console.warn('Encryption not supported in this SQLite build:', error);
-        // }
+        // Enable encryption
+        try {
+            await this.db.execAsync(`PRAGMA key = '${this.encryptionKey}';`);
+            console.log(' Database encryption enabled');
+        } catch (error) {
+            console.warn('Encryption not supported in this SQLite build:', error);
+        }
 
         await this.initializeSchema();
     }
 
-    // private async getOrCreateEncryptionKey(): Promise<string> {
-    //     let key = await SecureStore.getItemAsync(this.ENCRYPTION_KEY_STORAGE);
+  private async getOrCreateEncryptionKey(): Promise<string> {
+        let key = await SecureStore.getItemAsync(this.ENCRYPTION_KEY_STORAGE);
         
-    //     if (!key) {
-    //         // Generate a new 256-bit key
-    //         key = Array.from({ length: 32 }, () => 
-    //             Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
-    //         ).join('');
+        if (!key) {
+            // Generate a new 256-bit key
+            key = Array.from({ length: 32 }, () => 
+                Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
+            ).join('');
             
-    //         await SecureStore.setItemAsync(this.ENCRYPTION_KEY_STORAGE, key);
-    //     }
+            await SecureStore.setItemAsync(this.ENCRYPTION_KEY_STORAGE, key);
+        }
         
-    //     return key;
-    // }
+        return key;
+    }
 
     async initializeSchema(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');    

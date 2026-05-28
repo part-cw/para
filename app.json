@@ -35,10 +35,21 @@
       ],
       "expo-font",
       "expo-secure-store",
-      "expo-sqlite"
+     [
+  "expo-sqlite",
+  {
+    "useSQLCipher": true
+  }
+]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7f44e16c-b735-4df1-84cb-537837c69ad0"
+      }
     }
   }
 }
