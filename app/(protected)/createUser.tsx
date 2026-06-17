@@ -2,7 +2,7 @@ import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet } from 'react-native';
 import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +19,9 @@ export default function CreateUserScreen() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [confirmPassword, setConfirmPassword] = useState<string>('')
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const userRef = useRef<any>(null);
+  const passwordRef = useRef<any>(null);
+  const confirmPasswordRef = useRef<any>(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -87,16 +90,21 @@ export default function CreateUserScreen() {
               mode="outlined"
               placeholder='e.g. Nurse or Researcher'
               style={styles.input}
+              onSubmitEditing={() => userRef.current?.focus()}
             />
             <TextInput
+              ref={userRef}
               label="Username"
               value={username}
               onChangeText={setUsername}
               mode="outlined"
               style={styles.input}
               autoCapitalize="none"
+              returnKeyType="next"
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
             <ValidatedTextInput 
+                ref={passwordRef}
                 label="Password"
                 value={password}
                 onChangeText={setPassword}
@@ -111,9 +119,12 @@ export default function CreateUserScreen() {
                 }
                 style={styles.input}
                 autoCapitalize="none"
+                returnKeyType="next"
+                onSubmitEditing={() => confirmPasswordRef.current?.focus()}
             />
 
              <ValidatedTextInput
+                  ref={confirmPasswordRef}
                   label="Confirm Password"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -129,6 +140,7 @@ export default function CreateUserScreen() {
                   customErrorMessage='Passwords must match'
                   style={styles.input}
                   autoCapitalize="none"
+                  returnKeyType="done"
               />
 
             <Button

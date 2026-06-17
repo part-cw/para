@@ -64,7 +64,7 @@ export default function RootLayout() {
               <View style={{ flex: 1 }}>
                 <PaperProvider theme={AppTheme}>
                   <StorageProvider>
-                    <Stack screenOptions={{ headerShown: false }}>
+                    <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
                       {/* Public routes */}
                       <Stack.Screen name="deviceSetup" />
                       <Stack.Screen name="login" />

@@ -1,7 +1,7 @@
 import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Alert, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const passwordRef = useRef<any>(null);
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
@@ -56,9 +57,13 @@ export default function LoginScreen() {
           style={styles.input}
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
+          blurOnSubmit={false}
         />
         
         <ValidatedTextInput
+          ref={passwordRef}
           label="Password"
           value={password}
           onChangeText={setPassword}
@@ -73,6 +78,7 @@ export default function LoginScreen() {
           }
           style={styles.input}
           autoCapitalize="none"
+          returnKeyType="done"
         />
         
         <Button
