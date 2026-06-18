@@ -110,7 +110,7 @@ export function getMuacStatus(isUnderSixMonths: boolean, muacString: string): st
 
 // TODO -- add more checks -- any max/min values?? 
 export function validateWeight(weight: string): ValidationResult {
-    if (!weight) {
+    if (!weight || isNaN(Number(weight))) {
         return {
             isValid: false,
             errorMessage: 'Weight is required and must be a valid number',

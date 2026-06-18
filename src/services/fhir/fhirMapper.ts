@@ -1,8 +1,7 @@
 /**
  * Converts PARA app data into FHIR (R4) resources for transmission to eCHIS.
  *
- * Pure functions only (no I/O), so they're easy to unit-test. See docs/FHIR_Communication.md
- * for the resources and fields produced: one Patient, an optional RelatedPerson (caregiver),
+ * Pure functions only (no I/O), so they're easy to unit-test. Fields produced: one Patient, an optional RelatedPerson (caregiver),
  * and one Observation per positive/suspected condition plus one for the risk category.
  */
 
@@ -10,8 +9,8 @@ import { Diagnosis } from '../../contexts/Diagnosis';
 import { PatientData } from '../../contexts/PatientData';
 import { RiskAssessment } from '../../models/types';
 import {
-  AdministrativeGender,
   Address,
+  AdministrativeGender,
   Bundle,
   BundleEntry,
   CodeableConcept,
@@ -142,7 +141,7 @@ function buildConditionObservation(
     resourceType: 'Observation',
     status: 'final',
     category: [{ text: 'Diagnosis' }],
-    // TODO: map condition names to SNOMED-CT codes once a value set is agreed with eCHIS.
+    // TODO: map condition names to SNOMED-CT codes
     code: { text: condition },
     subject: patientRef,
     ...(effectiveDateTime ? { effectiveDateTime } : {}),

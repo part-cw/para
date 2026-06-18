@@ -10,7 +10,8 @@ describe('AgeCalculator', () => {
     activeSite: 'SITE',
     deviceIdKey: 'A',
     maxPatientAge: 5,
-    rrateIntegrationEnabled: false
+    rrateIntegrationEnabled: false,
+    echisServerUrl: ''
   }
 
   beforeAll(() => {

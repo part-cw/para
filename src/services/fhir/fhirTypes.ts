@@ -1,12 +1,9 @@
 /**
  * Minimal, hand-rolled FHIR (R4) resource types for the resources PARA sends to eCHIS.
  *
- * These mirror only the data PARA actually collects (see docs/FHIR_Communication.md and
- * src/contexts/PatientData.ts), so they're intentionally narrow — e.g. PARA records sex as
- * male/female only, names without name "use", and phone-only contacts. Expand as needed once
- * the eCHIS server contract is known.
+ * These mirror only the data PARA actually collects. Expand as needed based on what Medic can use.
  *
- * We deliberately avoid an external FHIR library to keep the bundle small and dependency-free.
+ * For now, we deliberately avoid an external FHIR library to keep the bundle small and dependency-free.
  */
 
 export interface Coding {
