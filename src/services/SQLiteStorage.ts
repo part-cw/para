@@ -829,12 +829,32 @@ async init(): Promise<void> {
 
     // ========== ARCHIVE OPERATIONS ==========
 
-    archivePatient(patientId: string): Promise<void> {
-        throw new Error('Method not implemented.');
+    /**
+     * Soft-archive: removes the patient from active lists (getSubmittedPatients filters
+     * out isArchived = 1) but keeps the record in the encrypted DB.
+     */
+    async archivePatient(patientId: string): Promise<void> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const now = new Date().toISOString();
+        await this.db.runAsync(
+            'UPDATE patients SET isArchived = 1, updatedAt = ? WHERE patientId = ?',
+            [now, patientId]
+        );
+
+        console.log(`✅ Patient ${patientId} archived`);
     }
 
-    getArchivedPatients(): Promise<PatientData[]> {
-        throw new Error('Method not implemented.');
+    async getArchivedPatients(): Promise<PatientData[]> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const rows = await this.db.getAllAsync<any>(
+            `SELECT patientId FROM patients
+            WHERE isArchived = 1
+            ORDER BY admissionCompletedAt DESC`
+        );
+
+        return await this.fetchPatientList(rows);
     }
 
     // ========== UTILITY ==========

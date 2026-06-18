@@ -21,6 +21,7 @@
       "spo2_discharge": 96
     },
     {
+      "modelName": "D6-60C",
       "riskScore": 10.688912,
       "riskCategory": "Very High"
     }
@@ -47,6 +48,7 @@
       "spo2_discharge": 84
     },
     {
+      "modelName": "D6-60C",
       "riskScore": 4.6347719934,
       "riskCategory": "Moderate"
     }
@@ -73,6 +75,7 @@
       "spo2_discharge": 99
     },
     {
+      "modelName": "D6-60C",
       "riskScore": 3.8859668867,
       "riskCategory": "Moderate"
     }
@@ -99,6 +102,7 @@
       "spo2_discharge": 99
     },
     {
+      "modelName": "D6-60C",
       "riskScore": 2.2662755917,
       "riskCategory": "Moderate"
     }
@@ -125,6 +129,7 @@
       "spo2_discharge": 59
     },
     {
+      "modelName": "D6-60C",
       "riskScore": 77.769775,
       "riskCategory": "Very High"
     }

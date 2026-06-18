@@ -1,7 +1,10 @@
 import PatientCard from '@/src/components/PatientCard';
+import { useConfig } from '@/src/contexts/ConfigContext';
 import { PatientData } from '@/src/contexts/PatientData';
 import { useStorage } from '@/src/contexts/StorageContext';
 import { RiskAssessment } from '@/src/models/types';
+import { getFHIRInstance } from '@/src/services/fhir/FHIRInstance';
+import { buildPatientBundle } from '@/src/services/fhir/fhirMapper';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
 import { formatName } from '@/src/utils/formatUtils';
@@ -17,6 +20,7 @@ type FilterType = 'all' | 'active' | 'discharged';
 
 export default function PatientRecords() {
   const { storage } = useStorage();
+  const { config } = useConfig();
   const { colors } = useTheme()
 
   const [ records, setRecords ] = useState<PatientData[]>([])
@@ -109,10 +113,55 @@ export default function PatientRecords() {
     })
   }
 
-  // TODO - send data to RedCap
+  // Send the patient's data to eCHIS as FHIR resources, then soft-archive on success.
   const handleArchive = async (id: string) => {
-    console.log('TODO: archiving record...')
-    alert('Event handler not implemented')
+    Alert.alert(
+      'Archive Record',
+      'This will send the patient\'s data to eCHIS and then archive the record. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Send & Archive', style: 'destructive', onPress: () => sendAndArchive(id) },
+      ]
+    );
+  }
+
+  const sendAndArchive = async (id: string) => {
+    try {
+      // Gather everything needed to build the FHIR bundle.
+      const patient = await storage.getPatient(id);
+      if (!patient) {
+        Alert.alert('Error', 'Could not load patient record.');
+        return;
+      }
+      const diagnosis = await storage.getDiagnosis(id);
+      const { assessment } = await storage.getRiskAssessment(id);
+
+      const bundle = buildPatientBundle(patient, diagnosis, assessment);
+
+      const result = await getFHIRInstance().sendBundle(bundle, {
+        serverUrl: config.echisServerUrl,
+        authToken: config.echisAuthToken,
+      });
+
+      if (!result.ok) {
+        // Send failed -> do NOT archive; the record stays in the active list.
+        Alert.alert('Send Failed', result.error ?? 'Could not send data to eCHIS. Record not archived.');
+        return;
+      }
+
+      await storage.archivePatient(id);
+      await loadAllRecords();
+
+      Alert.alert(
+        'Archived',
+        result.dryRun
+          ? 'No eCHIS server is configured, so the FHIR bundle was only logged. Record archived.'
+          : 'Patient data sent to eCHIS. Record archived.'
+      );
+    } catch (error) {
+      console.error('Error archiving record:', error);
+      Alert.alert('Error', 'Something went wrong while archiving. Record not archived.');
+    }
   }
 
   // If discharged patient use discharge riskC, if not discharged use admission risk category
