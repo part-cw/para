@@ -56,7 +56,7 @@ export default function PatientRecords() {
           try {
             const { assessment } = await storage.getRiskAssessment(patient.patientId);
             assessments.set(patient.patientId, assessment);
-          } catch (error) {
+          } catch {
             console.warn(`Could not load risk assmessment for ${patient.patientId}`);
           }
         }

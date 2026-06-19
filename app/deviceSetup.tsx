@@ -67,7 +67,7 @@ export default function DeviceSetupScreen() {
                 'Device configuration saved successfully!',
                 [{ text: 'OK', onPress: () => router.replace('/setup') }]
             );
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to save configuration');
         } finally {
             setSaving(false);

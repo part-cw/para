@@ -15,7 +15,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+//  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -25,7 +25,7 @@ export default function RootLayout() {
         setModelsLoaded(true);
         console.log('✅ Models loaded successfully');
       } catch (err) {
-        setError(err instanceof Error ? err.message : '❌ Failed to load models');
+//        setError(err instanceof Error ? err.message : '❌ Failed to load models');
         console.error('Model loading error:', err);
       }
     };

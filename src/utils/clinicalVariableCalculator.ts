@@ -120,10 +120,10 @@ export function validateWeight(weight: string): ValidationResult {
 
     const weightNum = parseFloat(weight.trim())
 
-    if (weightNum < 0) {
+    if (weightNum <= 0) {
         return {
             isValid: false,
-            errorMessage: 'Weight cannot be negative. Enter a new value',
+            errorMessage: 'Weight cannot be zero or negative. Enter a new value',
             warningMessage: ''
         } 
     }

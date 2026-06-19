@@ -77,6 +77,7 @@ export function getStorageService(): IStorageService {
         return new WebStorage(); // TODO dynamically load?? - depends on whether class compatible with mobile 
     } else {
         // dynamic import to avoid potentially breaking on web
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { SQLiteStorage } = require('./SQLiteStorage');
         return new SQLiteStorage();
     } 

@@ -11,18 +11,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function EditProfileScreen() {
     const { currentUser, updateUserProfile } = useAuth();
 
+    // Edit states
+    const [displayName, setDisplayName] = useState(currentUser?.displayName ?? '');
+    const [email, setEmail] = useState(currentUser?.email || '');
+    const [phoneNumber, setPhoneNumber] = useState(currentUser?.phoneNumber || '');
+    const [position, setPosition] = useState(currentUser?.position || '');
+
+    const [saving, setSaving] = useState(false);
+
     if (!currentUser) {
         router.replace('/login');
         return null;
     }
-
-    // Edit states
-    const [displayName, setDisplayName] = useState(currentUser.displayName);
-    const [email, setEmail] = useState(currentUser.email || '');
-    const [phoneNumber, setPhoneNumber] = useState(currentUser.phoneNumber || '');
-    const [position, setPosition] = useState(currentUser.position || '');
-
-    const [saving, setSaving] = useState(false);
 
     const handleSaveDisplayName = async () => {
         if (!displayName.trim()) {
@@ -33,7 +33,7 @@ export default function EditProfileScreen() {
             setSaving(true);
             await updateUserProfile({ displayName: displayName.trim() });
             Alert.alert('Success', 'Display name updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update display name');
         } finally {
             setSaving(false);
@@ -49,7 +49,7 @@ export default function EditProfileScreen() {
             setSaving(true);
             await updateUserProfile({ email: email.trim() || undefined });
             Alert.alert('Success', 'Email updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update email');
         } finally {
             setSaving(false);
@@ -61,7 +61,7 @@ export default function EditProfileScreen() {
             setSaving(true);
             await updateUserProfile({ phoneNumber: phoneNumber.trim() || undefined });
             Alert.alert('Success', 'Phone number updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update phone number');
         } finally {
             setSaving(false);
@@ -73,7 +73,7 @@ export default function EditProfileScreen() {
             setSaving(true);
             await updateUserProfile({ position: position.trim() || undefined });
             Alert.alert('Success', 'Position updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update position');
         } finally {
             setSaving(false);

@@ -4,12 +4,11 @@ import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet } from 'react-native';
-import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
+import { Button, Card, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // TODO - allow edit user feat to edit password
 export default function CreateUserScreen() {
-  const { colors } = useTheme();
   const { isAdmin, createUser } = useAuth();
 
   const [username, setUsername] = useState('');

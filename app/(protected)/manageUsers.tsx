@@ -62,7 +62,7 @@ export default function ManageUsersScreen() {
               Alert.alert('Success', `${selectedUser.displayName} is now a ${newRole === 'admin' ? 'Administrator' : 'User'}`);
               setSelectedUser(null); // Deselect after action
               await loadUsers();
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to update user role');
             }
           }
@@ -103,7 +103,7 @@ export default function ManageUsersScreen() {
       );
 
       handleClosePasswordModal();
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to reset password');
     } finally {
       setResetting(false);

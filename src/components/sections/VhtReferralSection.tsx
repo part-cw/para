@@ -2,7 +2,7 @@ import SearchableDropdown from '@/src/components/SearchableDropdown';
 import { useVHTReferral } from '@/src/hooks/useVHTReferral';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { formatPhoneNumber, validatePhoneNumber } from '@/src/utils/inputValidator';
-import React, { useState } from 'react';
+import React from 'react';
 import { Alert, Platform, View } from 'react-native';
 import { Button, Card, List, Text, TextInput } from 'react-native-paper';
 
@@ -58,8 +58,6 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
         onUpdate
     });
 
-    const [openDropdown, setOpenDropdown] = useState<string>('');
-
     // Trigger validation for discharge mode
     React.useEffect(() => {
         if (mode === 'discharge' && onValidationChange) {
@@ -91,9 +89,9 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                 <Card style={Styles.cardWrapper}>
                     <Card.Content>
                         <Text variant="bodyLarge">
-                            To connect the patient to a Community Health Worker (CHW) who can follow
-                            up with them, enter the closest village to where they will stay one
-                            week after discharge and their CHW's contact information.
+                            {"To connect the patient to a Community Health Worker (CHW) who can follow " +
+                            "up with them, enter the closest village to where they will stay one " +
+                            "week after discharge and their CHW's contact information."}
                         </Text>
                     </Card.Content> 
                 </Card>
@@ -113,8 +111,6 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
                         onSelect={handleVillageSelect}
                         onAddItem={handleAddVillage}
                         value={village || ''}
-                        // isOpen={openDropdown === 'village'}
-                        // onToggle={(open: boolean) => setOpenDropdown(open ? 'village' : '')}
                     />
                     <TextInput
                         label="Subvillage"

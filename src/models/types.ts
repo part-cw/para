@@ -27,7 +27,7 @@ export interface ModelVariable {
     coefficient?: number;
     mean?: number;
     standardDeviation?: number;
-    oneOf?: Array<Option>;
+    oneOf?: Option[];
 }
 
 export interface ModelInteraction {

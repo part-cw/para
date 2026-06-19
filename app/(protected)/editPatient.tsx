@@ -66,7 +66,7 @@ export default function EditPatientRecord() {
         try {
             setLoading(true)
             await loadPatient(patientId)
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to load patient data');
         } finally {
             setLoading(false);

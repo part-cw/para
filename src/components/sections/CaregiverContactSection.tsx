@@ -122,7 +122,7 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
                         </Text>
                         <Text variant="bodyLarge" style={{ marginTop: 10 }}>
                             Enter the contact information of the
-                            <Text style={{ fontWeight: 'bold' }}> patient's parent or guardian</Text>.
+                            <Text style={{ fontWeight: 'bold' }}> {"patient's parent or guardian"}</Text>.
                             This may be different from the person who brought in the patient.
                         </Text>
                     </Card.Content>
@@ -182,7 +182,11 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
                                 size={20}
                                 iconColor={colors.primary}
                                 onPress={() => {
-                                    Platform.OS !== 'web' ? Alert.alert('Confirm telephone owner', telephoneCheckboxInfo) : alert(telephoneCheckboxInfo)
+                                    if (Platform.OS !== 'web') {
+                                        Alert.alert('Confirm telephone owner', telephoneCheckboxInfo);
+                                    } else {
+                                        alert(telephoneCheckboxInfo);
+                                    }
                                 }}
                             />
                         </View>

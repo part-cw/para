@@ -1,7 +1,7 @@
 import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { router } from 'expo-router';
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Alert, Image, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -92,11 +92,11 @@ export default function LoginScreen() {
         </Button>
 
         <TouchableOpacity onPress={() => {
-            Platform.OS !== 'web' 
-            ?
-            Alert.alert('Password Reset','Contact your site administrator to reset your password.')
-            :
-            window.confirm('Contact your site administrator to reset your password.')
+            if (Platform.OS !== 'web') {
+              Alert.alert('Password Reset','Contact your site administrator to reset your password.');
+            } else {
+              window.confirm('Contact your site administrator to reset your password.');
+            }
           }
           }>
           <Text style={[styles.text, {color: colors.primary}]}>

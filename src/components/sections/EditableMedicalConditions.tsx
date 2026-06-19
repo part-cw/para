@@ -111,7 +111,7 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
                         </Text>
 
                         <Text style={[Styles.modalText]}>
-                            Enter one or multiple conditions separated by commas, then click 'update'. 
+                            {"Enter one or multiple conditions separated by commas, then click 'Update'."}
                         </Text>
 
                         <TextInput
@@ -147,15 +147,13 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
             <EditGroup 
                 fieldLabel={"Malnutrition Status"} 
                 fieldValue={capitalizeFirstLetter(patientData.malnutritionStatus as string) || 'Not provided'} 
-                canEdit={false}     
-                children={undefined}       
+                canEdit={false}
             />
 
-            <EditGroup 
-                fieldLabel={"Sick Young Infant"} 
-                fieldValue={patientData.sickYoungInfant ? 'Yes' : 'No'} 
-                canEdit={false}     
-                children={undefined}       
+            <EditGroup
+                fieldLabel={"Sick Young Infant"}
+                fieldValue={patientData.sickYoungInfant ? 'Yes' : 'No'}
+                canEdit={false}
             />
 
             {/* Pneumonia */}

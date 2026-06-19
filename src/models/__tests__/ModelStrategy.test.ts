@@ -239,9 +239,6 @@ describe('LogisticRegressionStrategy: Discharge Model 6-60C', () => {
     const strategy = new LogisticRegressionStrategy(modelD660 as RiskModel)
 
     const createPatientDataFromTestCase = (testCase: any): PatientData => {
-            const calcWaz = calculateWAZ(testCase.ageInMonths, testCase.sex, testCase.weight)
-            // console.log('PARA waz, ', calcWaz)
-            // console.log('given waz', testCase.waz)
 
         return {
             ...initialPatientData,

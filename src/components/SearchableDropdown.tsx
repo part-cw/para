@@ -496,7 +496,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   activeOpacity={0.7}
                 >
                   <Text style={styles.addNewText}>
-                    Add "{searchText}"
+                    {'Add "{searchText}"'}
                   </Text>
                 </TouchableOpacity>
               )

@@ -35,7 +35,7 @@ export const InfoCard = () => (
             If any data is incorrect or missing, navigate to that section and fix it.
         </Text>
         <Text>
-            If all information is correct, click <Text style={{ fontWeight: 'bold' }}>"Submit"</Text>
+            If all information is correct, click <Text style={{ fontWeight: 'bold' }}>{'"Submit"'}</Text>
         </Text>
         </Card.Content>
     </Card>

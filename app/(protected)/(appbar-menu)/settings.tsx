@@ -32,7 +32,7 @@ export default function SettingsScreen() {
             setSaving(true);
             await updateConfig({ activeDistrict: activeDistrict.trim() });
             Alert.alert('Success', 'District updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update district');
         } finally {
             setSaving(false);
@@ -48,7 +48,7 @@ export default function SettingsScreen() {
             setSaving(true);
             await updateConfig({ activeSite: activeSite.trim() });
             Alert.alert('Success', 'Site updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update site');
         } finally {
             setSaving(false);
@@ -64,7 +64,7 @@ export default function SettingsScreen() {
             setSaving(true);
             await updateConfig({ deviceIdKey: deviceIdKey.trim() });
             Alert.alert('Success', 'Device ID updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update device ID');
         } finally {
             setSaving(false);
@@ -81,7 +81,7 @@ export default function SettingsScreen() {
             setSaving(true);
             await updateConfig({ maxPatientAge: age });
             Alert.alert('Success', 'Maximum patient age updated');
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update maximum age');
         } finally {
             setSaving(false);
@@ -92,7 +92,7 @@ export default function SettingsScreen() {
         try {
             setRrateIntegrationEnabled(value);
             await updateConfig({ rrateIntegrationEnabled: value });
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to update RRATE integration');
             setRrateIntegrationEnabled(!value); // Revert on error
         }

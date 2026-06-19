@@ -10,7 +10,7 @@ type EditGroupProps = {
   editLabel?: string;
   canEdit: boolean;
   onClickEdit?: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 type EditBoxProps = {

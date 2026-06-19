@@ -136,21 +136,6 @@ export const useCaregiverContact = ({
         });
     };
 
-    // HELPERS
-    const getPageErrors = () => {
-        const errors: string[] = [];
-        
-        if (caregiverTel && !isValidPhoneNumber(caregiverTel)) {
-            errors.push(telephoneErrorMessage)
-        }
-
-        if (!isSameTelephone) {
-            errors.push(confirmPhoneErrorMessage)
-        }
-
-        return errors;
-    }
-
     return {
         // state
         caregiverName,

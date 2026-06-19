@@ -207,9 +207,21 @@ export default function AdmissionClinicalDataScreen() {
     // handle changes in BCS selections and updates scores accordingly
     useEffect(() => {
         // if options selected, set scores
-        eyeMovement ? setEyeScore(getEyeMovementScore(eyeMovement)) : setEyeScore(null)
-        motorResponse ? setMotorScore(getMotorResponseScore(motorResponse)) : setMotorScore(null)
-        verbalResponse ? setVerbalScore(getVerbalResponseScore(verbalResponse)) : setVerbalScore(null)
+        if (eyeMovement) {
+            setEyeScore(getEyeMovementScore(eyeMovement));
+        } else {
+            setEyeScore(null);
+        }
+        if (motorResponse) {
+            setMotorScore(getMotorResponseScore(motorResponse));
+        } else {
+            setMotorScore(null);
+        }
+        if (verbalResponse) {
+            setVerbalScore(getVerbalResponseScore(verbalResponse));
+        } else {
+            setVerbalScore(null);
+        }
 
         if (eyeScore !== null && motorScore !== null && verbalScore !==null) {
             const score = calculateBcsScore(eyeScore, motorScore, verbalScore)
@@ -271,6 +283,13 @@ export default function AdmissionClinicalDataScreen() {
                 `Data Outside Physiological Range\n\n${warning}\n\nPress OK to continue, Cancel to clear value.`
             );
 
+            if (confirmResult) {
+                // ok
+                return;
+            } else {
+                // Cancel
+                updatePatientData({ muac: '' });
+            }
         } else {
             // Mobile (iOS/Android)
             Alert.alert(
@@ -335,7 +354,7 @@ export default function AdmissionClinicalDataScreen() {
         }
     };
 
-      const handleRrateBlur = () => {30
+      const handleRrateBlur = () => {
         const warning = rrate && validateRespiratoryRange(rrate).warningMessage;
         
         if (!warning) return;
@@ -454,7 +473,11 @@ export default function AdmissionClinicalDataScreen() {
                                                     size={20}
                                                     iconColor={colors.primary}
                                                     onPress={() => {
-                                                        Platform.OS !== 'web' ? Alert.alert('Neonatal Jaundice', jaundiceInfo) : alert(jaundiceInfo)
+                                                        if (Platform.OS !== 'web') {
+                                                            Alert.alert('Neonatal Jaundice', jaundiceInfo);
+                                                        } else {
+                                                            alert(jaundiceInfo);
+                                                        }
                                                     }}
                                                 />
                                             </View>
@@ -551,7 +574,11 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                                (Platform.OS !== 'web') ? Alert.alert('Info', muacInfo) : alert(muacInfo)
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Info', muacInfo);
+                                                } else {
+                                                    alert(muacInfo);
+                                                }
                                             }}
                                         />
                                     </View>
@@ -612,11 +639,11 @@ export default function AdmissionClinicalDataScreen() {
                                         selected={hivStatus as string} 
                                         onSelect={(value) => {
                                             if (value === 'unknown') {
-                                                Platform.OS !== 'web' 
-                                                    ? 
-                                                    Alert.alert('Warning', hivUnknownWarning)
-                                                    :
-                                                    alert(hivUnknownWarning)
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Warning', hivUnknownWarning);
+                                                } else {
+                                                    alert(hivUnknownWarning);
+                                                }
                                             }
 
                                             updatePatientData({ hivStatus: value })
@@ -675,7 +702,11 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                                Platform.OS !== 'web' ? Alert.alert('Info', muacInfo) : alert(muacInfo)
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Info', muacInfo)
+                                                } else {
+                                                    alert(muacInfo)
+                                                }
                                             }}
                                         />
                                     </View>
@@ -712,9 +743,9 @@ export default function AdmissionClinicalDataScreen() {
                                             iconColor={colors.primary}
                                             onPress={() => {
                                                 if (Platform.OS !== 'web') {
-                                                    Alert.alert('Instructions', rrateButtonInfo)
+                                                    Alert.alert('Instructions', rrateButtonInfo);
                                                 } else {
-                                                    alert(rrateButtonInfo)
+                                                    alert(rrateButtonInfo);
                                                 }
                                             }}
                                         />
@@ -789,7 +820,11 @@ export default function AdmissionClinicalDataScreen() {
                                             size={20}
                                             iconColor={colors.primary}
                                             onPress={() => {
-                                                Platform.OS !== 'web' ? Alert.alert('Instructions', eyeMovementInfo) : alert(eyeMovementInfo)
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Instructions', eyeMovementInfo);
+                                                } else {
+                                                    alert(eyeMovementInfo);
+                                                }
                                             }}
                                         />
                                     </View>
@@ -813,7 +848,11 @@ export default function AdmissionClinicalDataScreen() {
                                                 size={20}
                                                 iconColor={colors.primary}
                                                 onPress={() => {
-                                                    Platform.OS !== 'web' ? Alert.alert('Instructions', motorResponseInfo) : alert(motorResponseInfo)
+                                                    if (Platform.OS !== 'web') {
+                                                        Alert.alert('Instructions', motorResponseInfo);
+                                                    } else {
+                                                        alert(motorResponseInfo);
+                                                    }
                                                 }}
                                             />
                                     </View>

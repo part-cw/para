@@ -1170,9 +1170,6 @@ async init(): Promise<void> {
     ): Promise<void> {
         if (!this.db) throw new Error ('Databse not initialized');
 
-        const changeEntries: any[] = [];
-
-
         try {
             // Build placeholders: (?,?,?,?,?,?) for each change
             const placeholders = changes.map(() => "(?, ?, ?, ?, ?, ?)").join(", ");

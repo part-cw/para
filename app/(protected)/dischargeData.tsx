@@ -114,7 +114,7 @@ export default function DischargeDataScreen() {
         try {
             setLoading(true)
             await loadPatient(patientId)
-        } catch (error) {
+        } catch {
             Alert.alert('Error', 'Failed to load patient data');
         } finally {
             setLoading(false);
@@ -512,10 +512,6 @@ export default function DischargeDataScreen() {
             .map(([sectionId]) => sectionId);
         
         if (invalidSections.length > 0) {
-            const sectionNames = invalidSections
-                .map(id => displayNames[id] || id)
-                .join(', ');
-            
             const errorMessages = invalidSections
                 .map(id => {
                     const errors = sectionValidations[id]?.errors || [];
@@ -733,11 +729,11 @@ export default function DischargeDataScreen() {
                                 Please confirm this discharge status or cancel to update status.
                             </Text>
                             <Text style={Styles.modalText}>
-                                Once confirmed, the 'deceased' status cannot be undone.
+                                {"Once confirmed, the 'deceased' status cannot be undone."}
                             </Text>
 
                             <Text style={[Styles.modalSubheader, {color: colors.primary}]}>
-                                Confirm 'deceased' discharge status?
+                                {"Confirm 'deceased' discharge status?"}
                             </Text>
 
                             <View style={{
@@ -843,7 +839,11 @@ export default function DischargeDataScreen() {
                                         size={20}
                                         iconColor={colors.primary}
                                         onPress={() => {
-                                            (Platform.OS !== 'web') ? Alert.alert('Info', spo2DischargeInfo) : alert(spo2DischargeInfo)
+                                            if (Platform.OS !== 'web') {
+                                                Alert.alert('Info', spo2DischargeInfo);
+                                            } else {
+                                                alert(spo2DischargeInfo);
+                                            }
                                         }}
                                     />
                                 </View>
@@ -969,8 +969,8 @@ export default function DischargeDataScreen() {
                                                                 HIV Status Unknown
                                                             </Text>
                                                             <Text variant="bodySmall" style={{ marginBottom: 12 }}>
-                                                                HIV status was marked as 'unknown' at admission. 
-                                                                If known, please confirm whether the patient is HIV-positive or negative.
+                                                                {"HIV status was marked as 'unknown' at admission. " +
+                                                                "If known, please confirm whether the patient is HIV-positive or negative."}
                                                             </Text>
 
                                                             <Text style={[Styles.accordionSubheading, { fontWeight: 'bold', marginBottom: 8 }]}>
@@ -1178,6 +1178,7 @@ export default function DischargeDataScreen() {
                         labelNext="Complete Discharge"
                         onPrevious={handleRouterBack}
                         onNext={() => handleDischarge(fullname)}
+                        disabledNext={isSubmitting}
                     />
                 </ScrollView>
             </SafeAreaView>
