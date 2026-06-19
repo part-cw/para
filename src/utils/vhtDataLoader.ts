@@ -1,4 +1,3 @@
-import buikweData from '@/src/data/vht_list/buikwe.json';
 import testData from '@/src/data/vht_list/test.json';
 import { VhtDataObject } from './vhtDataProcessor';
 
@@ -7,7 +6,6 @@ import { VhtDataObject } from './vhtDataProcessor';
  * Keys should match config.activeDistrict (case-insensitive)
  */
 const vhtDataMap: Record<string, any> = {
-  buikwe: buikweData,
   test: testData, // TODO - delete testData
 };
 
