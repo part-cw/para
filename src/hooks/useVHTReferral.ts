@@ -48,11 +48,14 @@ export const useVHTReferral = ({
     const [addedVHTs, setAddedVHTs] = useState<DropdownItem[]>([]);
     const [addedNumbers, setAddedNumbers] = useState<DropdownItem[]>([]);
 
-    // Reset on district change - TODO NEW
+    // Reset on district change
+    // Skip the initial mount so we don't wipe already-loaded patient data
+    const isFirstDistrictRender = useRef(true);
     useEffect(() => {
-        // setAddedVillages([]);
-        // setAddedVHTs([]);
-        // setAddedNumbers([]);
+        if (isFirstDistrictRender.current) {
+            isFirstDistrictRender.current = false;
+            return;
+        }
         clearSelections();
     }, [config.activeDistrict]);
 
@@ -168,6 +171,14 @@ export const useVHTReferral = ({
         }
     }, [telNumbers, vhtTelephone, onUpdate]);
 
+    // Lower the auto-select guard once a clear has fully settled (declared after
+    // the auto-select effects so they stay suppressed during the settling commit)
+    useEffect(() => {
+        if (!localCleared) {
+            isResettingRef.current = false;
+        }
+    }, [localCleared]);
+
 
     // ========= ADD HANDLERS (with dedup + formatting) ============
     const handleAddVillage = useCallback((item: DropdownItem) => {
@@ -249,9 +260,6 @@ export const useVHTReferral = ({
             vhtName: '',
             vhtTelephone: '',
         });
-
-        // Reset the flag after a tick, not on value change
-        setTimeout(() => isResettingRef.current = false, 100);
     }, [onUpdate]);
 
     // ========== Validation for discharge =============
