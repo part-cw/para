@@ -58,7 +58,7 @@ export default function DischargeDataScreen() {
     const [initialHivUnknown, setInitialHivUnknown] = useState<boolean>(false);
 
     // track errors and reviewed sections
-    const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set(['dischargeData'])); // discharge data automatically reviewed becase accordion starts out open
+    const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set(['dischargeData'])); // discharge data automatically reviewed because accordion starts out open
     const [sectionValidations, setSectionValidations] = useState<{[key: string]: { isValid: boolean; errors: string[] }}>({});
     
     // track jaundice states for when dob update cause isNeonate = true;
@@ -129,7 +129,9 @@ export default function DischargeDataScreen() {
             errors.push('Discharge status is required');
         }
 
-        if (dischargeStatus && dischargeStatus.toLowerCase() !== 'deceased') {
+        // Feeding status and SpO₂ are required unless deceased; counted even
+        // before a status is chosen so the count starts full and ticks down.
+        if (dischargeStatus?.toLowerCase() !== 'deceased') {
             if (!feedingStatus_discharge) {
                 errors.push('Feeding status is required');
             }
@@ -672,14 +674,15 @@ export default function DischargeDataScreen() {
             return section?.isRequired ? 'Required: Complete' : 'Optional: Complete';
         }
         
-        if (!isReviewed && !validation?.isValid) {
-            const errorCount = validation?.errors?.length || 0;
-            return `Review section${errorCount > 0 ? ` - ${errorCount} error${errorCount > 1 ? 's' : ''}` : ''}`;
-        }
-        
-        if (isReviewed && !validation?.isValid) {
-            const errorCount = validation?.errors?.length || 0;
-            return `Fix ${errorCount} error${errorCount > 1 ? 's' : ''}`;
+        const errorCount = validation?.errors?.length || 0;
+        const errorText = `${errorCount} error${errorCount > 1 ? 's' : ''}`;
+
+        if (!validation?.isValid) {
+            if (isReviewed) {
+                return `Fix ${errorText}`;
+            } else {
+                return `Review section - ${errorText}`;
+            }
         }
         
         // Not reviewed but valid

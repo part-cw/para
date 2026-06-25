@@ -41,6 +41,8 @@ export const displayNames: Record<string, string> = {
     weight: 'Weight',
 
     // Discharge Data
+    dischargeData: 'Discharge Data',
+    updateAdmissionData: 'Update Admission Data',
     spo2_discharge: 'Oxygen Saturation at Discharge',
     dischargeStatus: 'Discharge Status',
     feedingStatus_discharge: 'Feeding Status at Discharge',
