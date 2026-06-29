@@ -34,9 +34,9 @@ export const useVHTReferral = ({
 
     const { config } = useConfig();
 
-    const allData = useMemo(() => 
-        getVhtDataByDistrict(config.activeDistrict),
-        [config.activeDistrict]
+   const allData = useMemo(() => 
+        getVhtDataByDistrict(config.activeSite),
+        [config.activeSite]
     );
 
     const isResettingRef = useRef(false);
@@ -57,7 +57,7 @@ export const useVHTReferral = ({
             return;
         }
         clearSelections();
-    }, [config.activeDistrict]);
+    }, [config.activeSite]);
 
     // ======= Base dropdowns (unfiltered) ========
     const baseVHTs = useMemo(

@@ -24,7 +24,8 @@ export class PatientIdGenerator {
 
       const patientNumber = await this.getNextPatientNumber(config);
       
-      const patientId = `${config.activeSite}-${config.deviceIdKey}-${patientNumber.toString().padStart(4, '0')}`;
+      const sitePrefix = config.activeSite.trim().substring(0, 4).toUpperCase();
+      const patientId = `${sitePrefix}-${config.deviceIdKey}-${patientNumber.toString().padStart(4, '0')}`;
       console.log(`Generated patient ID: ${patientId}`);
 
       return patientId;

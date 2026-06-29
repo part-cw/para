@@ -1,3 +1,4 @@
+
 import testData from '@/src/data/vht_list/test.json';
 import { VhtDataObject } from './vhtDataProcessor';
 
@@ -5,8 +6,9 @@ import { VhtDataObject } from './vhtDataProcessor';
  * District/County -> VHT dataset map
  * Keys should match config.activeDistrict (case-insensitive)
  */
-const vhtDataMap: Record<string, any> = {
-  test: testData, // TODO - delete testData
+const vhtDataMap: Record<string, VhtDataObject[]> = {
+  test: testData,
+  
 };
 
 /**

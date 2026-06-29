@@ -1,6 +1,7 @@
 import SearchableDropdown from '@/src/components/SearchableDropdown';
 import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useConfig } from '@/src/contexts/ConfigContext';
+import sitesData from '@/src/data/sites.json';
 import { deviceIdErrorMessage, validateDeviceId } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -112,14 +113,13 @@ export default function DeviceSetupScreen() {
                     placeholder={`e.g. ${country === 'Kenya' ? 'Mombasa' : 'Buikwe'}`}
                 />
 
-                {/* TODO - change this to SearchableDropDown component that filters based on selected district */}
-                <ValidatedTextInput
+             <SearchableDropdown
+                    data={sitesData.map(s => ({ key: s.value, value: s.label }))}
                     label="Site Name (required)"
-                    value={activeSite}
-                    onChangeText={setActiveSite}
-                    mode="outlined"
-                    style={styles.input}
-                    placeholder="Enter name of hospital site"
+                    placeholder="Select site"
+                    onSelect={(item) => setActiveSite(item.key)}
+                    value={sitesData.find(s => s.value === activeSite)?.label || activeSite}
+                    search={true}
                 />
 
                 <ValidatedTextInput

@@ -259,13 +259,17 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     }
   }
 
-  const handleClear = () => {
+ const handleClear = () => {
     setSearchText('')
     setFilteredData(data)
     setHasValidationError(false)
     setValidationError('')
     onSelect({ key: '', value: '' }); // notify parent that the selection is cleared
     Keyboard.dismiss()
+    if (controlledIsOpen === undefined) {
+      setInternalIsOpen(false);
+    }
+    slideup();
   }
 
   const handleAddNew = () => {
@@ -416,7 +420,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
             )
           }
 
-          <TouchableOpacity 
+        <TouchableOpacity 
             style={styles.inputRow}
             onPress={() => {
               if (!isOpen) {
@@ -425,7 +429,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               } else {
                 slideup();
               }
-            }}>
+            }}
+            onStartShouldSetResponder={() => false}>
             <Text style={styles.textInput}>
               {
                 searchText.trim().length > 0 
@@ -436,13 +441,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
               }
             </Text>
             <View style={styles.iconContainer}>
-              { showClearIcon &&
+         { showClearIcon &&
                 <IconButton
                   icon="close-circle-outline"
                   size={25}
                   style={styles.clearIcon}
                   iconColor="rgb(234, 150, 150)"
-                  onPress={handleClear}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleClear();
+                  }}
                 />
               }
               <IconButton
@@ -496,7 +504,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   activeOpacity={0.7}
                 >
                   <Text style={styles.addNewText}>
-                    {'Add "{searchText}"'}
+                    {`Add "${searchText}"`}
                   </Text>
                 </TouchableOpacity>
               )
