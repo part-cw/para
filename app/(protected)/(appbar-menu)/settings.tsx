@@ -1,6 +1,8 @@
 import { EditGroup } from '@/src/components/EditFieldGroup';
+import SearchableDropdown from '@/src/components/SearchableDropdown';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { useConfig } from '@/src/contexts/ConfigContext';
+import sitesData from '@/src/data/sites.json';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
@@ -152,12 +154,13 @@ export default function SettingsScreen() {
                     editLabel="Edit Site Name"
                     canEdit={isAdmin}
                 >
-                    <TextInput
-                        value={activeSite}
-                        onChangeText={setActiveSite}
-                        mode="outlined"
-                        style={styles.input}
-                        placeholder="e.g., Buikwe HC IV"
+                  <SearchableDropdown
+                        data={sitesData.map(s => ({ key: s.value, value: s.label }))}
+                        label="Site Name"
+                        placeholder="Select site"
+                        onSelect={(item) => setActiveSite(item.key)}
+                        value={sitesData.find(s => s.value === activeSite)?.label || activeSite}
+                        search={true}
                     />
                     <Button
                         mode="contained"
