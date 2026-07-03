@@ -2,7 +2,7 @@ import ValidatedTextInput from '@/src/components/ValidatedTextInput';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { isValidPassword, passwordErrorMessage } from '@/src/utils/inputValidator';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +19,8 @@ export default function SetupScreen() {
     const [adminPassword, setAdminPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('')
     const [loading, setLoading] = useState(false);
+    const passwordRef = useRef<any>(null);
+    const confirmPasswordRef = useRef<any>(null);
 
     const handleSetup = async () => {
         if (!adminUsername.trim() || !adminPassword.trim()) {
@@ -94,9 +96,12 @@ export default function SetupScreen() {
                         style={styles.input}
                         autoCapitalize="none"
                         autoCorrect={false}
+                        returnKeyType="next"
+                        onSubmitEditing={() => passwordRef.current?.focus()}
                     />
 
                     <ValidatedTextInput 
+                        ref={passwordRef}
                         label="Password"
                         value={adminPassword}
                         onChangeText={setAdminPassword}
@@ -111,9 +116,12 @@ export default function SetupScreen() {
                         }
                         style={styles.input}
                         autoCapitalize="none"
+                        returnKeyType="next"
+                        onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                     />
 
                     <ValidatedTextInput
+                        ref={confirmPasswordRef}
                         label="Confirm Password"
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
@@ -129,6 +137,7 @@ export default function SetupScreen() {
                         customErrorMessage='Passwords must match'
                         style={styles.input}
                         autoCapitalize="none"
+                        returnKeyType="done"
                     />
 
                     <Button

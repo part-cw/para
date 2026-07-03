@@ -2,9 +2,8 @@ import { PatientData } from "../contexts/PatientData";
 import { ModelInteraction, ModelVariable, RiskModel, RiskPrediction } from "./types";
 
 /**
- * calculates risk scores for given models
- * NOTE: if any other models are used, this should be further generalized 
- *       and all LR calculation functions should move to concrete LogisticRegressionStrategy class 
+ * Abstract base class for risk model strategies.
+ * Concrete subclasses implement model-specific logic for calculating risk scores.
  */
 export abstract class ModelStrategy {
     protected model: RiskModel;
@@ -19,8 +18,8 @@ export abstract class ModelStrategy {
     public calculateRisk(patientData: PatientData): RiskPrediction {
         try {
             this.validateRequiredData(patientData)
-            const rawScore = this.calculateRawScore(patientData) // scales variables/interactions, multiply by coefficient, add offset  
-            const riskScore = this.convertToRiskScore(rawScore) // scale raw score and convert to percentage
+            const rawScore = this.calculateRawScore(patientData) // model-specific: combine inputs into a raw score
+            const riskScore = this.convertToRiskScore(rawScore) // model-specific: convert raw score to a percentage
             const riskCategory = this.getRiskCategory(riskScore)
             
             return {
@@ -65,6 +64,102 @@ export abstract class ModelStrategy {
         }
     }
 
+    /**
+     * Combine patient data into a single raw score. Model-type specific.
+     */
+    protected abstract calculateRawScore(patientData: PatientData): number;
+
+    /**
+     * Convert a raw score into a risk percentage. Model-type specific.
+     */
+    protected abstract convertToRiskScore(rawScore: number): number;
+
+    /**
+     * Get a risk category from the risk score based on the model's thresholds.
+     */
+    protected getRiskCategory(riskScore: number): string {
+        if (riskScore < 0) throw Error('Risk score cannot be negative')
+        if (riskScore > 100) throw Error('Risk score cannot be more than 100%')
+
+        // store 'low' threshold if it exists in model
+        let low
+        if (this.model.riskThresholds.low != null) {
+            low = this.model.riskThresholds.low
+        }
+
+        // store other thresholds
+        const moderate = this.model.riskThresholds.moderate
+        const high = this.model.riskThresholds.high
+        const veryHigh = this.model.riskThresholds.veryHigh
+
+        if (riskScore >= veryHigh) return 'Very High'
+        if (riskScore >= high) return 'High'
+        if (riskScore >= moderate) return 'Moderate'
+
+        // default to lowest available risk level if not mod to very high
+        return (low != null) ? 'Low' : 'Moderate';
+    }
+
+     /**
+     * Convert various boolean representations to numeric (0 or 1). 1 = true/yes/positive, 0 = false/no/negative
+     */
+    protected convertToNumericBoolean(value: any): number {
+        if (typeof value === 'boolean') {
+            return value ? 1 : 0
+        };
+
+        if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            const truthyValues = ['true', 'yes', '1', 'positive'];
+            return truthyValues.includes(normalized) ? 1 : 0;
+        }
+
+        return Boolean(value) ? 1: 0;
+    }
+
+    /**
+     * Parse numeric values from string or number
+     */
+    protected handleNumericValue(value: any): number {
+        if (typeof(value) === 'number') return value;
+
+        if (typeof(value) === 'string') {
+            const parsed = parseFloat(value)
+            if (isNaN(parsed)) {
+                throw new Error(`Cannot parse '${value}' as a number`);
+            }
+            return parsed
+        }
+
+        throw Error(`Invalid numeric value: ${value}`)
+    }
+
+    /**
+     * Get age rounded to 1 decimal place
+     */
+    protected getRoundedAge(ageInMonths: number): number {
+        return Math.round(ageInMonths * 10) / 10;
+    }
+}
+
+/**
+ * Logistic regression risk model. Computes a linear predictor from the model's
+ * scaled variables and age interactions, then maps it to a probability with the
+ * logistic function.
+ */
+export class LogisticRegressionStrategy extends ModelStrategy {
+    constructor(model: RiskModel) {
+        if (model.modelType !== 'logistic_regression') {
+            throw new Error('LogisticRegressionStrategy only supports LR models')
+        }
+        super(model)
+    }
+
+    /**
+     * Calculate a raw logistic regression score from patient data.
+     * @param patientData Data for the patient having the score calculated
+     * @returns the raw score
+     */
     protected calculateRawScore(patientData: PatientData): number {
         let score = this.model.rawScoreOffset;
 
@@ -186,7 +281,7 @@ export abstract class ModelStrategy {
      * 
      * @param variable 
      * @param value 
-     * @returns total contribution of categorical variabls - selected options have value of 1 and nonseelctd 0
+     * @returns total contribution of categorical variables - selected options have value of 1 and nonselected 0
      */
     private calculateCategoricalVariableContribution(variable: ModelVariable, value: any): number {
         let categoricalContribution = 0
@@ -225,90 +320,15 @@ export abstract class ModelStrategy {
         return finalScore;
     }
 
-
-    protected getRiskCategory(riskScore: number): string {
-        if (riskScore < 0) throw Error('Risk score cannot be negative')
-        if (riskScore > 100) throw Error('Risk score cannot be more than 100%')
-        
-        // store 'low' threshold if it exists in model
-        let low
-        if (this.model.riskThresholds.low != null) { // TODO check that this condition is ok
-            low = this.model.riskThresholds.low
-        }
-
-        // store other thresholds
-        const moderate = this.model.riskThresholds.moderate
-        const high = this.model.riskThresholds.high
-        const veryHigh = this.model.riskThresholds.veryHigh
-
-        if (riskScore >= veryHigh) return 'Very High'
-        if (riskScore >= high) return 'High'
-        if (riskScore >= moderate) return 'Moderate'
-
-        // default to lowest available risk level if not mod to very high
-        return (low != null) ? 'Low' : 'Moderate';
-    }
-
-     /**
-     * Convert various boolean representations to numeric (0 or 1). 1 = true/yes/positive, 0 = false/no/negative
-     */
-    protected convertToNumericBoolean(value: any): number {
-        if (typeof value === 'boolean') {
-            return value ? 1 : 0
-        };
-        
-        if (typeof value === 'string') {
-            const normalized = value.trim().toLowerCase();
-            const truthyValues = ['true', 'yes', '1', 'positive'];
-            return truthyValues.includes(normalized) ? 1 : 0;
-        }
-
-        return Boolean(value) ? 1: 0;
-    }
-
     /**
      * 
-     * @param val value 
-     * @param mean 
-     * @param sd standard deviation
-     * @returns 
+     * @param val the value of the variable
+     * @param mean the mean from the dataset used to build the model
+     * @param sd standard deviation from the dataset used to build the model
+     * @returns
      */
     protected scaleValue(val: number, mean: number, sd: number): number {
         return (val-mean) / sd
-    }
-
-    /**
-     * Parse numeric values from string or number
-     */
-    protected handleNumericValue(value: any): number {
-        if (typeof(value) === 'number') return value;
-
-        if (typeof(value) === 'string') {
-            const parsed = parseFloat(value)
-            if (isNaN(parsed)) {
-                throw new Error(`Cannot parse '${value}' as a number`);
-            }
-            return parsed
-        } 
-   
-        throw Error(`Invalid numeric value: ${value}`)
-    }
-
-    /**
-     * Get age rounded to 1 decimal place
-     */
-    protected getRoundedAge(ageInMonths: number): number {
-        return Math.round(ageInMonths * 10) / 10;
-    }
-}
-
-// TODO:  move lr-specific calculations to this concrete class
-export class LogisticRegressionStrategy extends ModelStrategy {
-    constructor(model: RiskModel) {
-        if (model.modelType !== 'logistic_regression') {
-            throw new Error('LogisticRegressionStrategy only supports LR models')
-        }
-        super(model)
     }
 }
 
