@@ -53,6 +53,12 @@ export class WebStorage implements IStorageService {
     getRiskAssessment(patientId: string): Promise<RiskAssessment> {
         throw new Error("Method not implemented.");
     }
+    elevateRiskCategory(patientId: string, usageTime: "admission" | "discharge", newCategory: string, userId: string): Promise<RiskPrediction> {
+        throw new Error("Method not implemented.");
+    }
+    undoRiskElevation(patientId: string, usageTime: "admission" | "discharge", userId: string): Promise<RiskPrediction> {
+        throw new Error("Method not implemented.");
+    }
     getDiagnosis(patientId: string): Promise<Diagnosis> {
         throw new Error("Method not implemented.");
     }

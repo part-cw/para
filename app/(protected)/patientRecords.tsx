@@ -2,7 +2,7 @@ import PatientCard from '@/src/components/PatientCard';
 import { useConfig } from '@/src/contexts/ConfigContext';
 import { PatientData } from '@/src/contexts/PatientData';
 import { useStorage } from '@/src/contexts/StorageContext';
-import { RiskAssessment } from '@/src/models/types';
+import { RiskAssessment, RiskPrediction } from '@/src/models/types';
 import { getFHIRInstance } from '@/src/services/fhir/FHIRInstance';
 import { buildPatientBundle } from '@/src/services/fhir/fhirMapper';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
@@ -164,14 +164,16 @@ export default function PatientRecords() {
     }
   }
 
-  // If discharged patient use discharge riskC, if not discharged use admission risk category
-  const handleGetRiskCategory =  (patientId: string): string => {
+  // The active prediction: discharge if the patient has one, otherwise admission.
+  const getActivePrediction = (patientId: string): RiskPrediction | null => {
     const assessment = riskAssessments.get(patientId);
+    if (!assessment) return null;
+    return assessment.discharge ?? assessment.admission ?? null;
+  }
 
-    if (!assessment) return 'none'
-    if (assessment.discharge) return assessment.discharge.riskCategory; 
-    if (assessment.admission) return assessment.admission.riskCategory; // TODO - make sure this is the most recent admission risk
-    return 'none'; // default if not risk assmessents
+  // The active risk category, or 'none' if the patient has no risk assessment.
+  const handleGetRiskCategory = (patientId: string): string => {
+    return getActivePrediction(patientId)?.riskCategory ?? 'none';
   }
 
   // returns 'No Records' display and prompt user to add patient
@@ -259,6 +261,7 @@ export default function PatientRecords() {
           const age = AgeCalculator.formatAge(p.ageInMonths as number);
           const ageDisplay = age && age.trim() ? `${age} old` : undefined;
           const risk = handleGetRiskCategory(p.patientId as string);
+          const activePred = getActivePrediction(p.patientId as string);
 
           // deceased patients are a subcategory of discharged
           const status = 
@@ -281,6 +284,8 @@ export default function PatientRecords() {
               isDischarged={normalizeBoolean(p.isDischarged as boolean)} 
               isDraft={normalizeBoolean(p.isDraftAdmission as boolean)}
               riskCategory={ risk.toLowerCase() }
+              isElevated={ !!activePred?.isManuallyElevated }
+              originalRiskCategory={ activePred?.originalRiskCategory }
               // riskProfile={p.riskProfile}
               // recommendedCareplan={p.recommendedCareplan}
               onEdit={() => handleEdit(p.patientId as string)}

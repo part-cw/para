@@ -5,6 +5,7 @@ import { Icon, useTheme } from 'react-native-paper';
 
 interface RiskCardProps {
   title?: string;
+  isElevated?: boolean; // when true, shows a red up arrow next to the title to flag a manually elevated risk
   containerStyle?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
   textStyle?: StyleProp<TextStyle>;
@@ -19,6 +20,7 @@ interface RiskCardProps {
 
 const RiskCard: React.FC<RiskCardProps> = ({
   title,
+  isElevated = false,
   containerStyle,
   titleStyle,
   textStyle,
@@ -128,9 +130,16 @@ const RiskCard: React.FC<RiskCardProps> = ({
 
  return (
     <View style={[defaultContainerStyle, containerStyle]}>
-      <Text style={[defaultTitleStyle, titleStyle, {alignSelf: 'center'}]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'center' }}>
+        <Text style={[defaultTitleStyle, titleStyle]}>
               {title}
-      </Text>
+        </Text>
+        {isElevated &&
+          <View style={{ marginLeft: 4, marginBottom: 5 }}>
+            <Icon source="arrow-up-bold" size={20} color="#f44336" />
+          </View>
+        }
+      </View>
 
       {renderContent()}
 

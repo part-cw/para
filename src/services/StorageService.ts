@@ -59,6 +59,17 @@ export interface IStorageService {
         dateTime?: string
     ): Promise<void>;
     getRiskAssessment(patientId: string): Promise<any>;
+    elevateRiskCategory(
+        patientId: string,
+        usageTime: 'admission' | 'discharge',
+        newCategory: string,
+        userId: string
+    ): Promise<RiskPrediction>;
+    undoRiskElevation(
+        patientId: string,
+        usageTime: 'admission' | 'discharge',
+        userId: string
+    ): Promise<RiskPrediction>;
     getDiagnosis(patientId: string): Promise<Diagnosis>;
     
     // Archive operations

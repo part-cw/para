@@ -1,6 +1,10 @@
+import ChangeRiskLevelModal from '@/src/components/ChangeRiskLevelModal';
 import RiskCard from '@/src/components/RiskCard';
+import RiskLevelInterpretationModal from '@/src/components/RiskLevelInterpretationModal';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { Diagnosis } from '@/src/contexts/Diagnosis';
-import { RiskAssessment } from '@/src/models/types';
+import { useStorage } from '@/src/contexts/StorageContext';
+import { RiskAssessment, RiskPrediction } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -12,7 +16,13 @@ import { Button, useTheme } from 'react-native-paper';
 
 export default function RiskDisplay() {
   const { colors } = useTheme();
+  const { storage } = useStorage();
+  const { currentUser } = useAuth();
   const [isConditionsExpanded, setIsConditionsExpanded] = useState<boolean>(false);
+  const [showInterpretationModal, setShowInterpretationModal] = useState<boolean>(false);
+  const [showChangeRiskModal, setShowChangeRiskModal] = useState<boolean>(false);
+
+  const userId = currentUser?.displayName || currentUser?.username || 'unknown';
 
   const params = useLocalSearchParams();
 
@@ -21,6 +31,13 @@ export default function RiskDisplay() {
   const patientName = params.patientName as string;
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
   const diagnosis: Diagnosis | null = params.diagnosis ? JSON.parse(params.diagnosis as string) : null;
+
+  const discharge = riskAssessment?.discharge;
+  const usageTime: 'admission' | 'discharge' = discharge ? 'discharge' : 'admission';
+
+  // The patient's current prediction (discharge if present, else admission). Starts from the loaded
+  // assessment, then is replaced with the updated prediction returned by an elevate/undo on this screen.
+  const [activePred, setActivePred] = useState<RiskPrediction | null>(discharge ?? riskAssessment?.admission ?? null);
 
   // Handle missing data
   if (!riskAssessment || !patientId || !patientName) {
@@ -44,11 +61,24 @@ export default function RiskDisplay() {
     );
   }
 
-  const admission = riskAssessment.admission;
-  const discharge = riskAssessment.discharge;
+  const riskScore = activePred?.riskScore;
+  const riskCategory = activePred?.riskCategory;
+  const isElevated = !!activePred?.isManuallyElevated;
+  const originalCategory = activePred?.originalRiskCategory;
 
-  const riskScore = discharge ? discharge.riskScore : admission?.riskScore;
-  const riskCategory = discharge ? discharge.riskCategory : admission?.riskCategory;
+  const handleElevateRiskCategory = async (newLevel: string | null) => {
+    if (newLevel) {
+      const updated = await storage.elevateRiskCategory(patientId, usageTime, newLevel, userId);
+      setActivePred(updated);
+    }
+    setShowChangeRiskModal(false);
+  };
+
+  const handleUndoRiskElevation = async () => {
+    const updated = await storage.undoRiskElevation(patientId, usageTime, userId);
+    setActivePred(updated);
+    setShowInterpretationModal(false);
+  };
 
   // Get top 3 conditions to display with guaranteed critical conditions
   const getTopConditions = (): { display: string[];  remaining: string[]; hasMore: boolean; hiddenCount: number } => {
@@ -139,20 +169,39 @@ export default function RiskDisplay() {
               <RiskCard
                 title={riskCategory?.toUpperCase()}
                 variant={riskCategory?.toLowerCase()}
-                content={`Risk score = ${riskScore}%`}
+                isElevated={isElevated}
+                content={
+                  <View style={{ width: '100%', alignItems: 'center' }}>
+                    {isElevated &&
+                      <Text style={{ fontSize: 13, fontStyle: 'italic', color: '#d32f2f' }}>
+                        Originally: {originalCategory?.toUpperCase()}
+                      </Text>
+                    }
+                    <Text style={{ fontSize: 16, lineHeight: 20, marginBottom: 4 }}>
+                      Risk score = {riskScore}%
+                    </Text>
+                  </View>
+                }
                 containerStyle={{alignItems: 'center'}}
-                expandable={false} // TODO - set to true one top predictors display is complete
+                expandable={true}
               >
-                {/* TODO - fix children */}
-                <Text>
-                    Top predictors...TODO
-                </Text>
+                {/* TODO - replace placeholder predictors once top-predictor selection is decided */}
+                <View style={{ alignSelf: 'stretch' }}>
+                  <Text style={{ fontSize: 14, fontWeight: 'bold', letterSpacing: 1, marginBottom: 8 }}>
+                    TOP PREDICTORS
+                  </Text>
+                  {['Variable 1', 'Variable 2', 'Variable 3'].map((variable, index) => (
+                    <Text key={`predictor-${index}`} style={{ fontSize: 15, marginBottom: 6 }}>
+                      • {variable}
+                    </Text>
+                  ))}
+                </View>
                 <Button
                   style={{ alignSelf: 'center', marginTop: 20 }}
                   mode="elevated"
                   buttonColor={colors.tertiary}
                   textColor={colors.onTertiary}
-                  onPress = {() => alert('blah blah -- TODO')}
+                  onPress={() => setShowInterpretationModal(true)}
                 >
                   More Info
                 </Button>
@@ -249,6 +298,27 @@ export default function RiskDisplay() {
             </Button>
           </View>
         </ScrollView>
+
+        <RiskLevelInterpretationModal
+          showModal={showInterpretationModal}
+          riskCategory={riskCategory}
+          isElevated={isElevated}
+          originalRiskCategory={originalCategory}
+          onRequestClose={() => setShowInterpretationModal(false)}
+          // Just going to below modal (via Elevate Risk Level button), not yet elevating risk category
+          onElevate={() => {
+            setShowInterpretationModal(false);
+            setShowChangeRiskModal(true);
+          }}
+          onUndo={handleUndoRiskElevation}
+        />
+
+        <ChangeRiskLevelModal
+          showModal={showChangeRiskModal}
+          currentRiskCategory={riskCategory}
+          onRequestClose={() => setShowChangeRiskModal(false)}
+          onSave={handleElevateRiskCategory}
+        />
       </View>
       :
       null

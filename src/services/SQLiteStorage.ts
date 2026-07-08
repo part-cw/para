@@ -6,9 +6,6 @@ import { RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from "../utils/normalizer";
 import { IStorageService } from "./StorageService";
 
-// TODO ADD ENCRYPTION - add sqlCipher AFTER databse test are all working
-// will need to add encryption key - stored in Expo SecureStore
-
 type MedicalConditionsRow = {
   patientId: string;
   malnutritionStatus: string;
@@ -155,7 +152,9 @@ async init(): Promise<void> {
                 usageTime           TEXT NOT NULL CHECK (usageTime IN ('admission', 'discharge')),
                 riskScore           REAL NOT NULL,
                 riskCategory        TEXT NOT NULL,
-                
+                isManuallyElevated  INTEGER NOT NULL DEFAULT 0,
+                originalRiskCategory TEXT, -- model-calculated category before a manual elevation; NULL unless elevated
+
                 -- context/metadata at time of calculation
                 ageInMonths_atCalc  INTEGER NOT NULL,  
                 hivStatus_atCalc    TEXT NOT NULL,
@@ -792,7 +791,121 @@ async init(): Promise<void> {
             model: pred.modelName,
             riskScore: pred.riskScore,
             riskCategory: pred.riskCategory,
+            isManuallyElevated: !!pred.isManuallyElevated,
+            originalRiskCategory: pred.originalRiskCategory ?? undefined,
         }
+    }
+
+    /**
+     * Manually elevate the active risk category for a patient's most-recent prediction
+     * at admission or discharge. Stashes the model-calculated category in originalRiskCategory,
+     * updates the risk_predictions row, flags it as user-elevated, and records the change in the
+     * audit log.
+     */
+    async elevateRiskCategory(
+        patientId: string,
+        usageTime: 'admission' | 'discharge',
+        newCategory: string,
+        userId: string
+    ): Promise<RiskPrediction> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        // Most-recent prediction row for THIS patient + usageTime
+        const current = await this.db.getFirstAsync<{ id: number; riskCategory: string; isManuallyElevated: number }>(`
+            SELECT id, riskCategory, isManuallyElevated FROM risk_predictions
+            WHERE patientId = ? AND usageTime = ?
+            ORDER BY calculatedAt DESC
+            LIMIT 1
+        `, [patientId, usageTime]);
+
+        if (!current) {
+            throw new Error(`No ${usageTime} risk prediction found for patient ${patientId}`);
+        }
+
+        // Cannot elevate if already elevated
+        if (current.isManuallyElevated) {
+            throw new Error(`${usageTime} risk prediction for patient ${patientId} is already elevated`);
+        }
+
+        await this.db.withTransactionAsync(async () => {
+            // originalRiskCategory takes the pre-update riskCategory
+            await this.db!.runAsync(
+                `UPDATE risk_predictions
+                 SET originalRiskCategory = riskCategory, riskCategory = ?, isManuallyElevated = 1
+                 WHERE id = ?`,
+                [newCategory, current.id]
+            );
+
+            // riskCategory variable used for both admission and discharge, so log the change as riskCategory_admission or riskCategory_discharge
+            await this.logChanges(
+                patientId,
+                'UPDATE',
+                `riskCategory_${usageTime}`,
+                current.riskCategory,
+                newCategory,
+                userId
+            );
+        });
+
+        console.log(`✅ Risk category elevated for ${patientId} (${usageTime}): ${current.riskCategory} -> ${newCategory}`);
+
+        const updated = await this.db.getFirstAsync<any>(`SELECT * FROM risk_predictions WHERE id = ?`, [current.id]);
+        return this.mapRiskPrediction(updated);
+    }
+
+    /**
+     * Undo a manual elevation on a patient's most-recent prediction at admission or discharge:
+     * restores the model-calculated category, clears the elevation flag and originalRiskCategory,
+     * and records the change in the audit log.
+     */
+    async undoRiskElevation(
+        patientId: string,
+        usageTime: 'admission' | 'discharge',
+        userId: string
+    ): Promise<RiskPrediction> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        // Most-recent prediction row for THIS patient + usageTime
+        const current = await this.db.getFirstAsync<{ id: number; riskCategory: string; originalRiskCategory: string | null; isManuallyElevated: number }>(`
+            SELECT id, riskCategory, originalRiskCategory, isManuallyElevated FROM risk_predictions
+            WHERE patientId = ? AND usageTime = ?
+            ORDER BY calculatedAt DESC
+            LIMIT 1
+        `, [patientId, usageTime]);
+
+        if (!current) {
+            throw new Error(`No ${usageTime} risk prediction found for patient ${patientId}`);
+        }
+
+        // Nothing to undo if it was never elevated.
+        if (!current.isManuallyElevated || current.originalRiskCategory == null) {
+            throw new Error(`${usageTime} risk prediction for patient ${patientId} is not elevated`);
+        }
+
+        const restored = current.originalRiskCategory;
+
+        await this.db.withTransactionAsync(async () => {
+            await this.db!.runAsync(
+                `UPDATE risk_predictions
+                 SET riskCategory = originalRiskCategory, originalRiskCategory = NULL, isManuallyElevated = 0
+                 WHERE id = ?`,
+                [current.id]
+            );
+
+            await this.logChanges(
+                patientId,
+                'UPDATE',
+                `riskCategory_${usageTime}`,
+                current.riskCategory,
+                restored,
+                userId
+            );
+        });
+
+        console.log(`✅ Risk elevation undone for ${patientId} (${usageTime}): ${current.riskCategory} -> ${restored}`);
+
+        const updated = await this.db.getFirstAsync<any>(`SELECT * FROM risk_predictions WHERE id = ?`, [current.id]);
+        return this.mapRiskPrediction(updated);
     }
 
     private async buildRiskAssesment(predictions: any[]): Promise<RiskAssessment> {

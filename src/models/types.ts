@@ -74,6 +74,8 @@ export interface RiskPrediction {
     riskCategory: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
     model: string;
     topPredictors?: TopPredictor[];
+    isManuallyElevated?: boolean;
+    originalRiskCategory?: string; // model-calculated category when there's a manual elevation
 }
 
 /**

@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { Icon, useTheme } from 'react-native-paper';
 
 // TODO - fix risk profile mapping
 
@@ -11,6 +11,8 @@ type PatientCardProps = {
   age?: string;
   status: string;
   riskCategory?: string;
+  isElevated?: boolean;
+  originalRiskCategory?: string;
   riskProfile?: string[];
   recommendedCareplan?: string[];
   isDischarged: boolean;
@@ -29,6 +31,8 @@ export default function PatientCard({
   age,
   status,
   riskCategory,
+  isElevated,
+  originalRiskCategory,
   riskProfile,
   recommendedCareplan,
   isDischarged,
@@ -102,14 +106,24 @@ export default function PatientCard({
           <Text style={[styles.info, {fontStyle: 'italic', color: 'grey'}]}>Started at {admittedAt}</Text>
         }
 
-        {/* Risk level + arrow */}
+        {/* Risk level + elevated indicator */}
         {riskCategory &&
         <View style={styles.riskRow}>
           <Text style={styles.label}>Risk Level: </Text>
           <View style={[styles.badge, { backgroundColor: riskColor }]}>
             <Text style={styles.badgeText}>{riskCategory.toUpperCase()}</Text>
           </View>
+          {isElevated &&
+            <View style={{ marginLeft: 4 }}>
+              <Icon source="arrow-up-bold" size={20} color="#f44336" />
+            </View>
+          }
         </View>
+        }
+        {isElevated && originalRiskCategory &&
+          <Text style={[styles.info, { fontStyle: 'italic', color: '#d32f2f' }]}>
+            Originally: {originalRiskCategory.toUpperCase()}
+          </Text>
         }
       </TouchableOpacity>
 
