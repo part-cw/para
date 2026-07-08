@@ -11,7 +11,19 @@ import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { jaundiceInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { calculateWAZ, getMuacStatus, getTempSquared, getWazNutritionalStatus, indexToNutritionStatus, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
+import {
+    calculateWAZ,
+    getMuacStatus,
+    getTempSquared,
+    getWazNutritionalStatus,
+    indexToNutritionStatus,
+    nutritionStatusToIndex,
+    validateMuac,
+    validateOxygenSaturationRange,
+    validateRespiratoryRange,
+    validateTemperatureRange,
+    validateWeight,
+} from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { convertToYesNo, normalizeBoolean } from '@/src/utils/normalizer';
 import { router } from 'expo-router';
@@ -80,7 +92,7 @@ export default function AdmissionClinicalDataScreen() {
             }
         }
         
-     if (!muac || !isValidNumericFormat(muac)){
+        if (!muac || !isValidNumericFormat(muac)){
             errors.push('MUAC is required and must be a valid number');
         } else if (muacUnit === 'cm' && !validateMuacDecimal(muac)) {
             errors.push('MUAC must have exactly one decimal place (e.g. 12.5 cm)');
@@ -159,7 +171,7 @@ export default function AdmissionClinicalDataScreen() {
         return {errors: errors, warnings: warnings}
     };
 
-useEffect(() => {
+    useEffect(() => {
         const messages = validateAllFields();
         setValidationErrors('admissionClinicalData', messages.errors);
         setValidationWarnings('admissionClinicalData', messages.warnings);
@@ -193,7 +205,7 @@ useEffect(() => {
 
     }, [weight])
 
-   // handles changes in waz, muac, and edematous malnutrition - updates malnutrtion status accordingly
+    // handles changes in waz, muac, and edematous malnutrition - updates malnutrtion status accordingly
     useEffect(() => {
         setMalnutritionStatus()
     }, [waz, muac, patientData.edematousMalnutrition])
@@ -203,7 +215,7 @@ useEffect(() => {
         if (!isNeonate) updatePatientData({neonatalJaundice: ''})
     }, [isNeonate])
     
-   const setMalnutritionStatus = () => {
+    const setMalnutritionStatus = () => {
         if (patientData.edematousMalnutrition) {
             updatePatientData({
                 malnutritionStatus: 'severe'
@@ -246,7 +258,7 @@ useEffect(() => {
             }) 
         }
     }
-const validateMuacDecimal = (value: string): boolean => {
+    const validateMuacDecimal = (value: string): boolean => {
         if (muacUnit === 'mm') return true;
         const decimalRegex = /^\d+\.\d$/;
         return decimalRegex.test(value.trim());
@@ -530,13 +542,21 @@ const validateMuacDecimal = (value: string): boolean => {
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
-                                     customValidator={(value) => {
+                                            customValidator={(value) => {
                                                 if (!value || value.trim() === '') return false;
                                                 if (muacUnit === 'cm' && !validateMuacDecimal(value)) return false;
                                                 const mmValue = muacUnit === 'cm' ? (parseFloat(value) * 10).toString() : value;
                                                 return validateMuac(mmValue).isValid;
                                             }}
-                                          customErrorMessage={muac ? (muacUnit === 'cm' ? (!validateMuacDecimal(muac) ? 'MUAC must have exactly one decimal place (e.g. 12.5)' : (validateMuac((parseFloat(muac) * 10).toString()).errorMessage?.replace(/(\d+)\s*mm/g, (match, num) => `${(parseFloat(num) / 10).toFixed(1)} cm`).replace(/millimeters/gi, 'centimeters') || '')) : validateMuac(muac).errorMessage) : ''}
+                                            customErrorMessage={
+                                                muac
+                                                    ? (muacUnit === 'cm'
+                                                        ? (!validateMuacDecimal(muac)
+                                                            ? 'MUAC must have exactly one decimal place (e.g. 12.5)'
+                                                            : (validateMuac((parseFloat(muac) * 10).toString()).errorMessage?.replace(/(\d+)\s*mm/g, (match, num) => `${(parseFloat(num) / 10).toFixed(1)} cm`).replace(/millimeters/gi, 'centimeters') || ''))
+                                                        : validateMuac(muac).errorMessage)
+                                                    : ''
+                                            }
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
                                             right={<TextInput.Affix text={muacUnit} />}                            
                                         />
@@ -554,7 +574,7 @@ const validateMuacDecimal = (value: string): boolean => {
                                         />
                                     </View>
 
-                             {/* show muac status bar if muac is valid string */}
+                                    {/* show muac status bar if muac is valid string */}
                                     {!isUnderSixMonths && !validateMuac(muac as string).errorMessage && typeof muac === 'string' && 
 
                                         <NutritionStatusBar 
@@ -659,26 +679,34 @@ const validateMuacDecimal = (value: string): boolean => {
                                     }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
-                                           label={`MUAC in ${muacUnit} (required)`}
+                                            label={`MUAC in ${muacUnit} (required)`}
                                             value={muac as string}
                                             onChangeText={(value) => {
                                                 updatePatientData({ muac: value })
                                                 // setShowMuacStatusBar(false)
                                             }}
-                                          inputType={INPUT_TYPES.NUMERIC}
+                                            inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
-                                   customValidator={(value) => {
+                                            customValidator={(value) => {
                                                 if (!value || value.trim() === '') return false;
                                                 if (muacUnit === 'cm' && !validateMuacDecimal(value)) return false;
                                                 const mmValue = muacUnit === 'cm' ? (parseFloat(value) * 10).toString() : value;
                                                 return validateMuac(mmValue).isValid;
                                             }}
-                                      customErrorMessage={muac ? (muacUnit === 'cm' ? (!validateMuacDecimal(muac) ? 'MUAC must have exactly one decimal place (e.g. 12.5)' : (validateMuac((parseFloat(muac) * 10).toString()).errorMessage?.replace(/(\d+)\s*mm/g, (match, num) => `${(parseFloat(num) / 10).toFixed(1)} cm`).replace(/millimeters/gi, 'centimeters') || '')) : validateMuac(muac).errorMessage) : ''}
+                                            customErrorMessage={
+                                                muac
+                                                    ? (muacUnit === 'cm'
+                                                        ? (!validateMuacDecimal(muac)
+                                                            ? 'MUAC must have exactly one decimal place (e.g. 12.5)'
+                                                            : (validateMuac((parseFloat(muac) * 10).toString()).errorMessage?.replace(/(\d+)\s*mm/g, (match, num) => `${(parseFloat(num) / 10).toFixed(1)} cm`).replace(/millimeters/gi, 'centimeters') || ''))
+                                                        : validateMuac(muac).errorMessage)
+                                                    : ''
+                                            }
                                             
                                             onBlurExternal={handleMuacBlur}
                                             style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
-                                          right={<TextInput.Affix text={muacUnit} />}                            
+                                            right={<TextInput.Affix text={muacUnit} />}
                                         />
                                         <IconButton
                                             icon="help-circle-outline"
@@ -694,7 +722,7 @@ const validateMuacDecimal = (value: string): boolean => {
                                         />
                                     </View>
 
-                                {/* show muac status bar if muac is valid string */}
+                                    {/* show muac status bar if muac is valid string */}
                                     {muac && typeof muac === 'string' && (() => {
                                         const muacInMm = muacUnit === 'cm' ? (parseFloat(muac) * 10).toString() : muac;
                                         if (validateMuac(muacInMm).errorMessage) return null;
