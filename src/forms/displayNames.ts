@@ -22,10 +22,7 @@ export const displayNames: Record<string, string> = {
     temperature: 'Temperature',
     rrate: 'Respiratory Rate',
     heartRate: 'Heart Rate',
-    eyeMovement: 'Eye movement',
-    motorResponse: 'Best motor response',
-    verbalResponse: 'Verbal response',
-
+    levelOfConsciousness: 'Level of Consciousness',
     // Admission Clinical Data (0-60 months)
     illnessDuration: 'Duration of present illness',
     neonatalJaundice: 'Neonatal Jaundice',

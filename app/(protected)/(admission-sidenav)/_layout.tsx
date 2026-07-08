@@ -93,7 +93,7 @@ function CustomDrawerContent(props: any) {
   const screens = [
     { name: 'patientInformation', label: 'Patient Information', icon: 'person' },
     { name: 'admissionClinicalData', label: 'Admission Clinical Data', icon: 'local-hospital' },
-    { name: 'medicalConditions', label: 'Common Medical Conditions', icon: 'medical-services' },
+    { name: 'medicalConditions', label: 'Targeted Medical Conditions', icon: 'medical-services' },
     { name: 'vhtReferral', label: 'CHW Referral', icon: 'transfer-within-a-station' },
     { name: 'caregiverContact', label: 'Caregiver Contact Information', icon: 'contact-phone' },
     { name: 'review', label: 'Review & Submit', icon: 'check-circle' }
@@ -147,7 +147,7 @@ export default function DrawerLayout() {
               drawerContent={(props) => <CustomDrawerContent {...props}/>}>
               <Drawer.Screen name="patientInformation" options={{title: 'Patient Information'}}/>
               <Drawer.Screen name="admissionClinicalData" options={{title: 'Admission Clinical Data'}}/>
-              <Drawer.Screen name="medicalConditions" options={{title: 'Common Medical Conditions'}}/>
+              <Drawer.Screen name="medicalConditions" options={{title: 'Targeted Medical Conditions'}}/>
               <Drawer.Screen name="vhtReferral" options={{title: 'CHW Referral'}}/>
               <Drawer.Screen name="caregiverContact" options={{title: 'Caregiver Contact Information'}}/>
               <Drawer.Screen name="review" options={{title: 'Review & Submit'}}/>

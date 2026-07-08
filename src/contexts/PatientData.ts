@@ -39,6 +39,7 @@ export interface PatientData {
   verbalResponse?: string;
   bcsScore?: number | null;
   abnormalBCS?: boolean | null;
+  levelOfConsciousness?: string;
 
   // Admission Clinical Data (0-6 months only)
   illnessDuration?: string;
@@ -56,6 +57,7 @@ export interface PatientData {
   sepsis?: string;
   meningitis_encephalitis?: string;
   malnutritionStatus?: string;
+  edematousMalnutrition?: boolean;
   sickYoungInfant?: boolean;
   
   // vhtReferral info
@@ -111,6 +113,7 @@ export const initialPatientData: PatientData = {
   sepsis: '',
   meningitis_encephalitis: '',
   malnutritionStatus: '',
+  edematousMalnutrition: false,
   sickYoungInfant: false,
 
   // vht referral information
@@ -144,6 +147,7 @@ export const initialPatientData: PatientData = {
   verbalResponse: '',
   bcsScore: null,
   abnormalBCS: null,
+  levelOfConsciousness: '',
   
   // 0-6 months
   illnessDuration: '',

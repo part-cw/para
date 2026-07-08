@@ -1,4 +1,5 @@
 import { getPhoneOwnerValue } from '@/src/components/sections/CaregiverContactSection';
+import { useConfig } from '@/src/contexts/ConfigContext';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
@@ -68,6 +69,7 @@ export const formatMissingFieldsMessage = (missingSectionFields: {[key: string]:
 // ACTUAL REVIEW SCREEN
 export default function ReviewScreen() {
     const { colors } = useTheme()
+    const { config } = useConfig();
     const { patientData, savePatientData } = usePatientData();
 
     const [ expandedAccordion, setExpandedAccordion] = useState<string>('');
@@ -409,7 +411,7 @@ export default function ReviewScreen() {
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                                <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                              <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
                                 <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                             </View>
                             :
@@ -420,15 +422,13 @@ export default function ReviewScreen() {
                                 
                                 <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                 <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                                <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                                <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
                                 <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
                                 <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
                                 <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                 
-                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                                <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
-                                <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
-                                <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
+                              <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Level of Consciousness</Text>
+                                <InfoRow label="Level of Consciousness" value={patientData.levelOfConsciousness || 'Not provided'} />
                             </View>
                         }
                     </List.Accordion>
@@ -436,7 +436,7 @@ export default function ReviewScreen() {
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="Common Medical Conditions"
+                      title="Targeted Medical Conditions"
                       titleStyle={Styles.accordionListTitle}
                       left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
                       expanded={expandedAccordion === 'medicalConditions'}
@@ -446,7 +446,7 @@ export default function ReviewScreen() {
                       }
                     >
                         <View style={Styles.accordionContentWrapper}>
-                            <InfoRow label="Malnutrition Status" value={capitalizeFirstLetter(patientData.malnutritionStatus as string) || 'Not provided'} />
+                       <InfoRow label={normalizeBoolean(patientData.isUnderSixMonths) ? "Growth Status" : "Nutritional Status"} value={patientData.malnutritionStatus === 'moderate' ? 'Moderate Acute Malnourished' : patientData.malnutritionStatus === 'severe' ? 'Severe Acute Malnourished' : capitalizeFirstLetter(patientData.malnutritionStatus as string) || 'Not provided'} />
                             <InfoRow label="Sick Young Infant" value={patientData.sickYoungInfant ? 'Yes' : 'No'} />
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.severeAnaemia || 'Not provided'} />

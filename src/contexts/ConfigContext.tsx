@@ -11,6 +11,7 @@ export interface AppConfig {
   // eCHIS FHIR server. Empty echisServerUrl => dry-run (build + log bundle, no real POST).
   echisServerUrl: string;
   echisAuthToken?: string;
+  muacUnit: 'cm' | 'mm';
 }
 
 interface ConfigContextType {
@@ -26,7 +27,8 @@ const DEFAULT_CONFIG: AppConfig = {
   deviceIdKey: 'A',
   maxPatientAge: 5.1,
   rrateIntegrationEnabled: false,
-  echisServerUrl: ''
+  echisServerUrl: '',
+  muacUnit: 'cm'
 };
 
 const CONFIG_KEY = 'app_config';

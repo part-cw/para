@@ -140,14 +140,14 @@ export const CaregiverContactSection: React.FC<CaregiverContactSectionProps> = (
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <ValidatedTextInput
-                    label={mode === 'discharge' ? "Telephone (required)" : "Telephone"}
+                    label="Telephone"
                     placeholder="Enter phone number"
                     value={caregiverTel || ''}
                     onChangeText={handleCaregiverTelChange}
                     inputType={INPUT_TYPES.PHONE}
                     customValidator={() => isValidPhoneNumber(caregiverTel || '')}
                     customErrorMessage={telephoneErrorMessage}
-                    isRequired={mode === 'discharge'}
+                    isRequired={false}
                     style={{ flex: 1 }}
                     showErrorOnTyping={true}
                 />

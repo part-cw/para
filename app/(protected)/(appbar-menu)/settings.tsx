@@ -22,6 +22,8 @@ export default function SettingsScreen() {
     const [deviceIdKey, setDeviceIdKey] = useState(config.deviceIdKey);
     const [maxPatientAge, setMaxPatientAge] = useState(config.maxPatientAge.toString());
     const [rrateIntegrationEnabled, setRrateIntegrationEnabled] = useState(config.rrateIntegrationEnabled);
+    const [muacUnit, setMuacUnit] = useState(config.muacUnit || 'cm');
+    const [showMuacEdit, setShowMuacEdit] = useState(false);
 
     const [saving, setSaving] = useState(false);
 
@@ -52,6 +54,18 @@ export default function SettingsScreen() {
             Alert.alert('Success', 'Site updated');
         } catch {
             Alert.alert('Error', 'Failed to update site');
+        } finally {
+            setSaving(false);
+        }
+    };
+const handleSaveMuacUnit = async () => {
+        try {
+            setSaving(true);
+            await updateConfig({ muacUnit: muacUnit });
+            Alert.alert('Success', 'MUAC unit updated');
+            setShowMuacEdit(false);
+        } catch {
+            Alert.alert('Error', 'Failed to update MUAC unit');
         } finally {
             setSaving(false);
         }
@@ -195,7 +209,39 @@ export default function SettingsScreen() {
                         disabled={saving}
                         style={styles.saveButton}
                     >
-                        Save Device ID
+                 Save Device ID
+                    </Button>
+                </EditGroup>
+
+                {/* MUAC Unit */}
+             <EditGroup
+                    fieldLabel="MUAC Unit"
+                    fieldValue={config.muacUnit || 'cm'}
+                    editLabel="Edit MUAC Unit"
+                    canEdit={isAdmin}
+                    isExpanded={showMuacEdit}
+                    onToggle={setShowMuacEdit}
+                >
+                   <SearchableDropdown
+                        data={[
+                            { key: 'cm', value: 'cm' },
+                            { key: 'mm', value: 'mm' },
+                        ]}
+                        label="MUAC Unit"
+                        placeholder="Select unit"
+                        onSelect={(item) => setMuacUnit(item.key as 'cm' | 'mm')}
+                        value={muacUnit}
+                        search={false}
+                        showClearIcon={false}
+                    />
+                    <Button
+                        mode="contained"
+                        onPress={handleSaveMuacUnit}
+                        loading={saving}
+                        disabled={saving}
+                        style={styles.saveButton}
+                    >
+                        Save MUAC Unit
                     </Button>
                 </EditGroup>
 
@@ -299,7 +345,7 @@ const styles = StyleSheet.create({
         marginTop: 16,
         marginBottom: 16
     },
-    backButton: {
+backButton: {
         marginTop: 24
-    }
+    },
 });

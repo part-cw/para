@@ -40,8 +40,9 @@ interface SearchableDropdownProps {
   formatter?: (value: string) => string; // TODO - remove formatter?
   showError?: boolean;
   keyboard?: KeyboardTypeOptions;
-  isOpen?: boolean;
+isOpen?: boolean;
   onToggle?: (isOpen: boolean) => void; 
+  showClearIcon?: boolean;
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -58,8 +59,9 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   formatter,
   showError = true,
   keyboard = 'default',
-  isOpen: controlledIsOpen,
+isOpen: controlledIsOpen,
   onToggle,
+  showClearIcon: showClearIconProp = true,
 }) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -79,7 +81,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const showNoResults = isOpen && searchText.length > 0 && filteredData.length === 0;
   const showAddNew = showNoResults && !data.some(d => d.value.toLowerCase() === searchText.toLowerCase().trim()); // or use allData?
   const showFloatingLabel = isFocused || searchText.length > 0;
-  const showClearIcon = (searchText.trim() !== '') 
+ const showClearIcon = showClearIconProp && (searchText.trim() !== '')
   
   // TODO - show input error when close dropdown and invalid entry -- make sure searchText is not set
   // currently it only shows error message if click ok from keyboard or 'add'

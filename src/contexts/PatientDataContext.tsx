@@ -72,7 +72,11 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
     const timeoutId = setTimeout(async () => {
       try {
-        await storage.saveDraft(patientData, currentPatientId, userId);
+        const dataToSave = {
+          ...patientData,
+          muac: (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac
+        };
+        await storage.saveDraft(dataToSave, currentPatientId, userId);
         console.log('🔄 Auto-saved draft:', currentPatientId);
       } catch (error) {
         console.error('Error auto-saving draft:', error);
@@ -126,7 +130,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   /**
    * Load specific draft for 'continue admission' workflow
    */
-  const loadDraft = async (patientId: string) => {
+ const loadDraft = async (patientId: string) => {
      try {
 
       setIsDataLoaded(false);
@@ -134,7 +138,12 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       
       if (!draft) throw new Error(`Draft ${patientId} not found`);
 
-      setPatientData(draft);
+      const draftForDisplay = {
+        ...draft,
+        muac: (config.muacUnit || 'cm') === 'cm' && draft.muac ? (parseFloat(draft.muac) / 10).toString() : draft.muac
+      };
+
+      setPatientData(draftForDisplay);
       setCurrentPatientId(patientId);
       console.log('📂 Loaded draft:', patientId);
     } catch (error) {
@@ -148,13 +157,18 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   /**
    * Load specifc patient record 
    */
-  const loadPatient = async (patientId: string) => {
+ const loadPatient = async (patientId: string) => {
     try {
       setIsDataLoaded(false)
       const data = await storage.getPatient(patientId);
       if (!data) throw new Error(`Patient ${patientId} not found`);
       
-      setPatientData(data);
+      const dataForDisplay = {
+        ...data,
+        muac: (config.muacUnit || 'cm') === 'cm' && data.muac ? (parseFloat(data.muac) / 10).toString() : data.muac
+      };
+
+      setPatientData(dataForDisplay);
       setCurrentPatientId(patientId);
       await getCurrentRiskAssessment(patientId);
       console.log(`📋 Loaded patient ${patientId} data`);
@@ -252,6 +266,10 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const patientName = `${patientData.firstName} ${patientData.surname}`;
       const submissionDateTime = new Date().toISOString()
 
+      // Convert MUAC to mm for permanent storage
+      const muacInMm = (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac;
+      await storage.updatePatient(currentPatientId, { muac: muacInMm });
+
       // submit patient (isDraft change from 1 to 0)
       await storage.submitPatient(currentPatientId, userId, submissionDateTime);
 
@@ -344,7 +362,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * Calculate post-discharge mortality risk at admission time,
    *  using patient data stored in context
    */
-  const calculateAdmissionRisk = (): RiskPrediction | null => {
+ const calculateAdmissionRisk = (): RiskPrediction | null => {
     const context: ModelContext = {
       isUnderSixMonths: normalizeBoolean(patientData.isUnderSixMonths),
       usageTime: 'admission'
@@ -353,14 +371,19 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     const model = modelSelector.getModel(context)
     const strategy = model && modelSelector.getStrategy(model?.modelName)
 
-    return strategy && strategy?.calculateRisk(patientData)
+    const dataForModel = {
+      ...patientData,
+      muac: (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac
+    };
+
+    return strategy && strategy?.calculateRisk(dataForModel)
   };
 
 
   /**
    * Calculate post-discharge mortality risk at admission time; takes explicit data
    */
-  const calculateAdmissionRiskWithData = (data: PatientData): RiskPrediction | null => {
+ const calculateAdmissionRiskWithData = (data: PatientData): RiskPrediction | null => {
       const context: ModelContext = {
           isUnderSixMonths: normalizeBoolean(data.isUnderSixMonths),
           usageTime: 'admission'
@@ -369,13 +392,23 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const model = modelSelector.getModel(context);
       const strategy = model && modelSelector.getStrategy(model?.modelName);
 
-      return strategy && strategy?.calculateRisk(data);
+      const dataForModel = {
+        ...data,
+        muac: (config.muacUnit || 'cm') === 'cm' && data.muac ? (parseFloat(data.muac) * 10).toString() : data.muac
+      };
+
+      return strategy && strategy?.calculateRisk(dataForModel);
   };
 
   /**
    * Calculate post-discharge mortality risk at discharge time
    */
-  const calculateDischargeRisk = (): RiskPrediction | null => {
+const calculateDischargeRisk = (): RiskPrediction | null => {
+    // Skip risk calculation for deceased patients - required discharge fields aren't collected
+    if (patientData.dischargeStatus?.toLowerCase() === 'deceased') {
+      return null;
+    }
+
     const context: ModelContext = {
       isUnderSixMonths: normalizeBoolean(patientData.isUnderSixMonths),
       usageTime: 'discharge'
@@ -384,7 +417,17 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
     const model = modelSelector.getModel(context)
     const strategy = model && modelSelector.getStrategy(model?.modelName)
 
-    return strategy && strategy?.calculateRisk(patientData)
+    // Convert old 'Unplanned discharge' value to new label for backwards compatibility
+    // Also convert MUAC from cm to mm for the model, since patientData stores it in cm
+    const normalizedData = {
+      ...patientData,
+      dischargeStatus: patientData.dischargeStatus === 'Unplanned discharge' 
+        ? 'Discharged against medical advice' 
+        : patientData.dischargeStatus,
+      muac: (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac
+    };
+
+    return strategy && strategy?.calculateRisk(normalizedData)
   };
 
   const getCurrentRiskAssessment = async (patientId: string): Promise<RiskAssessment | null> => {

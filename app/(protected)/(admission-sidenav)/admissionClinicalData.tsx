@@ -1,3 +1,4 @@
+import Checkbox from '@/src/components/Checkbox';
 import NutritionStatusBar from '@/src/components/NutritionStatusBar';
 import PaginationControls from '@/src/components/PaginationControls';
 import RadioButtonGroup from '@/src/components/RadioButtonGroup';
@@ -8,9 +9,9 @@ import { useConfig } from '@/src/contexts/ConfigContext';
 import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
-import { bcsGeneralInfo, eyeMovementInfo, jaundiceInfo, motorResponseInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
+import { jaundiceInfo, muacInfo, rrateButtonInfo } from '@/src/forms/infoText';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { calculateBcsScore, calculateWAZ, getEyeMovementScore, getMotorResponseScore, getMuacStatus, getTempSquared, getVerbalResponseScore, getWazNutritionalStatus, indexToNutritionStatus, isAbnormalBcs, mapBcsScoreToVariant, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
+import { calculateWAZ, getMuacStatus, getTempSquared, getWazNutritionalStatus, indexToNutritionStatus, nutritionStatusToIndex, validateMuac, validateOxygenSaturationRange, validateRespiratoryRange, validateTemperatureRange, validateWeight } from '@/src/utils/clinicalVariableCalculator';
 import { isValidNumericFormat } from '@/src/utils/inputValidator';
 import { convertToYesNo, normalizeBoolean } from '@/src/utils/normalizer';
 import { router } from 'expo-router';
@@ -25,6 +26,7 @@ export default function AdmissionClinicalDataScreen() {
     const { colors } = useTheme()
     const { patientData, updatePatientData, isDataLoaded } = usePatientData();
     const { config } = useConfig();
+    const muacUnit = config.muacUnit || 'cm';
     const { setValidationErrors, setValidationWarnings, getScreenErrors, getScreenWarnings } = useValidation();    
 
     const validationErrors = getScreenErrors('admissionClinicalData')
@@ -35,10 +37,6 @@ export default function AdmissionClinicalDataScreen() {
 
     const [showErrorSummary, setShowErrorSummary] = useState<boolean>(false)
 
-    // For BCS calcualtions
-    const [eyeScore, setEyeScore] = useState<number | null>(null)
-    const [motorScore, setMotorScore] = useState<number | null>(null)
-    const [verbalScore, setVerbalScore] = useState<number | null>(null)
 
     const {
         // common fields
@@ -58,10 +56,6 @@ export default function AdmissionClinicalDataScreen() {
         temperature,
         rrate,
         lastHospitalized,
-        eyeMovement,
-        motorResponse,
-        verbalResponse,
-        bcsScore,
         abnormalBCS,
 
         // other necessary info
@@ -86,12 +80,19 @@ export default function AdmissionClinicalDataScreen() {
             }
         }
         
-        if (!muac || !isValidNumericFormat(muac)){
+     if (!muac || !isValidNumericFormat(muac)){
             errors.push('MUAC is required and must be a valid number');
+        } else if (muacUnit === 'cm' && !validateMuacDecimal(muac)) {
+            errors.push('MUAC must have exactly one decimal place (e.g. 12.5 cm)');
         } else {
-            const muacValidation = validateMuac(muac);
+            const muacInMm = muacUnit === 'cm' ? (parseFloat(muac) * 10).toString() : muac;
+            const muacValidation = validateMuac(muacInMm);
             if (!muacValidation.isValid) {
-                muacValidation.errorMessage && errors.push(muacValidation.errorMessage);
+                const rawMsg = muacValidation.errorMessage;
+                const displayMsg = muacUnit === 'cm' && rawMsg
+                    ? rawMsg.replace(/(\d+)\s*mm/g, (match, num) => `${(parseFloat(num) / 10).toFixed(1)} cm`).replace(/millimeters/gi, 'centimeters')
+                    : rawMsg;
+                displayMsg && errors.push(displayMsg);
                 muacValidation.warningMessage && warnings.push(muacValidation.warningMessage)
             }
         }
@@ -149,22 +150,16 @@ export default function AdmissionClinicalDataScreen() {
                 }
             }
             
-            // Blantyre Coma Scale validations
-            if (!eyeMovement) {
-                errors.push('Eye movement assessment is required');
-            }
-            if (!motorResponse) {
-                errors.push('Motor response assessment is required');
-            }
-            if (!verbalResponse) {
-                errors.push('Verbal response assessment is required');
+           // Level of Consciousness validations
+            if (!patientData.levelOfConsciousness) {
+                errors.push('Level of consciousness is required');
             }
         }
         
         return {errors: errors, warnings: warnings}
     };
 
-    useEffect(() => {
+useEffect(() => {
         const messages = validateAllFields();
         setValidationErrors('admissionClinicalData', messages.errors);
         setValidationWarnings('admissionClinicalData', messages.warnings);
@@ -172,8 +167,7 @@ export default function AdmissionClinicalDataScreen() {
         weight, muac, spo2, 
         illnessDuration, jaundice, bulgingFontanelle, feedingStatus,
         hivStatus, lastHospitalized, temperature, rrate,
-        eyeMovement, motorResponse, verbalResponse,
-        isUnderSixMonths
+        isUnderSixMonths, patientData.levelOfConsciousness
     ]);
 
      // Clear errors when component unmounts or navigates away
@@ -199,56 +193,41 @@ export default function AdmissionClinicalDataScreen() {
 
     }, [weight])
 
-    // handles changes in waz and muac - updates malnutrtion status accordingly
+   // handles changes in waz, muac, and edematous malnutrition - updates malnutrtion status accordingly
     useEffect(() => {
         setMalnutritionStatus()
-    }, [waz, muac])
-
-    // handle changes in BCS selections and updates scores accordingly
-    useEffect(() => {
-        // if options selected, set scores
-        if (eyeMovement) {
-            setEyeScore(getEyeMovementScore(eyeMovement));
-        } else {
-            setEyeScore(null);
-        }
-        if (motorResponse) {
-            setMotorScore(getMotorResponseScore(motorResponse));
-        } else {
-            setMotorScore(null);
-        }
-        if (verbalResponse) {
-            setVerbalScore(getVerbalResponseScore(verbalResponse));
-        } else {
-            setVerbalScore(null);
-        }
-
-        if (eyeScore !== null && motorScore !== null && verbalScore !==null) {
-            const score = calculateBcsScore(eyeScore, motorScore, verbalScore)
-            updatePatientData({
-                bcsScore: score,
-                abnormalBCS: isAbnormalBcs(score)
-            })
-        } else {
-            updatePatientData({
-                bcsScore: null,
-                abnormalBCS: null
-            })
-        }
-
-    }, [eyeMovement, motorResponse, verbalResponse, eyeScore, verbalScore, motorScore])
+    }, [waz, muac, patientData.edematousMalnutrition])
 
     // handle changes to isNeonate; resets jaundice selection if changes made to age
     useEffect(() => {
         if (!isNeonate) updatePatientData({neonatalJaundice: ''})
     }, [isNeonate])
     
-    const setMalnutritionStatus = () => {
+   const setMalnutritionStatus = () => {
+        if (patientData.edematousMalnutrition) {
+            updatePatientData({
+                malnutritionStatus: 'severe'
+            })
+            return;
+        }
+       if (normalizeBoolean(isUnderSixMonths)) {
+            if (waz != null) {
+                updatePatientData({
+                    malnutritionStatus: getWazNutritionalStatus(waz)
+                })
+            } else {
+                updatePatientData({
+                    malnutritionStatus: undefined
+                })
+            }
+            return;
+        }
         if ((waz != null) && muac) {
             const wazStatus = getWazNutritionalStatus(waz)
 
             const normalizedSixMonthFlag = normalizeBoolean(isUnderSixMonths)
-            const muacStatus = getMuacStatus(normalizedSixMonthFlag, muac)
+            const muacInMmForStatus = muacUnit === 'cm' ? (parseFloat(muac) * 10).toString() : muac;
+            const muacStatus = getMuacStatus(normalizedSixMonthFlag, muacInMmForStatus)
 
             const wazNutritionIndex = nutritionStatusToIndex(wazStatus)
             const muacNutritionIndex = nutritionStatusToIndex(muacStatus)
@@ -267,13 +246,18 @@ export default function AdmissionClinicalDataScreen() {
             }) 
         }
     }
+const validateMuacDecimal = (value: string): boolean => {
+        if (muacUnit === 'mm') return true;
+        const decimalRegex = /^\d+\.\d$/;
+        return decimalRegex.test(value.trim());
+    };
 
     const handleMuacBlur = () => {
-        if (muac && validateMuac(muac).errorMessage) {
+        if (muac && validateMuac(muacUnit === 'cm' ? (parseFloat(muac) * 10).toString() : muac).errorMessage) {
             return;
         }
 
-        const warning = muac && validateMuac(muac).warningMessage;
+        const warning = muac && validateMuac(muacUnit === 'cm' ? (parseFloat(muac) * 10).toString() : muac).warningMessage;
 
         if (!warning) return;
 
@@ -406,24 +390,6 @@ export default function AdmissionClinicalDataScreen() {
     { value: '1 month to 1 year ago', key: '1mo-1y' },
     { value: 'More than 1 year ago', key: '>1y' }];
 
-    const eyeMovementOptions = [
-        {value: 'Watches or follows', key: '1'},
-        {value: 'Fails to watch or follow', key: '0'}
-    ]
-
-    const motorResponseOptions = [
-        {value: 'Normal behaviour observed', key: '2.0'},
-        {value: 'Localizes painful stimulus', key: "2"},
-        {value: 'Withdraws limb from painful stimulus', key: '1'},
-        {value: 'No response or inappropriate response', key: '0'}
-    ]
-
-    const verbalResponseOptions = [
-        {value: 'Normal behaviour observed', key: '2.0'},
-        {value: 'Cries appropriately with pain (or speaks if verbal)', key: '2'},
-        {value: 'Moan or abnormal cry with pain', key: '1'},
-        {value: 'No vocal response to pain', key: '0'}
-    ]
 
     const hivUnknownWarning = 'Risk scores cannot be accurately calculated unless a positive or negative HIV diagnosis is confirmed.'
 
@@ -554,8 +520,8 @@ export default function AdmissionClinicalDataScreen() {
                                     }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
-                                            label={'MUAC (required)'}
-                                            value={muac as string} 
+                                            label={`MUAC in ${muacUnit} (required)`}
+                                            value={muac as string}
                                             onChangeText={(value) => {
                                                 updatePatientData({ muac: value })
                                                 // setShowMuacStatusBar(false)
@@ -564,10 +530,15 @@ export default function AdmissionClinicalDataScreen() {
                                             inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
                                             showErrorOnTyping={true}
-                                            customValidator={(value) => validateMuac(value).isValid}
-                                            customErrorMessage={muac && validateMuac(muac).errorMessage }
+                                     customValidator={(value) => {
+                                                if (!value || value.trim() === '') return false;
+                                                if (muacUnit === 'cm' && !validateMuacDecimal(value)) return false;
+                                                const mmValue = muacUnit === 'cm' ? (parseFloat(value) * 10).toString() : value;
+                                                return validateMuac(mmValue).isValid;
+                                            }}
+                                          customErrorMessage={muac ? (muacUnit === 'cm' ? (!validateMuacDecimal(muac) ? 'MUAC must have exactly one decimal place (e.g. 12.5)' : (validateMuac((parseFloat(muac) * 10).toString()).errorMessage?.replace(/(\d+)\s*mm/g, (match, num) => `${(parseFloat(num) / 10).toFixed(1)} cm`).replace(/millimeters/gi, 'centimeters') || '')) : validateMuac(muac).errorMessage) : ''}
                                             style={[Styles.accordionTextInput, { flex: 1 }]}
-                                            right={<TextInput.Affix text="mm" />}                             
+                                            right={<TextInput.Affix text={muacUnit} />}                            
                                         />
                                         <IconButton
                                             icon="help-circle-outline"
@@ -583,8 +554,8 @@ export default function AdmissionClinicalDataScreen() {
                                         />
                                     </View>
 
-                                    {/* show muac status bar if muac is valid string */}
-                                    {!validateMuac(muac as string).errorMessage && typeof muac === 'string' &&  
+                             {/* show muac status bar if muac is valid string */}
+                                    {!isUnderSixMonths && !validateMuac(muac as string).errorMessage && typeof muac === 'string' && 
 
                                         <NutritionStatusBar 
                                             title={`MUAC Nutritional Status: ${getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string).toUpperCase()}`} 
@@ -592,6 +563,11 @@ export default function AdmissionClinicalDataScreen() {
                                             variant={getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string)}
                                         />
                                     }
+                                    <Checkbox
+                                        label="Edematous malnutrition (Kwashiorkor)"
+                                        checked={patientData.edematousMalnutrition || false}
+                                        onChange={() => updatePatientData({ edematousMalnutrition: !patientData.edematousMalnutrition })}
+                                    />
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
                                         label={'SpO₂ (required)'}
@@ -683,19 +659,26 @@ export default function AdmissionClinicalDataScreen() {
                                     }
                                     <View style={{flexDirection:'row', alignItems: 'center'}}>
                                         <ValidatedTextInput 
-                                            label={'MUAC (required)'}
-                                            value={muac as string} 
+                                           label={`MUAC in ${muacUnit} (required)`}
+                                            value={muac as string}
                                             onChangeText={(value) => {
                                                 updatePatientData({ muac: value })
                                                 // setShowMuacStatusBar(false)
                                             }}
-                                            inputType={INPUT_TYPES.NUMERIC}
+                                          inputType={INPUT_TYPES.NUMERIC}
                                             isRequired={true} 
-                                            customValidator={(value) => validateMuac(value).isValid}
-                                            customErrorMessage={muac && validateMuac(muac).errorMessage }
+                                            showErrorOnTyping={true}
+                                   customValidator={(value) => {
+                                                if (!value || value.trim() === '') return false;
+                                                if (muacUnit === 'cm' && !validateMuacDecimal(value)) return false;
+                                                const mmValue = muacUnit === 'cm' ? (parseFloat(value) * 10).toString() : value;
+                                                return validateMuac(mmValue).isValid;
+                                            }}
+                                      customErrorMessage={muac ? (muacUnit === 'cm' ? (!validateMuacDecimal(muac) ? 'MUAC must have exactly one decimal place (e.g. 12.5)' : (validateMuac((parseFloat(muac) * 10).toString()).errorMessage?.replace(/(\d+)\s*mm/g, (match, num) => `${(parseFloat(num) / 10).toFixed(1)} cm`).replace(/millimeters/gi, 'centimeters') || '')) : validateMuac(muac).errorMessage) : ''}
+                                            
                                             onBlurExternal={handleMuacBlur}
                                             style={[Styles.accordionTextInput, { flex: 1 }, {marginBottom: 0}]}
-                                            right={<TextInput.Affix text="mm" />}                             
+                                          right={<TextInput.Affix text={muacUnit} />}                            
                                         />
                                         <IconButton
                                             icon="help-circle-outline"
@@ -711,14 +694,23 @@ export default function AdmissionClinicalDataScreen() {
                                         />
                                     </View>
 
-                                    {/* show muac status bar if muac is valid string */}
-                                    {!validateMuac(muac as string).errorMessage && typeof muac === 'string' &&  
-                                        <NutritionStatusBar 
-                                            title={`MUAC Nutritional Status: ${getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string).toUpperCase()}`} 
-                                            content=''
-                                            variant={getMuacStatus(normalizeBoolean(isUnderSixMonths), muac as string)}
-                                        />
-                                    }
+                                {/* show muac status bar if muac is valid string */}
+                                    {muac && typeof muac === 'string' && (() => {
+                                        const muacInMm = muacUnit === 'cm' ? (parseFloat(muac) * 10).toString() : muac;
+                                        if (validateMuac(muacInMm).errorMessage) return null;
+                                        return (
+                                            <NutritionStatusBar 
+                                                title={`MUAC Nutritional Status: ${getMuacStatus(normalizeBoolean(isUnderSixMonths), muacInMm).toUpperCase()}`} 
+                                                content=''
+                                                variant={getMuacStatus(normalizeBoolean(isUnderSixMonths), muacInMm)}
+                                            />
+                                        );
+                                    })()}
+                                    <Checkbox
+                                        label="Edematous malnutrition (Kwashiorkor)"
+                                        checked={patientData.edematousMalnutrition || false}
+                                        onChange={() => updatePatientData({ edematousMalnutrition: !patientData.edematousMalnutrition })}
+                                    />
                                     
                                     <ValidatedTextInput 
                                         label={'Temperature (required)'}
@@ -790,102 +782,33 @@ export default function AdmissionClinicalDataScreen() {
                             </List.Accordion>
                         </View>
                         
-                        {/* Blantyre Coma Scale Accordion for patients 6-60 months*/}
+                        {/* Level of Consciousness Accordion for patients 6-60 months*/}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
-                                title="Blantyre Coma Scale"
+                                title="Level of Consciousness"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="head-cog-outline" />}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    <Text style={{fontStyle: 'normal'}}>{bcsGeneralInfo}</Text>
-                                    <Text style={[Styles.required, {fontStyle: 'italic', marginBottom: 8}]}>**All fields required**</Text>
-                                    
-                                    {/* Eye movement dropdown */}
-                                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                        <View style={{flex: 1}}>
-                                            <SearchableDropdown 
-                                                data={eyeMovementOptions} 
-                                                label={'Eye movement'}
-                                                placeholder='select option below' 
-                                                onSelect={(item) => {
-                                                    updatePatientData({ eyeMovement: item.value})
-                                                }}
-                                                value={eyeMovement}
-                                                search={false}
-                                            />
-                                        </View>
-                                        <IconButton
-                                            icon="information-outline"
-                                            size={20}
-                                            iconColor={colors.primary}
-                                            onPress={() => {
-                                                if (Platform.OS !== 'web') {
-                                                    Alert.alert('Instructions', eyeMovementInfo);
-                                                } else {
-                                                    alert(eyeMovementInfo);
-                                                }
-                                            }}
-                                        />
-                                    </View>
 
-                                    {/* Motor response dropdown */}
-                                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                            <View style={{flex: 1}}>
-                                                <SearchableDropdown 
-                                                    data={motorResponseOptions} 
-                                                    label={'Best motor response'}
-                                                    placeholder='select option below' 
-                                                    onSelect={(item) => {
-                                                        updatePatientData({ motorResponse: item.value})
-                                                    }}
-                                                    value={motorResponse}
-                                                    search={false}
-                                                />
-                                            </View>
-                                            <IconButton
-                                                icon="information-outline"
-                                                size={20}
-                                                iconColor={colors.primary}
-                                                onPress={() => {
-                                                    if (Platform.OS !== 'web') {
-                                                        Alert.alert('Instructions', motorResponseInfo);
-                                                    } else {
-                                                        alert(motorResponseInfo);
-                                                    }
-                                                }}
-                                            />
-                                    </View>
-                                    
-                                    {/* Verbal response dropdown */}
-                                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                        <View style={{flex: 1}}>
-                                            <SearchableDropdown 
-                                                data={verbalResponseOptions} 
-                                                label={'Verbal response'}
-                                                placeholder='select option below' 
-                                                onSelect={(item) => {
-                                                    updatePatientData({ verbalResponse: item.value})
-                                                }}
-                                                value={verbalResponse}
-                                                search={false}
-                                            />
-                                        </View>
-                                        {/* White icon to align dropdown with others */}
-                                        <IconButton
-                                            icon="information-outline"
-                                            size={20}
-                                            iconColor='white'
-                                        />
-                                    </View>
-                                    { bcsScore !== null && eyeMovement && motorResponse && verbalResponse &&
-                                        <NutritionStatusBar 
-                                            title={`${abnormalBCS ? 'ABNORMAL BCS' : 'NORMAL BCS'}`}
-                                            content={`calculated BCS score = ${bcsScore}`}
-                                            variant={mapBcsScoreToVariant(bcsScore as number)}
-                                        />
-                                    }
-                                    
+                                    <SearchableDropdown
+                                        data={[
+                                            { value: 'Alert', key: 'alert' },
+                                            { value: 'Responds to voice', key: 'voice' },
+                                            { value: 'Responds to pain', key: 'pain' },
+                                            { value: 'Unresponsive', key: 'unresponsive' },
+                                        ]}
+                                        label={'Level of Consciousness (required)'}
+                                        placeholder='Select option below'
+                                        onSelect={(item) => {
+                                            updatePatientData({
+                                                levelOfConsciousness: item.value,
+                                                abnormalBCS: item.key !== 'alert'
+                                            })
+                                        }}
+                                        value={patientData.levelOfConsciousness}
+                                        search={false}
+                                    />
                                 </View>
                             </List.Accordion>
                         </View>

@@ -97,8 +97,9 @@ export default function AppBar() {
       router.replace('/login');
   };
 
-  const handleSwitchRole = () => {
-      // closeMenu();
+const handleSwitchRole = () => {
+      setMenuVisible(false);
+      router.push('/(protected)');
       switchRole(); // Toggle between admin and user
   };
 

@@ -40,7 +40,7 @@ export const patientFormSchema = [
         conditionalRequired: {
             isNeonate: ['neonatalJaundice'],
             underSixMonths: ['illnessDuration', 'bulgingFontanelle', 'feedingWell'],
-            sixMonthsAndOver: ['lastHospitalized', 'hivStatus', 'temperature', 'rrate', 'eyeMovement', 'motorResponse', 'verbalResponse']
+          sixMonthsAndOver: ['lastHospitalized', 'hivStatus', 'temperature', 'rrate', 'levelOfConsciousness']
         }
     },
     {

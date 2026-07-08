@@ -186,8 +186,8 @@
                     "standardDeviation": 0.143086443
                 },
                 {
-                    "value": "Unplanned discharge",
-                    "label": "unplanned discharge",
+                    "value": "Discharged against medical advice",
+                    "label": "Discharged against medical advice",
                     "description": "The patient fled/escaped, or is discharged against the medical advice",
                     "coefficient": 0.253,
                     "mean": 0.121325,

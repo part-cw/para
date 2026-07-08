@@ -11,6 +11,8 @@ type EditGroupProps = {
   canEdit: boolean;
   onClickEdit?: () => void;
   children?: React.ReactNode;
+  isExpanded?: boolean;
+  onToggle?: (expanded: boolean) => void;
 }
 
 type EditBoxProps = {
@@ -25,10 +27,13 @@ export function EditGroup({
     editLabel, 
     canEdit = true, 
     onClickEdit, 
-    children}: EditGroupProps) {
+    children,
+    isExpanded,
+    onToggle}: EditGroupProps) {
 
     const { colors } = useTheme()
-    const [showEdit, setShowEdit] = useState(false)
+    const [internalShowEdit, setInternalShowEdit] = useState(false)
+    const showEdit = isExpanded !== undefined ? isExpanded : internalShowEdit
 
     return (
         <>
@@ -42,11 +47,18 @@ export function EditGroup({
 
                 <View style={{ width: 32, alignItems: 'center' }}>
                   {canEdit === true && (
-                      <IconButton
+                   <IconButton
                           icon='lead-pencil'
                           iconColor={colors.primary}
                           size={20}
-                          onPress={() => setShowEdit(prev => !prev)}
+                          onPress={() => {
+                            const newValue = !showEdit;
+                            if (isExpanded !== undefined) {
+                              onToggle?.(newValue);
+                            } else {
+                              setInternalShowEdit(newValue);
+                            }
+                          }}
                           style={{ margin: 0 }}
                       />
                   )}

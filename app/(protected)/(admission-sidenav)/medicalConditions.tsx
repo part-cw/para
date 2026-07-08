@@ -37,14 +37,25 @@ export default function MedicalConditionsScreen() {
         meningitis_encephalitis: meningitis,
         malnutritionStatus,
         sickYoungInfant,
-        otherChronicIllness
+     otherChronicIllness,
+        isUnderSixMonths
     } = patientData
-
     const diagnosisOptions = [
         { value: 'Yes - positive diagnosis', key: 'yes'},
         { value: 'No - negative diagnosis', key: 'no'},
         { value: 'Suspected', key: 'suspected'},
         { value: 'Unsure', key: 'unsure'},
+    ]
+    const targetedDiagnosisOptions = [
+        { value: 'Yes', key: 'yes'},
+        { value: 'No', key: 'no'},
+        { value: 'Suspected', key: 'suspected'},
+    ]
+
+    const meningitisOptions = [
+        { value: 'Yes - positive diagnosis', key: 'yes'},
+        { value: 'No - negative diagnosis', key: 'no'},
+        { value: 'Suspected', key: 'suspected'},
     ]
 
     const diarrheaOptions = [
@@ -116,7 +127,6 @@ export default function MedicalConditionsScreen() {
         {label: 'HIV', value: 'HIV'},
         {label: 'Tuberculosis', value: 'Tuberculosis'},
         {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
-        {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
         {label: 'Unsure', value: 'unsure'},
         {label: 'None', value: 'none'},
         {label: 'Other', value: 'other'}
@@ -159,7 +169,7 @@ export default function MedicalConditionsScreen() {
                     <Card.Content>
                         <Text variant="bodyLarge">
                             Indicate whether the patient is confirmed to have, suspected to have, 
-                            or does not have any of the following common medical conditions. 
+                            or does not have any of the following targeted medical conditions. 
                             If a <Text style={{ fontWeight: 'bold' }}>diagnosis is unclear and no testing</Text> has been done, select 
                             ‘unsure’ where applicable</Text>
                     </Card.Content>
@@ -167,9 +177,13 @@ export default function MedicalConditionsScreen() {
                 
                 <View style = {{flexDirection: 'row', alignItems: 'center'}}>
                     <TextInput 
-                        label="Malnutrition Status" 
+                        label={isUnderSixMonths ? "Growth Status" : "Nutritional Status"}
                         mode="flat" 
-                        value={`${malnutritionStatus && formatText(malnutritionStatus)}`}
+                        value={
+                            malnutritionStatus === 'moderate' ? 'Moderate Acute Malnourished' :
+                            malnutritionStatus === 'severe' ? 'Severe Acute Malnourished' :
+                            malnutritionStatus ? formatText(malnutritionStatus) : ''
+                        }
                         style={{flex: 1}}
                         disabled />
                     <IconButton
@@ -200,7 +214,7 @@ export default function MedicalConditionsScreen() {
                 </View>
                 
                 <SearchableDropdown 
-                    data={diagnosisOptions} 
+                    data={targetedDiagnosisOptions} 
                     label={'Pneumonia'}
                     placeholder='select option below' 
                     onSelect={(item) => updatePatientData({ pneumonia: item.value })}
@@ -208,7 +222,7 @@ export default function MedicalConditionsScreen() {
                     search={false}
                 />
                 <SearchableDropdown 
-                    data={diagnosisOptions} 
+                    data={targetedDiagnosisOptions} 
                     label={'Severe anaemia'}
                     placeholder='select option below' 
                     onSelect={(item) => updatePatientData({ severeAnaemia: item.value })}
@@ -234,7 +248,7 @@ export default function MedicalConditionsScreen() {
                 />
                 <SearchableDropdown 
                     label = {'Sepsis'}
-                    data = {diagnosisOptions}
+                    data = {targetedDiagnosisOptions}
                     value = {sepsis}
                     placeholder='select option below' 
                     onSelect = {(item) => updatePatientData({ sepsis: item.value })}
@@ -242,14 +256,14 @@ export default function MedicalConditionsScreen() {
                 />
                 <SearchableDropdown 
                     label = {'Meningitis/Encephalitis'}
-                    data = {diagnosisOptions}
+                    data = {meningitisOptions}
                     value = {meningitis}
                     placeholder='select option below' 
                     onSelect = {(item) => updatePatientData({ meningitis_encephalitis: item.value })}
                     search={false}
                 />
                 <View style={{marginRight: 10, marginLeft: 10, marginTop: -10}}>
-                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Conditions/Vulnerabilities <Text style={Styles.required}>*</Text></Text>
+                   <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>Chronic Conditions <Text style={Styles.required}>*</Text></Text>
                     <Text>{displayNames['chronicIllnessQuestion']}</Text>
                     <CheckboxGroup 
                         options={getChronicIllnessOptions()} 

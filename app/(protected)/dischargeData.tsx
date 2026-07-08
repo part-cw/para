@@ -811,7 +811,7 @@ export default function DischargeDataScreen() {
                                     data={[
                                         {value: 'Routine discharge', key: 'routine'},
                                         {value: 'Referred to higher level of care', key: 'referred'},
-                                        {value: 'Unplanned discharge', key: 'unplanned'},
+                                        {value: 'Discharged against medical advice', key: 'Discharged against medical advice'},
                                         {value: 'Deceased', key: 'deceased'},
                                     ]} 
                                     label={`${displayNames['dischargeStatus']} (required)`} 
@@ -1164,7 +1164,7 @@ export default function DischargeDataScreen() {
                                         phoneOwner={patientData.phoneOwner}
                                         onUpdate={updatePatientData}
                                         colors={colors}
-                                        mode="edit"
+                                        mode="discharge"
                                         showHeader={false}
                                         showClearButton={false}
                                     />

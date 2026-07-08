@@ -6,6 +6,7 @@ import { CaregiverContactSection } from "@/src/components/sections/CaregiverCont
 import { MedicalConditionsSection } from "@/src/components/sections/EditableMedicalConditions";
 import { VHTReferralSection } from "@/src/components/sections/VhtReferralSection";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useConfig } from "@/src/contexts/ConfigContext";
 import { PatientData } from "@/src/contexts/PatientData";
 import { usePatientData } from "@/src/contexts/PatientDataContext";
 import { useStorage } from "@/src/contexts/StorageContext";
@@ -27,6 +28,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditPatientRecord() {
     const { colors } = useTheme()
+    const { config } = useConfig();
     const { storage } = useStorage();
     const {currentUser} = useAuth();
     const { 
@@ -452,7 +454,7 @@ export default function EditPatientRecord() {
                                         <InfoRow label="Feeding well" value={patientData.feedingWell ? 'Yes' : 'No'} />
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                         <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                                        <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                                        <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
                                         <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                     </View>
                                     :
@@ -490,15 +492,13 @@ export default function EditPatientRecord() {
                                         
                                         <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
                                         <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                                        <InfoRow label="MUAC" value={patientData.muac ? `${patientData.muac} mm` : 'Not provided'} />
+                                        <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
                                         <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
                                         <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
                                         <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
                                         
-                                        <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Blantyre Coma Scale</Text>
-                                        <InfoRow label="Eye movement" value={patientData.eyeMovement || 'Not provided'} />
-                                        <InfoRow label="Best motor response" value={patientData.motorResponse || 'Not provided'} />
-                                        <InfoRow label="Best verbal response" value={patientData.verbalResponse || 'Not provided'} />
+                                        <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Level of Consciousness</Text>
+                                        <InfoRow label="Level of Consciousness" value={patientData.levelOfConsciousness || 'Not provided'} />
                                     </View>
                                 }
                             </List.Accordion>
@@ -527,7 +527,7 @@ export default function EditPatientRecord() {
                         {/* Medical Conditions Accordion */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
-                                title="Common Medical Conditions"
+                                title="Targeted Medical Conditions"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <List.Icon {...props} icon="medical-bag"/>}
                                 description={patientData.isDischarged ? 'Read-only' : ''}

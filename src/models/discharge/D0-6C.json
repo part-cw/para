@@ -159,8 +159,8 @@
                     "standardDeviation": 0.215841689
                 },
                 {
-                    "value": "Unplanned discharge",
-                    "label": "unplanned discharge",
+                    "value": "Discharged against medical advice",
+                    "label": "Discharged against medical advice",
                     "description": "The patient fled/escaped, or is discharged against the medical advice",
                     "coefficient": 0.17218,
                     "mean": 0.1115873,
@@ -280,11 +280,11 @@
         {
             "name": "ageUnplannedDischarge",
             "displayName": "Age in months x unlanned discharge",
-            "description": "Age interaction with discharge status, unplanned discharge",
+            "description": "Age interaction with discharge status, Discharged against medical advice",
             "type": "number",
             "units": null,
             "required": true,
-            "dependency": {"dischargeStatus": "Unplanned discharge"},
+            "dependency": {"dischargeStatus": "Discharged against medical advice"},
             "dependencyType": "string",
             "coefficient": 0.06765,
             "mean": 0.208605,
