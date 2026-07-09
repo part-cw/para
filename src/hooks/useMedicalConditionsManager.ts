@@ -1,5 +1,6 @@
 import { PatientData } from '@/src/contexts/PatientData';
 import { getOtherChronicIllnessList } from '@/src/utils/formatUtils';
+import { toDisplayConditionValue } from '@/src/utils/medicalConditionDisplay';
 import { useEffect, useState } from 'react';
 import { Alert, Platform } from 'react-native';
 import { displayNames } from '../forms/displayNames';
@@ -54,19 +55,24 @@ export const useMedicalConditionsManager = ({
         if (!currentValue) return [];
         
         const normalizedValue = currentValue.toLowerCase();
-        
+
+        // Malaria and meningitis/encephalitis so labelled as positive and negative diagnosis
+        const isTestDiagnosed = condition === 'malaria' || condition === 'meningitis';
+        const yesLabel = isTestDiagnosed ? 'Yes - positive diagnosis' : 'Yes';
+        const noLabel = isTestDiagnosed ? 'No - negative diagnosis' : 'No';
+
         if (normalizedValue === 'unsure') {
             return [
-                { label: 'Yes - positive diagnosis', value: 'Yes' }, // use just pos or just neg instead? -- TODO
-                { label: 'No - negative diagnosis', value: 'No' },
+                { label: yesLabel, value: 'Yes' },
+                { label: noLabel, value: 'No' },
                 { label: 'Suspected', value: 'Suspected' }
             ];
         }
-        
+
         if (normalizedValue === 'suspected') {
             return [
-                { label: 'Yes - positive diagnosis', value: 'Yes' },
-                { label: 'No - negative diagnosis', value: 'No' }
+                { label: yesLabel, value: 'Yes' },
+                { label: noLabel, value: 'No' }
             ];
         }
 
@@ -107,10 +113,15 @@ export const useMedicalConditionsManager = ({
             }
         };
 
+        // Malaria and meningitis/encephalitis show the "diagnosis" wording; other conditions
+        // just store 'Yes'/'No' text directly from the dropdown.
+        const isTestDiagnosed = fieldName === 'malaria' || fieldName === 'meningitis_encephalitis';
+        const displayValue = (val: string) => (isTestDiagnosed ? toDisplayConditionValue(val) ?? val : val);
+
         if (Platform.OS !== 'web') {
             Alert.alert(
                 'Confirm Update',
-                `Update ${displayNames[fieldName] || fieldName} from "${previousValue}" to "${newValue}"?\n\nChanges may affect careplan recommendations.`,
+                `Update ${displayNames[fieldName] || fieldName} from "${displayValue(previousValue)}" to "${displayValue(newValue)}"?\n\nChanges may affect careplan recommendations.`,
                 [
                     { text: 'Cancel', style: 'cancel' },
                     { text: 'OK', onPress: () => confirmUpdate() }

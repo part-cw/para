@@ -1,6 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import * as SQLite from "expo-sqlite";
-import { Diagnosis } from "../contexts/Diagnosis";
+import { CategorizedMedicalConditions } from "../contexts/CategorizedMedicalConditions";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from "../utils/normalizer";
@@ -583,7 +583,7 @@ async init(): Promise<void> {
         console.log(`✅ Risk prediction saved for ${patientId} at ${usageTime}`);
     }
 
-    async getDiagnosis(patientId: string): Promise<Diagnosis> {
+    async getCategorizedMedicalConditions(patientId: string): Promise<CategorizedMedicalConditions> {
         if (!this.db) throw new Error('Database not initialized');
 
         const conditionsMap = await this.getMedicalConditions(patientId);
@@ -748,7 +748,7 @@ async init(): Promise<void> {
             }
         }
 
-        // Merge chronic illnesses into positive diagnoses
+        // Merge chronic illnesses into positive conditions
         const allPositive = [...positive, ...chronicList];
 
         return {

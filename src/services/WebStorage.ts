@@ -1,5 +1,5 @@
 
-import { Diagnosis } from "../contexts/Diagnosis";
+import { CategorizedMedicalConditions } from "../contexts/CategorizedMedicalConditions";
 import { PatientData } from "../contexts/PatientData";
 import { RiskAssessment, RiskPrediction } from "../models/types";
 import { IStorageService } from "./StorageService";
@@ -59,7 +59,7 @@ export class WebStorage implements IStorageService {
     undoRiskElevation(patientId: string, usageTime: "admission" | "discharge", userId: string): Promise<RiskPrediction> {
         throw new Error("Method not implemented.");
     }
-    getDiagnosis(patientId: string): Promise<Diagnosis> {
+    getCategorizedMedicalConditions(patientId: string): Promise<CategorizedMedicalConditions> {
         throw new Error("Method not implemented.");
     }
     

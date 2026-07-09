@@ -574,14 +574,14 @@ export default function DischargeDataScreen() {
         const confirmDischarge = async () => {
             try {
                 setIsSubmitting(true);
-                const { riskAssessment, diagnosis } = await completeDischarge(); // TODO get diagnosis
+                const { riskAssessment, medicalConditions } = await completeDischarge();
                 router.push({
                     pathname: '/riskDisplay',
                     params: {
                         patientId: patientId,
                         patientName: patientName,
                         riskAssessment: JSON.stringify(riskAssessment),
-                        diagnosis: JSON.stringify(diagnosis)
+                        medicalConditions: JSON.stringify(medicalConditions)
                     }
                 });
             } catch (error) {
@@ -1088,7 +1088,7 @@ export default function DischargeDataScreen() {
                         {/* Confirm Medical Info Accordion */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
-                                title="Review Medical Diagnoses"
+                                title="Review Medical Conditions"
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
                                 description={getAccordionDescription('medicalConditions')}

@@ -2,7 +2,7 @@ import ChangeRiskLevelModal from '@/src/components/ChangeRiskLevelModal';
 import RiskCard from '@/src/components/RiskCard';
 import RiskLevelInterpretationModal from '@/src/components/RiskLevelInterpretationModal';
 import { useAuth } from '@/src/contexts/AuthContext';
-import { Diagnosis } from '@/src/contexts/Diagnosis';
+import { CategorizedMedicalConditions } from '@/src/contexts/CategorizedMedicalConditions';
 import { useStorage } from '@/src/contexts/StorageContext';
 import { RiskAssessment, RiskPrediction } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
@@ -30,7 +30,7 @@ export default function RiskDisplay() {
   const patientId = params.patientId as string;
   const patientName = params.patientName as string;
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
-  const diagnosis: Diagnosis | null = params.diagnosis ? JSON.parse(params.diagnosis as string) : null;
+  const medicalConditions: CategorizedMedicalConditions | null = params.medicalConditions ? JSON.parse(params.medicalConditions as string) : null;
 
   const discharge = riskAssessment?.discharge;
   const usageTime: 'admission' | 'discharge' = discharge ? 'discharge' : 'admission';
@@ -82,7 +82,7 @@ export default function RiskDisplay() {
 
   // Get top 3 conditions to display with guaranteed critical conditions
   const getTopConditions = (): { display: string[];  remaining: string[]; hasMore: boolean; hiddenCount: number } => {
-    if (!diagnosis || (diagnosis.positive.length === 0 && diagnosis.suspected.length === 0)) {
+    if (!medicalConditions || (medicalConditions.positive.length === 0 && medicalConditions.suspected.length === 0)) {
       return { display: [], remaining: [], hasMore: false, hiddenCount: 0 };
     }
     
@@ -98,7 +98,7 @@ export default function RiskDisplay() {
     const other: string[] = [];
 
     // Process positive conditions
-    diagnosis.positive.forEach(condition => {
+    medicalConditions.positive.forEach(condition => {
       if (criticalConditions.includes(condition)) {
         critical.push(condition);
       } else {
@@ -106,8 +106,8 @@ export default function RiskDisplay() {
       }
     });
 
-    // Process suspected conditions  
-    diagnosis.suspected.forEach(condition => {
+    // Process suspected conditions
+    medicalConditions.suspected.forEach(condition => {
       if (criticalConditions.includes(condition)) {
         critical.push(`${condition} (suspected)`);
       } else {
@@ -137,8 +137,8 @@ export default function RiskDisplay() {
 
   // Get count of all conditions for display
   const getTotalConditionsCount = (): number => {
-    if (!diagnosis) return 0;
-    return diagnosis.positive.length + diagnosis.suspected.length;
+    if (!medicalConditions) return 0;
+    return medicalConditions.positive.length + medicalConditions.suspected.length;
   };
 
   const conditionsData = getTopConditions();
@@ -207,7 +207,7 @@ export default function RiskDisplay() {
                 </Button>
               </RiskCard>
             
-            <Text style={{fontSize: 16, fontWeight: 'bold', margin: 10}}>{!discharge ? 'Admission Diagnosis' : 'Dicharge Diagnosis'}</Text>
+            <Text style={{fontSize: 16, fontWeight: 'bold', margin: 10}}>{!discharge ? 'Admission Targeted Medical Conditions' : 'Discharge Targeted Medical Conditions'}</Text>
             
             {/* TODO - map conditions to interventions */}
             <RiskCard

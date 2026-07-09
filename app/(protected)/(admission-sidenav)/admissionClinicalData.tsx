@@ -403,7 +403,7 @@ export default function AdmissionClinicalDataScreen() {
     { value: 'More than 1 year ago', key: '>1y' }];
 
 
-    const hivUnknownWarning = 'Risk scores cannot be accurately calculated unless a positive or negative HIV diagnosis is confirmed.'
+    const hivUnknownWarning = 'Risk scores cannot be accurately calculated unless a positive or negative HIV status is confirmed.'
 
     // Don't render until data is loaded
     if (!isDataLoaded) {

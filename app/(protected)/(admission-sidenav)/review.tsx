@@ -5,6 +5,7 @@ import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { capitalizeFirstLetter, formatChronicIllness } from '@/src/utils/formatUtils';
+import { toDisplayConditionValue } from '@/src/utils/medicalConditionDisplay';
 import { normalizeBoolean } from '@/src/utils/normalizer';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -273,7 +274,7 @@ export default function ReviewScreen() {
             setIsSubmitting(true);
 
             // Save patient data permanently and get the final patient ID
-            const { patientId, riskAssessment, diagnosis, patientName } = await savePatientData();
+            const { patientId, riskAssessment, medicalConditions, patientName } = await savePatientData();
 
             if (Platform.OS !== 'web') {
                 Alert.alert(
@@ -288,7 +289,7 @@ export default function ReviewScreen() {
                                                 patientId: patientId,
                                                 patientName: patientName,
                                                 riskAssessment: JSON.stringify(riskAssessment),
-                                                diagnosis: JSON.stringify(diagnosis)
+                                                medicalConditions: JSON.stringify(medicalConditions)
                                             }
                                         })
                         }
@@ -302,7 +303,7 @@ export default function ReviewScreen() {
                         patientId: patientId,
                         patientName: patientName,
                         riskAssessment: JSON.stringify(riskAssessment),
-                        diagnosis: JSON.stringify(diagnosis)
+                        medicalConditions: JSON.stringify(medicalConditions)
                     }
                 });
             }
@@ -451,9 +452,9 @@ export default function ReviewScreen() {
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.severeAnaemia || 'Not provided'} />
                             <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
-                            <InfoRow label="Malaria" value={patientData.malaria ||'Not provided' } />
+                            <InfoRow label="Malaria" value={toDisplayConditionValue(patientData.malaria) || 'Not provided'} />
                             <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
-                            <InfoRow label="Meningitis/ Encephalitis" value={patientData.meningitis_encephalitis || 'Not provided'} />
+                            <InfoRow label="Meningitis/ Encephalitis" value={toDisplayConditionValue(patientData.meningitis_encephalitis) || 'Not provided'} />
                             <InfoRow label="Chronic Conditions" value={formatChronicIllness(patientData.chronicIllnesses) || 'Not provided'} />
                             {otherChronicIllnessSelected && 
                                 <InfoRow label="Other chronic illness" value={patientData.otherChronicIllness || 'Not provided'} />

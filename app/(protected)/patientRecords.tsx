@@ -133,10 +133,10 @@ export default function PatientRecords() {
         Alert.alert('Error', 'Could not load patient record.');
         return;
       }
-      const diagnosis = await storage.getDiagnosis(id);
+      const medicalConditions = await storage.getCategorizedMedicalConditions(id);
       const { assessment } = await storage.getRiskAssessment(id);
 
-      const bundle = buildPatientBundle(patient, diagnosis, assessment);
+      const bundle = buildPatientBundle(patient, medicalConditions, assessment);
 
       const result = await getFHIRInstance().sendBundle(bundle, {
         serverUrl: config.echisServerUrl,

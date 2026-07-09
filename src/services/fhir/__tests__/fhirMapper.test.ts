@@ -1,4 +1,4 @@
-import { Diagnosis } from '../../../contexts/Diagnosis';
+import { CategorizedMedicalConditions } from '../../../contexts/CategorizedMedicalConditions';
 import { initialPatientData, PatientData } from '../../../contexts/PatientData';
 import { RiskAssessment } from '../../../models/types';
 import {
@@ -31,7 +31,7 @@ function makePatient(overrides: Partial<PatientData> = {}): PatientData {
   };
 }
 
-const emptyDiagnosis: Diagnosis = { positive: [], suspected: [] };
+const emptyMedicalConditions: CategorizedMedicalConditions = { positive: [], suspected: [] };
 
 describe('buildPatientResource', () => {
   it('maps name, gender, birthDate, identifier and address', () => {
@@ -84,8 +84,8 @@ describe('buildRelatedPersonResource', () => {
 
 describe('buildConditionObservations', () => {
   it('produces one observation per positive and suspected condition', () => {
-    const diagnosis: Diagnosis = { positive: ['Pneumonia', 'Sepsis'], suspected: ['Malaria'] };
-    const observations = buildConditionObservations(makePatient(), diagnosis, patientRef);
+    const medicalConditions: CategorizedMedicalConditions = { positive: ['Pneumonia', 'Sepsis'], suspected: ['Malaria'] };
+    const observations = buildConditionObservations(makePatient(), medicalConditions, patientRef);
 
     expect(observations).toHaveLength(3);
     expect(observations.map((o) => o.code.text)).toEqual(['Pneumonia', 'Sepsis', 'Malaria']);
@@ -96,7 +96,7 @@ describe('buildConditionObservations', () => {
   });
 
   it('returns an empty array when there are no conditions', () => {
-    expect(buildConditionObservations(makePatient(), emptyDiagnosis, patientRef)).toEqual([]);
+    expect(buildConditionObservations(makePatient(), emptyMedicalConditions, patientRef)).toEqual([]);
   });
 });
 
@@ -130,14 +130,14 @@ describe('buildRiskObservation', () => {
 
 describe('buildPatientBundle', () => {
   it('assembles a transaction bundle with consistent internal references', () => {
-    const diagnosis: Diagnosis = { positive: ['Pneumonia'], suspected: ['Malaria'] };
+    const medicalConditions: CategorizedMedicalConditions = { positive: ['Pneumonia'], suspected: ['Malaria'] };
     // 6-60 month patient: admission via Model 6-60C (values from model6-60 test_cases).
     const patient = makePatient({ ageInMonths: 43.8 });
     const assessment: RiskAssessment = {
       admission: { riskScore: 11.27, riskCategory: 'Very High', model: 'Model 6-60C' },
     };
 
-    const bundle = buildPatientBundle(patient, diagnosis, assessment);
+    const bundle = buildPatientBundle(patient, medicalConditions, assessment);
 
     expect(bundle.resourceType).toBe('Bundle');
     expect(bundle.type).toBe('transaction');
@@ -162,7 +162,7 @@ describe('buildPatientBundle', () => {
 
   it('omits the RelatedPerson and risk entries when data is absent', () => {
     const patient = makePatient({ caregiverName: '', caregiverTel: '' });
-    const bundle = buildPatientBundle(patient, emptyDiagnosis, null);
+    const bundle = buildPatientBundle(patient, emptyMedicalConditions, null);
 
     // Only the Patient resource remains.
     expect(bundle.entry).toHaveLength(1);

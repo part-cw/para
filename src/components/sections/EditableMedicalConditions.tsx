@@ -5,6 +5,7 @@ import { useMedicalConditionsManager } from "../../hooks/useMedicalConditionsMan
 import { IStorageService } from "../../services/StorageService";
 import { GlobalStyles as Styles } from "../../themes/styles";
 import { capitalizeFirstLetter, formatChronicIllness, getOtherChronicIllnessList } from "../../utils/formatUtils";
+import { toDisplayConditionValue } from "../../utils/medicalConditionDisplay";
 import CheckboxGroup from "../CheckboxGroup";
 import { EditGroup } from "../EditFieldGroup";
 import RadioButtonGroup from "../RadioButtonGroup";
@@ -252,12 +253,12 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
             {/* Malaria */}
             <EditGroup
                 fieldLabel="Malaria"
-                fieldValue={patientData.malaria || 'Not provided'}
+                fieldValue={toDisplayConditionValue(patientData.malaria) || 'Not provided'}
                 editLabel="Update Malaria Status:"
                 canEdit={!patientData.isDischarged && canEditCondition(patientData.malaria)}
             >
                 <RadioButtonGroup
-                    options={getAllowedOptions(patientData.malaria)}
+                    options={getAllowedOptions(patientData.malaria, 'malaria')}
                     selected={editedMalaria}
                     onSelect={setEditedMalaria}
                 />
@@ -314,12 +315,12 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
             {/* Meningitis/Encephalitis */}
             <EditGroup
                 fieldLabel="Meningitis/Encephalitis"
-                fieldValue={patientData.meningitis_encephalitis || 'Not provided'}
+                fieldValue={toDisplayConditionValue(patientData.meningitis_encephalitis) || 'Not provided'}
                 editLabel="Update Meningitis/Encephalitis Status:"
                 canEdit={!patientData.isDischarged && canEditCondition(patientData.meningitis_encephalitis)}
             >
                 <RadioButtonGroup
-                    options={getAllowedOptions(patientData.meningitis_encephalitis)}
+                    options={getAllowedOptions(patientData.meningitis_encephalitis, 'meningitis')}
                     selected={editedMeningitis}
                     onSelect={setEditedMeningitis}
                 />

@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { Diagnosis } from "../contexts/Diagnosis";
+import { CategorizedMedicalConditions } from "../contexts/CategorizedMedicalConditions";
 import { PatientData } from "../contexts/PatientData";
 import { RiskPrediction } from "../models/types";
 import { WebStorage } from "./WebStorage";
@@ -70,7 +70,7 @@ export interface IStorageService {
         usageTime: 'admission' | 'discharge',
         userId: string
     ): Promise<RiskPrediction>;
-    getDiagnosis(patientId: string): Promise<Diagnosis>;
+    getCategorizedMedicalConditions(patientId: string): Promise<CategorizedMedicalConditions>;
     
     // Archive operations
     archivePatient(patientId: string): Promise<void>;

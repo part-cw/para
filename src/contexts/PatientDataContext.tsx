@@ -5,7 +5,7 @@ import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from '../utils/normalizer';
 import { useAuth } from './AuthContext';
 import { useConfig } from './ConfigContext';
-import { Diagnosis, initialDiagnosis } from './Diagnosis';
+import { CategorizedMedicalConditions, initialCategorizedMedicalConditions } from './CategorizedMedicalConditions';
 import { initialPatientData, PatientData } from './PatientData';
 import { useStorage } from './StorageContext';
 
@@ -16,12 +16,12 @@ interface PatientDataContextType {
   savePatientData: () => Promise<{
       patientId: string;
       riskAssessment: RiskAssessment;
-      diagnosis: Diagnosis;
+      medicalConditions: CategorizedMedicalConditions;
       patientName: string;}>;
   completeDischarge: () => Promise<{
     patientId: string;
     riskAssessment: RiskAssessment;
-    diagnosis: Diagnosis;
+    medicalConditions: CategorizedMedicalConditions;
     patientName: string;}>;
   startAdmission: () => void;
   loadDraft: (patientId: string) => Promise<void>;
@@ -33,9 +33,9 @@ interface PatientDataContextType {
   calculateAdmissionRiskWithData: (data: PatientData) => RiskPrediction | null;
   getCurrentRiskAssessment: (patientId: string) => Promise<RiskAssessment | null>;
   getCurrentPatientId: () => string | null;
-  getCurrentDiagnosis: (patientId: string) => Promise<Diagnosis | null>;
+  getCurrentMedicalConditions: (patientId: string) => Promise<CategorizedMedicalConditions | null>;
   riskAssessment: RiskAssessment;
-  diagnosis: Diagnosis;
+  medicalConditions: CategorizedMedicalConditions;
   admissionLastCalculated: string;
 }
 
@@ -46,7 +46,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
   const [currentPatientId, setCurrentPatientId] = useState<string | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(true);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment>({});
-  const [diagnosis, setDiagnosis] = useState<Diagnosis>(initialDiagnosis);
+  const [medicalConditions, setMedicalConditions] = useState<CategorizedMedicalConditions>(initialCategorizedMedicalConditions);
   const [admissionLastCalculated, setAdmissionLastCalculated] = useState<string>('')
   
   const { storage, isInitialized } = useStorage();
@@ -245,13 +245,13 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    */
   const savePatientData = async (): 
     Promise<{
-      patientId: string; 
+      patientId: string;
       riskAssessment: RiskAssessment;
-      diagnosis: Diagnosis; 
+      medicalConditions: CategorizedMedicalConditions;
       patientName: string;
     }> => {
       if (!currentPatientId) throw new Error('No patient ID available for submission');
-    
+
     try {
       // Calculate risk assessments before saving
       const admissionRisk = calculateAdmissionRisk()
@@ -259,8 +259,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
         admission: admissionRisk|| undefined,
       };
 
-      // TODO get diagnosis
-      const currDiagnosis = await getCurrentDiagnosis(currentPatientId);
+      const currentMedicalConditions = await getCurrentMedicalConditions(currentPatientId);
 
       // Store patient name before clearing
       const patientName = `${patientData.firstName} ${patientData.surname}`;
@@ -294,8 +293,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       return {
         patientId: submittedPatientId,
         riskAssessment: finalRiskAssessment,
-        diagnosis: currDiagnosis || initialDiagnosis,
-        patientName 
+        medicalConditions: currentMedicalConditions || initialCategorizedMedicalConditions,
+        patientName
       };
     } catch (error) {
       console.error('Error saving patient data:', error);
@@ -308,7 +307,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
    * 
    */
   const completeDischarge = async (): 
-    Promise<{patientId: string; riskAssessment: RiskAssessment; diagnosis: Diagnosis; patientName: string;}> => {
+    Promise<{patientId: string; riskAssessment: RiskAssessment; medicalConditions: CategorizedMedicalConditions; patientName: string;}> => {
       if (!currentPatientId) throw new Error('No patient ID available for submission');
     
     try {
@@ -323,7 +322,7 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       const dischargeDateTime = new Date().toISOString()
 
       await storage.dischargePatient(currentPatientId, userId, dischargeDateTime);
-      const currDiagnosis = await getCurrentDiagnosis(currentPatientId);
+      const currentMedicalConditions = await getCurrentMedicalConditions(currentPatientId);
 
 
       if (discharge) {
@@ -342,8 +341,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
       return {
         patientId: submittedPatientId,
         riskAssessment: finalRiskAssessment,
-        diagnosis: currDiagnosis || initialDiagnosis,
-        patientName 
+        medicalConditions: currentMedicalConditions || initialCategorizedMedicalConditions,
+        patientName
       };
     } catch (error) {
       console.error('Error discharging patient data:', error);
@@ -441,17 +440,17 @@ const calculateDischargeRisk = (): RiskPrediction | null => {
   };
 
    /**
-   * 
-   * @returns current patient diagnosis based on positive and suspected conditions
+   *
+   * @returns current patient's categorized medical conditions based on positive and suspected conditions
    */
-  const getCurrentDiagnosis = async (patientId: string): Promise<Diagnosis | null> => {
+  const getCurrentMedicalConditions = async (patientId: string): Promise<CategorizedMedicalConditions | null> => {
     if (!patientId) return null;
 
 
-    const diagnosis = await storage.getDiagnosis(patientId)
-    setDiagnosis(diagnosis);
-    
-    return diagnosis;
+    const medicalConditions = await storage.getCategorizedMedicalConditions(patientId)
+    setMedicalConditions(medicalConditions);
+
+    return medicalConditions;
   }
 
 
@@ -473,8 +472,8 @@ const calculateDischargeRisk = (): RiskPrediction | null => {
         calculateAdmissionRiskWithData,
         getCurrentRiskAssessment,
         getCurrentPatientId,
-        getCurrentDiagnosis,
-        diagnosis,
+        getCurrentMedicalConditions,
+        medicalConditions,
         riskAssessment,
         admissionLastCalculated
       }}

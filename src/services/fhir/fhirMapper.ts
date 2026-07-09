@@ -5,7 +5,7 @@
  * and one Observation per positive/suspected condition plus one for the risk category.
  */
 
-import { Diagnosis } from '../../contexts/Diagnosis';
+import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
 import { PatientData } from '../../contexts/PatientData';
 import { RiskAssessment } from '../../models/types';
 import {
@@ -149,16 +149,16 @@ function buildConditionObservation(
   };
 }
 
-/** One Observation per positive and suspected condition in the diagnosis. */
+/** One Observation per positive and suspected targeted medical condition. */
 export function buildConditionObservations(
   patient: PatientData,
-  diagnosis: Diagnosis,
+  medicalConditions: CategorizedMedicalConditions,
   patientRef: Reference
 ): Observation[] {
   const effectiveDateTime = patient.admissionCompletedAt ?? undefined;
   return [
-    ...diagnosis.positive.map((c) => buildConditionObservation(c, 'positive', patientRef, effectiveDateTime)),
-    ...diagnosis.suspected.map((c) => buildConditionObservation(c, 'suspected', patientRef, effectiveDateTime)),
+    ...medicalConditions.positive.map((c) => buildConditionObservation(c, 'positive', patientRef, effectiveDateTime)),
+    ...medicalConditions.suspected.map((c) => buildConditionObservation(c, 'suspected', patientRef, effectiveDateTime)),
   ];
 }
 
@@ -192,7 +192,7 @@ export function buildRiskObservation(
  */
 export function buildPatientBundle(
   patient: PatientData,
-  diagnosis: Diagnosis,
+  medicalConditions: CategorizedMedicalConditions,
   riskAssessment: RiskAssessment | null | undefined
 ): Bundle {
   const patientFullUrl = `urn:uuid:${uuid()}`;
@@ -215,7 +215,7 @@ export function buildPatientBundle(
     });
   }
 
-  for (const observation of buildConditionObservations(patient, diagnosis, patientRef)) {
+  for (const observation of buildConditionObservations(patient, medicalConditions, patientRef)) {
     entries.push({
       fullUrl: `urn:uuid:${uuid()}`,
       resource: observation,

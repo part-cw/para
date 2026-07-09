@@ -7,15 +7,13 @@ import { useValidation } from '@/src/contexts/ValidationContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { formatText } from '@/src/utils/inputValidator';
+import { toDisplayConditionValue, toStoredConditionValue } from '@/src/utils/medicalConditionDisplay';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card, IconButton, Text, TextInput, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// TODO figure out why bcs dropdown autopopulates wiith // when resule draft if not selected. and if selected it has  the n option
-// something to do with the typedefined as JSON?
 
 export default function MedicalConditionsScreen() {
     const { colors } = useTheme();
@@ -40,16 +38,18 @@ export default function MedicalConditionsScreen() {
      otherChronicIllness,
         isUnderSixMonths
     } = patientData
-    const diagnosisOptions = [
+    // Standard options for most conditions, exceptions use the others below
+    const conditionOptions = [
+        { value: 'Yes', key: 'yes'},
+        { value: 'No', key: 'no'},
+        { value: 'Suspected', key: 'suspected'},
+    ]
+
+    const malariaOptions = [
         { value: 'Yes - positive diagnosis', key: 'yes'},
         { value: 'No - negative diagnosis', key: 'no'},
         { value: 'Suspected', key: 'suspected'},
         { value: 'Unsure', key: 'unsure'},
-    ]
-    const targetedDiagnosisOptions = [
-        { value: 'Yes', key: 'yes'},
-        { value: 'No', key: 'no'},
-        { value: 'Suspected', key: 'suspected'},
     ]
 
     const meningitisOptions = [
@@ -67,13 +67,13 @@ export default function MedicalConditionsScreen() {
     const validateAllFields = () => {
         const errors: string[] = []
 
-        if (!anaemia) errors.push('Severe anaemia is missing a diagnosis');
-        if (!pneumonia) errors.push('Pneumonia is missing a diagnosis');
-        if (!diarrhea) errors.push('Diarrhea is missing a diagnosis');
-        if (!malaria) errors.push('Malaria is missing a diagnosis');
-        if (!sepsis) errors.push('Sepsis is missing a diagnosis');
-        if (!meningitis) errors.push('Meningitis/encaphalitis is missing a diagnosis');
-        if (chronicIllness?.length === 0) errors.push('Chronic illnesses is missing diagnoses. Select all that apply.');
+        if (!anaemia) errors.push('Severe anaemia is missing a selection');
+        if (!pneumonia) errors.push('Pneumonia is missing a selection');
+        if (!diarrhea) errors.push('Diarrhea is missing a selection');
+        if (!malaria) errors.push('Malaria is missing a selection');
+        if (!sepsis) errors.push('Sepsis is missing a selection');
+        if (!meningitis) errors.push('Meningitis/encaphalitis is missing a selection');
+        if (chronicIllness?.length === 0) errors.push('Chronic illnesses is missing a selection. Select all that apply.');
 
         return errors;
     }
@@ -170,7 +170,7 @@ export default function MedicalConditionsScreen() {
                         <Text variant="bodyLarge">
                             Indicate whether the patient is confirmed to have, suspected to have, 
                             or does not have any of the following targeted medical conditions. 
-                            If a <Text style={{ fontWeight: 'bold' }}>diagnosis is unclear and no testing</Text> has been done, select 
+                            If a <Text style={{ fontWeight: 'bold' }}>condition is unclear and no testing</Text> has been done, select
                             ‘unsure’ where applicable</Text>
                     </Card.Content>
                 </Card>
@@ -214,7 +214,7 @@ export default function MedicalConditionsScreen() {
                 </View>
                 
                 <SearchableDropdown 
-                    data={targetedDiagnosisOptions} 
+                    data={conditionOptions}
                     label={'Pneumonia'}
                     placeholder='select option below' 
                     onSelect={(item) => updatePatientData({ pneumonia: item.value })}
@@ -222,7 +222,7 @@ export default function MedicalConditionsScreen() {
                     search={false}
                 />
                 <SearchableDropdown 
-                    data={targetedDiagnosisOptions} 
+                    data={conditionOptions}
                     label={'Severe anaemia'}
                     placeholder='select option below' 
                     onSelect={(item) => updatePatientData({ severeAnaemia: item.value })}
@@ -240,15 +240,15 @@ export default function MedicalConditionsScreen() {
                 />
                 <SearchableDropdown 
                     label = {'Malaria'}
-                    data = {diagnosisOptions}
-                    value = {malaria}
-                    placeholder='select option below' 
-                    onSelect={(item) => updatePatientData({ malaria: item.value })}
+                    data = {malariaOptions}
+                    value = {toDisplayConditionValue(malaria)}
+                    placeholder='select option below'
+                    onSelect={(item) => updatePatientData({ malaria: toStoredConditionValue(item.value) })}
                     search={false}
                 />
                 <SearchableDropdown 
                     label = {'Sepsis'}
-                    data = {targetedDiagnosisOptions}
+                    data = {conditionOptions}
                     value = {sepsis}
                     placeholder='select option below' 
                     onSelect = {(item) => updatePatientData({ sepsis: item.value })}
@@ -257,9 +257,9 @@ export default function MedicalConditionsScreen() {
                 <SearchableDropdown 
                     label = {'Meningitis/Encephalitis'}
                     data = {meningitisOptions}
-                    value = {meningitis}
-                    placeholder='select option below' 
-                    onSelect = {(item) => updatePatientData({ meningitis_encephalitis: item.value })}
+                    value = {toDisplayConditionValue(meningitis)}
+                    placeholder='select option below'
+                    onSelect = {(item) => updatePatientData({ meningitis_encephalitis: toStoredConditionValue(item.value) })}
                     search={false}
                 />
                 <View style={{marginRight: 10, marginLeft: 10, marginTop: -10}}>
