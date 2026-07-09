@@ -739,9 +739,9 @@ export default function AdmissionClinicalDataScreen() {
                                         checked={patientData.edematousMalnutrition || false}
                                         onChange={() => updatePatientData({ edematousMalnutrition: !patientData.edematousMalnutrition })}
                                     />
-                                    
+                                    <Text style={Styles.accordionSubheading}>Temperature <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
-                                        label={'Temperature (required)'}
+                                        label={'degrees Celsius (required)'}
                                         value={temperature as string} 
                                         onChangeText={(value) => updatePatientData({ 
                                             temperature: value,

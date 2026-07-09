@@ -191,7 +191,7 @@ export default function MedicalConditionsScreen() {
                         size={20}
                         iconColor={colors.primary}
                         onPress={() => {
-                        alert('Malnutrition status is assessed using both MUAC and WAZ (calculated on the previous page). The more severe of the two results is applied.');
+                        alert(isUnderSixMonths ? 'Growth status is based on WAZ (weight-for-age z-score).' : 'Nutritional status is based on MUAC and WAZ. The more severe result is applied.');
                         }}
                     />
                 </View>
