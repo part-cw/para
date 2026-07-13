@@ -36,7 +36,7 @@
       "isNeonate": false,
       "neonatalJaundice": false,
       "feedingWell": true,
-      "dischargeStatus": "Unplanned discharge",
+      "dischargeStatus": "Discharged against medical advice",
       "feedingStatus_discharge": "Feeding poorly",
       "spo2_discharge": 97
     },
@@ -108,7 +108,7 @@
       "isNeonate": false,
       "neonatalJaundice": false,
       "feedingWell": false,
-      "dischargeStatus": "Unplanned discharge",
+      "dischargeStatus": "Discharged against medical advice",
       "feedingStatus_discharge": "Not feeding at all",
       "spo2_discharge": 82
     },

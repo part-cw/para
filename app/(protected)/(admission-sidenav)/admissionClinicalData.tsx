@@ -68,13 +68,14 @@ export default function AdmissionClinicalDataScreen() {
         temperature,
         rrate,
         lastHospitalized,
-        abnormalBCS,
 
         // other necessary info
         isUnderSixMonths,
         sex,
         ageInMonths,
         isNeonate,
+        edematousMalnutrition,
+        levelOfConsciousness,
     } = patientData
 
     const validateAllFields = () => {
@@ -163,7 +164,7 @@ export default function AdmissionClinicalDataScreen() {
             }
             
            // Level of Consciousness validations
-            if (!patientData.levelOfConsciousness) {
+            if (!levelOfConsciousness) {
                 errors.push('Level of consciousness is required');
             }
         }
@@ -179,7 +180,7 @@ export default function AdmissionClinicalDataScreen() {
         weight, muac, spo2, 
         illnessDuration, jaundice, bulgingFontanelle, feedingStatus,
         hivStatus, lastHospitalized, temperature, rrate,
-        isUnderSixMonths, patientData.levelOfConsciousness
+        isUnderSixMonths, levelOfConsciousness
     ]);
 
      // Clear errors when component unmounts or navigates away
@@ -208,7 +209,7 @@ export default function AdmissionClinicalDataScreen() {
     // handles changes in waz, muac, and edematous malnutrition - updates malnutrtion status accordingly
     useEffect(() => {
         setMalnutritionStatus()
-    }, [waz, muac, patientData.edematousMalnutrition])
+    }, [waz, muac, edematousMalnutrition])
 
     // handle changes to isNeonate; resets jaundice selection if changes made to age
     useEffect(() => {
@@ -216,7 +217,7 @@ export default function AdmissionClinicalDataScreen() {
     }, [isNeonate])
     
     const setMalnutritionStatus = () => {
-        if (patientData.edematousMalnutrition) {
+        if (edematousMalnutrition) {
             updatePatientData({
                 malnutritionStatus: 'severe'
             })
@@ -585,8 +586,8 @@ export default function AdmissionClinicalDataScreen() {
                                     }
                                     <Checkbox
                                         label="Edematous malnutrition (Kwashiorkor)"
-                                        checked={patientData.edematousMalnutrition || false}
-                                        onChange={() => updatePatientData({ edematousMalnutrition: !patientData.edematousMalnutrition })}
+                                        checked={edematousMalnutrition || false}
+                                        onChange={() => updatePatientData({ edematousMalnutrition: !edematousMalnutrition })}
                                     />
                                     <Text style={Styles.accordionSubheading}>Oxygen Saturation <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
@@ -736,8 +737,8 @@ export default function AdmissionClinicalDataScreen() {
                                     })()}
                                     <Checkbox
                                         label="Edematous malnutrition (Kwashiorkor)"
-                                        checked={patientData.edematousMalnutrition || false}
-                                        onChange={() => updatePatientData({ edematousMalnutrition: !patientData.edematousMalnutrition })}
+                                        checked={edematousMalnutrition || false}
+                                        onChange={() => updatePatientData({ edematousMalnutrition: !edematousMalnutrition })}
                                     />
                                     <Text style={Styles.accordionSubheading}>Temperature <Text style={Styles.required}>*</Text></Text>
                                     <ValidatedTextInput 
@@ -830,11 +831,10 @@ export default function AdmissionClinicalDataScreen() {
                                         placeholder='Select option below'
                                         onSelect={(item) => {
                                             updatePatientData({
-                                                levelOfConsciousness: item.value,
-                                                abnormalBCS: item.key !== 'alert'
+                                                levelOfConsciousness: item.value
                                             })
                                         }}
-                                        value={patientData.levelOfConsciousness}
+                                        value={levelOfConsciousness}
                                         search={false}
                                     />
                                 </View>

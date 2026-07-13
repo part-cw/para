@@ -11,7 +11,8 @@ describe('AgeCalculator', () => {
     deviceIdKey: 'A',
     maxPatientAge: 5,
     rrateIntegrationEnabled: false,
-    echisServerUrl: ''
+    echisServerUrl: '',
+    muacUnit: 'cm'
   }
 
   beforeAll(() => {

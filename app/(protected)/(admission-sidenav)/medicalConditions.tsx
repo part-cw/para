@@ -130,7 +130,7 @@ export default function MedicalConditionsScreen() {
         {label: 'Unsure', value: 'unsure'},
         {label: 'None', value: 'none'},
         {label: 'Other', value: 'other'}
-    ]
+    ].filter(opt => opt.value !== 'HIV' || isUnderSixMonths)
 
 
     const getChronicIllnessOptions = () => {
@@ -191,7 +191,7 @@ export default function MedicalConditionsScreen() {
                         size={20}
                         iconColor={colors.primary}
                         onPress={() => {
-                        alert(isUnderSixMonths ? 'Growth status is based on WAZ (weight-for-age z-score).' : 'Nutritional status is based on MUAC and WAZ. The more severe result is applied.');
+                        alert(isUnderSixMonths ? 'Growth status is based on WAZ (weight-for-age z-score), or set to Severe if edematous malnutrition (Kwashiorkor) is present.' : 'Nutritional status is based on MUAC and WAZ, or set to Severe if edematous malnutrition (Kwashiorkor) is present. The more severe result is applied.');
                         }}
                     />
                 </View>

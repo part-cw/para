@@ -6,6 +6,7 @@ import { IStorageService } from "../../services/StorageService";
 import { GlobalStyles as Styles } from "../../themes/styles";
 import { capitalizeFirstLetter, formatChronicIllness, getOtherChronicIllnessList } from "../../utils/formatUtils";
 import { toDisplayConditionValue } from "../../utils/medicalConditionDisplay";
+import { normalizeBoolean } from "../../utils/normalizer";
 import CheckboxGroup from "../CheckboxGroup";
 import { EditGroup } from "../EditFieldGroup";
 import RadioButtonGroup from "../RadioButtonGroup";
@@ -73,11 +74,10 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
         {label: 'HIV', value: 'HIV'},
         {label: 'Tuberculosis', value: 'Tuberculosis'},
         {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
-        {label: 'Social vulnerability/Extreme poverty', value: 'extreme poverty'},
         {label: 'Unsure', value: 'unsure'},
         {label: 'None', value: 'none'},
         {label: 'Other', value: 'other'}
-    ]
+    ].filter(opt => opt.value !== 'HIV' || normalizeBoolean(patientData.isUnderSixMonths))
 
     const getChronicIllnessOptions = () => {
         if (isNoneSelected) {

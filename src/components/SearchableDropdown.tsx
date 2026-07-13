@@ -432,7 +432,7 @@ isOpen: controlledIsOpen,
                 slideup();
               }
             }}
-            onStartShouldSetResponder={() => false}>
+            >
             <Text style={styles.textInput}>
               {
                 searchText.trim().length > 0 

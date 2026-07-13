@@ -70,7 +70,7 @@
       "temperature": 38.9,
       "temperatureSquared": 1513.21,
       "hivStatus": "Negative",
-      "dischargeStatus": "Unplanned discharge",
+      "dischargeStatus": "Discharged against medical advice",
       "feedingStatus_discharge": "Feeding well",
       "spo2_discharge": 99
     },
@@ -124,7 +124,7 @@
       "temperature": 36.4,
       "temperatureSquared": 1324.96,
       "hivStatus": "Negative",
-      "dischargeStatus": "Unplanned discharge",
+      "dischargeStatus": "Discharged against medical advice",
       "feedingStatus_discharge": "Not feeding at all",
       "spo2_discharge": 59
     },
