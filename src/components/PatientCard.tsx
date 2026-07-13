@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Icon, useTheme } from 'react-native-paper';
 
-// TODO - fix risk profile mapping
-
 type PatientCardProps = {
   id: string;
   name: string;
@@ -13,8 +11,6 @@ type PatientCardProps = {
   riskCategory?: string;
   isElevated?: boolean;
   originalRiskCategory?: string;
-  riskProfile?: string[];
-  recommendedCareplan?: string[];
   isDischarged: boolean;
   isDraft: boolean;
   admittedAt?: string | null;
@@ -23,6 +19,7 @@ type PatientCardProps = {
   onEdit?: () => void;
   onDischarge?: () => Promise<void> | void;
   onArchive?: () => Promise<void> | void;
+  onViewVideos?: () => void;
 };
 
 export default function PatientCard({ 
@@ -33,8 +30,6 @@ export default function PatientCard({
   riskCategory,
   isElevated,
   originalRiskCategory,
-  riskProfile,
-  recommendedCareplan,
   isDischarged,
   isDraft,
   admittedAt,
@@ -42,7 +37,8 @@ export default function PatientCard({
   onDelete,
   onEdit,
   onDischarge,
-  onArchive
+  onArchive,
+  onViewVideos
 }: PatientCardProps) {
   const { colors } = useTheme();  
   const [expanded, setExpanded] = useState(false);
@@ -58,7 +54,6 @@ export default function PatientCard({
     }[riskCategory];
   }
   
-
   return (
     <View
       style={[
@@ -130,33 +125,18 @@ export default function PatientCard({
       {/* Expanded section */}
       {expanded && (
         <View style={styles.expandedSection}>
-          {/* Show Risk Profile if available */}
-          {riskProfile && (
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Risk Profile: </Text>
-              <View style={styles.grayBadge}>
-                <Text style={styles.grayBadgeText}>
-                  {riskProfile.length === 0 ? 'Generic': 'TODO map conditions'}
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Recommended careplan (only for non-discharged) */}
-          {isDischarged && recommendedCareplan && (
-            <>
-              <Text style={[styles.subheading]}>Recommended Careplan</Text>
-              {recommendedCareplan.map((video, index) => (
-                <View key={index} style={styles.careplanRow}>
-                  <MaterialIcons
-                    name="play-circle-outline"
-                    size={22}
-                    color={colors.primary}
-                  />
-                  <Text style={styles.careplanText}>{video}</Text>
-                </View>
-              ))}
-            </>
+          {/* Caregiver education videos — available once admission is done (any non-draft patient) */}
+          {!isDraft && onViewVideos && (
+            <TouchableOpacity style={styles.careplanRow} onPress={() => onViewVideos()}>
+              <MaterialIcons
+                name="play-circle-outline"
+                size={22}
+                color={colors.primary}
+              />
+              <Text style={[styles.careplanText, { color: colors.primary, fontWeight: '600' }]}>
+                Caregiver Videos
+              </Text>
+            </TouchableOpacity>
           )}
 
           {/* Footer buttons (change if discharged) */}
@@ -286,31 +266,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     paddingTop: 10,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 6,
-  },
-  grayBadge: {
-    backgroundColor: '#e0e0e0',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  grayBadgeText: {
-    color: '#333',
-  },
-  subheading: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    marginTop: 12,
-    marginBottom: 4,
   },
   careplanRow: {
     flexDirection: 'row',

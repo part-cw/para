@@ -44,3 +44,6 @@ app-example
 
 #db testing
 scripts/db/
+
+# Caregiver education videos kept out of public repo.
+src/assets/videos/*.mp4

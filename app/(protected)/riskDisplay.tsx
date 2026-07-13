@@ -1,3 +1,4 @@
+import CaregiverVideosModal from '@/src/components/CaregiverVideosModal';
 import ChangeRiskLevelModal from '@/src/components/ChangeRiskLevelModal';
 import RiskCard from '@/src/components/RiskCard';
 import RiskLevelInterpretationModal from '@/src/components/RiskLevelInterpretationModal';
@@ -6,6 +7,7 @@ import { CategorizedMedicalConditions } from '@/src/contexts/CategorizedMedicalC
 import { useStorage } from '@/src/contexts/StorageContext';
 import { RiskAssessment, RiskPrediction } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
+import { getVideosForConditions } from '@/src/utils/careContentLoader';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
@@ -21,6 +23,7 @@ export default function RiskDisplay() {
   const [isConditionsExpanded, setIsConditionsExpanded] = useState<boolean>(false);
   const [showInterpretationModal, setShowInterpretationModal] = useState<boolean>(false);
   const [showChangeRiskModal, setShowChangeRiskModal] = useState<boolean>(false);
+  const [showVideosModal, setShowVideosModal] = useState<boolean>(false);
 
   const userId = currentUser?.displayName || currentUser?.username || 'unknown';
 
@@ -142,7 +145,10 @@ export default function RiskDisplay() {
   };
 
   const conditionsData = getTopConditions();
-  
+
+  // Caregiver education videos matched to this patient's conditions (available from admission on).
+  const videos = getVideosForConditions(medicalConditions);
+
   return (
     <>
     {riskAssessment 
@@ -284,18 +290,51 @@ export default function RiskDisplay() {
                 </View>
               )}
 
-              {/* TODO - add view careplan button */}
             </RiskCard>
 
-            <Button
-              style={{ alignSelf: 'center', marginTop: 20 }}
-              mode="elevated"
-              buttonColor={colors.primary}
-              textColor={colors.onPrimary}
-              onPress={() => router.replace('/patientRecords')}
-            >
-              Patient Records
-            </Button>
+            {/* Caregiver education videos matched to this patient's conditions */}
+            {videos.length > 0 && (
+              <Button
+                style={{ alignSelf: 'center', marginTop: 8 }}
+                mode="elevated"
+                icon="play-circle-outline"
+                buttonColor={colors.tertiary}
+                textColor={colors.onTertiary}
+                onPress={() => setShowVideosModal(true)}
+              >
+                Watch Caregiver Videos
+              </Button>
+            )}
+
+            {/* Care plan is only offered after discharge; admission keeps the records button. */}
+            {discharge ? (
+              <Button
+                style={{ alignSelf: 'center', marginTop: 20 }}
+                mode="elevated"
+                buttonColor={colors.primary}
+                textColor={colors.onPrimary}
+                onPress={() => router.push({
+                  pathname: '/carePlan',
+                  params: {
+                    patientId,
+                    patientName,
+                    medicalConditions: JSON.stringify(medicalConditions),
+                  },
+                })}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button
+                style={{ alignSelf: 'center', marginTop: 20 }}
+                mode="elevated"
+                buttonColor={colors.primary}
+                textColor={colors.onPrimary}
+                onPress={() => router.replace('/patientRecords')}
+              >
+                Patient Records
+              </Button>
+            )}
           </View>
         </ScrollView>
 
@@ -318,6 +357,12 @@ export default function RiskDisplay() {
           currentRiskCategory={riskCategory}
           onRequestClose={() => setShowChangeRiskModal(false)}
           onSave={handleElevateRiskCategory}
+        />
+
+        <CaregiverVideosModal
+          visible={showVideosModal}
+          videos={videos}
+          onRequestClose={() => setShowVideosModal(false)}
         />
       </View>
       :

@@ -1,3 +1,4 @@
+import CaregiverVideosModal from '@/src/components/CaregiverVideosModal';
 import PatientCard from '@/src/components/PatientCard';
 import { useConfig } from '@/src/contexts/ConfigContext';
 import { PatientData } from '@/src/contexts/PatientData';
@@ -7,6 +8,7 @@ import { getFHIRInstance } from '@/src/services/fhir/FHIRInstance';
 import { buildPatientBundle } from '@/src/services/fhir/fhirMapper';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
+import { CaregiverVideo, getVideosForConditions } from '@/src/utils/careContentLoader';
 import { formatName } from '@/src/utils/formatUtils';
 import { normalizeBoolean } from '@/src/utils/normalizer';
 import { router, useFocusEffect } from 'expo-router';
@@ -29,6 +31,7 @@ export default function PatientRecords() {
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FilterType>('all');
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
+  const [videoModalVideos, setVideoModalVideos] = useState<CaregiverVideo[] | null>(null);
 
   // Reload records when screen comes into focus (worms on mount or if navigate back to this page)
   useFocusEffect(
@@ -105,12 +108,23 @@ export default function PatientRecords() {
     })
   }
 
-  // TODO add a discharge in progress flag? 
+  // TODO add a discharge in progress flag?
   const handleDischarge = async (id: string) => {
     router.push({
-      pathname: '/dischargeData', 
+      pathname: '/dischargeData',
       params: {patientId: id}
     })
+  }
+
+  // Fetch the patient's conditions on demand and open the caregiver videos modal.
+  const handleViewVideos = async (id: string) => {
+    try {
+      const conditions = await storage.getCategorizedMedicalConditions(id);
+      setVideoModalVideos(getVideosForConditions(conditions));
+    } catch (error) {
+      console.error('Error loading caregiver videos:', error);
+      Alert.alert('Error', 'Could not load caregiver videos.');
+    }
   }
 
   // Send the patient's data to eCHIS as FHIR resources, then soft-archive on success.
@@ -269,11 +283,6 @@ export default function PatientRecords() {
             ? (p.dischargeStatus?.toLowerCase() === 'deceased' ? 'deceased' : 'discharged') 
             : 'active';
 
-          {/*
-            TODO: implement the following helpers
-            - handleGetRiskProfile
-           */}
-
           return (
            <PatientCard 
               key={p.patientId as string} 
@@ -286,16 +295,21 @@ export default function PatientRecords() {
               riskCategory={ risk.toLowerCase() }
               isElevated={ !!activePred?.isManuallyElevated }
               originalRiskCategory={ activePred?.originalRiskCategory }
-              // riskProfile={p.riskProfile}
-              // recommendedCareplan={p.recommendedCareplan}
               onEdit={() => handleEdit(p.patientId as string)}
               onArchive={() => handleArchive(p.patientId as string)}
-              onDischarge={() => handleDischarge(p.patientId as string)}              
+              onDischarge={() => handleDischarge(p.patientId as string)}
+              onViewVideos={() => handleViewVideos(p.patientId as string)}
             />
           )
         })}
 
       </ScrollView>
+
+      <CaregiverVideosModal
+        visible={videoModalVideos !== null}
+        videos={videoModalVideos ?? []}
+        onRequestClose={() => setVideoModalVideos(null)}
+      />
     </SafeAreaView>
   );
 }

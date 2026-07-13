@@ -594,25 +594,10 @@ async init(): Promise<void> {
         const prioritizedPositive = this.prioritizeConditions(positive);
         const prioritizedSuspected = this.prioritizeConditions(suspected);
 
-        // TODO: CAREPLAN INTEGRATION
-        // Future implementation should:
-        // 1. Query careplan_interventions table for each condition in (positive + suspected)
-        // 2. Return all associated interventions with priority/urgency
-        // 3. Frontend will display top 3 conditions but careplan will use ALL conditions
-        // 
-        // Potential schema:
-        // CREATE TABLE careplan_interventions (
-        //     id INTEGER PRIMARY KEY,
-        //     condition TEXT NOT NULL,              -- e.g., "Pneumonia", "Severe Anaemia"
-        //     intervention TEXT NOT NULL,           -- e.g., "Oxygen therapy", "Iron supplementation"
-        //     priority INTEGER DEFAULT 1,           -- 1=critical, 2=high, 3=medium
-        //     description TEXT
-        // );
-
         return {
             positive: prioritizedPositive,
             suspected: prioritizedSuspected,
-        }; 
+        };
     }
 
     private prioritizeConditions(conditions: string[]): string[] {
@@ -988,49 +973,6 @@ async init(): Promise<void> {
     }
 
     // ========== HELPERS ==========
-
-     private async insertClinicalVariables(patientId: string, data: PatientData): Promise<void> {
-        const variables = [
-            // Common variables
-            { name: 'weight', value: data.weight, type: 'numeric', usage: 'admission' },
-            { name: 'waz', value: data.waz?.toString(), type: 'numeric', usage: 'admission' },
-            { name: 'muac', value: data.muac, type: 'numeric', usage: 'admission' },
-            { name: 'spo2_admission', value: data.spo2_admission, type: 'numeric', usage: 'admission' },
-            
-            // 6-60 months
-            { name: 'hivStatus', value: data.hivStatus, type: 'text', usage: 'admission' },
-            { name: 'temperature', value: data.temperature, type: 'numeric', usage: 'admission' },
-            { name: 'temperatureSquared', value: data.temperatureSquared?.toString(), type: 'numeric', usage: 'admission' },
-            { name: 'rrate', value: data.rrate, type: 'numeric', usage: 'admission' },
-            { name: 'lastHospitalized', value: data.lastHospitalized, type: 'text', usage: 'admission' },
-            { name: 'eyeMovement', value: data.eyeMovement, type: 'text', usage: 'admission' },
-            { name: 'motorResponse', value: data.motorResponse, type: 'text', usage: 'admission' },
-            { name: 'verbalResponse', value: data.verbalResponse, type: 'text', usage: 'admission' },
-            { name: 'bcsScore', value: data.bcsScore?.toString(), type: 'numeric', usage: 'admission' },
-            { name: 'abnormalBCS', value: data.abnormalBCS !== null ? (data.abnormalBCS ? '1' : '0') : null, type: 'boolean', usage: 'admission' },
-            
-            // 0-6 months
-            { name: 'illnessDuration', value: data.illnessDuration, type: 'text', usage: 'admission' },
-            { name: 'neonatalJaundice', value: data.neonatalJaundice !== null ? (data.neonatalJaundice ? '1' : '0') : null, type: 'boolean', usage: 'admission' },
-            { name: 'bulgingFontanelle', value: data.bulgingFontanelle !== null ? (data.bulgingFontanelle ? '1' : '0') : null, type: 'boolean', usage: 'admission' },
-            { name: 'feedingWell', value: data.feedingWell !== null ? (data.feedingWell ? '1' : '0') : null, type: 'boolean', usage: 'admission' },
-            
-            // Discharge variables
-            { name: 'spo2_discharge', value: data.spo2_discharge, type: 'numeric', usage: 'discharge' },
-            { name: 'feedingStatus_discharge', value: data.feedingStatus_discharge !== null ? (data.feedingStatus_discharge ? '1' : '0') : null, type: 'boolean', usage: 'discharge' },
-            { name: 'dischargeStatus', value: data.dischargeStatus, type: 'text', usage: 'discharge' },
-        ];
-
-        for (const variable of variables) {
-            if (variable.value !== undefined && variable.value !== null && variable.value !== '') {
-                await this.db!.runAsync(`
-                    INSERT OR REPLACE INTO clinical_variables (
-                        patientId, variableName, variableValue, variableType, usageTime
-                    ) VALUES (?, ?, ?, ?, ?)
-                `, [patientId, variable.name, variable.value, variable.type, variable.usage]);
-            }
-        }
-    }
 
     private async upsertClinicalVariable(
         patientId: string,

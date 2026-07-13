@@ -1,0 +1,126 @@
+{
+  "Sick Young Infant": {
+    "carePlan": [
+      "Ensure caregiver knows the danger signs",
+      "Discuss feeding support"
+    ],
+    "videos": [
+      { "id": "sick-young-infant", "title": "Sick Young Infants", "description": "Danger signs and breastfeeding." }
+    ]
+  },
+  "Severe Anaemia": {
+    "carePlan": [
+      "WHO guidelines recommend the prescription of Post Discharge Malaria Chemoprevention for children with severe anaemia."
+    ],
+    "videos": [
+      { "id": "severe-anaemia", "title": "Severe anaemia", "description": "Anaemia definition and nutrition" }
+    ]
+  },
+  "Severe Acute Malnutrition (SAM)": {
+    "carePlan": [
+      "It is recommended to link the caregiver to nutritional programmes.",
+      "5000 IU vitamin A daily, either as an integral part of therapeutic foods or multi-micronutrient formulation."
+    ],
+    "videos": [
+      { "id": "malnutrition", "title": "Malnutrition", "description": "Feeding and measuring MUAC." }
+    ]
+  },
+  "Moderate Acute Malnutrition (MAM)": {
+    "carePlan": [
+      "It is recommended to link the caregiver to nutritional programmes.",
+      "5000 IU vitamin A daily, either as an integral part of therapeutic foods or multi-micronutrient formulation."
+    ],
+    "videos": [
+      { "id": "malnutrition", "title": "Malnutrition", "description": "Feeding and measuring MUAC." }
+    ]
+  },
+  "Sepsis": {
+    "carePlan": [
+      "Ensure caregiver knows danger signs to look for and when to return."
+    ],
+    "videos": [
+      { "id": "sepsis", "title": "Sepsis", "description": "Recognising danger signs." }
+    ]
+  },
+  "Meningitis/Encephalitis": {
+    "carePlan": [
+      "Ensure caregiver knows danger signs to look for and when to return."
+    ],
+    "videos": [
+      { "id": "meningitis", "title": "Meningitis/Encephalitis", "description": "Recognising danger signs." }
+    ]
+  },
+  "Pneumonia": {
+    "carePlan": [
+      "Recommend completing medication.",
+      "Ensure they know what signs to look for to return."
+    ],
+    "videos": [
+      { "id": "pneumonia", "title": "Pneumonia", "description": "Danger signs and prevention." }
+    ]
+  },
+  "Malaria": {
+    "carePlan": [
+      "Recommend completing medication.",
+      "Ensure they know what signs to look for to return."
+    ],
+    "videos": [
+      { "id": "malaria", "title": "Malaria", "description": "Preventing and recognizing malaria." }
+    ]
+  },
+  "Diarrhea (Acute)": {
+    "carePlan": [
+      "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home."
+    ],
+    "videos": [
+      { "id": "diarrhea", "title": "Diarrhea", "description": "Recognizing and treating diarrhea." }
+    ]
+  },
+  "Diarrhea (Persistent)": {
+    "carePlan": [
+      "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home."
+    ],
+    "videos": [
+      { "id": "diarrhea", "title": "Diarrhea", "description": "Recognizing and treating diarrhea." }
+    ]
+  },
+  "HIV": {
+    "carePlan": [
+      "Ensure the caregiver knows proper home care."
+    ],
+    "videos": [
+      { "id": "hiv", "title": "HIV", "description": "Adhering to medication." }
+    ]
+  },
+  "Tuberculosis": {
+    "carePlan": [
+      "Ensure the caregiver knows proper home care."
+    ],
+    "videos": [
+      { "id": "tuberculosis", "title": "Tuberculosis", "description": "Managing treatment at home." }
+    ]
+  },
+  "Sickle Cell Anaemia": {
+    "carePlan": [
+      "Ensure the caregiver knows proper home care.",
+      "Recommend linkage to a sickle cell disease programme."
+    ],
+    "videos": [
+      { "id": "sickle-cell", "title": "Sickle Cell Anaemia", "description": "When to seek care." }
+    ]
+  },
+  "generic": {
+    "carePlan": [
+      "Complete all prescribed medications"
+    ],
+    "videos": [
+      { "id": "breastfeeding-english", "title": "Breastfeeding", "description": "Feeding of a young infant" },
+      { "id": "hygiene-english", "title": "Hygiene", "description": "Hygiene advice for at home" },
+      { "id": "immunizations-english", "title": "Immunizations", "description": "The importance of immunizations" },
+      { "id": "medication-english", "title": "Medication", "description": "Proper use of medications" },
+      { "id": "mosquito-net-english", "title": "Mosquito Net Use", "description": "How to use mosquito nets effectively" },
+      { "id": "nutrition-english", "title": "Nutrition", "description": "Nutritional needs for children" },
+      { "id": "seeking-care-english", "title": "Seeking Care", "description": "When and how to seek medical care" }
+    ]
+  }
+}

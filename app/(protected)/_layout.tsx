@@ -48,6 +48,7 @@ export default function ProtectedLayout() {
             <Stack.Screen name="editPatient" />
             <Stack.Screen name="dischargeData" />
             <Stack.Screen name="riskDisplay" />
+            <Stack.Screen name="carePlan" />
             <Stack.Screen name="(admission-sidenav)" />
           </Stack>
         </View>
