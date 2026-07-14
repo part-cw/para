@@ -318,6 +318,7 @@ export default function RiskDisplay() {
                   params: {
                     patientId,
                     patientName,
+                    riskCategory,
                     medicalConditions: JSON.stringify(medicalConditions),
                   },
                 })}

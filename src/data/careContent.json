@@ -5,7 +5,7 @@
       "Discuss feeding support"
     ],
     "videos": [
-      { "id": "sick-young-infant", "title": "Sick Young Infants", "description": "Danger signs and breastfeeding." }
+      { "id": "breastfeeding-english", "title": "Breastfeeding", "description": "Feeding of a young infant" }
     ]
   },
   "Severe Anaemia": {
@@ -13,7 +13,7 @@
       "WHO guidelines recommend the prescription of Post Discharge Malaria Chemoprevention for children with severe anaemia."
     ],
     "videos": [
-      { "id": "severe-anaemia", "title": "Severe anaemia", "description": "Anaemia definition and nutrition" }
+      { "id": "anaemia-english", "title": "Anaemia", "description": "Anaemia definition and nutrition" }
     ]
   },
   "Severe Acute Malnutrition (SAM)": {
@@ -22,7 +22,7 @@
       "5000 IU vitamin A daily, either as an integral part of therapeutic foods or multi-micronutrient formulation."
     ],
     "videos": [
-      { "id": "malnutrition", "title": "Malnutrition", "description": "Feeding and measuring MUAC." }
+      { "id": "feeding-english", "title": "Feeding Your Child", "description": "Feeding and measuring MUAC." }
     ]
   },
   "Moderate Acute Malnutrition (MAM)": {
@@ -31,7 +31,7 @@
       "5000 IU vitamin A daily, either as an integral part of therapeutic foods or multi-micronutrient formulation."
     ],
     "videos": [
-      { "id": "malnutrition", "title": "Malnutrition", "description": "Feeding and measuring MUAC." }
+      { "id": "feeding-english", "title": "Feeding Your Child", "description": "Feeding and measuring MUAC." }
     ]
   },
   "Sepsis": {
@@ -65,7 +65,7 @@
       "Ensure they know what signs to look for to return."
     ],
     "videos": [
-      { "id": "malaria", "title": "Malaria", "description": "Preventing and recognizing malaria." }
+      { "id": "malaria-english", "title": "Malaria", "description": "Preventing and recognizing malaria." }
     ]
   },
   "Diarrhea (Acute)": {
@@ -114,7 +114,6 @@
       "Complete all prescribed medications"
     ],
     "videos": [
-      { "id": "breastfeeding-english", "title": "Breastfeeding", "description": "Feeding of a young infant" },
       { "id": "hygiene-english", "title": "Hygiene", "description": "Hygiene advice for at home" },
       { "id": "immunizations-english", "title": "Immunizations", "description": "The importance of immunizations" },
       { "id": "medication-english", "title": "Medication", "description": "Proper use of medications" },

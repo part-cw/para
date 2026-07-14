@@ -61,7 +61,7 @@ export default function MedicalConditionsScreen() {
     const diarrheaOptions = [
         { value: 'Acute diarrhea', key: 'acute'},
         { value: 'Persistent diarrhea', key: 'persistent'},
-        { value: 'Not acute or peristent', key: 'none'},
+        { value: 'Not acute or persistent', key: 'none'},
     ]
 
     const validateAllFields = () => {

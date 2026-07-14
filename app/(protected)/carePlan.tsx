@@ -3,6 +3,7 @@ import { CategorizedMedicalConditions } from '@/src/contexts/CategorizedMedicalC
 import { useStorage } from '@/src/contexts/StorageContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { getCarePlanForConditions, getVideosForConditions } from '@/src/utils/careContentLoader';
+import { getFollowUpDates, getFollowUpScheduleText } from '@/src/utils/followUpScheduleLoader';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -17,6 +18,7 @@ export default function CarePlan() {
   const params = useLocalSearchParams();
   const patientId = params.patientId as string;
   const patientName = params.patientName as string;
+  const riskCategory = params.riskCategory as string | undefined;
   const paramConditions: CategorizedMedicalConditions | null =
     params.medicalConditions ? JSON.parse(params.medicalConditions as string) : null;
 
@@ -34,6 +36,8 @@ export default function CarePlan() {
 
   const carePlan = useMemo(() => getCarePlanForConditions(conditions), [conditions]);
   const videos = useMemo(() => getVideosForConditions(conditions), [conditions]);
+  const followUpText = getFollowUpScheduleText(riskCategory);
+  const followUpDates = getFollowUpDates(riskCategory);
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -49,6 +53,9 @@ export default function CarePlan() {
               {patientName}
             </Text>
           )}
+          <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 4, color: colors.primary }}>
+              Recommendations for the Clinician
+          </Text>
           <Text style={{ fontSize: 13, fontStyle: 'italic', color: '#666', marginBottom: 16 }}>
             Suggested actions based on this patient&apos;s recorded conditions. Use clinical judgement.
           </Text>
@@ -69,6 +76,25 @@ export default function CarePlan() {
               ))}
             </View>
           ))}
+
+          {!!followUpText && (
+            <>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 4 }}>
+                Community Follow-up
+              </Text>
+              <View style={[styles.card, { borderLeftColor: 'black' }]}>
+                <Text style={[styles.cardTitle, { color: 'black' }]}>Follow-up Schedule</Text>
+                <Text style={styles.stepText}>
+                  {riskCategory} Risk for post-discharge risk mortality {followUpText}.
+                </Text>
+                {followUpDates.length > 0 && (
+                  <Text style={[styles.stepText, { marginTop: 6 }]}>
+                    Follow-up date{followUpDates.length > 1 ? 's' : ''}: {followUpDates.join(', ')}
+                  </Text>
+                )}
+              </View>
+            </>
+          )}
 
           {videos.length > 0 && (
             <Button
