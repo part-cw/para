@@ -4,8 +4,8 @@ import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { ModelContext, RiskAssessment, RiskPrediction } from '../models/types';
 import { normalizeBoolean } from '../utils/normalizer';
 import { useAuth } from './AuthContext';
-import { useConfig } from './ConfigContext';
 import { CategorizedMedicalConditions, initialCategorizedMedicalConditions } from './CategorizedMedicalConditions';
+import { useConfig } from './ConfigContext';
 import { initialPatientData, PatientData } from './PatientData';
 import { useStorage } from './StorageContext';
 
@@ -372,7 +372,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
     const dataForModel = {
       ...patientData,
-      muac: (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac
+      muac: (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac,
+      abnormalBCS: !!patientData.levelOfConsciousness && patientData.levelOfConsciousness.trim().toLowerCase() !== 'alert'
     };
 
     return strategy && strategy?.calculateRisk(dataForModel)
@@ -393,7 +394,8 @@ export function PatientDataProvider({ children }: { children: ReactNode }) {
 
       const dataForModel = {
         ...data,
-        muac: (config.muacUnit || 'cm') === 'cm' && data.muac ? (parseFloat(data.muac) * 10).toString() : data.muac
+        muac: (config.muacUnit || 'cm') === 'cm' && data.muac ? (parseFloat(data.muac) * 10).toString() : data.muac,
+        abnormalBCS: !!data.levelOfConsciousness && data.levelOfConsciousness.trim().toLowerCase() !== 'alert'
       };
 
       return strategy && strategy?.calculateRisk(dataForModel);
@@ -423,7 +425,8 @@ const calculateDischargeRisk = (): RiskPrediction | null => {
       dischargeStatus: patientData.dischargeStatus === 'Unplanned discharge' 
         ? 'Discharged against medical advice' 
         : patientData.dischargeStatus,
-      muac: (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac
+      muac: (config.muacUnit || 'cm') === 'cm' && patientData.muac ? (parseFloat(patientData.muac) * 10).toString() : patientData.muac,
+      abnormalBCS: !!patientData.levelOfConsciousness && patientData.levelOfConsciousness.trim().toLowerCase() !== 'alert'
     };
 
     return strategy && strategy?.calculateRisk(normalizedData)

@@ -1389,7 +1389,8 @@ async init(): Promise<void> {
         const clinicalKeys = [
             'weight', 'waz', 'muac', 'spo2_admission',
             'hivStatus', 'temperature', 'temperatureSquared', 'rrate', 'lastHospitalized',
-            'eyeMovement', 'motorResponse', 'verbalResponse', 'bcsScore', 'abnormalBCS',
+            'eyeMovement', 'motorResponse', 'verbalResponse', 'bcsScore',
+            'edematousMalnutrition', 'levelOfConsciousness',
             'illnessDuration', 'neonatalJaundice', 'bulgingFontanelle', 'feedingWell',
             'spo2_discharge', 'feedingStatus_discharge', 'dischargeStatus'
         ];
@@ -1405,7 +1406,7 @@ async init(): Promise<void> {
 
     private determineVariableType(varName: string): string {
         const numericVars = ['waz', 'temperatureSquared', 'bcsScore'];
-        const booleanVars = ['neonatalJaundice', 'bulgingFontanelle', 'feedingWell', 'abnormalBCS'];
+        const booleanVars = ['neonatalJaundice', 'bulgingFontanelle', 'feedingWell', 'edematousMalnutrition'];
         // const jsonVars = ['eyeMovement', 'motorResponse', 'verbalResponse'];
 
         if (numericVars.includes(varName)) return 'numeric';
