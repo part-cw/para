@@ -1,0 +1,19 @@
+{
+  "name": "Caregiver Education Videos",
+  "short_name": "Caregiver Videos",
+  "description": "Offline education videos for caregivers.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f4f7",
+  "theme_color": "#044BAE",
+  "icons": [
+    {
+      "src": "icons/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

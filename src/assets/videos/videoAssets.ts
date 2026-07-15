@@ -18,3 +18,10 @@ export const videoAssets: Record<string, VideoSource> = {
   // 'feeding-english': require('@/src/assets/videos/feeding-english.mp4'),
   // 'malaria-english': require('@/src/assets/videos/malaria-english.mp4')
 };
+
+/**
+ * Base URL of the standalone offline caregiver-video web player (see caregiver-web/), used to build
+ * the QR code shown on the care plan page. When empty, the app simply hides the QR code.
+ * Example: 'https://your-host.example/caregiver-web/'
+ */
+export const CAREGIVER_VIDEO_WEB_URL = '';

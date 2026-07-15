@@ -125,20 +125,6 @@ export default function PatientCard({
       {/* Expanded section */}
       {expanded && (
         <View style={styles.expandedSection}>
-          {/* Caregiver education videos — available once admission is done (any non-draft patient) */}
-          {!isDraft && onViewVideos && (
-            <TouchableOpacity style={styles.careplanRow} onPress={() => onViewVideos()}>
-              <MaterialIcons
-                name="play-circle-outline"
-                size={22}
-                color={colors.primary}
-              />
-              <Text style={[styles.careplanText, { color: colors.primary, fontWeight: '600' }]}>
-                Caregiver Videos
-              </Text>
-            </TouchableOpacity>
-          )}
-
           {/* Footer buttons (change if discharged) */}
           {isDraft
             ? 
@@ -166,15 +152,27 @@ export default function PatientCard({
             (<View style={styles.footerButtons}>
               <TouchableOpacity style={styles.iconButton} onPress={() => onEdit?.()}>
                 <MaterialIcons
-                    name="edit"
+                    name={isDischarged ? 'visibility' : 'edit'}
                     size={24}
                     color={colors.onSecondary}
                 />
-                <Text style={styles.buttonText}>View/Edit</Text>
+                <Text style={styles.buttonText}>{isDischarged ? 'View' : 'View/Edit'}</Text>
               </TouchableOpacity>
 
+              {/* Caregiver videos — available once admission is done */}
+              {onViewVideos && (
+                <TouchableOpacity style={styles.iconButton} onPress={() => onViewVideos()}>
+                  <MaterialIcons
+                    name="play-circle-outline"
+                    size={24}
+                    color={colors.onSecondary}
+                  />
+                  <Text style={styles.buttonText}>Videos</Text>
+                </TouchableOpacity>
+              )}
+
               {isDischarged ? (
-                <TouchableOpacity style={[styles.iconButton, styles.rightFooterButton]} onPress={() => onArchive?.()}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => onArchive?.()}>
                     <MaterialIcons
                     name="archive"
                     size={24}
@@ -183,7 +181,7 @@ export default function PatientCard({
                     <Text style={styles.buttonText}>Archive</Text>
                 </TouchableOpacity>
                 ) : (
-                <TouchableOpacity style={[styles.iconButton, styles.rightFooterButton]} onPress={() => onDischarge?.()}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => onDischarge?.()}>
                     <MaterialIcons
                       name="directions-walk"
                       size={24}
@@ -266,15 +264,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#ddd',
     paddingTop: 10,
-  },
-  careplanRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-    gap: 8,
-  },
-  careplanText: {
-    fontSize: 14,
   },
   footerButtons: {
     flexDirection: 'row',

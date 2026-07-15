@@ -9,7 +9,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "jest --config jest.utils.config.js"
+    "test": "jest --config jest.utils.config.js",
+    "build:caregiver-web": "node scripts/build-caregiver-web.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -40,6 +41,7 @@
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-paper": "^5.14.5",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",

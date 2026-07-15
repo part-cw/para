@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Button, useTheme } from 'react-native-paper';
+import CaregiverVideosQR from './CaregiverVideosQR';
 
 type Props = {
   visible: boolean;
@@ -31,7 +32,6 @@ export default function CaregiverVideosModal({ visible, videos, onRequestClose }
   useEffect(() => {
     let cancelled = false;
     if (selected?.source != null) {
-      // replaceAsync avoids loading the asset synchronously on the iOS main thread.
       player.replaceAsync(selected.source)
         .then(() => { if (!cancelled) player.play(); })
         .catch(() => { if (!cancelled) console.warn('Failed to load caregiver video'); });
@@ -98,23 +98,27 @@ export default function CaregiverVideosModal({ visible, videos, onRequestClose }
             </View>
           ) : (
             // ---- List view ----
-            <ScrollView style={{ maxHeight: 320 }}>
-              {videos.map(video => (
-                <TouchableOpacity
-                  key={video.id}
-                  style={styles.row}
-                  onPress={() => setSelected(video)}
-                >
-                  <MaterialIcons name="play-circle-outline" size={28} color={colors.primary} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.rowTitle}>{video.title}</Text>
-                    {!!video.description && (
-                      <Text style={styles.rowDescription}>{video.description}</Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            <>
+              <ScrollView style={{ maxHeight: 320 }}>
+                {videos.map(video => (
+                  <TouchableOpacity
+                    key={video.id}
+                    style={styles.row}
+                    onPress={() => setSelected(video)}
+                  >
+                    <MaterialIcons name="play-circle-outline" size={28} color={colors.primary} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.rowTitle}>{video.title}</Text>
+                      {!!video.description && (
+                        <Text style={styles.rowDescription}>{video.description}</Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <CaregiverVideosQR videos={videos} />
+            </>
           )}
 
           <Button
