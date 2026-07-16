@@ -4,9 +4,7 @@
       "Ensure caregiver knows the danger signs",
       "Discuss feeding support"
     ],
-    "videos": [
-      { "id": "breastfeeding-english", "title": "Breastfeeding", "description": "Feeding of a young infant" }
-    ]
+    "videos": []
   },
   "Severe Anaemia": {
     "carePlan": [
@@ -70,7 +68,9 @@
   },
   "Diarrhea (Acute)": {
     "carePlan": [
-      "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home."
+      "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home.",
+      { "text": "Zinc: give 10 mg/day for 10-14 days for children 2 to 6 months of age.", "age": { "gte": 2, "lte": 6 } },
+      { "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.", "age": { "gt": 6 } }
     ],
     "videos": [
       { "id": "diarrhea", "title": "Diarrhea", "description": "Recognizing and treating diarrhea." }
@@ -78,7 +78,9 @@
   },
   "Diarrhea (Persistent)": {
     "carePlan": [
-      "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home."
+      "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home.",
+      { "text": "Zinc: give 10 mg/day for 10-14 days for children 2 to 6 months of age.", "age": { "gte": 2, "lte": 6 } },
+      { "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.", "age": { "gt": 6 } }
     ],
     "videos": [
       { "id": "diarrhea", "title": "Diarrhea", "description": "Recognizing and treating diarrhea." }
@@ -114,6 +116,7 @@
       "Complete all prescribed medications"
     ],
     "videos": [
+      { "id": "breastfeeding-english", "title": "Breastfeeding", "description": "Feeding of a young infant", "age": { "lt": 18 } },
       { "id": "hygiene-english", "title": "Hygiene", "description": "Hygiene advice for at home" },
       { "id": "immunizations-english", "title": "Immunizations", "description": "The importance of immunizations" },
       { "id": "medication-english", "title": "Medication", "description": "Proper use of medications" },

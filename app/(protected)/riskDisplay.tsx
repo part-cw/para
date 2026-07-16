@@ -34,6 +34,8 @@ export default function RiskDisplay() {
   const patientName = params.patientName as string;
   const riskAssessment: RiskAssessment | null = params.riskAssessment ? JSON.parse(params.riskAssessment as string) : null;
   const medicalConditions: CategorizedMedicalConditions | null = params.medicalConditions ? JSON.parse(params.medicalConditions as string) : null;
+  const ageParam = params.ageInMonths as string | undefined;
+  const ageInMonths: number | null = ageParam ? Number(ageParam) : null;
 
   const discharge = riskAssessment?.discharge;
   const usageTime: 'admission' | 'discharge' = discharge ? 'discharge' : 'admission';
@@ -147,7 +149,7 @@ export default function RiskDisplay() {
   const conditionsData = getTopConditions();
 
   // Caregiver education videos matched to this patient's conditions (available from admission on).
-  const videos = getVideosForConditions(medicalConditions);
+  const videos = getVideosForConditions(medicalConditions, ageInMonths);
 
   return (
     <>
@@ -320,6 +322,7 @@ export default function RiskDisplay() {
                     patientName,
                     riskCategory,
                     medicalConditions: JSON.stringify(medicalConditions),
+                    ageInMonths: String(ageInMonths ?? '')
                   },
                 })}
               >

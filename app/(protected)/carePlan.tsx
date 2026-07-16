@@ -21,21 +21,28 @@ export default function CarePlan() {
   const riskCategory = params.riskCategory as string | undefined;
   const paramConditions: CategorizedMedicalConditions | null =
     params.medicalConditions ? JSON.parse(params.medicalConditions as string) : null;
+  const ageParam = params.ageInMonths as string | undefined;
 
   const [conditions, setConditions] = useState<CategorizedMedicalConditions | null>(paramConditions);
+  const [ageInMonths, setAgeInMonths] = useState<number | null>(ageParam ? Number(ageParam) : null);
   const [showVideos, setShowVideos] = useState(false);
 
-  // Fall back to loading conditions from storage if they weren't passed in.
+  // Fall back to loading conditions or age from storage if they weren't passed in.
   useEffect(() => {
     if (!conditions && patientId) {
       storage.getCategorizedMedicalConditions(patientId)
         .then(setConditions)
         .catch(() => console.warn(`Could not load conditions for care plan (${patientId})`));
     }
+    if (ageInMonths === null && patientId) {
+      storage.getPatient(patientId)
+        .then(patient => { if (patient) setAgeInMonths(patient.ageInMonths ?? null); })
+        .catch(() => console.warn(`Could not load age for care plan (${patientId})`));
+    }
   }, [patientId]);
 
-  const carePlan = useMemo(() => getCarePlanForConditions(conditions), [conditions]);
-  const videos = useMemo(() => getVideosForConditions(conditions), [conditions]);
+  const carePlan = useMemo(() => getCarePlanForConditions(conditions, ageInMonths), [conditions, ageInMonths]);
+  const videos = useMemo(() => getVideosForConditions(conditions, ageInMonths), [conditions, ageInMonths]);
   const followUpText = getFollowUpScheduleText(riskCategory);
   const followUpDates = getFollowUpDates(riskCategory);
 

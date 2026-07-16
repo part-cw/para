@@ -117,10 +117,11 @@ export default function PatientRecords() {
   }
 
   // Fetch the patient's conditions on demand and open the caregiver videos modal.
-  const handleViewVideos = async (id: string) => {
+  // Videos shown depend on the patient's conditions and age.
+  const handleViewVideos = async (id: string, ageInMonths: number | null) => {
     try {
       const conditions = await storage.getCategorizedMedicalConditions(id);
-      setVideoModalVideos(getVideosForConditions(conditions));
+      setVideoModalVideos(getVideosForConditions(conditions, ageInMonths));
     } catch (error) {
       console.error('Error loading caregiver videos:', error);
       Alert.alert('Error', 'Could not load caregiver videos.');
@@ -298,7 +299,7 @@ export default function PatientRecords() {
               onEdit={() => handleEdit(p.patientId as string)}
               onArchive={() => handleArchive(p.patientId as string)}
               onDischarge={() => handleDischarge(p.patientId as string)}
-              onViewVideos={() => handleViewVideos(p.patientId as string)}
+              onViewVideos={() => handleViewVideos(p.patientId as string, p.ageInMonths ?? null)}
             />
           )
         })}

@@ -6,9 +6,8 @@ const mc = (positive: string[] = [], suspected: string[] = []): CategorizedMedic
   suspected,
 });
 
-// The generic videos shown for every patient, in the order authored in careContent.json.
+// The generic (non-age specific) videos, in the order authored in careContent.json.
 const GENERIC_VIDEO_IDS = [
-  'breastfeeding-english',
   'hygiene-english',
   'immunizations-english',
   'medication-english',
@@ -32,7 +31,7 @@ describe('careContentLoader', () => {
       expect(ids.filter(id => id === 'diarrhea')).toHaveLength(1);
     });
 
-    it('returns only the generic videos when no condition matches', () => {
+    it('returns only the generic videos when no condition matches and no age given', () => {
       expect(getVideosForConditions(mc([], [])).map(v => v.id)).toEqual(GENERIC_VIDEO_IDS);
       expect(getVideosForConditions(mc(['Some Free-Text Illness'])).map(v => v.id)).toEqual(GENERIC_VIDEO_IDS);
     });
@@ -46,6 +45,28 @@ describe('careContentLoader', () => {
       const generic = getVideosForConditions(null).find(v => v.id === 'hygiene-english');
       expect(generic).toBeDefined();
       expect(generic).toHaveProperty('source');
+    });
+
+    describe('age-gated breastfeeding video (generic, under 18 months)', () => {
+      it('is listed first for a patient under 18 months', () => {
+        const videos = getVideosForConditions(mc([]), 10);
+        expect(videos[0].id).toBe('breastfeeding-english');
+        expect(videos.map(v => v.id)).toEqual(['breastfeeding-english', ...GENERIC_VIDEO_IDS]);
+      });
+
+      it('is excluded at exactly 18 months (upper bound is exclusive) and beyond', () => {
+        expect(getVideosForConditions(mc([]), 18).map(v => v.id)).toEqual(GENERIC_VIDEO_IDS);
+        expect(getVideosForConditions(mc([]), 24).map(v => v.id)).toEqual(GENERIC_VIDEO_IDS);
+      });
+
+      it('is excluded when age is unknown (null)', () => {
+        expect(getVideosForConditions(mc([]), null).map(v => v.id)).toEqual(GENERIC_VIDEO_IDS);
+      });
+
+      it('appears exactly once for a Sick Young Infant under 18 months (via generic only)', () => {
+        const ids = getVideosForConditions(mc(['Sick Young Infant']), 3).map(v => v.id);
+        expect(ids.filter(id => id === 'breastfeeding-english')).toHaveLength(1);
+      });
     });
   });
 
@@ -74,6 +95,45 @@ describe('careContentLoader', () => {
       expect(plan).toHaveLength(1);
       expect(plan[0].condition).toBe('General care');
       expect(plan[0].steps.length).toBeGreaterThan(0);
+    });
+
+    it('always includes age-less steps regardless of age', () => {
+      for (const age of [null, 1, 12, 60]) {
+        const steps = getCarePlanForConditions(mc(['Pneumonia']), age)[0].steps;
+        expect(steps).toContain('Recommend completing medication.');
+      }
+    });
+
+    describe('age-banded diarrhea zinc dose', () => {
+      const zincSteps = (age: number | null) =>
+        getCarePlanForConditions(mc(['Diarrhea (Acute)']), age)[0].steps.filter(s => /zinc/i.test(s));
+
+      it('always shows the ORS step', () => {
+        for (const age of [null, 1, 4, 9]) {
+          const steps = getCarePlanForConditions(mc(['Diarrhea (Acute)']), age)[0].steps;
+          expect(steps.some(s => /ORS/.test(s))).toBe(true);
+        }
+      });
+
+      it('gives the 10 mg dose from 2 to 6 months, inclusive of 6', () => {
+        expect(zincSteps(4)).toEqual([expect.stringMatching(/10 mg/)]);
+        expect(zincSteps(6)).toEqual([expect.stringMatching(/10 mg/)]);
+      });
+
+      it('gives the 20 mg dose only over 6 months', () => {
+        expect(zincSteps(7)).toEqual([expect.stringMatching(/20 mg/)]);
+        expect(zincSteps(24)).toEqual([expect.stringMatching(/20 mg/)]);
+      });
+
+      it('gives no zinc step under 2 months or when age is unknown', () => {
+        expect(zincSteps(1)).toHaveLength(0);
+        expect(zincSteps(null)).toHaveLength(0);
+      });
+
+      it('behaves the same for persistent diarrhea', () => {
+        const steps = getCarePlanForConditions(mc(['Diarrhea (Persistent)']), 4)[0].steps.filter(s => /zinc/i.test(s));
+        expect(steps).toEqual([expect.stringMatching(/10 mg/)]);
+      });
     });
   });
 });

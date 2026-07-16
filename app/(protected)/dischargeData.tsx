@@ -581,7 +581,8 @@ export default function DischargeDataScreen() {
                         patientId: patientId,
                         patientName: patientName,
                         riskAssessment: JSON.stringify(riskAssessment),
-                        medicalConditions: JSON.stringify(medicalConditions)
+                        medicalConditions: JSON.stringify(medicalConditions),
+                        ageInMonths: String(patientData.ageInMonths ?? '')
                     }
                 });
             } catch (error) {
