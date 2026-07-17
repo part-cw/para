@@ -167,7 +167,7 @@ export default function DraftAdmissions() {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: colors.background}}>
       <ScrollView 
         contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }

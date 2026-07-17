@@ -705,7 +705,7 @@ export default function DischargeDataScreen() {
         const fullname = formatName(patientData.firstName, patientData.surname, patientData.otherName)
 
         return (
-            <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
+            <SafeAreaView style={{flex: 1, backgroundColor: colors.background}}>
                 <NeonatalJaundiceModal 
                     showModal={showNeonatalJaundiceModal} 
                     onRequestClose={() => null} // TODO figure out what to do here

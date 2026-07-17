@@ -270,7 +270,7 @@ export default function EditPatientRecord() {
 
     const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-            <Text style={{ fontWeight: 'bold', flex: 1, fontSize: 16 }}>{label}:</Text>
+            <Text style={{ fontWeight: 'bold', flex: 1, minWidth: 130, fontSize: 16 }}>{label}:</Text>
             <Text style={{ flex: 2, fontSize: 16 }}>{value || 'Not provided'}</Text>
         </View>
     );
@@ -309,7 +309,7 @@ export default function EditPatientRecord() {
                                                     : 'Prediction calculated at admission';
                                                 
         return (
-            <SafeAreaView style={{flex: 1, backgroundColor: colors.background, marginTop: -50}}>
+            <SafeAreaView style={{flex: 1, backgroundColor: colors.background}}>
                 {/* Neonatal jaundice modal */}
                 <NeonatalJaundiceModal 
                     showModal={showNeonatalJaundiceModal} 
