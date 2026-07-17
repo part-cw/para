@@ -76,6 +76,7 @@ export interface RiskPrediction {
     topPredictors?: TopPredictor[];
     isManuallyElevated?: boolean;
     originalRiskCategory?: string; // model-calculated category when there's a manual elevation
+    calculatedAt?: string; // when the prediction was calculated
 }
 
 /**

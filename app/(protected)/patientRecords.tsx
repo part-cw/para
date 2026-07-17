@@ -128,6 +128,24 @@ export default function PatientRecords() {
     }
   }
 
+  // Re-open the discharge care plan
+  const handleViewCarePlan = async (patient: PatientData) => {
+    const id = patient.patientId as string;
+    const discharge = riskAssessments.get(id)?.discharge;
+    const conditions = await storage.getCategorizedMedicalConditions(id);
+    router.push({
+      pathname: '/carePlan',
+      params: {
+        patientId: id,
+        patientName: formatName(patient.firstName, patient.surname, patient.otherName),
+        riskCategory: discharge?.riskCategory ?? '',
+        medicalConditions: JSON.stringify(conditions),
+        ageInMonths: String(patient.ageInMonths ?? ''),
+        dischargeDate: discharge?.calculatedAt ?? '',
+      },
+    });
+  }
+
   // Send the patient's data to eCHIS as FHIR resources, then soft-archive on success.
   const handleArchive = async (id: string) => {
     Alert.alert(
@@ -293,13 +311,14 @@ export default function PatientRecords() {
               status={status} 
               isDischarged={normalizeBoolean(p.isDischarged as boolean)} 
               isDraft={normalizeBoolean(p.isDraftAdmission as boolean)}
-              riskCategory={ risk.toLowerCase() }
+              riskCategory={ risk }
               isElevated={ !!activePred?.isManuallyElevated }
               originalRiskCategory={ activePred?.originalRiskCategory }
               onEdit={() => handleEdit(p.patientId as string)}
               onArchive={() => handleArchive(p.patientId as string)}
               onDischarge={() => handleDischarge(p.patientId as string)}
               onViewVideos={() => handleViewVideos(p.patientId as string, p.ageInMonths ?? null)}
+              onViewCarePlan={() => handleViewCarePlan(p)}
             />
           )
         })}

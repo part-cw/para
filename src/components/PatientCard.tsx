@@ -20,6 +20,7 @@ type PatientCardProps = {
   onDischarge?: () => Promise<void> | void;
   onArchive?: () => Promise<void> | void;
   onViewVideos?: () => void;
+  onViewCarePlan?: () => void;
 };
 
 export default function PatientCard({ 
@@ -38,18 +39,22 @@ export default function PatientCard({
   onEdit,
   onDischarge,
   onArchive,
-  onViewVideos
+  onViewVideos,
+  onViewCarePlan
 }: PatientCardProps) {
-  const { colors } = useTheme();  
+  const { colors } = useTheme();
   const [expanded, setExpanded] = useState(false);
+
+  const isDeceased = status.toLowerCase() === 'deceased';
+  const showCarePlan = !!onViewCarePlan && isDischarged && !isDeceased;
 
   let riskColor;
   if (riskCategory) {
     riskColor = {
-      low: '#4caf50',
-      moderate: '#rgb(255, 208, 0)',
-      high: '#ff9800',
-      'very high': '#f44336',
+      Low: '#4caf50',
+      Moderate: 'rgb(255, 208, 0)',
+      High: '#ff9800',
+      'Very High': '#f44336',
       none: 'grey'
     }[riskCategory];
   }
@@ -159,8 +164,8 @@ export default function PatientCard({
                 <Text style={styles.buttonText}>{isDischarged ? 'View' : 'View/Edit'}</Text>
               </TouchableOpacity>
 
-              {/* Caregiver videos — available once admission is done */}
-              {onViewVideos && (
+              {/* Caregiver videos — available once admission is done, but not for deceased patients */}
+              {onViewVideos && !isDeceased && (
                 <TouchableOpacity style={styles.iconButton} onPress={() => onViewVideos()}>
                   <MaterialIcons
                     name="play-circle-outline"
@@ -171,8 +176,20 @@ export default function PatientCard({
                 </TouchableOpacity>
               )}
 
+              {/* Re-open the care plan — living discharged patients only */}
+              {showCarePlan && (
+                <TouchableOpacity style={styles.iconButton} onPress={() => onViewCarePlan?.()}>
+                  <MaterialIcons
+                    name="assignment"
+                    size={24}
+                    color={colors.onSecondary}
+                  />
+                  <Text style={styles.buttonText}>Care Plan</Text>
+                </TouchableOpacity>
+              )}
+
               {isDischarged ? (
-                <TouchableOpacity style={styles.iconButton} onPress={() => onArchive?.()}>
+                <TouchableOpacity style={[styles.iconButton, showCarePlan && styles.rightFooterButton]} onPress={() => onArchive?.()}>
                     <MaterialIcons
                     name="archive"
                     size={24}

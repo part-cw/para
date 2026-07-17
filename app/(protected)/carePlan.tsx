@@ -22,12 +22,15 @@ export default function CarePlan() {
   const paramConditions: CategorizedMedicalConditions | null =
     params.medicalConditions ? JSON.parse(params.medicalConditions as string) : null;
   const ageParam = params.ageInMonths as string | undefined;
+  const dischargeDateParam = params.dischargeDate as string | undefined;
 
   const [conditions, setConditions] = useState<CategorizedMedicalConditions | null>(paramConditions);
   const [ageInMonths, setAgeInMonths] = useState<number | null>(ageParam ? Number(ageParam) : null);
+  // Date the discharge risk was calculated used to display the follow-up dates for discharge
+  const [dischargeDate, setDischargeDate] = useState<string | null>(dischargeDateParam || null);
   const [showVideos, setShowVideos] = useState(false);
 
-  // Fall back to loading conditions or age from storage if they weren't passed in.
+  // If any of conditions, age, or the discharge date missing, fallback to loading it from storage
   useEffect(() => {
     if (!conditions && patientId) {
       storage.getCategorizedMedicalConditions(patientId)
@@ -39,12 +42,22 @@ export default function CarePlan() {
         .then(patient => { if (patient) setAgeInMonths(patient.ageInMonths ?? null); })
         .catch(() => console.warn(`Could not load age for care plan (${patientId})`));
     }
+    if (!dischargeDate && patientId) {
+      storage.getRiskAssessment(patientId)
+        .then(({ assessment }) => {
+          if (assessment.discharge?.calculatedAt) setDischargeDate(assessment.discharge.calculatedAt);
+        })
+        .catch(() => console.warn(`Could not load discharge date for care plan (${patientId})`));
+    }
   }, [patientId]);
 
   const carePlan = useMemo(() => getCarePlanForConditions(conditions, ageInMonths), [conditions, ageInMonths]);
   const videos = useMemo(() => getVideosForConditions(conditions, ageInMonths), [conditions, ageInMonths]);
   const followUpText = getFollowUpScheduleText(riskCategory);
-  const followUpDates = getFollowUpDates(riskCategory);
+  const followUpDates = useMemo(
+    () => getFollowUpDates(riskCategory, dischargeDate ? new Date(dischargeDate) : undefined),
+    [riskCategory, dischargeDate],
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>

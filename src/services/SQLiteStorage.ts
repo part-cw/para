@@ -778,6 +778,7 @@ async init(): Promise<void> {
             riskCategory: pred.riskCategory,
             isManuallyElevated: !!pred.isManuallyElevated,
             originalRiskCategory: pred.originalRiskCategory ?? undefined,
+            calculatedAt: pred.calculatedAt,
         }
     }
 
