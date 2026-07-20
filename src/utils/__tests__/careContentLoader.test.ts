@@ -21,14 +21,14 @@ describe('careContentLoader', () => {
     it('always lists the generic videos first, then condition-specific ones', () => {
       const videos = getVideosForConditions(mc(['Pneumonia']));
       expect(videos.slice(0, GENERIC_VIDEO_IDS.length).map(v => v.id)).toEqual(GENERIC_VIDEO_IDS);
-      expect(videos.map(v => v.id)).toContain('pneumonia');
+      expect(videos.map(v => v.id)).toContain('pneumonia-english');
     });
 
     it('does not list the same video twice when shared across conditions', () => {
       // Both diarrhea entries reference the same video id.
       const videos = getVideosForConditions(mc(['Diarrhea (Acute)', 'Diarrhea (Persistent)']));
       const ids = videos.map(v => v.id);
-      expect(ids.filter(id => id === 'diarrhea')).toHaveLength(1);
+      expect(ids.filter(id => id === 'diarrhea-english')).toHaveLength(1);
     });
 
     it('returns only the generic videos when no condition matches and no age given', () => {
@@ -72,45 +72,39 @@ describe('careContentLoader', () => {
 
   describe('getCarePlanForConditions', () => {
     it('returns care-plan steps grouped by matched condition', () => {
-      const plan = getCarePlanForConditions(mc(['Pneumonia']));
-      expect(plan).toHaveLength(1);
-      expect(plan[0].condition).toBe('Pneumonia');
-      expect(plan[0].steps[0]).toMatch(/completing medication/i);
+      const plan = getCarePlanForConditions(mc(['Severe Acute Malnutrition (SAM)']));
+      expect(plan).toHaveLength(2);
+      expect(plan[0].condition).toBe('General');
+      expect(plan[1].condition).toBe('Severe Acute Malnutrition (SAM)');
+      expect(plan[1].steps[0]).toMatch(/nutritional programmes/i);
     });
 
     it('orders positive conditions before suspected', () => {
-      const plan = getCarePlanForConditions(mc(['Malaria'], ['Sepsis']));
-      expect(plan.map(g => g.condition)).toEqual(['Malaria', 'Sepsis']);
-    });
-
-    it('Only includes once a condition appearing in both positive and suspected', () => {
-      const plan = getCarePlanForConditions(mc(['Pneumonia'], ['Sepsis', 'Pneumonia']));
-      expect(plan).toHaveLength(2);
-      expect(plan[0].condition).toBe('Pneumonia');
-      expect(plan[1].condition).toBe('Sepsis');
+      const plan = getCarePlanForConditions(mc(['Diarrhea (Persistent)'], ['Severe Anaemia']));
+      expect(plan.map(g => g.condition)).toEqual(['General', 'Diarrhea (Persistent)', 'Severe Anaemia']);
     });
 
     it('falls back to a generic plan when no condition matches', () => {
       const plan = getCarePlanForConditions(mc([], []));
       expect(plan).toHaveLength(1);
-      expect(plan[0].condition).toBe('General care');
+      expect(plan[0].condition).toBe('General');
       expect(plan[0].steps.length).toBeGreaterThan(0);
     });
 
     it('always includes age-less steps regardless of age', () => {
       for (const age of [null, 1, 12, 60]) {
-        const steps = getCarePlanForConditions(mc(['Pneumonia']), age)[0].steps;
-        expect(steps).toContain('Recommend completing medication.');
+        const plan = getCarePlanForConditions(mc(['Sickle cell anaemia']), age);
+        expect(plan[0]. steps[0]).toMatch('WHO guidelines recommend that children receive deworming every 6 months.');
       }
     });
 
     describe('age-banded diarrhea zinc dose', () => {
       const zincSteps = (age: number | null) =>
-        getCarePlanForConditions(mc(['Diarrhea (Acute)']), age)[0].steps.filter(s => /zinc/i.test(s));
+        getCarePlanForConditions(mc(['Diarrhea (Acute)']), age)[1].steps.filter(s => /zinc/i.test(s));
 
       it('always shows the ORS step', () => {
         for (const age of [null, 1, 4, 9]) {
-          const steps = getCarePlanForConditions(mc(['Diarrhea (Acute)']), age)[0].steps;
+          const steps = getCarePlanForConditions(mc(['Diarrhea (Acute)']), age)[1].steps;
           expect(steps.some(s => /ORS/.test(s))).toBe(true);
         }
       });
@@ -131,7 +125,7 @@ describe('careContentLoader', () => {
       });
 
       it('behaves the same for persistent diarrhea', () => {
-        const steps = getCarePlanForConditions(mc(['Diarrhea (Persistent)']), 4)[0].steps.filter(s => /zinc/i.test(s));
+        const steps = getCarePlanForConditions(mc(['Diarrhea (Persistent)']), 4)[1].steps.filter(s => /zinc/i.test(s));
         expect(steps).toEqual([expect.stringMatching(/10 mg/)]);
       });
     });

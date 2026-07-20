@@ -73,7 +73,7 @@ export const MedicalConditionsSection: React.FC<MedicalConditionsSectionProps>  
      [
         {label: 'HIV', value: 'HIV'},
         {label: 'Tuberculosis', value: 'Tuberculosis'},
-        {label: 'Sickle cell anaemia', value: 'sickle cell anaemia'},
+        {label: 'Sickle cell anaemia', value: 'Sickle cell anaemia'},
         {label: 'Unsure', value: 'unsure'},
         {label: 'None', value: 'none'},
         {label: 'Other', value: 'other'}

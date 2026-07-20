@@ -125,9 +125,8 @@ export function getCarePlanForConditions(
   mc: CategorizedMedicalConditions | null | undefined,
   ageInMonths: number | null = null,
 ): { condition: string; steps: string[] }[] {
-  const keys = matchedConditionKeys(mc);
-  if (keys.length === 0) {
-    return [{ condition: 'General care', steps: resolveSteps(careContent[GENERIC_KEY].carePlan, ageInMonths) }];
-  }
-  return keys.map(condition => ({ condition, steps: resolveSteps(careContent[condition].carePlan, ageInMonths) }));
+  const keys = [GENERIC_KEY, ...matchedConditionKeys(mc)];
+  return keys
+    .map(condition => ({ condition: condition == "generic" ? "General" : condition, steps: resolveSteps(careContent[condition].carePlan, ageInMonths) }))
+    .filter(item => item.steps.length > 0);
 }

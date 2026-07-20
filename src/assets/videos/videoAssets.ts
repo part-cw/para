@@ -7,6 +7,7 @@ import type { VideoSource } from '@/src/utils/careContentLoader';
  * These rows are commented out so that the public repo ships without the .mp4 files.
  */
 export const videoAssets: Record<string, VideoSource> = {
+  // 'sick-young-infant-english': require('@/src/assets/videos/sick-young-infant-english.mp4'),
   // 'breastfeeding-english': require('@/src/assets/videos/breastfeeding-english.mp4'),
   // 'hygiene-english': require('@/src/assets/videos/hygiene-english.mp4'),
   // 'immunizations-english': require('@/src/assets/videos/immunizations-english.mp4'),
@@ -16,7 +17,10 @@ export const videoAssets: Record<string, VideoSource> = {
   // 'seeking-care-english': require('@/src/assets/videos/seeking-care-english.mp4'),
   // 'anaemia-english': require('@/src/assets/videos/anaemia-english.mp4'),
   // 'feeding-english': require('@/src/assets/videos/feeding-english.mp4'),
-  // 'malaria-english': require('@/src/assets/videos/malaria-english.mp4')
+  // 'pneumonia-english': require('@/src/assets/videos/pneumonia-english.mp4'),
+  // 'malaria-english': require('@/src/assets/videos/malaria-english.mp4'),
+  // 'diarrhea-english': require('@/src/assets/videos/diarrhea-english.mp4'),
+  // 'chronic-diseases-english': require('@/src/assets/videos/chronic-diseases-english.mp4')
 };
 
 /**

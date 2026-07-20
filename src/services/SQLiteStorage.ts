@@ -715,7 +715,7 @@ async init(): Promise<void> {
                     continue;
                 }
 
-                // Add actual chronic illness (HIV, Tuberculosis, sickle cell anaemia, extreme poverty)
+                // Add actual chronic illness (HIV, Tuberculosis, Sickle cell anaemia)
                 chronicList.push(item.trim());
             }
         }

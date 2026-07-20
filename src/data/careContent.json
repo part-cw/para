@@ -1,14 +1,14 @@
 {
   "Sick Young Infant": {
-    "carePlan": [
-      "Ensure caregiver knows the danger signs",
-      "Discuss feeding support"
-    ],
-    "videos": []
+    "carePlan": [],
+    "videos": [
+      { "id": "sick-young-infant-english", "title": "Sick Infant Care", "description": "How to care for your infant at home." }
+    ]
   },
   "Severe Anaemia": {
     "carePlan": [
-      "WHO guidelines recommend the prescription of Post Discharge Malaria Chemoprevention for children with severe anaemia."
+      "WHO guidelines recommend the prescription of elemental iron and folic acid supplements for children with anemia. ",
+      "WHO guidelines recommend the prescription of Post Discharge Malaria Chemoprevention for children with severe anaemia. (Hb <7 g/dL)"
     ],
     "videos": [
       { "id": "anaemia-english", "title": "Anaemia", "description": "Anaemia definition and nutrition" }
@@ -32,36 +32,14 @@
       { "id": "feeding-english", "title": "Feeding Your Child", "description": "Feeding and measuring MUAC." }
     ]
   },
-  "Sepsis": {
-    "carePlan": [
-      "Ensure caregiver knows danger signs to look for and when to return."
-    ],
-    "videos": [
-      { "id": "sepsis", "title": "Sepsis", "description": "Recognising danger signs." }
-    ]
-  },
-  "Meningitis/Encephalitis": {
-    "carePlan": [
-      "Ensure caregiver knows danger signs to look for and when to return."
-    ],
-    "videos": [
-      { "id": "meningitis", "title": "Meningitis/Encephalitis", "description": "Recognising danger signs." }
-    ]
-  },
   "Pneumonia": {
-    "carePlan": [
-      "Recommend completing medication.",
-      "Ensure they know what signs to look for to return."
-    ],
+    "carePlan": [],
     "videos": [
-      { "id": "pneumonia", "title": "Pneumonia", "description": "Danger signs and prevention." }
+      { "id": "pneumonia-english", "title": "Pneumonia", "description": "Recognizing pneumonia." }
     ]
   },
   "Malaria": {
-    "carePlan": [
-      "Recommend completing medication.",
-      "Ensure they know what signs to look for to return."
-    ],
+    "carePlan": [],
     "videos": [
       { "id": "malaria-english", "title": "Malaria", "description": "Preventing and recognizing malaria." }
     ]
@@ -73,7 +51,7 @@
       { "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.", "age": { "gt": 6 } }
     ],
     "videos": [
-      { "id": "diarrhea", "title": "Diarrhea", "description": "Recognizing and treating diarrhea." }
+      { "id": "diarrhea-english", "title": "Diarrhea", "description": "Treating diarrhea at home." }
     ]
   },
   "Diarrhea (Persistent)": {
@@ -83,37 +61,34 @@
       { "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.", "age": { "gt": 6 } }
     ],
     "videos": [
-      { "id": "diarrhea", "title": "Diarrhea", "description": "Recognizing and treating diarrhea." }
+      { "id": "diarrhea-english", "title": "Diarrhea", "description": "Treating diarrhea at home." }
     ]
   },
   "HIV": {
-    "carePlan": [
-      "Ensure the caregiver knows proper home care."
-    ],
+    "carePlan": [],
     "videos": [
-      { "id": "hiv", "title": "HIV", "description": "Adhering to medication." }
+      { "id": "chronic-diseases-english", "title": "Chronic Diseases", "description": "Keeping your child healthy." }
     ]
   },
   "Tuberculosis": {
-    "carePlan": [
-      "Ensure the caregiver knows proper home care."
-    ],
+    "carePlan": [],
     "videos": [
-      { "id": "tuberculosis", "title": "Tuberculosis", "description": "Managing treatment at home." }
+      { "id": "chronic-diseases-english", "title": "Chronic Diseases", "description": "Keeping your child healthy." }
     ]
   },
-  "Sickle Cell Anaemia": {
+  "Sickle cell anaemia": {
     "carePlan": [
-      "Ensure the caregiver knows proper home care.",
-      "Recommend linkage to a sickle cell disease programme."
+      "The WHO and national ministries of health recommend folic acid, penicillin/Erythromycin, Hydroxyurea, and sulfadoxine and pyrimethamine as essential medications for the standard components for the preventive care and management of sickle cell disease (SCD)"
     ],
     "videos": [
-      { "id": "sickle-cell", "title": "Sickle Cell Anaemia", "description": "When to seek care." }
+      { "id": "chronic-diseases-english", "title": "Chronic Diseases", "description": "Keeping your child healthy." }
     ]
   },
   "generic": {
     "carePlan": [
-      "Complete all prescribed medications"
+      "WHO guidelines recommend that children receive deworming every 6 months.",
+      { "text": "It is recommended that children aged 1-2 years receive 200mg Albendazole or 500mg Mebendazole.", "age": { "gte": 12, "lte": 24 } },
+      { "text": "It is recommended that children over 2 years old receive 400mg Albendazole or 500mg Mebendazole.", "age": { "gt": 24 } }
     ],
     "videos": [
       { "id": "breastfeeding-english", "title": "Breastfeeding", "description": "Feeding of a young infant", "age": { "lt": 18 } },
