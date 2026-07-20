@@ -109,7 +109,8 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontWeight: 'bold', 
-    flex: 1, 
+    flex: 1,
+    minWidth: 130, 
     fontSize: 16
   },
   fieldValue: {
