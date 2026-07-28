@@ -17,7 +17,7 @@
   "Severe Acute Malnutrition (SAM)": {
     "carePlan": [
       "It is recommended to link the caregiver to nutritional programmes.",
-      "5000 IU vitamin A daily, either as an integral part of therapeutic foods or multi-micronutrient formulation."
+      "2023 WHO wasting/nutritional oedema guideline says children 6–59 months with SAM should get the daily recommended intake of vitamin A (5,000 IU/day) as part of their therapeutic food or multiple micronutrient formulation."
     ],
     "videos": [
       { "id": "feeding-english", "title": "Feeding Your Child", "description": "Feeding and measuring MUAC." }
@@ -25,8 +25,7 @@
   },
   "Moderate Acute Malnutrition (MAM)": {
     "carePlan": [
-      "It is recommended to link the caregiver to nutritional programmes.",
-      "5000 IU vitamin A daily, either as an integral part of therapeutic foods or multi-micronutrient formulation."
+      "It is recommended to link the caregiver to nutritional programmes."
     ],
     "videos": [
       { "id": "feeding-english", "title": "Feeding Your Child", "description": "Feeding and measuring MUAC." }
