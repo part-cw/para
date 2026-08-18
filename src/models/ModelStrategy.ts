@@ -58,18 +58,14 @@ export abstract class ModelStrategy {
      */
     protected validateRequiredData(patientData: PatientData): void {
         const missingVariables: string[] = [];
-        
-        for (const variable of this.model.variables) {
-            if (variable.required) {
-                 // handle neonatal jaundice -- TODO - do this dynamically for all conditionally required varaibles
-                if (variable.name === 'neonatalJaundice' && !patientData.isNeonate) {
-                    break;
-                }
 
-                const value = patientData[variable.name];
-                if (value === null || value === undefined || value === '') {
-                    missingVariables.push(variable.displayName || variable.name);
-                }
+        for (const variable of this.model.variables) {
+            // a variable that does not apply to this patient was never asked, so it cannot be missing
+            if (!variable.required || this.doesNotApply(variable.name, patientData)) continue;
+
+            const value = patientData[variable.name];
+            if (value === null || value === undefined || value === '') {
+                missingVariables.push(variable.displayName || variable.name);
             }
         }
 
@@ -139,12 +135,45 @@ export abstract class ModelStrategy {
     protected logContributions(_breakdown: ScoreBreakdown): void {}
 
     /**
+     * Whether a variable is ruled out for this patient by the flag it is gated on, so the
+     * question was never put to anyone. A `dependencies` naming a single PatientData flag is
+     * such a gate: neonatalJaundice is only asked when isNeonate is true.
+     */
+    protected doesNotApply(name: string, patientData: PatientData): boolean {
+        const gate = this.model.variables.find(variable => variable.name === name)?.dependencies;
+        if (typeof gate !== 'string') return false;
+        return this.convertToNumericBoolean(patientData[gate as keyof PatientData]) === 0;
+    }
+
+    /**
+     * What the model reads for a variable.
+     *
+     * A gated-off variable is not missing data: it was never asked because it cannot apply,
+     * and for a boolean that makes it a negative finding - a child past the neonatal period
+     * has no neonatal jaundice, so it is false rather than undefined. The model term is 
+     * kept in the model and calculated.
+     */
+    protected valueFor(name: string, patientData: PatientData): any {
+        const value = patientData[name as keyof PatientData];
+        if (!this.doesNotApply(name, patientData)) return value;
+
+        const variable = this.model.variables.find(v => v.name === name);
+        return variable?.type === 'boolean' ? false : value;
+    }
+
+    /**
      * Whether this patient has a recorded value for a variable. A variable that was never
      * collected still picks up a share of its age interaction, because the interaction reads
      * a missing dependency as 0 and 0 sits off the training mean - so it must be dropped
      * rather than reported as driving a risk nobody measured.
+     *
+     * A variable that did not apply to the patient is also dropped since nobody
+     * examined this patient for it, so it should not be offered as an explanation of
+     * their risk even though it was treated as false for the model calculation.
      */
     protected wasPredictorRecorded(name: string, patientData: PatientData): boolean {
+        if (this.doesNotApply(name, patientData)) return false;
+
         const value = patientData[name as keyof PatientData];
         return value !== null && value !== undefined && value !== '';
     }
@@ -257,10 +286,10 @@ export class LogisticRegressionStrategy extends ModelStrategy {
      * @returns  calculates contribution of a single scaled variable
      */
     protected calculateVariableContribution(variable: ModelVariable, patientData: PatientData): number {
-        const rawValue = patientData[variable.name]
+        const rawValue = this.valueFor(variable.name, patientData)
 
         // handle missing, non-required variables
-        if (rawValue === null || rawValue === undefined || rawValue === '') return 0; 
+        if (rawValue === null || rawValue === undefined || rawValue === '') return 0;
 
         if (variable.type === 'string' && variable.oneOf) {
             return this.calculateCategoricalVariableContribution(variable, rawValue)
@@ -440,13 +469,13 @@ export class LogisticRegressionStrategy extends ModelStrategy {
             // Handle object dependencies (e.g., {illnessDuration: '48h-7d'})
             const varName = this.getDependencyName(interaction);
             const requiredValue = Object.values(dependency)[0]; // e.g '48h-7d'
-            const actualVal = patientData[varName as keyof PatientData]
+            const actualVal = this.valueFor(varName, patientData)
             const doesActualMatchRequired = String(actualVal).trim().toLowerCase() === String(requiredValue).trim().toLowerCase()
             return doesActualMatchRequired ? 1 : 0;
         }
 
         // handle string dependencies e.g. 'neonatalJaundice'
-        const storedVal =  patientData[dependency as keyof PatientData]
+        const storedVal = this.valueFor(dependency, patientData)
 
         switch (dependencyType) {
             case 'boolean':

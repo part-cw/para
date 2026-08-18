@@ -84,16 +84,16 @@
       "riskScore": 3.26,
       "topPredictors": [
         {
-          "name": "neonatalJaundice",
-          "contribution": -0.283944
-        },
-        {
           "name": "muac",
           "contribution": -0.271008
         },
         {
           "name": "ageInMonths",
           "contribution": 0.264462
+        },
+        {
+          "name": "waz",
+          "contribution": -0.214384
         }
       ]
     }
@@ -150,16 +150,16 @@
       "riskScore": 8.59,
       "topPredictors": [
         {
-          "name": "neonatalJaundice",
-          "contribution": -0.31484
-        },
-        {
           "name": "ageInMonths",
           "contribution": 0.306674
         },
         {
           "name": "spo2_admission",
           "contribution": 0.285894
+        },
+        {
+          "name": "muac",
+          "contribution": -0.271008
         }
       ]
     }
