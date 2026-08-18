@@ -355,7 +355,7 @@ export class LogisticRegressionStrategy extends ModelStrategy {
     }
 
     /**
-     * Training mean of a model variable.
+     * Mean of a variable from the model.
      */
     protected getVariableMean(name: string): number {
         const variable = this.model.variables.find(v => v.name === name);
@@ -364,7 +364,7 @@ export class LogisticRegressionStrategy extends ModelStrategy {
     }
 
     /**
-     * Training mean of the variable on the non-age side of an interaction.
+     * Mean of a variable from the model, on the non-age side of an interaction.
      *
      * An interaction pinned to one categorical level (e.g. {lastHospitalized: '1 month to 1
      * year ago'}) is a 0/1 dummy for that level, so its mean is that level's prevalence
@@ -401,8 +401,12 @@ export class LogisticRegressionStrategy extends ModelStrategy {
         const signed = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(6)}`;
         const reported = new Set(topPredictors.map(p => p.name));
 
+        // full precision, not the rounded age shown in the UI - the interaction terms use this exact value
+        const age = patientData[AGE_VARIABLE];
+        const reportedAge = typeof age === 'number' ? `${age} months` : 'not recorded';
+
         const lines = [
-            `📊 ${this.model.modelName} score breakdown (log-odds)`,
+            `📊 ${this.model.modelName} score breakdown (log-odds)   age: ${reportedAge}`,
             `   score terms  (interactions centred on the mean of the product):`,
             ...terms.map(term => {
                 const involves = term.variables.length > 1 ? `   ${term.variables.join(' x ')}` : '';
