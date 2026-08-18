@@ -36,6 +36,8 @@ export const displayNames: Record<string, string> = {
     muac: 'MUAC',
     spo2_admission: 'SpO₂',
     weight: 'Weight',
+    waz: 'Weight-for-Age (WAZ)',
+    ageInMonths: 'Age',
 
     // Discharge Data
     dischargeData: 'Discharge Data',

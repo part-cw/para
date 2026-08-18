@@ -23,7 +23,12 @@ export interface ModelVariable {
     type: string;
     units: string | null;
     required: boolean;
-    dependencies?: string[];
+    /**
+     * An array lists the fields this variable is derived from (waz comes from weight, sex
+     * and age). A single string names a PatientData flag that gates whether the variable
+     * applies at all - neonatalJaundice is only asked when isNeonate is true.
+     */
+    dependencies?: string | string[];
     coefficient?: number;
     mean?: number;
     standardDeviation?: number;
@@ -63,10 +68,34 @@ export interface RiskModel {
     ageInteractions?: ModelInteraction[];
 }
 
+/**
+ * One additive term of a linear predictor and the log-odds effect it carries.
+ * Terms with two owners (age interactions) share their effect evenly between them.
+ */
+export interface TermContribution {
+    /** The model's name for this term, e.g. 'muac' or 'ageHospitalizedUnderSevenDays' */
+    name: string;
+    /** PatientData keys this term involves (2 for an age interaction) */
+    variables: string[];
+    contribution: number;
+}
+
 export interface TopPredictor {
   name: string;          // Feature name (e.g., 'temperature', 'waz')
-  value: string;         // Actual value for this patient
-  contribution: number;  // Contribution to risk score
+  contribution: number;  // Signed SHAP value in log-odds space; positive raises risk
+  value?: string;        // Actual value for this patient, when available
+}
+
+/** Everything a risk calculation worked out for one patient, for logging and diagnostics. */
+export interface ScoreBreakdown {
+    patientData: PatientData;
+    terms: TermContribution[];
+    /** Every variable's contribution, ranked */
+    contributions: TopPredictor[];
+    topPredictors: TopPredictor[];
+    rawScore: number;
+    riskScore: number;
+    riskCategory: string;
 }
 
 export interface RiskPrediction {

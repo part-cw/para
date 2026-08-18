@@ -23,7 +23,21 @@
     {
       "modelName": "D6-60C",
       "riskScore": 10.688912,
-      "riskCategory": "Very High"
+      "riskCategory": "Very High",
+      "topPredictors": [
+        {
+          "name": "dischargeStatus",
+          "contribution": 1.209461
+        },
+        {
+          "name": "feedingStatus_discharge",
+          "contribution": 0.569264
+        },
+        {
+          "name": "lastHospitalized",
+          "contribution": -0.385627
+        }
+      ]
     }
   ],
   [
@@ -50,7 +64,21 @@
     {
       "modelName": "D6-60C",
       "riskScore": 4.6347719934,
-      "riskCategory": "Moderate"
+      "riskCategory": "Moderate",
+      "topPredictors": [
+        {
+          "name": "spo2_discharge",
+          "contribution": 0.749925
+        },
+        {
+          "name": "ageInMonths",
+          "contribution": -0.125294
+        },
+        {
+          "name": "dischargeStatus",
+          "contribution": -0.119065
+        }
+      ]
     }
   ],
   [
@@ -77,7 +105,21 @@
     {
       "modelName": "D6-60C",
       "riskScore": 3.8859668867,
-      "riskCategory": "Moderate"
+      "riskCategory": "Moderate",
+      "topPredictors": [
+        {
+          "name": "dischargeStatus",
+          "contribution": 0.646826
+        },
+        {
+          "name": "waz",
+          "contribution": 0.253557
+        },
+        {
+          "name": "muac",
+          "contribution": -0.233185
+        }
+      ]
     }
   ],
   [
@@ -104,7 +146,21 @@
     {
       "modelName": "D6-60C",
       "riskScore": 2.2662755917,
-      "riskCategory": "Moderate"
+      "riskCategory": "Moderate",
+      "topPredictors": [
+        {
+          "name": "lastHospitalized",
+          "contribution": 0.411451
+        },
+        {
+          "name": "muac",
+          "contribution": -0.406757
+        },
+        {
+          "name": "temperature",
+          "contribution": 0.269813
+        }
+      ]
     }
   ],
   [
@@ -131,7 +187,21 @@
     {
       "modelName": "D6-60C",
       "riskScore": 77.769775,
-      "riskCategory": "Very High"
+      "riskCategory": "Very High",
+      "topPredictors": [
+        {
+          "name": "spo2_discharge",
+          "contribution": 2.250477
+        },
+        {
+          "name": "feedingStatus_discharge",
+          "contribution": 1.174976
+        },
+        {
+          "name": "dischargeStatus",
+          "contribution": 0.643639
+        }
+      ]
     }
   ]
 ]

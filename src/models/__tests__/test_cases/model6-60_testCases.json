@@ -1,93 +1,177 @@
 [
-[ { 
-        "ageInMonths": 43.8,
-        "muac": 145,
-        "spo2": 88,
-        "weight": 12,
-        "sex": "Female",
-        "eyeMovement": "Watches or follows",
-        "motorResponse": "Localizes painful stimulus",
-        "verbalResponse": "Cries appropriately", 
-        "hivStatus": "Negative",
-        "lastHospitalized": "Never",
-        "rrate": 48,
-        "temperature": 38.3},
-  {
-        "modelName": "Model 6-60C",
-        "riskCategory": "Moderate",
-        "riskScore": 4.13 } ],
-
-[ { 
-        "ageInMonths": 15.1,
-        "muac": 130,
-        "spo2": 99,
-        "weight": 9.2,
-        "sex": "Male",
-        "eyeMovement": "Fails to watch or follow",
-        "motorResponse": "No response or inappropriate response",
-        "verbalResponse": "Moan or abnormal cry", 
-        "hivStatus": "Negative",
-        "lastHospitalized": "Less than 7 days ago",
-        "rrate": 84,
-        "temperature": 37},
-  {
-        "modelName": "Model 6-60C",
-        "riskCategory": "Very High",
-        "riskScore": 11.27 } ],
-
-[ { 
-        "ageInMonths": 6.7,
-        "muac": 135,
-        "spo2": 99,
-        "weight": 6.4,
-        "sex": "Female",
-        "eyeMovement": "Watches or follows",
-        "motorResponse": "Localizes painful stimulus",
-        "verbalResponse": "Cries appropriately", 
-        "hivStatus": "Negative",
-        "lastHospitalized": "1 month to 1 year ago",
-        "rrate": 58,
-        "temperature": 36.8},
-  {
-        "modelName": "Model 6-60C",
-        "riskCategory": "Moderate",
-        "riskScore": 3.85 } ],
-
-[ { 
-        "ageInMonths": 18.9,
-        "muac": 165,
-        "spo2": 97,
-        "weight": 11.475,
-        "sex": "Female",
-        "eyeMovement": "Watches or follows",
-        "motorResponse": "Localizes painful stimulus",
-        "verbalResponse": "Cries appropriately", 
-        "hivStatus": "Negative",
-        "lastHospitalized": "1 month to 1 year ago",
-        "rrate": 37,
-        "temperature": 37.1},
-  {
-        "modelName": "Model 6-60C",
-        "riskCategory": "Low",
-        "riskScore": 1.63 } ],
-
-[ { 
-        "ageInMonths": 19.2,
-        "muac": 130,
-        "spo2": 91,
-        "weight": 9,
-        "sex": "Male",
-        "eyeMovement": "Watches or follows",
-        "motorResponse": "Localizes painful stimulus",
-        "verbalResponse": "Cries appropriately", 
-        "hivStatus": "Negative",
-        "lastHospitalized": "1 month to 1 year ago",
-        "rrate": 42,
-        "temperature": 38.2},
-  {
-        "modelName": "Model 6-60C",
-        "riskCategory": "Moderate",
-        "riskScore": 4.99 } ]
-
+  [
+    {
+      "ageInMonths": 43.8,
+      "muac": 145,
+      "spo2": 88,
+      "weight": 12,
+      "sex": "Female",
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "hivStatus": "Negative",
+      "lastHospitalized": "Never",
+      "rrate": 48,
+      "temperature": 38.3
+    },
+    {
+      "modelName": "Model 6-60C",
+      "riskCategory": "Moderate",
+      "riskScore": 4.13,
+      "topPredictors": [
+        {
+          "name": "ageInMonths",
+          "contribution": 0.277833
+        },
+        {
+          "name": "spo2_admission",
+          "contribution": 0.178053
+        },
+        {
+          "name": "muac",
+          "contribution": -0.145595
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "ageInMonths": 15.1,
+      "muac": 130,
+      "spo2": 99,
+      "weight": 9.2,
+      "sex": "Male",
+      "eyeMovement": "Fails to watch or follow",
+      "motorResponse": "No response or inappropriate response",
+      "verbalResponse": "Moan or abnormal cry",
+      "hivStatus": "Negative",
+      "lastHospitalized": "Less than 7 days ago",
+      "rrate": 84,
+      "temperature": 37
+    },
+    {
+      "modelName": "Model 6-60C",
+      "riskCategory": "Very High",
+      "riskScore": 11.27,
+      "topPredictors": [
+        {
+          "name": "lastHospitalized",
+          "contribution": 0.420915
+        },
+        {
+          "name": "muac",
+          "contribution": 0.235386
+        },
+        {
+          "name": "rrate",
+          "contribution": 0.230706
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "ageInMonths": 6.7,
+      "muac": 135,
+      "spo2": 99,
+      "weight": 6.4,
+      "sex": "Female",
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "hivStatus": "Negative",
+      "lastHospitalized": "1 month to 1 year ago",
+      "rrate": 58,
+      "temperature": 36.8
+    },
+    {
+      "modelName": "Model 6-60C",
+      "riskCategory": "Moderate",
+      "riskScore": 3.85,
+      "topPredictors": [
+        {
+          "name": "ageInMonths",
+          "contribution": -0.255364
+        },
+        {
+          "name": "temperature",
+          "contribution": 0.194851
+        },
+        {
+          "name": "spo2_admission",
+          "contribution": -0.13631
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "ageInMonths": 18.9,
+      "muac": 165,
+      "spo2": 97,
+      "weight": 11.475,
+      "sex": "Female",
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "hivStatus": "Negative",
+      "lastHospitalized": "1 month to 1 year ago",
+      "rrate": 37,
+      "temperature": 37.1
+    },
+    {
+      "modelName": "Model 6-60C",
+      "riskCategory": "Low",
+      "riskScore": 1.63,
+      "topPredictors": [
+        {
+          "name": "muac",
+          "contribution": -0.654662
+        },
+        {
+          "name": "waz",
+          "contribution": -0.212536
+        },
+        {
+          "name": "temperature",
+          "contribution": 0.134093
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "ageInMonths": 19.2,
+      "muac": 130,
+      "spo2": 91,
+      "weight": 9,
+      "sex": "Male",
+      "eyeMovement": "Watches or follows",
+      "motorResponse": "Localizes painful stimulus",
+      "verbalResponse": "Cries appropriately",
+      "hivStatus": "Negative",
+      "lastHospitalized": "1 month to 1 year ago",
+      "rrate": 42,
+      "temperature": 38.2
+    },
+    {
+      "modelName": "Model 6-60C",
+      "riskCategory": "Moderate",
+      "riskScore": 4.99,
+      "topPredictors": [
+        {
+          "name": "muac",
+          "contribution": 0.235242
+        },
+        {
+          "name": "lastHospitalized",
+          "contribution": 0.122431
+        },
+        {
+          "name": "spo2_admission",
+          "contribution": 0.092843
+        }
+      ]
+    }
   ]
-    
+]

@@ -5,11 +5,28 @@ import model660 from '../admission/M6PD-C6-60.json'
 import modelD06 from '../discharge/D0-6C.json'
 import modelD660 from '../discharge/D6-60C.json'
 import { LogisticRegressionStrategy } from '../ModelStrategy'
-import { RiskModel } from '../types'
+import { RiskModel, TopPredictor } from '../types'
 import d06C_testCases from './test_cases/dis0-6C_testCases.json'
 import d660C_testCases from './test_cases/dis6-60C_testCases.json'
 import testCases_06 from './test_cases/model0-6C_testCases.json'
 import testCases_660 from './test_cases/model6-60_testCases.json'
+
+/**
+ * Assert the reported top predictors, in rank order, against a reference case.
+ *
+ * The correctness of the top predictors is additionally established by the
+ * structural assertions in topPredictors.test.ts - that an interaction is split by the
+ * Shapley product-term formula, that a derived variable folds into the concept it is a facet
+ * of, that a variable nobody measured is dropped, and that what remains ranks by descending
+ * magnitude.
+ */
+const expectTopPredictors = (actual: TopPredictor[] | undefined, expectedOutput: any) => {
+    const expected = expectedOutput.topPredictors as { name: string, contribution: number }[]
+
+    expect(actual?.map(p => p.name)).toEqual(expected.map(p => p.name))
+    expected.forEach((predictor, i) =>
+        expect(actual![i].contribution).toBeCloseTo(predictor.contribution, 6))
+}
 
 describe('LogisticRegressionStrategy: 0-6C Model', () => {
     // using 0-6 clinical admission model
@@ -54,11 +71,14 @@ describe('LogisticRegressionStrategy: 0-6C Model', () => {
                 const result = strategy.calculateRisk(patientData)
                 
                 // Test risk score within reasonable tolerance (±0.1%)
-                expect(result.riskScore).toBeCloseTo(expectedOutput.riskScore as number, 1)
+                expect(result.riskScore).toBeCloseTo(expectedOutput.riskScore as number, 2)
                 
                 // Test risk category matches
                 expect(result.riskCategory).toBe(expectedOutput.riskCategory)
-                
+
+                // Test the reported top predictors match
+                expectTopPredictors(result.topPredictors, expectedOutput)
+
                 // Log for manual verification
                 console.log(`Test Case ${index + 1}:`)
                 console.log(`  Input: Age ${inputData.ageInMonths}mo, MUAC ${inputData.muac}mm, SpO2 ${inputData.spo2}%, WAZ ${patientData.waz?.toFixed(2)}`)
@@ -153,7 +173,10 @@ describe('LogisticRegressionStrategy: 6-60C Model', () => {
                 
                 // Test risk category matches
                 expect(result.riskCategory).toBe(expectedOutput.riskCategory)
-                
+
+                // Test the reported top predictors match
+                expectTopPredictors(result.topPredictors, expectedOutput)
+
                 // Log for manual verification
                 console.log(`Test Case ${index + 1}:`)
                 console.log(`  Input: Age ${inputData.ageInMonths}mo, MUAC ${inputData.muac}mm, SpO2 ${inputData.spo2}%, WAZ ${patientData.waz?.toFixed(2)}`)
@@ -220,7 +243,10 @@ describe('LogisticRegressionStrategy: Discharge Model 0-6C', () => {
                 
                 // Test risk category matches
                 expect(result.riskCategory).toBe(expectedOutput.riskCategory)
-                
+
+                // Test the reported top predictors match
+                expectTopPredictors(result.topPredictors, expectedOutput)
+
                 // Log for manual verification
                 console.log(`Test Case ${index + 1}:`)
                 console.log(`  Input: Age ${inputData.ageInMonths}mo, MUAC ${inputData.muac}mm, SpO2 ${inputData.spo2_admission}%, WAZ ${patientData.waz?.toFixed(2)}`)
@@ -285,7 +311,10 @@ describe('LogisticRegressionStrategy: Discharge Model 6-60C', () => {
                 
                 // Test risk category matches
                 expect(result.riskCategory).toBe(expectedOutput.riskCategory)
-                
+
+                // Test the reported top predictors match
+                expectTopPredictors(result.topPredictors, expectedOutput)
+
                 // Log for manual verification
                 console.log(`Test Case ${index + 1}:`)
                 console.log(`  Input: Age ${inputData.ageInMonths}mo, MUAC ${inputData.muac}mm, SpO2 ${inputData.spo2_admission}%, WAZ ${patientData.waz?.toFixed(2)}`)

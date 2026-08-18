@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as SQLite from "expo-sqlite";
 import { CategorizedMedicalConditions } from "../contexts/CategorizedMedicalConditions";
 import { PatientData } from "../contexts/PatientData";
-import { RiskAssessment, RiskPrediction } from '../models/types';
+import { RiskAssessment, RiskPrediction, TopPredictor } from '../models/types';
 import { normalizeBoolean } from "../utils/normalizer";
 import { IStorageService } from "./StorageService";
 
@@ -168,7 +168,7 @@ async init(): Promise<void> {
                 predictionId    INTEGER NOT NULL,
                 featureName     TEXT NOT NULL,
                 contribution    REAL NOT NULL,
-                rank            INTEGER NOT NULL, -- TODO delete? can find rank with max contribution of prediction id
+                rank            INTEGER NOT NULL,
 
                 FOREIGN KEY(predictionId) REFERENCES risk_predictions(id) ON DELETE CASCADE
             );
@@ -193,6 +193,7 @@ async init(): Promise<void> {
             CREATE INDEX IF NOT EXISTS idx_patients_archived ON patients(isArchived);
             CREATE INDEX IF NOT EXISTS idx_clinical_variables_patient ON clinical_variables(patientId, usageTime);
             CREATE INDEX IF NOT EXISTS idx_risk_predictions_patient ON risk_predictions(patientId, usageTime);
+            CREATE INDEX IF NOT EXISTS idx_top_predictors_prediction ON top_predictors(predictionId);
             -- CREATE INDEX IF NOT EXISTS idx_risk_predictions_model ON risk_predictions(modelName); -- remove?
             -- CREATE INDEX IF NOT EXISTS idx_audit_log_patient ON audit_log(patientId, changedAt); -- remove?
         `);
@@ -565,19 +566,19 @@ async init(): Promise<void> {
                 dateTime || now
             ]);
 
-            // TODO Save top predictors if available
-            // const predictionId = result.lastInsertRowId;
+            // Save top predictors if available
+            const predictionId = result.lastInsertRowId;
 
-            // if (prediction.topPredictors && prediction.topPredictors.length > 0) {
-            //     for (let i = 0; i < prediction.topPredictors.length; i++) {
-            //         const predictor = prediction.topPredictors[i];
-            //         await this.db!.runAsync(`
-            //             INSERT INTO top_predictors (
-            //                 predictionId, featureName, contribution, rank
-            //             ) VALUES (?, ?, ?, ?)
-            //         `, [predictionId, predictor.name, predictor.contribution, i + 1]);
-            //     }
-            // }
+            if (prediction.topPredictors && prediction.topPredictors.length > 0) {
+                for (let i = 0; i < prediction.topPredictors.length; i++) {
+                    const predictor = prediction.topPredictors[i];
+                    await this.db!.runAsync(`
+                        INSERT INTO top_predictors (
+                            predictionId, featureName, contribution, rank
+                        ) VALUES (?, ?, ?, ?)
+                    `, [predictionId, predictor.name, predictor.contribution, i + 1]);
+                }
+            }
         });
 
         console.log(`✅ Risk prediction saved for ${patientId} at ${usageTime}`);
@@ -750,7 +751,7 @@ async init(): Promise<void> {
         const admission = await this.db.getFirstAsync<any>(`
             SELECT * FROM risk_predictions
             WHERE patientId = ? AND usageTime = 'admission'
-            ORDER BY calculatedAt DESC
+            ORDER BY calculatedAt DESC, id DESC
             LIMIT 1
         `, [patientId]);
 
@@ -758,20 +759,20 @@ async init(): Promise<void> {
         const discharge = await this.db.getFirstAsync<any>(`
             SELECT * FROM risk_predictions
             WHERE patientId = ? AND usageTime = 'discharge'
-            ORDER BY calculatedAt DESC
+            ORDER BY calculatedAt DESC, id DESC
             LIMIT 1
         `, [patientId]);
 
         return {
             assessment: {
-                admission: admission ? this.mapRiskPrediction(admission) : undefined,
-                discharge: discharge ? this.mapRiskPrediction(discharge) : undefined,
+                admission: admission ? await this.mapRiskPrediction(admission) : undefined,
+                discharge: discharge ? await this.mapRiskPrediction(discharge) : undefined,
             },
             admissionLastCalculated: admission?.calculatedAt
         }
     }
 
-    private mapRiskPrediction(pred: any): RiskPrediction {
+    private async mapRiskPrediction(pred: any): Promise<RiskPrediction> {
         return {
             model: pred.modelName,
             riskScore: pred.riskScore,
@@ -779,7 +780,24 @@ async init(): Promise<void> {
             isManuallyElevated: !!pred.isManuallyElevated,
             originalRiskCategory: pred.originalRiskCategory ?? undefined,
             calculatedAt: pred.calculatedAt,
+            topPredictors: await this.getTopPredictors(pred.id),
         }
+    }
+
+    /**
+     * The stored top predictors for a prediction, in the order the model ranked them.
+     */
+    private async getTopPredictors(predictionId: number): Promise<TopPredictor[]> {
+        if (!this.db) throw new Error('Database not initialized');
+
+        const rows = await this.db.getAllAsync<{ featureName: string; contribution: number }>(`
+            SELECT featureName, contribution
+            FROM top_predictors
+            WHERE predictionId = ?
+            ORDER BY rank ASC
+        `, [predictionId]);
+
+        return rows.map(row => ({ name: row.featureName, contribution: row.contribution }));
     }
 
     /**
@@ -800,7 +818,7 @@ async init(): Promise<void> {
         const current = await this.db.getFirstAsync<{ id: number; riskCategory: string; isManuallyElevated: number }>(`
             SELECT id, riskCategory, isManuallyElevated FROM risk_predictions
             WHERE patientId = ? AND usageTime = ?
-            ORDER BY calculatedAt DESC
+            ORDER BY calculatedAt DESC, id DESC
             LIMIT 1
         `, [patientId, usageTime]);
 
@@ -855,7 +873,7 @@ async init(): Promise<void> {
         const current = await this.db.getFirstAsync<{ id: number; riskCategory: string; originalRiskCategory: string | null; isManuallyElevated: number }>(`
             SELECT id, riskCategory, originalRiskCategory, isManuallyElevated FROM risk_predictions
             WHERE patientId = ? AND usageTime = ?
-            ORDER BY calculatedAt DESC
+            ORDER BY calculatedAt DESC, id DESC
             LIMIT 1
         `, [patientId, usageTime]);
 
@@ -892,38 +910,6 @@ async init(): Promise<void> {
 
         const updated = await this.db.getFirstAsync<any>(`SELECT * FROM risk_predictions WHERE id = ?`, [current.id]);
         return this.mapRiskPrediction(updated);
-    }
-
-    private async buildRiskAssesment(predictions: any[]): Promise<RiskAssessment> {
-        const assessment: RiskAssessment = {};
-
-        for (const pred of predictions) {
-            // const topPredictors = await this.db?.getAllAsync<any>(`
-            //     SELECT featureName, contribution 
-            //     FROM top_predictors 
-            //     WHERE predictionId = ?
-            //     ORDER BY rank ASC
-            // `, [pred.id]);
-
-            const riskPrediction: RiskPrediction = {
-                model: pred.modelName,
-                riskScore: pred.riskScore,
-                riskCategory: pred.riskCategory,
-                // topPredictors: topPredictors.map(tp => ({
-                //     name: tp.featureName,
-                //     contribution: tp.contribution
-                // }))
-            };
-
-            if (pred.usageTime === 'admission') {
-                assessment.admission = riskPrediction;
-                // TODO - use most recent admission prediction if we have mulitple risks 
-            } else {
-                assessment.discharge = riskPrediction;
-            }
-        }
-
-        return assessment;
     }
 
     // ========== ARCHIVE OPERATIONS ==========

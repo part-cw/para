@@ -15,7 +15,21 @@
     {
       "modelName": "M6PD-C0-6",
       "riskCategory": "Moderate",
-      "riskScore": 4.75
+      "riskScore": 4.75,
+      "topPredictors": [
+        {
+          "name": "bulgingFontanelle",
+          "contribution": 0.659462
+        },
+        {
+          "name": "waz",
+          "contribution": -0.462116
+        },
+        {
+          "name": "muac",
+          "contribution": -0.437566
+        }
+      ]
     }
   ],
   [
@@ -34,7 +48,21 @@
     {
       "modelName": "M6PD-C0-6",
       "riskCategory": "High",
-      "riskScore": 8.99
+      "riskScore": 8.99,
+      "topPredictors": [
+        {
+          "name": "muac",
+          "contribution": 0.3286
+        },
+        {
+          "name": "feedingWell",
+          "contribution": 0.286789
+        },
+        {
+          "name": "ageInMonths",
+          "contribution": -0.218645
+        }
+      ]
     }
   ],
   [
@@ -53,7 +81,21 @@
     {
       "modelName": "M6PD-C0-6",
       "riskCategory": "Moderate",
-      "riskScore": 3.26
+      "riskScore": 3.26,
+      "topPredictors": [
+        {
+          "name": "neonatalJaundice",
+          "contribution": -0.283944
+        },
+        {
+          "name": "muac",
+          "contribution": -0.271008
+        },
+        {
+          "name": "ageInMonths",
+          "contribution": 0.264462
+        }
+      ]
     }
   ],
   [
@@ -72,12 +114,26 @@
     {
       "modelName": "M6PD-C0-6",
       "riskCategory": "High",
-      "riskScore": 6.66
+      "riskScore": 6.66,
+      "topPredictors": [
+        {
+          "name": "feedingWell",
+          "contribution": 0.285258
+        },
+        {
+          "name": "ageInMonths",
+          "contribution": -0.192405
+        },
+        {
+          "name": "neonatalJaundice",
+          "contribution": -0.116225
+        }
+      ]
     }
   ],
   [
     {
-      "ageInMonths": 5.0,
+      "ageInMonths": 5,
       "muac": 130,
       "spo2": 82,
       "weight": 5.5,
@@ -91,7 +147,21 @@
     {
       "modelName": "M6PD-C0-6",
       "riskCategory": "High",
-      "riskScore": 8.59
+      "riskScore": 8.59,
+      "topPredictors": [
+        {
+          "name": "neonatalJaundice",
+          "contribution": -0.31484
+        },
+        {
+          "name": "ageInMonths",
+          "contribution": 0.306674
+        },
+        {
+          "name": "spo2_admission",
+          "contribution": 0.285894
+        }
+      ]
     }
   ]
 ]

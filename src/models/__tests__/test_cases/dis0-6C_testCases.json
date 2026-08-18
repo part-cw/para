@@ -20,7 +20,21 @@
       "modelName": "D0-6C",
       "raw_score": -1.25312929522363,
       "riskScore": 22.215891293431,
-      "riskCategory": "Very High"
+      "riskCategory": "Very High",
+      "topPredictors": [
+        {
+          "name": "ageInMonths",
+          "contribution": -2.304645
+        },
+        {
+          "name": "feedingStatus_discharge",
+          "contribution": 1.488329
+        },
+        {
+          "name": "neonatalJaundice",
+          "contribution": 1.43898
+        }
+      ]
     }
   ],
   [
@@ -44,7 +58,21 @@
       "modelName": "D0-6C",
       "raw_score": -0.777543859566455,
       "riskScore": 31.4849481818533,
-      "riskCategory": "Very High"
+      "riskCategory": "Very High",
+      "topPredictors": [
+        {
+          "name": "waz",
+          "contribution": 0.84934
+        },
+        {
+          "name": "dischargeStatus",
+          "contribution": 0.621501
+        },
+        {
+          "name": "feedingStatus_discharge",
+          "contribution": 0.385778
+        }
+      ]
     }
   ],
   [
@@ -68,7 +96,21 @@
       "modelName": "D0-6C",
       "raw_score": -2.29116925483088,
       "riskScore": 9.18569649961006,
-      "riskCategory": "High"
+      "riskCategory": "High",
+      "topPredictors": [
+        {
+          "name": "bulgingFontanelle",
+          "contribution": 0.480222
+        },
+        {
+          "name": "spo2_discharge",
+          "contribution": 0.32775
+        },
+        {
+          "name": "muac",
+          "contribution": 0.223063
+        }
+      ]
     }
   ],
   [
@@ -92,7 +134,21 @@
       "modelName": "D0-6C",
       "raw_score": -3.80336203951,
       "riskScore": 2.1809430497545,
-      "riskCategory": "Moderate"
+      "riskCategory": "Moderate",
+      "topPredictors": [
+        {
+          "name": "waz",
+          "contribution": -0.26928
+        },
+        {
+          "name": "feedingWell",
+          "contribution": 0.219158
+        },
+        {
+          "name": "neonatalJaundice",
+          "contribution": -0.178889
+        }
+      ]
     }
   ],
   [
@@ -116,7 +172,21 @@
       "modelName": "D0-6C",
       "raw_score": 2.88094558198807,
       "riskScore": 94.6896430946819,
-      "riskCategory": "Very High"
+      "riskCategory": "Very High",
+      "topPredictors": [
+        {
+          "name": "feedingStatus_discharge",
+          "contribution": 2.082803
+        },
+        {
+          "name": "waz",
+          "contribution": 1.1796
+        },
+        {
+          "name": "ageInMonths",
+          "contribution": 0.94659
+        }
+      ]
     }
   ]
 ]

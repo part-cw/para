@@ -5,6 +5,7 @@ import RiskLevelInterpretationModal from '@/src/components/RiskLevelInterpretati
 import { useAuth } from '@/src/contexts/AuthContext';
 import { CategorizedMedicalConditions } from '@/src/contexts/CategorizedMedicalConditions';
 import { useStorage } from '@/src/contexts/StorageContext';
+import { displayNames } from '@/src/forms/displayNames';
 import { RiskAssessment, RiskPrediction } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { getVideosForConditions } from '@/src/utils/careContentLoader';
@@ -70,6 +71,7 @@ export default function RiskDisplay() {
   const riskCategory = activePred?.riskCategory;
   const isElevated = !!activePred?.isManuallyElevated;
   const originalCategory = activePred?.originalRiskCategory;
+  const topPredictors = activePred?.topPredictors ?? [];
 
   const handleElevateRiskCategory = async (newLevel: string | null) => {
     if (newLevel) {
@@ -193,16 +195,39 @@ export default function RiskDisplay() {
                 containerStyle={{alignItems: 'center'}}
                 expandable={true}
               >
-                {/* TODO - replace placeholder predictors once top-predictor selection is decided */}
                 <View style={{ alignSelf: 'stretch' }}>
                   <Text style={{ fontSize: 14, fontWeight: 'bold', letterSpacing: 1, marginBottom: 8 }}>
                     TOP PREDICTORS
                   </Text>
-                  {['Variable 1', 'Variable 2', 'Variable 3'].map((variable, index) => (
-                    <Text key={`predictor-${index}`} style={{ fontSize: 15, marginBottom: 6 }}>
-                      • {variable}
+                  {topPredictors.length === 0 ? (
+                    <Text style={{ fontSize: 14, fontStyle: 'italic', color: '#666' }}>
+                      Not available for this prediction
                     </Text>
-                  ))}
+                  ) : (
+                    topPredictors.map((predictor, index) => {
+                      const raisesRisk = predictor.contribution >= 0;
+                      const directionColor = raisesRisk ? '#d32f2f' : '#1b5e20';
+                      const directionText = raisesRisk ? 'increased risk' : 'decreased risk';
+
+                      return (
+                        <View
+                          key={`predictor-${index}`}
+                          style={{ alignItems: 'flex-start', flexDirection: 'row', marginBottom: 6 }}
+                        >
+                          <Text style={{ fontSize: 15, lineHeight: 22, flexShrink: 1 }}>
+                            {displayNames[predictor.name] || predictor.name}
+                            <Text style={{ color: directionColor }}> — {directionText}</Text>
+                          </Text>
+                          <MaterialIcons
+                            name={raisesRisk ? 'arrow-upward' : 'arrow-downward'}
+                            size={14}
+                            color={directionColor}
+                            style={{ marginRight: 8, marginTop: 5 }}
+                          />
+                        </View>
+                      );
+                    })
+                  )}
                 </View>
                 <Button
                   style={{ alignSelf: 'center', marginTop: 20 }}
