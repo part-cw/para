@@ -49,6 +49,19 @@ export interface ModelInteraction {
     standardDeviation: number;
 }
 
+/**
+ * One risk level of a model: the risk score at which a patient enters it, the name it is
+ * shown under, and the average post-discharge mortality risk of the level.
+ */
+export interface RiskLevel {
+    /** Lowest risk score, as a percentage, that falls in this level */
+    threshold: number;
+    /** How the level is named in the UI and stored in RiskPrediction.riskCategory */
+    label: string;
+    /** Approximate post-discharge mortality risk for the level, as a percentage */
+    mortalityRisk: number;
+}
+
 export interface RiskModel {
     modelName: string;
     humanReadableName: string;
@@ -57,11 +70,12 @@ export interface RiskModel {
     isUnderSixMonths: boolean;
     modelType: 'logistic_regression' | string;
     inputType: 'clinical' | string;
-    riskThresholds: {
-        low?: number;
-        moderate: number;
-        high: number;
-        veryHigh: number;
+    /** 'low' is absent in models whose lowest level is 'moderate' */
+    riskLevels: {
+        low?: RiskLevel;
+        moderate: RiskLevel;
+        high: RiskLevel;
+        veryHigh: RiskLevel;
     };
     rawScoreOffset: number;
     variables: ModelVariable[];
@@ -100,8 +114,15 @@ export interface ScoreBreakdown {
 
 export interface RiskPrediction {
     riskScore: number;
-    riskCategory: 'low' | 'moderate' | 'high' | 'veryHigh' | string;
+    /** The active level's display label ('Very High'). Raised by a manual elevation. */
+    riskCategory: string;
     model: string;
+    /**
+     * The level the model placed the patient in, carrying the mortality risk reported for every
+     * patient in that level. A manual elevation does not move this: an elevated prediction still
+     * reports the estimate that was made for the calculated level.
+     */
+    calculatedLevel?: RiskLevel;
     topPredictors?: TopPredictor[];
     isManuallyElevated?: boolean;
     originalRiskCategory?: string; // model-calculated category when there's a manual elevation

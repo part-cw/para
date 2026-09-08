@@ -6,10 +6,10 @@
     "isUnderSixMonths": true,
     "modelType": "logistic_regression",
     "inputType": "clinical",
-    "riskThresholds": {
-        "moderate": 0,
-        "high": 5,
-        "veryHigh": 10
+    "riskLevels": {
+        "moderate": { "threshold": 0, "label": "Moderate", "mortalityRisk": 2 },
+        "high": { "threshold": 5, "label": "High", "mortalityRisk": 6 },
+        "veryHigh": { "threshold": 10, "label": "Very High", "mortalityRisk": 20 }
     },
     "rawScoreOffset": -2.93582,
     "variables": [

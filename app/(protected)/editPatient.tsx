@@ -300,8 +300,18 @@ export default function EditPatientRecord() {
 
         const admPrediction = riskAssessment.admission;
         const disPrediction = riskAssessment.discharge;
-        const currRiskScore = disPrediction ? disPrediction.riskScore : admPrediction?.riskScore;
-        const currRiskCategory = disPrediction ? disPrediction.riskCategory : admPrediction?.riskCategory;
+        const currPrediction = disPrediction ?? admPrediction;
+        const currRiskCategory = currPrediction?.riskCategory;
+
+        // The level's mortality risk, shared by every patient the model places in it, stands in
+        // for the patient's own calculated score. An elevated prediction carries the level the
+        // model calculated, so name that level to keep it apart from the elevated one.
+        const currRiskLevel = currPrediction?.calculatedLevel;
+        const riskLevelText = currRiskLevel
+            ? `Approximate risk of post-discharge mortality`
+              + `${currPrediction?.isManuallyElevated ? ` at ${currRiskLevel.label.toUpperCase()}` : ''}`
+              + ` = ${currRiskLevel.mortalityRisk}%`
+            : '';
         
         const predictionDescription =
             disPrediction ?  'Prediction calculated at discharge'
@@ -357,7 +367,7 @@ export default function EditPatientRecord() {
                                 <RiskCard
                                     title={currRiskCategory?.toUpperCase()}
                                     variant={currRiskCategory?.toLowerCase()}
-                                    content={`Risk score = ${currRiskScore}%`}
+                                    content={riskLevelText}
                                     containerStyle={{alignItems: 'center'}}
                                     expandable={false}
                                 />

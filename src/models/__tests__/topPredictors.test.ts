@@ -307,7 +307,12 @@ describe('ranking', () => {
             modelName: 'SYNTH', humanReadableName: 'Synthetic', description: '',
             usageTime: 'admission', isUnderSixMonths: false,
             modelType: 'logistic_regression', inputType: 'clinical',
-            riskThresholds: { low: 0, moderate: 2, high: 5, veryHigh: 10 },
+            riskLevels: {
+                low: { threshold: 0, label: 'Low', mortalityRisk: 1 },
+                moderate: { threshold: 2, label: 'Moderate', mortalityRisk: 3 },
+                high: { threshold: 5, label: 'High', mortalityRisk: 8 },
+                veryHigh: { threshold: 10, label: 'Very High', mortalityRisk: 20 },
+            },
             rawScoreOffset: 0,
             variables: [
                 { name: 'weight', displayName: 'W', description: '', type: 'number', units: null, required: false, coefficient: 2, mean: 0, standardDeviation: 1 },

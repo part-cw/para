@@ -3,7 +3,7 @@ import M6PDC660 from './admission/M6PD-C6-60.json';
 import D06C from './discharge/D0-6C.json';
 import D660C from './discharge/D6-60C.json';
 import { createModelStrategy, ModelStrategy } from './ModelStrategy';
-import { ModelContext, RiskModel } from './types';
+import { ModelContext, RiskLevel, RiskModel } from './types';
 
 
 /**
@@ -79,6 +79,43 @@ export class ModelSelector {
      */
     getStrategy(modelName: string): ModelStrategy | null {
         return this.strategies.get(modelName) || null;
+    }
+
+    /**
+     * Get a model by the name stored alongside a prediction, so a saved prediction can be
+     * read back against the model that produced it.
+     */
+    private getModelByName(modelName: string): RiskModel | null {
+        return this.models.get(modelName) || null;
+    }
+
+    /**
+     * The risk level a model reports under a given display label. A prediction stores its category
+     * as the label, so this is how a saved prediction is read back into a level.
+     */
+    getRiskLevel(modelName: string, label: string): RiskLevel | null {
+        const model = this.getModelByName(modelName);
+        if (!model) return null;
+
+        const wanted = label.trim().toLowerCase();
+        const match = Object.values(model.riskLevels)
+            .find(level => level?.label.trim().toLowerCase() === wanted);
+
+        return match ?? null;
+    }
+
+    /**
+     * A model's levels ranked above a given one, lowest first - the levels a patient in that level
+     * could be elevated to. Empty when the model is unknown or the patient is already at its top
+     * level.
+     */
+    getRiskLevelsAbove(modelName: string, current: RiskLevel): RiskLevel[] {
+        const model = this.getModelByName(modelName);
+        if (!model) return [];
+
+        return Object.values(model.riskLevels)
+            .filter((level): level is RiskLevel => level != null && level.threshold > current.threshold)
+            .sort((a, b) => a.threshold - b.threshold);
     }
 
     /**

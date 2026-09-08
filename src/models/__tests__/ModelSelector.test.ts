@@ -120,13 +120,77 @@ describe('ModelSelector', () => {
                 isUnderSixMonths: true,
                 usageTime: 'invalid-usage-time' as any
             };
-            
+
             const model = selector.getModel(context);
-            
+
             expect(model).toBeNull();
         });
     });
 
+    // A saved prediction records only its category label and the name of the model that produced
+    // it, so reading it back into a level goes through these.
+    describe('getRiskLevel', () => {
+        beforeEach(async () => {
+            await selector.loadModels();
+        });
+
+        it('should return the level a model reports under a label', () => {
+            const level = selector.getRiskLevel('M6PD-C6-60', 'Very High');
+
+            expect(level?.label).toBe('Very High');
+            expect(level?.threshold).toBe(10);
+            expect(typeof level?.mortalityRisk).toBe('number');
+        });
+
+        it('should match a label regardless of case and surrounding space', () => {
+            const level = selector.getRiskLevel('M6PD-C6-60', '  very high ');
+
+            expect(level?.label).toBe('Very High');
+        });
+
+        it('should return null for a level the model does not define', () => {
+            // the under-6-month models have no 'Low' level
+            expect(selector.getRiskLevel('M6PD-C0-6', 'Low')).toBeNull();
+            expect(selector.getRiskLevel('M6PD-C6-60', 'Low')?.label).toBe('Low');
+        });
+
+        it('should return null for an unknown model', () => {
+            expect(selector.getRiskLevel('NO-SUCH-MODEL', 'High')).toBeNull();
+        });
+    });
+
+    describe('getRiskLevelsAbove', () => {
+        beforeEach(async () => {
+            await selector.loadModels();
+        });
+
+        it('should return the levels above the given one, lowest first', () => {
+            const moderate = selector.getRiskLevel('M6PD-C6-60', 'Moderate')!;
+            const above = selector.getRiskLevelsAbove('M6PD-C6-60', moderate);
+
+            expect(above.map(level => level.label)).toEqual(['High', 'Very High']);
+        });
+
+        it('should not offer a level the model does not define', () => {
+            // this model has no 'low' level at all, so the absent key must not surface as a gap
+            const moderate = selector.getRiskLevel('M6PD-C0-6', 'Moderate')!;
+            const above = selector.getRiskLevelsAbove('M6PD-C0-6', moderate);
+
+            expect(above.map(level => level.label)).toEqual(['High', 'Very High']);
+        });
+
+        it('should return nothing when already at the top level', () => {
+            const veryHigh = selector.getRiskLevel('D6-60C', 'Very High')!;
+
+            expect(selector.getRiskLevelsAbove('D6-60C', veryHigh)).toEqual([]);
+        });
+
+        it('should return nothing for an unknown model', () => {
+            const anyLevel = selector.getRiskLevel('D6-60C', 'Low')!;
+
+            expect(selector.getRiskLevelsAbove('NO-SUCH-MODEL', anyLevel)).toEqual([]);
+        });
+    });
 
 })
 

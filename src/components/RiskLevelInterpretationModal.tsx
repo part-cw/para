@@ -11,6 +11,8 @@ type RiskLevelInterpretationModalProps = {
     onUndo: () => void;
     riskCategory?: string;
     isElevated?: boolean;
+    /** Whether the patient's model defines any level above their current one */
+    hasHigherLevels?: boolean;
     originalRiskCategory?: string;
 };
 
@@ -21,6 +23,7 @@ export default function RiskLevelInterpretationModal({
     onUndo,
     riskCategory,
     isElevated = false,
+    hasHigherLevels = false,
     originalRiskCategory,
 }: RiskLevelInterpretationModalProps) {
     const { colors } = useTheme();
@@ -31,8 +34,8 @@ export default function RiskLevelInterpretationModal({
     const bothAcknowledged = ackRecommendations && ackValidated;
 
     // Once a prediction is elevated it can only be undone (not elevated again).
-    // Otherwise, risk can't be elevated further once it's already at the highest level.
-    const canElevate = !isElevated && riskCategory !== 'Very High';
+    // Otherwise, risk can't be elevated further once it's already at the model's highest level.
+    const canElevate = !isElevated && hasHigherLevels;
 
     const handleClose = () => {
         setAckRecommendations(false);

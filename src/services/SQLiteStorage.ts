@@ -2,6 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as SQLite from "expo-sqlite";
 import { CategorizedMedicalConditions } from "../contexts/CategorizedMedicalConditions";
 import { PatientData } from "../contexts/PatientData";
+import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { RiskAssessment, RiskPrediction, TopPredictor } from '../models/types';
 import { normalizeBoolean } from "../utils/normalizer";
 import { IStorageService } from "./StorageService";
@@ -772,11 +773,20 @@ async init(): Promise<void> {
         }
     }
 
+    /**
+     * Rebuild a prediction from its stored row. Only the category label is stored, so must get
+     * the RiskLevel from the model selector. The level is resolved from originalRiskCategory
+     * when there is one, not using the new riskCategory when elevated by the user.
+     */
     private async mapRiskPrediction(pred: any): Promise<RiskPrediction> {
+        const calculatedCategory = pred.originalRiskCategory ?? pred.riskCategory;
+
         return {
             model: pred.modelName,
             riskScore: pred.riskScore,
             riskCategory: pred.riskCategory,
+            calculatedLevel: getModelSelectorInstance()
+                .getRiskLevel(pred.modelName, calculatedCategory) ?? undefined,
             isManuallyElevated: !!pred.isManuallyElevated,
             originalRiskCategory: pred.originalRiskCategory ?? undefined,
             calculatedAt: pred.calculatedAt,

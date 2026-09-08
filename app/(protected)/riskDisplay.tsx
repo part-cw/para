@@ -6,6 +6,7 @@ import { useAuth } from '@/src/contexts/AuthContext';
 import { CategorizedMedicalConditions } from '@/src/contexts/CategorizedMedicalConditions';
 import { useStorage } from '@/src/contexts/StorageContext';
 import { displayNames } from '@/src/forms/displayNames';
+import { getModelSelectorInstance } from '@/src/models/modelSelectorInstance';
 import { RiskAssessment, RiskPrediction } from '@/src/models/types';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { getVideosForConditions } from '@/src/utils/careContentLoader';
@@ -67,11 +68,22 @@ export default function RiskDisplay() {
     );
   }
 
-  const riskScore = activePred?.riskScore;
   const riskCategory = activePred?.riskCategory;
   const isElevated = !!activePred?.isManuallyElevated;
   const originalCategory = activePred?.originalRiskCategory;
   const topPredictors = activePred?.topPredictors ?? [];
+
+  // Every patient a model places in a level is reported at that level's mortality risk rather
+  // than at their own calculated score.
+  const reportedLevel = activePred?.calculatedLevel;
+
+  // Risk may be elevated to a level the model ranks above this patient's, so the ladder comes from
+  // the model itself - the levels it defines differ by age group.
+  const elevationOptions = activePred && reportedLevel
+    ? getModelSelectorInstance()
+        .getRiskLevelsAbove(activePred.model, reportedLevel)
+        .map(level => level.label)
+    : [];
 
   const handleElevateRiskCategory = async (newLevel: string | null) => {
     if (newLevel) {
@@ -187,9 +199,13 @@ export default function RiskDisplay() {
                         Originally: {originalCategory?.toUpperCase()}
                       </Text>
                     }
-                    <Text style={{ fontSize: 16, lineHeight: 20, marginBottom: 4 }}>
-                      Risk score = {riskScore}%
-                    </Text>
+                    {reportedLevel &&
+                      <Text style={{ fontSize: 16, lineHeight: 20, marginBottom: 4, textAlign: 'center' }}>
+                        Approximate risk of post-discharge mortality
+                        {isElevated ? ` at ${reportedLevel.label.toUpperCase()}` : ''}
+                        {' '}= {reportedLevel.mortalityRisk}%
+                      </Text>
+                    }
                   </View>
                 }
                 containerStyle={{alignItems: 'center'}}
@@ -371,6 +387,7 @@ export default function RiskDisplay() {
           showModal={showInterpretationModal}
           riskCategory={riskCategory}
           isElevated={isElevated}
+          hasHigherLevels={elevationOptions.length > 0}
           originalRiskCategory={originalCategory}
           onRequestClose={() => setShowInterpretationModal(false)}
           // Just going to below modal (via Elevate Risk Level button), not yet elevating risk category
@@ -384,6 +401,7 @@ export default function RiskDisplay() {
         <ChangeRiskLevelModal
           showModal={showChangeRiskModal}
           currentRiskCategory={riskCategory}
+          options={elevationOptions}
           onRequestClose={() => setShowChangeRiskModal(false)}
           onSave={handleElevateRiskCategory}
         />

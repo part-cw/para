@@ -9,31 +9,25 @@ type ChangeRiskLevelProps = {
     onRequestClose: () => void;
     onSave: (newLevel: string | null) => void;
     currentRiskCategory?: string;
+    /**
+     * Labels of the levels this patient can be elevated to, lowest first. Only the levels above
+     * the patient's current level can be selected (risk may be manually elevated, not lowered).
+     */
+    options: string[];
 };
-
-// Possible risk levels from lowest to highest. Only the levels above the patient's
-// current level can be selected (risk may be manually elevated, not lowered).
-const RISK_LADDER = ['Low', 'Moderate', 'High', 'Very High'];
 
 export default function ChangeRiskLevelModal({
     showModal = false,
     onRequestClose,
     onSave,
     currentRiskCategory,
+    options,
 }: ChangeRiskLevelProps) {
     const { colors } = useTheme();
 
     const [selected, setSelected] = useState<string | null>(null);
 
-    const currentIndex = currentRiskCategory
-        ? RISK_LADDER.indexOf(currentRiskCategory)
-        : -1;
-
-    // Offer only levels strictly higher than the current one. Since 'Low' is first,
-    // it is never above the current level and so is never offered.
-    const options = RISK_LADDER
-        .filter((_level, i) => i > currentIndex)
-        .map((level) => ({ label: level, value: level }));
+    const radioOptions = options.map((level) => ({ label: level, value: level }));
 
     const handleClose = () => {
         setSelected(null);
@@ -60,7 +54,7 @@ export default function ChangeRiskLevelModal({
 
                     <View style={{ marginBottom: 20 }}>
                         <RadioButtonGroup
-                            options={options}
+                            options={radioOptions}
                             selected={selected}
                             onSelect={(value) => setSelected(value)}
                         />

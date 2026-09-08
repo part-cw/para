@@ -1,5 +1,5 @@
 import { PatientData } from "../contexts/PatientData";
-import { ModelInteraction, ModelVariable, RiskModel, RiskPrediction, ScoreBreakdown, TermContribution, TopPredictor } from "./types";
+import { ModelInteraction, ModelVariable, RiskLevel, RiskModel, RiskPrediction, ScoreBreakdown, TermContribution, TopPredictor } from "./types";
 
 /** The variable every age interaction shares a half of */
 export const AGE_VARIABLE = 'ageInMonths';
@@ -36,7 +36,8 @@ export abstract class ModelStrategy {
             const terms = this.calculateTermContributions(patientData) // model-specific: additive terms in the model
             const rawScore = this.sumContributions(terms)
             const riskScore = this.convertToRiskScore(rawScore) // model-specific: convert raw score to a percentage
-            const riskCategory = this.getRiskCategory(riskScore)
+            const level = this.getRiskLevel(riskScore)
+            const riskCategory = level.label
             const contributions = this.calculateAllPredictorContributions(terms, patientData)
             const topPredictors = this.selectTopPredictors(contributions, patientData)
             this.logContributions({ patientData, terms, contributions, topPredictors, rawScore, riskScore, riskCategory })
@@ -44,6 +45,7 @@ export abstract class ModelStrategy {
             return {
                 riskScore,
                 riskCategory,
+                calculatedLevel: level,
                 model: this.model.modelName,
                 topPredictors
             }
@@ -179,29 +181,20 @@ export abstract class ModelStrategy {
     }
 
     /**
-     * Get a risk category from the risk score based on the model's thresholds.
+     * Get the risk level a risk score falls in, based on the model's thresholds.
      */
-    protected getRiskCategory(riskScore: number): string {
+    protected getRiskLevel(riskScore: number): RiskLevel {
         if (riskScore < 0) throw Error('Risk score cannot be negative')
         if (riskScore > 100) throw Error('Risk score cannot be more than 100%')
 
-        // store 'low' threshold if it exists in model
-        let low
-        if (this.model.riskThresholds.low != null) {
-            low = this.model.riskThresholds.low
-        }
+        const levels = this.model.riskLevels
 
-        // store other thresholds
-        const moderate = this.model.riskThresholds.moderate
-        const high = this.model.riskThresholds.high
-        const veryHigh = this.model.riskThresholds.veryHigh
-
-        if (riskScore >= veryHigh) return 'Very High'
-        if (riskScore >= high) return 'High'
-        if (riskScore >= moderate) return 'Moderate'
+        if (riskScore >= levels.veryHigh.threshold) return levels.veryHigh
+        if (riskScore >= levels.high.threshold) return levels.high
+        if (riskScore >= levels.moderate.threshold) return levels.moderate
 
         // default to lowest available risk level if not mod to very high
-        return (low != null) ? 'Low' : 'Moderate';
+        return levels.low ?? levels.moderate;
     }
 
      /**
