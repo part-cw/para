@@ -65,6 +65,7 @@ export interface PatientData {
   subvillage: string;
   vhtName: string;
   vhtTelephone: string;
+  vhtUUID: string;
   
   // caregiverContact
   caregiverName: string;
@@ -121,7 +122,7 @@ export const initialPatientData: PatientData = {
   subvillage: '',
   vhtName: '',
   vhtTelephone: '',
-
+  vhtUUID: '',
   // caregiver info
   caregiverName: '',
   caregiverTel: '',

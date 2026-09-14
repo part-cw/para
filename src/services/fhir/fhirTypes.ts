@@ -70,6 +70,15 @@ export interface RelatedPerson {
   telecom?: ContactPoint[];
 }
 
+export interface CareTeam {
+  resourceType: 'CareTeam';
+  identifier?: Identifier[]; // eCHIS uuid
+  category: CodeableConcept[]; // generally will be "VHT"
+  name: HumanName[];
+  subject: Reference; // Patient reference
+  telecom?: ContactPoint[];
+}
+
 export interface Observation {
   resourceType: 'Observation';
   status: 'final';
@@ -80,7 +89,7 @@ export interface Observation {
   valueCodeableConcept?: CodeableConcept;
 }
 
-export type Resource = Patient | RelatedPerson | Observation;
+export type Resource = Patient | RelatedPerson | CareTeam | Observation;
 
 export interface BundleEntryRequest {
   method: 'POST';

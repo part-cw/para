@@ -13,6 +13,7 @@ import {
   AdministrativeGender,
   Bundle,
   BundleEntry,
+  CareTeam,
   CodeableConcept,
   ContactPoint,
   HumanName,
@@ -64,6 +65,11 @@ function buildAddress(patient: PatientData): Address | null {
 
 function buildCaregiverTelecom(patient: PatientData): ContactPoint[] | undefined {
   const tel = patient.caregiverTel?.trim();
+  return tel ? [{ system: 'phone', value: tel }] : undefined;
+}
+
+function buildVHTTelecom(patient: PatientData): ContactPoint[] | undefined {
+  const tel = patient.vhtTelephone?.trim();
   return tel ? [{ system: 'phone', value: tel }] : undefined;
 }
 
@@ -121,6 +127,28 @@ export function buildRelatedPersonResource(
   };
   if (caregiverName) resource.name = [{ given: [caregiverName] }];
   if (telecom) resource.telecom = telecom;
+  return resource;
+}
+
+/**
+ * CareTeam resource for patients assigned to a VHT.
+ * subject should point at the Patient resource (e.g. its bundle fullUrl).
+ */
+export function buildRelatedCareTeam(
+  patient: PatientData,
+  patientRef: Reference
+): CareTeam {
+  const vhtName = patient.vhtName.trim();
+  const telecom = buildVHTTelecom(patient);
+
+  const resource: CareTeam = {
+    resourceType: 'CareTeam',
+    identifier: patient.vhtUUID ? [{ value: patient.vhtUUID }] : undefined,
+    category: [{ text: 'VHT' }],
+    name: [{ given: [vhtName] }],
+    subject: patientRef,
+    telecom: telecom? telecom : undefined
+  };
   return resource;
 }
 
@@ -187,7 +215,7 @@ export function buildRiskObservation(
 }
 
 /**
- * Assembles a FHIR transaction Bundle: Patient + optional RelatedPerson + condition
+ * Assembles a FHIR transaction Bundle: Patient + optional RelatedPerson + VHT contact + condition
  * Observations + risk Observation, with internal references wired via urn:uuid fullUrls.
  */
 export function buildPatientBundle(
@@ -214,6 +242,16 @@ export function buildPatientBundle(
       request: { method: 'POST', url: 'RelatedPerson' },
     });
   }
+
+  const vht = buildRelatedCareTeam(patient, patientRef);
+  if (vht) {
+    entries.push({
+      fullUrl: `urn:uuid:${uuid()}`,
+      resource: vht,
+      request: { method: 'POST', url: 'CareTeam' },
+    })
+  }
+
 
   for (const observation of buildConditionObservations(patient, medicalConditions, patientRef)) {
     entries.push({
