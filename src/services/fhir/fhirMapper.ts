@@ -7,6 +7,7 @@
 
 import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
 import { PatientData } from '../../contexts/PatientData';
+import { useConfig } from '../../contexts/ConfigContext';
 import { RiskAssessment } from '../../models/types';
 import {
   Address,
@@ -73,7 +74,7 @@ function buildVHTTelecom(patient: PatientData): ContactPoint[] | undefined {
   return tel ? [{ system: 'phone', value: tel }] : undefined;
 }
 
-export function buildPatientResource(patient: PatientData): Patient {
+export function buildPatientResource(patient: PatientData, activeSite: string, deviceIdKey: string): Patient {
   const resource: Patient = { resourceType: 'Patient' };
 
   if (patient.patientId) {
@@ -103,6 +104,10 @@ export function buildPatientResource(patient: PatientData): Patient {
         ...(caregiverTelecom ? { telecom: caregiverTelecom } : {}),
       },
     ];
+  }
+
+    if (activeSite && deviceIdKey) {
+    resource.managingOrganization = { reference: activeSite + '-' + deviceIdKey };
   }
 
   return resource;
@@ -221,7 +226,9 @@ export function buildRiskObservation(
 export function buildPatientBundle(
   patient: PatientData,
   medicalConditions: CategorizedMedicalConditions,
-  riskAssessment: RiskAssessment | null | undefined
+  riskAssessment: RiskAssessment | null | undefined, 
+  activeSite: string, 
+  deviceIdKey: string
 ): Bundle {
   const patientFullUrl = `urn:uuid:${uuid()}`;
   const patientRef: Reference = { reference: patientFullUrl };
@@ -229,7 +236,7 @@ export function buildPatientBundle(
   const entries: BundleEntry[] = [
     {
       fullUrl: patientFullUrl,
-      resource: buildPatientResource(patient),
+      resource: buildPatientResource(patient, activeSite, deviceIdKey),
       request: { method: 'POST', url: 'Patient' },
     },
   ];

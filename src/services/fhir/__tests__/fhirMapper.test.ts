@@ -35,7 +35,7 @@ const emptyMedicalConditions: CategorizedMedicalConditions = { positive: [], sus
 
 describe('buildPatientResource', () => {
   it('maps name, gender, birthDate, identifier and address', () => {
-    const resource = buildPatientResource(makePatient());
+    const resource = buildPatientResource(makePatient(), 'test-site', '1');
 
     expect(resource.resourceType).toBe('Patient');
     expect(resource.identifier).toEqual([{ value: 'patient-123' }]);
@@ -46,22 +46,22 @@ describe('buildPatientResource', () => {
   });
 
   it('omits birthDate when DOB is unknown', () => {
-    const resource = buildPatientResource(makePatient({ isDOBUnknown: true }));
+    const resource = buildPatientResource(makePatient({ isDOBUnknown: true }), 'test-site', '1');
     expect(resource.birthDate).toBeUndefined();
   });
 
   it('omits birthDate when dob is null', () => {
-    const resource = buildPatientResource(makePatient({ dob: null }));
+    const resource = buildPatientResource(makePatient({ dob: null }), 'test-site', '1');
     expect(resource.birthDate).toBeUndefined();
   });
 
   it('omits gender when sex is not male/female', () => {
-    const resource = buildPatientResource(makePatient({ sex: '' }));
+    const resource = buildPatientResource(makePatient({ sex: '' }), 'test-site', '1');
     expect(resource.gender).toBeUndefined();
   });
 
   it('includes caregiver as an inline contact', () => {
-    const resource = buildPatientResource(makePatient());
+    const resource = buildPatientResource(makePatient(), 'test-site', '1');
     expect(resource.contact?.[0].name?.given).toEqual(['Mary Doe']);
     expect(resource.contact?.[0].telecom).toEqual([{ system: 'phone', value: '0700123456' }]);
   });
@@ -137,7 +137,7 @@ describe('buildPatientBundle', () => {
       admission: { riskScore: 11.27, riskCategory: 'Very High', model: 'Model 6-60C' },
     };
 
-    const bundle = buildPatientBundle(patient, medicalConditions, assessment);
+    const bundle = buildPatientBundle(patient, medicalConditions, assessment, 'test-site', '1');
 
     expect(bundle.resourceType).toBe('Bundle');
     expect(bundle.type).toBe('transaction');
@@ -162,7 +162,7 @@ describe('buildPatientBundle', () => {
 
   it('omits the RelatedPerson and risk entries when data is absent', () => {
     const patient = makePatient({ caregiverName: '', caregiverTel: '' });
-    const bundle = buildPatientBundle(patient, emptyMedicalConditions, null);
+    const bundle = buildPatientBundle(patient, emptyMedicalConditions, null, 'test-site', '1');
 
     // Only the Patient resource remains.
     expect(bundle.entry).toHaveLength(1);

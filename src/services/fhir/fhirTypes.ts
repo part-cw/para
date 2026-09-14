@@ -60,6 +60,7 @@ export interface Patient {
   birthDate?: string; // YYYY-MM-DD
   address?: Address[];
   contact?: PatientContact[];
+  managingOrganization?: Reference; // Identifier of the site where the patient admission occurred; formatted activeSite-deviceIdKey
 }
 
 export interface RelatedPerson {
