@@ -11,11 +11,13 @@ interface VHTReferralSectionProps {
     subvillage?: string;
     vhtName?: string;
     vhtTelephone?: string;
+    vhtUuid?: string;
     onUpdate: (updates: {
         village?: string;
         subvillage?: string;
         vhtName?: string;
         vhtTelephone?: string;
+        vhtUuid?: string;
     }) => void;
     colors: any;
     mode?: 'admission' | 'edit' | 'discharge';
@@ -29,6 +31,7 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
     subvillage,
     vhtName,
     vhtTelephone,
+    vhtUuid,
     onUpdate,
     colors,
     mode = 'admission',
@@ -55,6 +58,7 @@ export const VHTReferralSection: React.FC<VHTReferralSectionProps> = ({
         subvillage,
         vhtName,
         vhtTelephone,
+        vhtUuid,
         onUpdate
     });
 

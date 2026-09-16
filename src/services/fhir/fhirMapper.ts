@@ -148,7 +148,7 @@ export function buildRelatedCareTeam(
 
   const resource: CareTeam = {
     resourceType: 'CareTeam',
-    identifier: patient.vhtUUID ? [{ value: patient.vhtUUID }] : undefined,
+    identifier: patient.vhtUuid ? [{ value: patient.vhtUuid }] : undefined,
     category: [{ text: 'VHT' }],
     name: [{ given: [vhtName] }],
     subject: patientRef,

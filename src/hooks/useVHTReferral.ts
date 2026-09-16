@@ -1,5 +1,5 @@
 import { DropdownItem } from '@/src/components/SearchableDropdown';
-import { validatePhoneNumber } from '@/src/utils/inputValidator';
+import { formatPhoneNumber, validatePhoneNumber } from '@/src/utils/inputValidator';
 import {
     filterTelephoneNumbers,
     filterVHTs,
@@ -17,11 +17,13 @@ interface UseVHTReferralProps {
     subvillage?: string;
     vhtName?: string;
     vhtTelephone?: string;
+    vhtUuid?: string;
     onUpdate: (updates: {
         village?: string;
         subvillage?: string;
         vhtName?: string;
         vhtTelephone?: string;
+        vhtUuid?: string;
     }) => void;
 }
 export const useVHTReferral = ({
@@ -29,6 +31,7 @@ export const useVHTReferral = ({
     subvillage,
     vhtName,
     vhtTelephone,
+    vhtUuid,
     onUpdate
 }: UseVHTReferralProps) => {
 
@@ -142,6 +145,30 @@ export const useVHTReferral = ({
         localCleared
     ]);
 
+       // ========= HELPER FUNCTION FOR UUID LOOKUP ==============
+    const findVhtUuid = useCallback(
+    (name: string, village?: string, telephone?: string): string => {
+        const normalize = (val: string) => val.trim().toUpperCase();
+        const nameNorm = normalize(name);
+
+        const candidates = allData.filter(obj => normalize(obj.NAME) === nameNorm); // consider all uuids matching selected VHT name
+        if (candidates.length === 0) return '';
+
+        if (candidates.length > 1) {
+        const narrowed = candidates.filter(obj =>
+                (!village || normalize(obj.VILLAGE) === normalize(village)) &&
+                (!telephone || formatPhoneNumber(obj["TELEPHONE NUMBER"].toString()) === telephone)
+            );
+            if (narrowed.length > 0) {
+                return narrowed[0]["MEDIC UUID"]?.trim() || '';
+            }
+        }
+
+        return candidates[0]["MEDIC UUID"]?.trim() || '';  
+        },
+        [allData]
+    );
+
     // Clear localCleared once props have caught up
     useEffect(() => {
         if (localCleared && !village && !vhtName && !vhtTelephone) {
@@ -160,9 +187,12 @@ export const useVHTReferral = ({
     useEffect(() => {
         if (isResettingRef.current) return;
         if (vhts.length === 1 && !vhtName) {
-            onUpdate({ vhtName: vhts[0].value });
+            onUpdate({ 
+                vhtName: vhts[0].value, 
+                vhtUuid: findVhtUuid(vhts[0].value, village, vhtTelephone)
+            });
         }
-    }, [vhts, vhtName, onUpdate]);
+    }, [vhts, vhtName, onUpdate, findVhtUuid, village, vhtTelephone]);
 
     useEffect(() => {
         if (isResettingRef.current) return;
@@ -170,6 +200,7 @@ export const useVHTReferral = ({
             onUpdate({ vhtTelephone: telNumbers[0].value });
         }
     }, [telNumbers, vhtTelephone, onUpdate]);
+
 
     // Lower the auto-select guard once a clear has fully settled (declared after
     // the auto-select effects so they stay suppressed during the settling commit)
@@ -224,9 +255,12 @@ export const useVHTReferral = ({
 
     const handleVHTSelect = useCallback(
         (item: DropdownItem) => {
-        onUpdate({ vhtName: item.value || '' });
+        onUpdate({ 
+            vhtName: item.value || '', 
+            vhtUuid: findVhtUuid(item.value, village || " ", vhtTelephone || " ")
+            });
         },
-        [onUpdate]
+        [onUpdate, findVhtUuid, village, vhtTelephone]
     );
 
     const handleTelSelect = useCallback(
@@ -259,6 +293,7 @@ export const useVHTReferral = ({
             subvillage: '',
             vhtName: '',
             vhtTelephone: '',
+            vhtUuid: ''
         });
     }, [onUpdate]);
 
