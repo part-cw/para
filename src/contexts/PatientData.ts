@@ -122,7 +122,7 @@ export const initialPatientData: PatientData = {
   subvillage: '',
   vhtName: '',
   vhtTelephone: '',
-  vhtUuid: ' ',
+  vhtUuid: '',
   // caregiver info
   caregiverName: '',
   caregiverTel: '',

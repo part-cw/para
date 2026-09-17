@@ -31,7 +31,6 @@ export const useVHTReferral = ({
     subvillage,
     vhtName,
     vhtTelephone,
-    vhtUuid,
     onUpdate
 }: UseVHTReferralProps) => {
 
@@ -151,22 +150,28 @@ export const useVHTReferral = ({
         const normalize = (val: string) => val.trim().toUpperCase();
         const nameNorm = normalize(name);
 
-        const candidates = allData.filter(obj => normalize(obj.NAME) === nameNorm); // consider all uuids matching selected VHT name
-        if (candidates.length === 0) return '';
+        const candidates = allData.filter(obj => normalize(obj.NAME) === nameNorm);
+
+        if (candidates.length === 0) {
+            return '';
+        }
 
         if (candidates.length > 1) {
-        const narrowed = candidates.filter(obj =>
+            const narrowed = candidates.filter(obj =>
                 (!village || normalize(obj.VILLAGE) === normalize(village)) &&
                 (!telephone || formatPhoneNumber(obj["TELEPHONE NUMBER"].toString()) === telephone)
             );
+
             if (narrowed.length > 0) {
-                return narrowed[0]["MEDIC UUID"]?.trim() || '';
+                const uuid = narrowed[0]["MEDIC UUID"]?.trim() || '';
+                return uuid;
             }
         }
 
-        return candidates[0]["MEDIC UUID"]?.trim() || '';  
-        },
-        [allData]
+        const uuid = candidates[0]["MEDIC UUID"]?.trim() || '';
+        return uuid;
+    },
+    [allData]
     );
 
     // Clear localCleared once props have caught up
@@ -257,7 +262,7 @@ export const useVHTReferral = ({
         (item: DropdownItem) => {
         onUpdate({ 
             vhtName: item.value || '', 
-            vhtUuid: findVhtUuid(item.value, village || " ", vhtTelephone || " ")
+            vhtUuid: findVhtUuid(item.value, village, vhtTelephone)
             });
         },
         [onUpdate, findVhtUuid, village, vhtTelephone]
