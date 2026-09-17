@@ -7,7 +7,6 @@
 
 import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
 import { PatientData } from '../../contexts/PatientData';
-import { useConfig } from '../../contexts/ConfigContext';
 import { RiskAssessment } from '../../models/types';
 import {
   Address,
@@ -78,8 +77,14 @@ export function buildPatientResource(patient: PatientData, activeSite: string, d
   const resource: Patient = { resourceType: 'Patient' };
 
   if (patient.patientId) {
-    resource.identifier = [{ value: patient.patientId }];
-  }
+  resource.identifier = [
+    {
+      type: { text: 'facility' },
+      system: 'urn:para:patient-id', // For identification purposes only; used to distinguish source (PARA/Streamline) of facility-assigned patient ID.
+      value: patient.patientId,
+    },
+  ];
+}
 
   const name = buildName(patient);
   if (name) resource.name = [name];
@@ -139,7 +144,7 @@ export function buildRelatedPersonResource(
  * CareTeam resource for patients assigned to a VHT.
  * subject should point at the Patient resource (e.g. its bundle fullUrl).
  */
-export function buildRelatedCareTeam(
+export function buildCareTeam(
   patient: PatientData,
   patientRef: Reference
 ): CareTeam {
@@ -250,7 +255,7 @@ export function buildPatientBundle(
     });
   }
 
-  const vht = buildRelatedCareTeam(patient, patientRef);
+  const vht = buildCareTeam(patient, patientRef);
   if (vht) {
     entries.push({
       fullUrl: `urn:uuid:${uuid()}`,

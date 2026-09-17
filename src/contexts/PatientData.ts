@@ -65,7 +65,7 @@ export interface PatientData {
   subvillage: string;
   vhtName: string;
   vhtTelephone: string;
-  vhtUuid?: string;
+  vhtUuid: string;
   
   // caregiverContact
   caregiverName: string;

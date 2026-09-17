@@ -171,6 +171,8 @@ export default function PatientRecords() {
 
       const bundle = buildPatientBundle(patient, medicalConditions, assessment, config.activeSite, config.deviceIdKey);
 
+      console.log('📦 FHIR Bundle:', JSON.stringify(bundle, null, 2)); // TESTING
+
       const result = await getFHIRInstance().sendBundle(bundle, {
         serverUrl: config.echisServerUrl,
         authToken: config.echisAuthToken,

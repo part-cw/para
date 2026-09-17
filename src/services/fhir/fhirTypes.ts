@@ -18,6 +18,7 @@ export interface CodeableConcept {
 }
 
 export interface Identifier {
+  type?: { text?: string; };
   system?: string;
   value?: string;
 }
