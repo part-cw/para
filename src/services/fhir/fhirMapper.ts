@@ -13,6 +13,7 @@ import {
   AdministrativeGender,
   Bundle,
   BundleEntry,
+  CareTeam,
   CodeableConcept,
   ContactPoint,
   HumanName,
@@ -67,12 +68,23 @@ function buildCaregiverTelecom(patient: PatientData): ContactPoint[] | undefined
   return tel ? [{ system: 'phone', value: tel }] : undefined;
 }
 
-export function buildPatientResource(patient: PatientData): Patient {
+function buildVHTTelecom(patient: PatientData): ContactPoint[] | undefined {
+  const tel = patient.vhtTelephone?.trim();
+  return tel ? [{ system: 'phone', value: tel }] : undefined;
+}
+
+export function buildPatientResource(patient: PatientData, activeSite: string, deviceIdKey: string): Patient {
   const resource: Patient = { resourceType: 'Patient' };
 
   if (patient.patientId) {
-    resource.identifier = [{ value: patient.patientId }];
-  }
+  resource.identifier = [
+    {
+      type: { text: 'facility' },
+      system: 'urn:para:patient-id', // For identification purposes only; used to distinguish source (PARA/Streamline) of facility-assigned patient ID.
+      value: patient.patientId,
+    },
+  ];
+}
 
   const name = buildName(patient);
   if (name) resource.name = [name];
@@ -99,6 +111,10 @@ export function buildPatientResource(patient: PatientData): Patient {
     ];
   }
 
+    if (activeSite && deviceIdKey) {
+    resource.managingOrganization = { reference: activeSite + '-' + deviceIdKey };
+  }
+
   return resource;
 }
 
@@ -121,6 +137,28 @@ export function buildRelatedPersonResource(
   };
   if (caregiverName) resource.name = [{ given: [caregiverName] }];
   if (telecom) resource.telecom = telecom;
+  return resource;
+}
+
+/**
+ * CareTeam resource for patients assigned to a VHT.
+ * subject should point at the Patient resource (e.g. its bundle fullUrl).
+ */
+export function buildCareTeam(
+  patient: PatientData,
+  patientRef: Reference
+): CareTeam {
+  const vhtName = patient.vhtName.trim();
+  const telecom = buildVHTTelecom(patient);
+
+  const resource: CareTeam = {
+    resourceType: 'CareTeam',
+    identifier: patient.vhtUuid ? [{ value: patient.vhtUuid }] : undefined,
+    category: [{ text: 'VHT' }],
+    name: [{ given: [vhtName] }],
+    subject: patientRef,
+    telecom: telecom? telecom : undefined
+  };
   return resource;
 }
 
@@ -187,13 +225,15 @@ export function buildRiskObservation(
 }
 
 /**
- * Assembles a FHIR transaction Bundle: Patient + optional RelatedPerson + condition
+ * Assembles a FHIR transaction Bundle: Patient + optional RelatedPerson + VHT contact + condition
  * Observations + risk Observation, with internal references wired via urn:uuid fullUrls.
  */
 export function buildPatientBundle(
   patient: PatientData,
   medicalConditions: CategorizedMedicalConditions,
-  riskAssessment: RiskAssessment | null | undefined
+  riskAssessment: RiskAssessment | null | undefined, 
+  activeSite: string, 
+  deviceIdKey: string
 ): Bundle {
   const patientFullUrl = `urn:uuid:${uuid()}`;
   const patientRef: Reference = { reference: patientFullUrl };
@@ -201,7 +241,7 @@ export function buildPatientBundle(
   const entries: BundleEntry[] = [
     {
       fullUrl: patientFullUrl,
-      resource: buildPatientResource(patient),
+      resource: buildPatientResource(patient, activeSite, deviceIdKey),
       request: { method: 'POST', url: 'Patient' },
     },
   ];
@@ -214,6 +254,16 @@ export function buildPatientBundle(
       request: { method: 'POST', url: 'RelatedPerson' },
     });
   }
+
+  const vht = buildCareTeam(patient, patientRef);
+  if (vht) {
+    entries.push({
+      fullUrl: `urn:uuid:${uuid()}`,
+      resource: vht,
+      request: { method: 'POST', url: 'CareTeam' },
+    })
+  }
+
 
   for (const observation of buildConditionObservations(patient, medicalConditions, patientRef)) {
     entries.push({
