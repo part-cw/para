@@ -10,7 +10,7 @@ import {
 } from '@/src/utils/vhtDataProcessor';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useConfig } from '../contexts/ConfigContext';
-import { getVhtbySite } from '../utils/vhtDataLoader';
+import { getVhtDatabySite } from '../utils/vhtDataLoader';
 
 interface UseVHTReferralProps {
     village?: string;
@@ -37,7 +37,7 @@ export const useVHTReferral = ({
     const { config } = useConfig();
 
     const allData = useMemo(() =>
-        getVhtbySite(config.activeSite),
+        getVhtDatabySite(config.activeSite),
         [config.activeSite]
     );
 
