@@ -3,28 +3,28 @@ import testData from '@/src/data/vht_list/test.json';
 import { VhtDataObject } from './vhtDataProcessor';
 
 /**
- * District/County -> VHT dataset map
- * Keys should match config.activeDistrict (case-insensitive)
+ * Site -> VHT dataset map
+ * Keys should match config.activeSite (case-insensitive)
  */
 const vhtDataMap: Record<string, VhtDataObject[]> = {
   test: testData,
-  
-  
-  
+
+
+
 };
 
 /**
- * Returns VHT dataset for the selected district.
+ * Returns VHT dataset for the selected site/VHT area.
  *
  * Always returns an array (never null/undefined)
  * so downstream processors can safely do .forEach(), .map(), etc.
  */
-export function getVhtDataByDistrict(district: string): VhtDataObject[] {
-  if (!district?.trim()) {
+export function getVhtbySite(site: string): VhtDataObject[] {
+  if (!site?.trim()) {
     return [];
   }
 
-  const normalizedDistrict = district.trim().toLowerCase();
+  const normalizedSite = site.trim().toLowerCase();
 
-  return vhtDataMap[normalizedDistrict] ?? [];
+  return vhtDataMap[normalizedSite] ?? [];
 }

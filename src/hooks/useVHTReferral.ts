@@ -10,7 +10,7 @@ import {
 } from '@/src/utils/vhtDataProcessor';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useConfig } from '../contexts/ConfigContext';
-import { getVhtDataByDistrict } from '../utils/vhtDataLoader';
+import { getVhtbySite } from '../utils/vhtDataLoader';
 
 interface UseVHTReferralProps {
     village?: string;
@@ -34,8 +34,8 @@ export const useVHTReferral = ({
 
     const { config } = useConfig();
 
-   const allData = useMemo(() => 
-        getVhtDataByDistrict(config.activeSite),
+    const allData = useMemo(() =>
+        getVhtbySite(config.activeSite),
         [config.activeSite]
     );
 
@@ -95,7 +95,7 @@ export const useVHTReferral = ({
 
         const filtered = filterVillages(allData, vhtName, vhtTelephone);
         return [...filtered, ...addedVillages];
-    }, [allData, vhtName, vhtTelephone, addedVillages, baseVillages,localCleared]);
+    }, [allData, vhtName, vhtTelephone, addedVillages, baseVillages, localCleared]);
 
     const vhts = useMemo(() => {
         if (localCleared || (!village && !vhtTelephone)) {
@@ -104,7 +104,7 @@ export const useVHTReferral = ({
 
         const filtered =
             (isCustomVillage && !vhtTelephone) ||
-            (isCustomNumber && !village)
+                (isCustomNumber && !village)
                 ? baseVHTs
                 : filterVHTs(allData, village, vhtTelephone);
 
@@ -183,17 +183,17 @@ export const useVHTReferral = ({
     // ========= ADD HANDLERS (with dedup + formatting) ============
     const handleAddVillage = useCallback((item: DropdownItem) => {
         setAddedVillages(prev =>
-        prev.some(v => v.value === item.value)
-            ? prev
-            : [...prev, item]
+            prev.some(v => v.value === item.value)
+                ? prev
+                : [...prev, item]
         );
     }, []);
 
     const handleAddVHT = useCallback((item: DropdownItem) => {
         setAddedVHTs(prev =>
-        prev.some(v => v.value === item.value)
-            ? prev
-            : [...prev, item]
+            prev.some(v => v.value === item.value)
+                ? prev
+                : [...prev, item]
         );
     }, []);
 
@@ -203,42 +203,42 @@ export const useVHTReferral = ({
         if (!validation.isValid) return;
 
         const formatted = {
-        ...item,
-        value: validation.formattedValue || item.value,
+            ...item,
+            value: validation.formattedValue || item.value,
         };
 
         setAddedNumbers(prev =>
-        prev.some(n => n.value === formatted.value)
-            ? prev
-            : [...prev, formatted]
+            prev.some(n => n.value === formatted.value)
+                ? prev
+                : [...prev, formatted]
         );
     }, []);
 
     // ========= SELECT HANDLERS ==============
     const handleVillageSelect = useCallback(
         (item: DropdownItem) => {
-        onUpdate({ village: item.value || '' });
+            onUpdate({ village: item.value || '' });
         },
         [onUpdate]
     );
 
     const handleVHTSelect = useCallback(
         (item: DropdownItem) => {
-        onUpdate({ vhtName: item.value || '' });
+            onUpdate({ vhtName: item.value || '' });
         },
         [onUpdate]
     );
 
     const handleTelSelect = useCallback(
         (item: DropdownItem) => {
-        onUpdate({ vhtTelephone: item.value || '' });
+            onUpdate({ vhtTelephone: item.value || '' });
         },
         [onUpdate]
     );
 
     const handleSubvillageChange = useCallback(
         (value: string) => {
-        onUpdate({ subvillage: value });
+            onUpdate({ subvillage: value });
         },
         [onUpdate]
     );
@@ -278,7 +278,7 @@ export const useVHTReferral = ({
             const validation = validatePhoneNumber(vhtTelephone);
             if (!validation.isValid) {
                 errors.push(
-                validation.errorMessage || 'Invalid phone number'
+                    validation.errorMessage || 'Invalid phone number'
                 );
             }
         }
