@@ -92,6 +92,7 @@ async init(): Promise<void> {
                 subvillage              TEXT,
                 vhtName                 TEXT,
                 vhtTelephone            TEXT,
+                vhtUuid                 TEXT,
 
                 -- Caregiver contact
                 caregiverName           TEXT,
@@ -198,7 +199,25 @@ async init(): Promise<void> {
             -- CREATE INDEX IF NOT EXISTS idx_risk_predictions_model ON risk_predictions(modelName); -- remove?
             -- CREATE INDEX IF NOT EXISTS idx_audit_log_patient ON audit_log(patientId, changedAt); -- remove?
         `);
+
+        await this.runMigrations();
     }
+
+    // Private function for updating database to include new vhtUuid column if it doesn't exist. 
+    // Ensures previous versions of the app still have auto-save capability and will include the new vhtUuid field.   
+    private async runMigrations(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const columns = await this.db.getAllAsync<{ name: string }>(
+        `PRAGMA table_info(patients)`
+    );
+    const columnNames = columns.map(c => c.name);
+
+    if (!columnNames.includes('vhtUuid')) {
+        await this.db.execAsync(`ALTER TABLE patients ADD COLUMN vhtUuid TEXT;`);
+        console.log('✅ Migrated: added vhtUuid column to patients table');
+    }
+}
 
     // ========== PATIENT OPERATIONS ==========
 
@@ -338,14 +357,14 @@ async init(): Promise<void> {
                 INSERT INTO patients (
                     patientId, surname, firstName, otherName, sex, 
                     dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isDOBUnknown, isYearMonthUnknown, isUnderSixMonths, isNeonate,
-                    village, subvillage, vhtName, vhtTelephone, 
+                    village, subvillage, vhtName, vhtTelephone, vhtUuid,
                     caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone, phoneOwner,
                     admissionStartedAt, updatedAt, isDraftAdmission
                 ) 
                 VALUES (
                     ?, ?, ?, ?, ?,              -- name/sex
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- age demographics
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
                     ?, ?, ?                     -- metadata
                 )
             `, [
@@ -367,6 +386,7 @@ async init(): Promise<void> {
                 data.subvillage || null, 
                 data.vhtName || null, 
                 data.vhtTelephone || null, 
+                data.vhtUuid || null,
                 data.caregiverName || null, 
                 data.caregiverTel || null, 
                 data.confirmTel|| null, 
@@ -1220,7 +1240,7 @@ async init(): Promise<void> {
             newValue: string | null;}[],
         userId: string
     ): Promise<void> {
-        if (!this.db) throw new Error ('Databse not initialized');
+        if (!this.db) throw new Error ('Database not initialized');
 
         try {
             // Build placeholders: (?,?,?,?,?,?) for each change
@@ -1270,6 +1290,7 @@ async init(): Promise<void> {
 
             vhtName: patientRow.vhtName,
             vhtTelephone: patientRow.vhtTelephone,
+            vhtUuid: patientRow.vhtUuid,
             village: patientRow.village,
             subvillage: patientRow.subvillage,
 
@@ -1319,6 +1340,7 @@ async init(): Promise<void> {
             subvillage: 'subvillage',
             vhtName: 'vhtName',
             vhtTelephone: 'vhtTelephone',
+            vhtUuid: 'vhtUuid',
             caregiverName: 'caregiverName',
             caregiverTel: 'caregiverTel',
             confirmTel: 'confirmTel',

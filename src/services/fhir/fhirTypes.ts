@@ -18,6 +18,7 @@ export interface CodeableConcept {
 }
 
 export interface Identifier {
+  type?: { text?: string; };
   system?: string;
   value?: string;
 }
@@ -60,6 +61,7 @@ export interface Patient {
   birthDate?: string; // YYYY-MM-DD
   address?: Address[];
   contact?: PatientContact[];
+  managingOrganization?: Reference; // Identifier of the site where the patient admission occurred; formatted activeSite-deviceIdKey
 }
 
 export interface RelatedPerson {
@@ -67,6 +69,15 @@ export interface RelatedPerson {
   patient: Reference;
   relationship?: CodeableConcept[];
   name?: HumanName[];
+  telecom?: ContactPoint[];
+}
+
+export interface CareTeam {
+  resourceType: 'CareTeam';
+  identifier?: Identifier[]; // eCHIS uuid
+  category: CodeableConcept[]; // generally will be "VHT"
+  name: HumanName[];
+  subject: Reference; // Patient reference
   telecom?: ContactPoint[];
 }
 
@@ -80,7 +91,7 @@ export interface Observation {
   valueCodeableConcept?: CodeableConcept;
 }
 
-export type Resource = Patient | RelatedPerson | Observation;
+export type Resource = Patient | RelatedPerson | CareTeam | Observation;
 
 export interface BundleEntryRequest {
   method: 'POST';

@@ -169,7 +169,9 @@ export default function PatientRecords() {
       const medicalConditions = await storage.getCategorizedMedicalConditions(id);
       const { assessment } = await storage.getRiskAssessment(id);
 
-      const bundle = buildPatientBundle(patient, medicalConditions, assessment);
+      const bundle = buildPatientBundle(patient, medicalConditions, assessment, config.activeSite, config.deviceIdKey);
+
+      console.log('📦 FHIR Bundle:', JSON.stringify(bundle, null, 2)); // TESTING
 
       const result = await getFHIRInstance().sendBundle(bundle, {
         serverUrl: config.echisServerUrl,
