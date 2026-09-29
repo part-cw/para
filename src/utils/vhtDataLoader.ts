@@ -19,7 +19,7 @@ const vhtDataMap: Record<string, VhtDataObject[]> = {
  * Always returns an array (never null/undefined)
  * so downstream processors can safely do .forEach(), .map(), etc.
  */
-export function getVhtbySite(site: string): VhtDataObject[] {
+export function getVhtDatabySite(site: string): VhtDataObject[] {
   if (!site?.trim()) {
     return [];
   }
