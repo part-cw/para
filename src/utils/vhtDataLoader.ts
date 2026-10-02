@@ -1,5 +1,5 @@
 
-import testData from '@/src/data/vht_list/test.json';
+import testData from '@/src/data/vht_list/usability_vht.json';
 import { VhtDataObject } from './vhtDataProcessor';
 
 /**
