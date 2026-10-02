@@ -8,6 +8,7 @@
 import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
 import { PatientData } from '../../contexts/PatientData';
 import { RiskAssessment } from '../../models/types';
+import { getFHIRInstance } from './FHIRInstance';
 import {
   Address,
   AdministrativeGender,
@@ -22,6 +23,8 @@ import {
   Reference,
   RelatedPerson,
 } from './fhirTypes';
+import { useConfig } from '@/src/contexts/ConfigContext';
+import { useStorage } from '@/src/contexts/StorageContext';
 
 /** RFC4122-ish v4 UUID. Sufficient for bundle-internal references in this example payload. */
 function uuid(): string {
@@ -77,14 +80,14 @@ export function buildPatientResource(patient: PatientData, activeSite: string, d
   const resource: Patient = { resourceType: 'Patient' };
 
   if (patient.patientId) {
-  resource.identifier = [
-    {
-      type: { text: 'facility' },
-      system: 'urn:para:patient-id', // For identification purposes only; used to distinguish source (PARA/Streamline) of facility-assigned patient ID.
-      value: patient.patientId,
-    },
-  ];
-}
+    resource.identifier = [
+      {
+        type: { text: 'facility' },
+        system: 'urn:para:patient-id', // For identification purposes only; used to distinguish source (PARA/Streamline) of facility-assigned patient ID.
+        value: patient.patientId,
+      },
+    ];
+  }
 
   const name = buildName(patient);
   if (name) resource.name = [name];
@@ -111,7 +114,7 @@ export function buildPatientResource(patient: PatientData, activeSite: string, d
     ];
   }
 
-    if (activeSite && deviceIdKey) {
+  if (activeSite && deviceIdKey) {
     resource.managingOrganization = { reference: activeSite + '-' + deviceIdKey };
   }
 
@@ -157,7 +160,7 @@ export function buildCareTeam(
     category: [{ text: 'VHT' }],
     name: [{ given: [vhtName] }],
     subject: patientRef,
-    telecom: telecom? telecom : undefined
+    telecom: telecom ? telecom : undefined
   };
   return resource;
 }
@@ -231,8 +234,8 @@ export function buildRiskObservation(
 export function buildPatientBundle(
   patient: PatientData,
   medicalConditions: CategorizedMedicalConditions,
-  riskAssessment: RiskAssessment | null | undefined, 
-  activeSite: string, 
+  riskAssessment: RiskAssessment | null | undefined,
+  activeSite: string,
   deviceIdKey: string
 ): Bundle {
   const patientFullUrl = `urn:uuid:${uuid()}`;

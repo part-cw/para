@@ -25,15 +25,20 @@ import { ActivityIndicator, Alert, Modal, Platform, RefreshControl, TouchableOpa
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, Card, IconButton, List, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { buildPatientBundle } from '@/src/services/fhir/fhirMapper';
+import { getFHIRInstance } from '@/src/services/fhir/FHIRInstance';
+import { useConfig } from '@/src/contexts/ConfigContext';
+import { sendToEchis } from '@/src/services/fhir/sendToEchis';
 
 
 export default function DischargeDataScreen() {
     const { colors } = useTheme()
     const { storage } = useStorage();
     const { currentUser } = useAuth();
-    const { 
-        patientData, 
-        loadPatient, 
+    const { config } = useConfig();
+    const {
+        patientData,
+        loadPatient,
         completeDischarge,
         updatePatientData
     } = usePatientData();
@@ -43,14 +48,14 @@ export default function DischargeDataScreen() {
         feedingStatus_discharge,
         spo2_discharge
     } = patientData
-    
+
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showDeceasedModal, setShowDeceasedModal] = useState<boolean>(false);
     const [expandedAccordion, setExpandedAccordion] = useState<string>('dischargeData');
-    
+
     // Add state for updating and editing unknown fields
-    const [isUpdatingUnknownFields, setIsUpdatingUnknownFields] = useState<boolean>(false);    
+    const [isUpdatingUnknownFields, setIsUpdatingUnknownFields] = useState<boolean>(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null);
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
@@ -59,14 +64,14 @@ export default function DischargeDataScreen() {
 
     // track errors and reviewed sections
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set(['dischargeData'])); // discharge data automatically reviewed because accordion starts out open
-    const [sectionValidations, setSectionValidations] = useState<{[key: string]: { isValid: boolean; errors: string[] }}>({});
-    
+    const [sectionValidations, setSectionValidations] = useState<{ [key: string]: { isValid: boolean; errors: string[] } }>({});
+
     // track jaundice states for when dob update cause isNeonate = true;
     const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
     const [neonatalJaundiceValue, setNeonatalJaundiceValue] = useState<string>('');
-   
+
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     const params = useLocalSearchParams();
     const patientId = params.patientId as string;
     const userId = currentUser?.displayName || currentUser?.username || 'unknown'
@@ -93,7 +98,7 @@ export default function DischargeDataScreen() {
             if (!initialDobUnknown && !initialHivUnknown) {
                 const dobUnknown = normalizeBoolean(patientData.isDOBUnknown || patientData.isYearMonthUnknown);
                 const hivUnknown = !patientData.isUnderSixMonths && (patientData.hivStatus?.toLowerCase() === 'unknown');
-                
+
                 setInitialDobUnknown(dobUnknown);
                 setInitialHivUnknown(hivUnknown);
             }
@@ -152,30 +157,30 @@ export default function DischargeDataScreen() {
     // Validate VHT Referral section
     const validateVHTReferral = () => {
         const errors: string[] = [];
-        
+
         if (!patientData.village || patientData.village.trim() === '') {
             errors.push('Village is required');
         }
-        
+
         if (!patientData.vhtName || patientData.vhtName.trim() === '') {
             errors.push('CHW name is required');
         }
-        
+
         if (!patientData.vhtTelephone || patientData.vhtTelephone.trim() === '') {
             errors.push('CHW telephone is required');
         }
-        
+
         return errors;
     };
 
     // Validate Caregiver Contact section
     const validateCaregiverContact = () => {
         const errors: string[] = [];
-        
+
         if (!patientData.caregiverName || patientData.caregiverName.trim() === '') {
             errors.push('Caregiver name is required');
         }
-        
+
         if (patientData.caregiverTel && patientData.caregiverTel.trim() !== '') {
             if (!patientData.confirmTel || patientData.confirmTel.trim() === '') {
                 errors.push('Confirm telephone is required');
@@ -183,7 +188,7 @@ export default function DischargeDataScreen() {
                 errors.push('Telephone numbers must match');
             }
         }
-        
+
         return errors;
     };
 
@@ -191,66 +196,66 @@ export default function DischargeDataScreen() {
     const validateMedicalConditions = () => {
         const errors: string[] = [];
         const requiredConditions = [
-            'pneumonia', 
-            'severeAnaemia', 
-            'diarrhea', 
-            'malaria', 
-            'sepsis', 
+            'pneumonia',
+            'severeAnaemia',
+            'diarrhea',
+            'malaria',
+            'sepsis',
             'meningitis_encephalitis'
         ];
-        
+
         for (const condition of requiredConditions) {
             const value = patientData[condition as keyof typeof patientData];
             if (!value || (typeof value === 'string' && value.trim() === '')) {
                 errors.push(`${displayNames[condition] || condition} is required`);
             }
         }
-        
+
         if (!patientData.chronicIllnesses || patientData.chronicIllnesses.length === 0) {
             errors.push('Chronic illnesses selection is required');
         }
-        
+
         return errors;
     };
 
     // Update all section validations whenever relevant data changes
     useEffect(() => {
         const newValidations: typeof sectionValidations = {};
-        
+
         // Discharge Data
         const dischargeDataErrors = validateDischargeData();
         newValidations['dischargeData'] = {
             isValid: dischargeDataErrors.length === 0,
             errors: dischargeDataErrors
         };
-        
+
         // Update Admission Data (always valid - unknown values are also accepted)
         newValidations['updateAdmissionData'] = {
             isValid: true,
             errors: []
         };
-        
+
         // Medical Conditions
         const medConditionsErrors = validateMedicalConditions();
         newValidations['medicalConditions'] = {
             isValid: medConditionsErrors.length === 0,
             errors: medConditionsErrors
         };
-        
+
         // VHT Referral
         const vhtErrors = validateVHTReferral();
         newValidations['vhtReferral'] = {
             isValid: vhtErrors.length === 0,
             errors: vhtErrors
         };
-        
+
         // Caregiver Contact
         const caregiverErrors = validateCaregiverContact();
         newValidations['caregiverContact'] = {
             isValid: caregiverErrors.length === 0,
             errors: caregiverErrors
         };
-        
+
         setSectionValidations(newValidations);
     }, [
         dischargeStatus,
@@ -282,7 +287,7 @@ export default function DischargeDataScreen() {
     }
 
     const handleCancelDeath = () => {
-        updatePatientData({ dischargeStatus: ''})
+        updatePatientData({ dischargeStatus: '' })
         setShowDeceasedModal(false);
     }
 
@@ -291,6 +296,7 @@ export default function DischargeDataScreen() {
         setLoading(true);
 
         await completeDischarge();
+        await attemptSendToEchis(patientId);
         // TODO reopen modal on storage error?
 
         setLoading(false)
@@ -394,12 +400,12 @@ export default function DischargeDataScreen() {
                 setNeonatalJaundiceValue('') // clear any prevous value
                 setShowNeonatalJaundiceModal(true);
                 return;
-            } 
+            }
 
             // Refresh the UI
             await onRefresh();
             setEditedDob(null);
-            
+
             Alert.alert('Success', 'Date of birth updated successfully');
         } catch (error) {
             console.error('Error updating DOB:', error);
@@ -444,7 +450,7 @@ export default function DischargeDataScreen() {
             // Refresh the UI
             await onRefresh();
             setEditedHivStatus('');
-            
+
             Alert.alert('Success', 'HIV status updated successfully');
         } catch (error) {
             console.error('Error updating HIV status:', error);
@@ -457,17 +463,17 @@ export default function DischargeDataScreen() {
     const handleRouterBack = () => {
         if (Platform.OS !== 'web') {
             Alert.alert(
-                'Go Back to Patient Records?', 
+                'Go Back to Patient Records?',
                 `Are you sure you want to leave before completing discharge?`,
                 [
-                    {text: 'Cancel', style: 'cancel'}, 
-                    {text: 'OK', onPress: () => router.back()}
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'OK', onPress: () => router.back() }
                 ]
             )
         } else {
             console.log('TODO - implement alert for web?')
         }
-       
+
     }
 
     const handleSaveNeonatalJaundice = async () => {
@@ -484,10 +490,10 @@ export default function DischargeDataScreen() {
             setIsUpdatingUnknownFields(true);
             await storage.updatePatient(patientId, jaundiceUpdate);
             await storage.logChanges(patientId, 'UPDATE', 'neonatalJaundice', prevJaundice, (neonatalJaundiceValue === 'yes' ? '1' : '0'), userId);
-            
+
             setIsUpdatingUnknownFields(false);
             setShowNeonatalJaundiceModal(false);
-            
+
             await onRefresh();
             Alert.alert('Success', 'Neonatal jaundice status updated successfully.')
         } catch (error) {
@@ -501,6 +507,24 @@ export default function DischargeDataScreen() {
         setReviewedSections(prev => new Set([...prev, sectionId]));
     };
 
+    // Tries to send the record to eCHIS after discharge has been saved.
+    // A failed send never blocks the discharge; retry sending patient data to eCHIS when the record is archived.
+    const attemptSendToEchis = async (id: string) => {
+        try {
+            const { sent, message } = await sendToEchis(id, storage, config);
+
+            if (!sent) {
+                Alert.alert(
+                    'Not Sent to eCHIS',
+                    `${message ?? 'Could not send data.'} The patient is discharged, and the data will be sent again when the record is archived.`
+                );
+            }
+        } catch (error) {
+            console.error('Error sending to eCHIS:', error);
+            Alert.alert('Not Sent to eCHIS', 'The patient is discharged. Sending will be retried when the record is archived.');
+        }
+    };
+
     const handleDischarge = (patientName: string) => {
         // Check for any invalid sections
         const invalidSections = Object.entries(sectionValidations)
@@ -512,7 +536,7 @@ export default function DischargeDataScreen() {
                 return !validation.isValid;
             })
             .map(([sectionId]) => sectionId);
-        
+
         if (invalidSections.length > 0) {
             const errorMessages = invalidSections
                 .map(id => {
@@ -523,14 +547,14 @@ export default function DischargeDataScreen() {
                     return '';
                 })
                 .join('');
-            
+
             const message = `Please fix the following errors before discharge:${errorMessages}`;
-            
+
             if (Platform.OS === 'web') {
                 alert(message);
                 return;
             }
-            
+
             Alert.alert('Missing Required Information', message);
             return;
         }
@@ -540,7 +564,7 @@ export default function DischargeDataScreen() {
         const allRequiredSections = dischargeFormSchema
             .filter(s => s.isRequired)
             .map(s => s.sectionName);
-        
+
         const unreviewedRequired = allRequiredSections.filter(
             section => !reviewedSections.has(section)
         );
@@ -558,12 +582,12 @@ export default function DischargeDataScreen() {
             const sectionNames = needsReview
                 .map(s => displayNames[s])
                 .join(', ');
-            
+
             if (Platform.OS === 'web') {
                 alert(`Unreviewed Sections\n\nPlease review all required sections before discharge: ${sectionNames}`);
                 return;
             }
-            
+
             Alert.alert(
                 'Unreviewed Sections',
                 `Please review all required sections before discharge: ${sectionNames}`
@@ -575,6 +599,7 @@ export default function DischargeDataScreen() {
             try {
                 setIsSubmitting(true);
                 const { riskAssessment, medicalConditions } = await completeDischarge();
+                await attemptSendToEchis(patientId);
                 router.push({
                     pathname: '/riskDisplay',
                     params: {
@@ -594,11 +619,11 @@ export default function DischargeDataScreen() {
         }
 
         Alert.alert(
-            'Confirm Discharge', 
+            'Confirm Discharge',
             `Are you sure you want to discharge patient ${patientName}? This action cannot be undone.`,
             [
-                {text: 'Cancel', style: 'cancel'}, 
-                {text: 'Discharge', onPress: confirmDischarge}
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Discharge', onPress: confirmDischarge }
             ]
         )
     }
@@ -609,21 +634,21 @@ export default function DischargeDataScreen() {
         const isReviewed = reviewedSections.has(sectionId);
         const validation = sectionValidations[sectionId];
         const section = dischargeFormSchema.find(s => s.sectionName === sectionId);
-        
+
         // Special case for updateAdmissionData - if no unknown fields, show complete
         if (sectionId === 'updateAdmissionData' && !hasUnknownAdmissionFields && reviewedSections.has('updateAdmissionData')) {
             return 'check-circle-outline';
         }
-        
-        if (isReviewed &&  validation?.isValid) {
+
+        if (isReviewed && validation?.isValid) {
             return 'check-circle-outline';
         }
-        
+
         if (!isReviewed) {
             // If not reviewed, show warning (optional) or error (required)
             return section?.isRequired ? 'error-outline' : 'warning';
         }
-        
+
         // Reviewed but not complete
         return section?.isRequired ? 'error-outline' : 'warning';
     };
@@ -632,23 +657,23 @@ export default function DischargeDataScreen() {
         const isReviewed = reviewedSections.has(sectionId);
         const validation = sectionValidations[sectionId];
         const section = dischargeFormSchema.find(s => s.sectionName === sectionId);
-        
+
         // Special case for updateAdmissionData
         if (sectionId === 'updateAdmissionData' && !hasUnknownAdmissionFields && reviewedSections.has('updateAdmissionData')) {
             return 'green';
         }
 
-        if (isReviewed && validation.isValid) return 'green'        
+        if (isReviewed && validation.isValid) return 'green'
         if (!isReviewed) return section?.isRequired ? 'red' : 'orange';
-        
+
         // Reviewed but not complete
         return section?.isRequired ? 'red' : 'orange';
     };
 
     const CustomAccordionIcon = ({ sectionId }: { sectionId: string }) => (
-        <MaterialIcons 
+        <MaterialIcons
             name={getAccordionIcon(sectionId) as any}
-            size={24} 
+            size={24}
             color={getAccordionIconColor(sectionId)}
             style={{ marginLeft: 16, marginTop: 5 }}
         />
@@ -658,7 +683,7 @@ export default function DischargeDataScreen() {
         const isReviewed = reviewedSections.has(sectionId);
         const validation = sectionValidations[sectionId];
         const section = dischargeFormSchema.find(s => s.sectionName === sectionId);
-        
+
         // Special case for updateAdmissionData
         if (sectionId === 'updateAdmissionData') {
             if (!hasUnknownAdmissionFields) {
@@ -669,12 +694,12 @@ export default function DischargeDataScreen() {
             }
             return 'Data has been updated';
         }
-        
+
         // For all other sections
         if (isReviewed && validation?.isValid) {
             return section?.isRequired ? 'Required: Complete' : 'Optional: Complete';
         }
-        
+
         const errorCount = validation?.errors?.length || 0;
         const errorText = `${errorCount} error${errorCount > 1 ? 's' : ''}`;
 
@@ -685,37 +710,37 @@ export default function DischargeDataScreen() {
                 return `Review section - ${errorText}`;
             }
         }
-        
+
         // Not reviewed but valid
         return section?.isRequired ? 'Required: Review section' : 'Optional: Review section';
     };
 
-    
+
     // retrurns a loading screen with spinner
     if (loading) {
         return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={{ marginTop: 16 }}>Loading...</Text>
-        </SafeAreaView>
+            <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={{ marginTop: 16 }}>Loading...</Text>
+            </SafeAreaView>
         );
     }
 
-    if (patientData) {    
+    if (patientData) {
         const fullname = formatName(patientData.firstName, patientData.surname, patientData.otherName)
 
         return (
-            <SafeAreaView style={{flex: 1, backgroundColor: colors.background}}>
-                <NeonatalJaundiceModal 
-                    showModal={showNeonatalJaundiceModal} 
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+                <NeonatalJaundiceModal
+                    showModal={showNeonatalJaundiceModal}
                     onRequestClose={() => null} // TODO figure out what to do here
-                    selected={neonatalJaundiceValue} 
-                    onSelect={setNeonatalJaundiceValue} 
+                    selected={neonatalJaundiceValue}
+                    onSelect={setNeonatalJaundiceValue}
                     onSave={handleSaveNeonatalJaundice}
                     isSaving={isUpdatingUnknownFields}
                     saveDisabled={!neonatalJaundiceValue}
                 />
-                
+
                 {/* Deceased modal */}
                 <Modal
                     visible={showDeceasedModal}
@@ -724,10 +749,10 @@ export default function DischargeDataScreen() {
                 >
                     <View style={Styles.modalOverlay}>
                         <View style={Styles.modalContentWrapper}>
-                            <Text style={[Styles.modalHeader, {color: colors.primary}]}>
+                            <Text style={[Styles.modalHeader, { color: colors.primary }]}>
                                 Patient Deceased
                             </Text>
-                            
+
                             <Text style={Styles.modalText}>
                                 You have marked this patient as deceased.
                                 Please confirm this discharge status or cancel to update status.
@@ -736,7 +761,7 @@ export default function DischargeDataScreen() {
                                 {"Once confirmed, the 'deceased' status cannot be undone."}
                             </Text>
 
-                            <Text style={[Styles.modalSubheader, {color: colors.primary}]}>
+                            <Text style={[Styles.modalSubheader, { color: colors.primary }]}>
                                 {"Confirm 'deceased' discharge status?"}
                             </Text>
 
@@ -769,31 +794,31 @@ export default function DischargeDataScreen() {
                     </View>
                 </Modal>
 
-                <ScrollView 
-                    contentContainerStyle={{ paddingVertical: 0}}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
+                <ScrollView
+                    contentContainerStyle={{ paddingVertical: 0 }}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 >
                     {/* Header */}
-                    <View style={[Styles.pageHeaderContainer, {alignItems: 'center', justifyContent: 'center' }]}>
-                        <View 
+                    <View style={[Styles.pageHeaderContainer, { alignItems: 'center', justifyContent: 'center' }]}>
+                        <View
                             style={{
                                 flexDirection: 'column',
                                 flexWrap: 'wrap',
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 maxWidth: '90%'
-                            }}  
+                            }}
                         >
-                            <Text style={[Styles.pageHeaderTitle, {flex: 0, color: colors.primary}]}>
+                            <Text style={[Styles.pageHeaderTitle, { flex: 0, color: colors.primary }]}>
                                 {fullname.toUpperCase()}
                             </Text>
-                            <Text style={[Styles.pageHeaderTitle, { flex: 0} ]}>
+                            <Text style={[Styles.pageHeaderTitle, { flex: 0 }]}>
                                 Discharge Patient
                             </Text>
-                            
+
                         </View>
                     </View>
-                    <View style={{margin: 15}}>
+                    <View style={{ margin: 15 }}>
                         {/* Discharge Data Info*/}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
@@ -807,66 +832,66 @@ export default function DischargeDataScreen() {
                                     handleAccordionPress('dischargeData');
                                 }}
                             >
-                            <View style={Styles.accordionContentWrapper}>
-                                <SearchableDropdown 
-                                    data={[
-                                        {value: 'Routine discharge', key: 'routine'},
-                                        {value: 'Referred to higher level of care', key: 'referred'},
-                                        {value: 'Discharged against medical advice', key: 'Discharged against medical advice'},
-                                        {value: 'Deceased', key: 'deceased'},
-                                    ]} 
-                                    label={`${displayNames['dischargeStatus']} (required)`} 
-                                    placeholder='Select option below'
-                                    onSelect={(item) => updatePatientData({ dischargeStatus: item.value })}
-                                    search={false}
-                                    value= {patientData.dischargeStatus}
-                                />
-
-                                <View>
-                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>{displayNames['feedingStatus_discharge']} <Text style={Styles.required}>*</Text></Text>
-                                    <Text>{displayNames['feedingStatusQuestion']}</Text>
-                                    <RadioButtonGroup 
-                                        options={[
-                                            { label: 'Feeding well', value: 'feeding well'},
-                                            { label: 'Feeding poorly', value: 'feeding poorly'},
-                                            { label: 'Not feeding at all', value: 'not feeding at all'}
-                                        ]} 
-                                        selected={feedingStatus_discharge || null} 
-                                        onSelect={(value) => updatePatientData({ feedingStatus_discharge: value})}
+                                <View style={Styles.accordionContentWrapper}>
+                                    <SearchableDropdown
+                                        data={[
+                                            { value: 'Routine discharge', key: 'routine' },
+                                            { value: 'Referred to higher level of care', key: 'referred' },
+                                            { value: 'Discharged against medical advice', key: 'Discharged against medical advice' },
+                                            { value: 'Deceased', key: 'deceased' },
+                                        ]}
+                                        label={`${displayNames['dischargeStatus']} (required)`}
+                                        placeholder='Select option below'
+                                        onSelect={(item) => updatePatientData({ dischargeStatus: item.value })}
+                                        search={false}
+                                        value={patientData.dischargeStatus}
                                     />
-                                </View>
 
-                                <View style={{flexDirection:'row', alignItems: 'center'}}>
-                                    <Text style={[Styles.accordionSubheading, {fontWeight: 'bold'}]}>{displayNames['spo2_discharge']} <Text style={Styles.required}>*</Text></Text>
-                                    <IconButton
-                                        icon="help-circle-outline"
-                                        size={20}
-                                        iconColor={colors.primary}
-                                        onPress={() => {
-                                            if (Platform.OS !== 'web') {
-                                                Alert.alert('Info', spo2DischargeInfo);
-                                            } else {
-                                                alert(spo2DischargeInfo);
-                                            }
-                                        }}
+                                    <View>
+                                        <Text style={[Styles.accordionSubheading, { fontWeight: 'bold' }]}>{displayNames['feedingStatus_discharge']} <Text style={Styles.required}>*</Text></Text>
+                                        <Text>{displayNames['feedingStatusQuestion']}</Text>
+                                        <RadioButtonGroup
+                                            options={[
+                                                { label: 'Feeding well', value: 'feeding well' },
+                                                { label: 'Feeding poorly', value: 'feeding poorly' },
+                                                { label: 'Not feeding at all', value: 'not feeding at all' }
+                                            ]}
+                                            selected={feedingStatus_discharge || null}
+                                            onSelect={(value) => updatePatientData({ feedingStatus_discharge: value })}
+                                        />
+                                    </View>
+
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={[Styles.accordionSubheading, { fontWeight: 'bold' }]}>{displayNames['spo2_discharge']} <Text style={Styles.required}>*</Text></Text>
+                                        <IconButton
+                                            icon="help-circle-outline"
+                                            size={20}
+                                            iconColor={colors.primary}
+                                            onPress={() => {
+                                                if (Platform.OS !== 'web') {
+                                                    Alert.alert('Info', spo2DischargeInfo);
+                                                } else {
+                                                    alert(spo2DischargeInfo);
+                                                }
+                                            }}
+                                        />
+                                    </View>
+
+                                    <ValidatedTextInput
+                                        label={'SpO₂ (required)'}
+                                        value={spo2_discharge as string}
+                                        onChangeText={(value) => updatePatientData({ spo2_discharge: value })}
+                                        inputType={INPUT_TYPES.NUMERIC}
+                                        isRequired={true}
+                                        customValidator={(value) => validateOxygenSaturationRange(value).isValid}
+                                        customErrorMessage={spo2_discharge && validateOxygenSaturationRange(spo2_discharge).errorMessage}
+                                        right={<TextInput.Affix text="%" />}
                                     />
-                                </View>
-                                
-                                <ValidatedTextInput 
-                                    label={'SpO₂ (required)'}
-                                    value={spo2_discharge as string} 
-                                    onChangeText={(value) => updatePatientData({ spo2_discharge: value })}
-                                    inputType={INPUT_TYPES.NUMERIC}
-                                    isRequired={true}
-                                    customValidator={(value) => validateOxygenSaturationRange(value).isValid}
-                                    customErrorMessage={spo2_discharge && validateOxygenSaturationRange(spo2_discharge).errorMessage } 
-                                    right={<TextInput.Affix text="%" />}                             
-                                />
 
-                                 <Text variant="bodySmall" style={{ fontStyle: 'italic', color: colors.onSurfaceVariant, marginBottom: 15 }}>
-                                    Note: This data will be used to update post-discharge mortality risk predictions.
-                                </Text>
-                            </View>
+                                    <Text variant="bodySmall" style={{ fontStyle: 'italic', color: colors.onSurfaceVariant, marginBottom: 15 }}>
+                                        Note: This data will be used to update post-discharge mortality risk predictions.
+                                    </Text>
+                                </View>
                             </List.Accordion>
                         </View>
 
@@ -898,17 +923,17 @@ export default function DischargeDataScreen() {
                                                                 Exact Date of Birth Unknown
                                                             </Text>
                                                             <Text variant="bodySmall" style={{ marginBottom: 12 }}>
-                                                                Current age is estimated at {AgeCalculator.formatAge(patientData.ageInMonths)} old. 
+                                                                Current age is estimated at {AgeCalculator.formatAge(patientData.ageInMonths)} old.
                                                                 Enter exact DOB if known:
                                                             </Text>
 
                                                             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                                                                <TextInput 
-                                                                    label="Date of Birth (YYYY-MM-DD)" 
-                                                                    placeholder='Select date' 
-                                                                    mode="outlined" 
+                                                                <TextInput
+                                                                    label="Date of Birth (YYYY-MM-DD)"
+                                                                    placeholder='Select date'
+                                                                    mode="outlined"
                                                                     value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
-                                                                    style={[Styles.textInput, {marginTop: 10}]}
+                                                                    style={[Styles.textInput, { marginTop: 10 }]}
                                                                     editable={false}
                                                                     pointerEvents="none"
                                                                 />
@@ -953,7 +978,7 @@ export default function DischargeDataScreen() {
                                                             <View style={{ paddingLeft: 40 }}>
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
-                                                                    {patientData.dob 
+                                                                    {patientData.dob
                                                                         ? new Date(patientData.dob).toLocaleDateString('en-CA')
                                                                         : 'Not available'}
                                                                 </Text>
@@ -974,7 +999,7 @@ export default function DischargeDataScreen() {
                                                             </Text>
                                                             <Text variant="bodySmall" style={{ marginBottom: 12 }}>
                                                                 {"HIV status was marked as 'unknown' at admission. " +
-                                                                "If known, please confirm whether the patient is HIV-positive or negative."}
+                                                                    "If known, please confirm whether the patient is HIV-positive or negative."}
                                                             </Text>
 
                                                             <Text style={[Styles.accordionSubheading, { fontWeight: 'bold', marginBottom: 8 }]}>
@@ -1044,7 +1069,7 @@ export default function DischargeDataScreen() {
                                                             <View style={{ paddingLeft: 40 }}>
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
-                                                                    {patientData.dob 
+                                                                    {patientData.dob
                                                                         ? new Date(patientData.dob).toLocaleDateString('en-CA')
                                                                         : 'Not available'}
                                                                 </Text>
@@ -1096,15 +1121,16 @@ export default function DischargeDataScreen() {
                                 expanded={expandedAccordion === 'medicalConditions'}
                                 onPress={() => {
                                     setExpandedAccordion(expandedAccordion === 'medicalConditions' ? '' : 'medicalConditions')
-                                    handleAccordionPress('medicalConditions')}
+                                    handleAccordionPress('medicalConditions')
+                                }
                                 }
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    <MedicalConditionsSection 
-                                        patientId={patientId} 
-                                        patientData={patientData} 
-                                        storage={storage} 
-                                        onRefresh={onRefresh} 
+                                    <MedicalConditionsSection
+                                        patientId={patientId}
+                                        patientData={patientData}
+                                        storage={storage}
+                                        onRefresh={onRefresh}
                                         colors={colors}
                                         userId={userId}
                                     />
@@ -1112,7 +1138,7 @@ export default function DischargeDataScreen() {
                             </List.Accordion>
                         </View>
 
-                         {/* CHW Accordion */}
+                        {/* CHW Accordion */}
                         <View style={Styles.accordionListWrapper}>
                             <List.Accordion
                                 title={displayNames['vhtReferral']}
@@ -1122,7 +1148,8 @@ export default function DischargeDataScreen() {
                                 expanded={expandedAccordion === 'vhtReferral'}
                                 onPress={() => {
                                     setExpandedAccordion(expandedAccordion === 'vhtReferral' ? '' : 'vhtReferral')
-                                    handleAccordionPress('vhtReferral')}
+                                    handleAccordionPress('vhtReferral')
+                                }
                                 }
                             >
                                 <View style={Styles.accordionContentWrapper}>
@@ -1148,12 +1175,13 @@ export default function DischargeDataScreen() {
                                 titleStyle={Styles.accordionListTitle}
                                 left={props => <CustomAccordionIcon sectionId="caregiverContact" />}
                                 description={getAccordionDescription('caregiverContact')}
-                                expanded = {expandedAccordion === 'caregiverContact'}
+                                expanded={expandedAccordion === 'caregiverContact'}
                                 onPress={() => {
                                     setExpandedAccordion(expandedAccordion === 'caregiverContact' ? '' : 'caregiverContact')
-                                    handleAccordionPress('caregiverContact')}
+                                    handleAccordionPress('caregiverContact')
                                 }
-                                
+                                }
+
                             >
                                 <View style={Styles.accordionContentWrapper}>
                                     <CaregiverContactSection
