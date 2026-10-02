@@ -11,6 +11,7 @@ import { Bundle } from './fhirTypes';
 export interface SendOptions {
   serverUrl?: string;
   authToken?: string;
+  apiKey?: string;
 }
 
 export interface SendResult {
@@ -33,10 +34,11 @@ export class FHIRService {
 
     try {
       const headers: Record<string, string> = {
-        'Content-Type': 'application/fhir+json',
-        Accept: 'application/fhir+json',
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
       };
-      if (opts.authToken) headers.Authorization = `Bearer ${opts.authToken}`;
+      // if (opts.authToken) headers.Authorization = `Bearer ${opts.authToken}`; * Endpoint uses an API key instead *
+      if (opts.apiKey) headers['X-API-Key'] = opts.apiKey;
 
       const response = await fetch(serverUrl, {
         method: 'POST',

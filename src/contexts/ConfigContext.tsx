@@ -27,7 +27,7 @@ const DEFAULT_CONFIG: AppConfig = {
   deviceIdKey: 'A',
   maxPatientAge: 5.1,
   rrateIntegrationEnabled: false,
-  echisServerUrl: '',
+  echisServerUrl: process.env.EXPO_PUBLIC_ECHIS_SERVER_URL || '',
   muacUnit: 'cm'
 };
 

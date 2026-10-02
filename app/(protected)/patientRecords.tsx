@@ -25,7 +25,7 @@ export default function PatientRecords() {
   const { config } = useConfig();
   const { colors } = useTheme()
 
-  const [ records, setRecords ] = useState<PatientData[]>([])
+  const [records, setRecords] = useState<PatientData[]>([])
   const [riskAssessments, setRiskAssessments] = useState<Map<string, RiskAssessment>>(new Map());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,7 +36,7 @@ export default function PatientRecords() {
   // Reload records when screen comes into focus (worms on mount or if navigate back to this page)
   useFocusEffect(
     useCallback(() => {
-        loadAllRecords();
+      loadAllRecords();
     }, [])
   );
 
@@ -48,7 +48,7 @@ export default function PatientRecords() {
   const loadAllRecords = async () => {
     try {
       setLoading(true)
-      
+
       const records = await storage.getSubmittedPatients();
       setRecords(records);
 
@@ -65,7 +65,7 @@ export default function PatientRecords() {
         }
       }
       setRiskAssessments(assessments);
-      
+
       console.log(`📋 Loaded ${records.length} patient records`);
     } catch (error) {
       console.error('Error loading records:', error);
@@ -104,7 +104,7 @@ export default function PatientRecords() {
   const handleEdit = async (id: string) => {
     router.push({
       pathname: '/editPatient',
-      params: { patientId: id}
+      params: { patientId: id }
     })
   }
 
@@ -112,7 +112,7 @@ export default function PatientRecords() {
   const handleDischarge = async (id: string) => {
     router.push({
       pathname: '/dischargeData',
-      params: {patientId: id}
+      params: { patientId: id }
     })
   }
 
@@ -174,8 +174,9 @@ export default function PatientRecords() {
       console.log('📦 FHIR Bundle:', JSON.stringify(bundle, null, 2)); // TESTING
 
       const result = await getFHIRInstance().sendBundle(bundle, {
-        serverUrl: config.echisServerUrl,
+        serverUrl: process.env.EXPO_PUBLIC_ECHIS_SERVER_URL,
         authToken: config.echisAuthToken,
+        apiKey: process.env.EXPO_PUBLIC_ECHIS_API_KEY
       });
 
       if (!result.ok) {
@@ -214,29 +215,29 @@ export default function PatientRecords() {
   // returns 'No Records' display and prompt user to add patient
   if (records.length === 0) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: 30}}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: 30 }}>
         <Text style={{ fontSize: 24, marginBottom: 16, color: colors.primary, fontWeight: 'bold' }}>No Patient Records</Text>
         <Text style={{ fontSize: 16, textAlign: 'center', marginBottom: 20 }}>
           Completed records will appear here when you submit a new patient or complete a draft admission.
         </Text>
-        <Button 
+        <Button
           style={{ alignSelf: 'center', marginTop: 10 }}
-          buttonColor={colors.primary} 
-          textColor={colors.onPrimary} 
-          icon= 'plus'
-          mode="outlined" 
+          buttonColor={colors.primary}
+          textColor={colors.onPrimary}
+          icon='plus'
+          mode="outlined"
           onPress={() => {
             router.push('/(protected)/(admission-sidenav)/patientInformation')
           }}
         >
           Add Patient
         </Button>
-        <Button 
+        <Button
           style={{ alignSelf: 'center', marginTop: 10 }}
-          buttonColor={colors.primary} 
-          textColor={colors.onPrimary} 
-          icon= 'folder'
-          mode="outlined" 
+          buttonColor={colors.primary}
+          textColor={colors.onPrimary}
+          icon='folder'
+          mode="outlined"
           onPress={() => {
             router.push('/drafts')
           }}
@@ -258,36 +259,39 @@ export default function PatientRecords() {
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: colors.background}}>
-      <ScrollView 
-        contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {/* Header */}
         <View style={[Styles.pageHeaderContainer]}>
-          <Text style={[Styles.pageHeaderTitle ]}>
-              Patient Records 
+          <Text style={[Styles.pageHeaderTitle]}>
+            Patient Records
           </Text>
         </View>
 
         {/* Filter Buttons */}
-        <View style={{paddingHorizontal: 16, paddingVertical: 8}}>
+        <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
           <SegmentedButtons
             value={filter}
             onValueChange={setFilter}
             buttons={[
-              { value: 'all', label: 'All', 
-                style: {backgroundColor: filter === 'all' ? colors.primaryContainer : 'white'},
+              {
+                value: 'all', label: 'All',
+                style: { backgroundColor: filter === 'all' ? colors.primaryContainer : 'white' },
               },
-              { value: 'active', label: 'Active',
-                style: {backgroundColor: filter === 'active' ? colors.primaryContainer : 'white'},
+              {
+                value: 'active', label: 'Active',
+                style: { backgroundColor: filter === 'active' ? colors.primaryContainer : 'white' },
               },
-              { value: 'discharged', label: 'Discharged',
-                style: {backgroundColor: filter === 'discharged' ? colors.primaryContainer : 'white'},
+              {
+                value: 'discharged', label: 'Discharged',
+                style: { backgroundColor: filter === 'discharged' ? colors.primaryContainer : 'white' },
               },
             ]}
-            style={{elevation: 1}}
-            
+            style={{ elevation: 1 }}
+
           />
         </View>
 
@@ -299,23 +303,23 @@ export default function PatientRecords() {
           const activePred = getActivePrediction(p.patientId as string);
 
           // deceased patients are a subcategory of discharged
-          const status = 
-            p.isDischarged 
-            ? (p.dischargeStatus?.toLowerCase() === 'deceased' ? 'deceased' : 'discharged') 
-            : 'active';
+          const status =
+            p.isDischarged
+              ? (p.dischargeStatus?.toLowerCase() === 'deceased' ? 'deceased' : 'discharged')
+              : 'active';
 
           return (
-           <PatientCard 
-              key={p.patientId as string} 
-              id={p.patientId as string} 
-              name={name} 
+            <PatientCard
+              key={p.patientId as string}
+              id={p.patientId as string}
+              name={name}
               age={ageDisplay}
-              status={status} 
-              isDischarged={normalizeBoolean(p.isDischarged as boolean)} 
+              status={status}
+              isDischarged={normalizeBoolean(p.isDischarged as boolean)}
               isDraft={normalizeBoolean(p.isDraftAdmission as boolean)}
-              riskCategory={ risk }
-              isElevated={ !!activePred?.isManuallyElevated }
-              originalRiskCategory={ activePred?.originalRiskCategory }
+              riskCategory={risk}
+              isElevated={!!activePred?.isManuallyElevated}
+              originalRiskCategory={activePred?.originalRiskCategory}
               onEdit={() => handleEdit(p.patientId as string)}
               onArchive={() => handleArchive(p.patientId as string)}
               onDischarge={() => handleDischarge(p.patientId as string)}
