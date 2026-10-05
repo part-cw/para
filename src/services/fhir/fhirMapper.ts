@@ -77,14 +77,14 @@ export function buildPatientResource(patient: PatientData, activeSite: string, d
   const resource: Patient = { resourceType: 'Patient' };
 
   if (patient.patientId) {
-  resource.identifier = [
-    {
-      type: { text: 'facility' },
-      system: 'urn:para:patient-id', // For identification purposes only; used to distinguish source (PARA/Streamline) of facility-assigned patient ID.
-      value: patient.patientId,
-    },
-  ];
-}
+    resource.identifier = [
+      {
+        type: { text: 'facility' },
+        system: 'urn:para:patient-id', // For identification purposes only; used to distinguish source (PARA/Streamline) of facility-assigned patient ID.
+        value: patient.patientId,
+      },
+    ];
+  }
 
   const name = buildName(patient);
   if (name) resource.name = [name];
@@ -111,7 +111,7 @@ export function buildPatientResource(patient: PatientData, activeSite: string, d
     ];
   }
 
-    if (activeSite && deviceIdKey) {
+  if (activeSite && deviceIdKey) {
     resource.managingOrganization = { reference: activeSite + '-' + deviceIdKey };
   }
 
@@ -157,7 +157,7 @@ export function buildCareTeam(
     category: [{ text: 'VHT' }],
     name: [{ given: [vhtName] }],
     subject: patientRef,
-    telecom: telecom? telecom : undefined
+    telecom: telecom ? telecom : undefined
   };
   return resource;
 }
@@ -231,8 +231,8 @@ export function buildRiskObservation(
 export function buildPatientBundle(
   patient: PatientData,
   medicalConditions: CategorizedMedicalConditions,
-  riskAssessment: RiskAssessment | null | undefined, 
-  activeSite: string, 
+  riskAssessment: RiskAssessment | null | undefined,
+  activeSite: string,
   deviceIdKey: string
 ): Bundle {
   const patientFullUrl = `urn:uuid:${uuid()}`;
@@ -282,5 +282,5 @@ export function buildPatientBundle(
     });
   }
 
-  return { resourceType: 'Bundle', type: 'transaction', entry: entries };
+  return { resourceType: 'Bundle', type: 'transaction', meta: { source: 'ParaApp' }, entry: entries };
 }
