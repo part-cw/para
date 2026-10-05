@@ -8,6 +8,7 @@
 import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
 import { PatientData } from '../../contexts/PatientData';
 import { RiskAssessment } from '../../models/types';
+import { getFHIRInstance } from './FHIRInstance';
 import {
   Address,
   AdministrativeGender,
@@ -22,6 +23,8 @@ import {
   Reference,
   RelatedPerson,
 } from './fhirTypes';
+import { useConfig } from '@/src/contexts/ConfigContext';
+import { useStorage } from '@/src/contexts/StorageContext';
 
 /** RFC4122-ish v4 UUID. Sufficient for bundle-internal references in this example payload. */
 function uuid(): string {
