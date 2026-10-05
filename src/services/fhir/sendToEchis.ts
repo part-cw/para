@@ -9,7 +9,9 @@ export async function sendToEchis(
     const patient = await storage.getPatient(id);
     if (!patient) return { sent: false, message: 'Could not load patient record.' };
 
-    if (patient.isSentToEchis) return { sent: true }; // never send twice
+    if (patient.isSentToEchis) {
+        return { sent: false, message: 'Patient data has already been sent to eCHIS.' }; // never send twice
+    }
 
     const medicalConditions = await storage.getCategorizedMedicalConditions(id);
     const { assessment } = await storage.getRiskAssessment(id);
@@ -26,7 +28,7 @@ export async function sendToEchis(
     let message: string | undefined;
     if (!result.ok) message = result.error ?? 'Unknown error';
     else if (result.dryRun) message = 'No eCHIS server is configured.';
-    console.log(`sendToEchis: sent=${sent}, message=${message ?? 'none'}`);
+    console.log(`sendToEchis: sent=${sent}, message=${message ?? 'Successful send'}`);
 
     if (sent) await storage.updatePatient(id, { isSentToEchis: true }); // only flip the flag on success
 

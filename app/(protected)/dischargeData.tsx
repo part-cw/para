@@ -25,8 +25,6 @@ import { ActivityIndicator, Alert, Modal, Platform, RefreshControl, TouchableOpa
 import { ScrollView } from "react-native-gesture-handler";
 import { Button, Card, IconButton, List, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { buildPatientBundle } from '@/src/services/fhir/fhirMapper';
-import { getFHIRInstance } from '@/src/services/fhir/FHIRInstance';
 import { useConfig } from '@/src/contexts/ConfigContext';
 import { sendToEchis } from '@/src/services/fhir/sendToEchis';
 
@@ -518,6 +516,8 @@ export default function DischargeDataScreen() {
                     'Not Sent to eCHIS',
                     `${message ?? 'Could not send data.'} The patient is discharged, and the data will be sent again when the record is archived.`
                 );
+            } else {
+                Alert.alert('Success', 'Patient data sent to eCHIS successfully.');
             }
         } catch (error) {
             console.error('Error sending to eCHIS:', error);

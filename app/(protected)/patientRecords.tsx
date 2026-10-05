@@ -168,56 +168,13 @@ export default function PatientRecords() {
         'Archived',
         sent
           ? 'Record archived. Patient data sent to eCHIS.'
-          : `Record archived, but data has not been sent to eCHIS${message ? ` (${message})` : ''}.`
+          : `Record archived. ${message}.`
       );
     } catch (error) {
       console.error('Error archiving patient:', error);
       Alert.alert('Error', 'Something went wrong while archiving patient.');
     }
   };
-
-  // const sendAndArchive = async (id: string) => {
-  //   try {
-  //     // Gather everything needed to build the FHIR bundle.
-  //     const patient = await storage.getPatient(id);
-  //     if (!patient) {
-  //       Alert.alert('Error', 'Could not load patient record.');
-  //       return;
-  //     }
-  //     const medicalConditions = await storage.getCategorizedMedicalConditions(id);
-  //     const { assessment } = await storage.getRiskAssessment(id);
-
-  //     const bundle = buildPatientBundle(patient, medicalConditions, assessment, config.activeSite, config.deviceIdKey);
-
-  //     console.log('📦 FHIR Bundle:', JSON.stringify(bundle, null, 2)); // TESTING
-
-  //     const result = await getFHIRInstance().sendBundle(bundle, {
-  //       serverUrl: process.env.EXPO_PUBLIC_ECHIS_SERVER_URL,
-  //       authToken: config.echisAuthToken,
-  //       apiKey: process.env.EXPO_PUBLIC_ECHIS_API_KEY
-  //     });
-
-  //     if (!result.ok) {
-  //       // Send failed -> do NOT archive; the record stays in the active list.
-  //       Alert.alert('Send Failed', result.error ?? 'Could not send data to eCHIS. Record not archived.');
-  //       return;
-  //     }
-
-  //     await storage.archivePatient(id);
-  //     await loadAllRecords();
-
-  //     Alert.alert(
-  //       'Archived',
-  //       result.dryRun
-  //         ? 'No eCHIS server is configured, so the FHIR bundle was only logged. Record archived.'
-  //         : 'Patient data sent to eCHIS. Record archived.'
-  //     );
-  //   } catch (error) {
-  //     console.error('Error archiving record:', error);
-  //     Alert.alert('Error', 'Something went wrong while archiving. Record not archived.');
-  //   }
-  // }
-
 
   // The active prediction: discharge if the patient has one, otherwise admission.
   const getActivePrediction = (patientId: string): RiskPrediction | null => {

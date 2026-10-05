@@ -8,17 +8,17 @@ import { normalizeBoolean } from "../utils/normalizer";
 import { IStorageService } from "./StorageService";
 
 type MedicalConditionsRow = {
-  patientId: string;
-  malnutritionStatus: string;
-  sickYoungInfant: number;
-  pneumonia: string;
-  diarrhea: string;
-  malaria: string;
-  sepsis: string;
-  meningitis_encephalitis: string;
-  chronicIllnesses: string;
-  otherChronicIllness: string | null;
-  severeAnaemia: string;
+    patientId: string;
+    malnutritionStatus: string;
+    sickYoungInfant: number;
+    pneumonia: string;
+    diarrhea: string;
+    malaria: string;
+    sepsis: string;
+    meningitis_encephalitis: string;
+    chronicIllnesses: string;
+    otherChronicIllness: string | null;
+    severeAnaemia: string;
 };
 
 type RiskAssessmentInfo = {
@@ -33,9 +33,9 @@ export class SQLiteStorage implements IStorageService {
     private readonly DB_NAME = 'para.db';
     private readonly ENCRYPTION_KEY_STORAGE = 'db_encryption_key';
 
-async init(): Promise<void> {
+    async init(): Promise<void> {
         this.encryptionKey = await this.getOrCreateEncryptionKey();
-        
+
         this.db = await SQLite.openDatabaseAsync(this.DB_NAME);
 
         // Enable encryption
@@ -49,24 +49,24 @@ async init(): Promise<void> {
         await this.initializeSchema();
     }
 
-  private async getOrCreateEncryptionKey(): Promise<string> {
+    private async getOrCreateEncryptionKey(): Promise<string> {
         let key = await SecureStore.getItemAsync(this.ENCRYPTION_KEY_STORAGE);
-        
+
         if (!key) {
             // Generate a new 256-bit key
-            key = Array.from({ length: 32 }, () => 
+            key = Array.from({ length: 32 }, () =>
                 Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
             ).join('');
-            
+
             await SecureStore.setItemAsync(this.ENCRYPTION_KEY_STORAGE, key);
         }
-        
+
         return key;
     }
 
     async initializeSchema(): Promise<void> {
-        if (!this.db) throw new Error('Database not initialized');    
-        
+        if (!this.db) throw new Error('Database not initialized');
+
         await this.db.execAsync(`
             PRAGMA foreign_keys = ON;
 
@@ -111,7 +111,8 @@ async init(): Promise<void> {
                 isDischarged            INTEGER DEFAULT 0,
                 isArchived              INTEGER DEFAULT 0,
                 admittedBy              TEXT,
-                dischargedBy            TEXT
+                dischargedBy            TEXT, 
+                isSentToEchis           INTEGER DEFAULT 0
 
             );
 
@@ -206,18 +207,23 @@ async init(): Promise<void> {
     // Private function for updating database to include new vhtUuid column if it doesn't exist. 
     // Ensures previous versions of the app still have auto-save capability and will include the new vhtUuid field.   
     private async runMigrations(): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+        if (!this.db) throw new Error('Database not initialized');
 
-    const columns = await this.db.getAllAsync<{ name: string }>(
-        `PRAGMA table_info(patients)`
-    );
-    const columnNames = columns.map(c => c.name);
+        const columns = await this.db.getAllAsync<{ name: string }>(
+            `PRAGMA table_info(patients)`
+        );
+        const columnNames = columns.map(c => c.name);
 
-    if (!columnNames.includes('vhtUuid')) {
-        await this.db.execAsync(`ALTER TABLE patients ADD COLUMN vhtUuid TEXT;`);
-        console.log('✅ Migrated: added vhtUuid column to patients table');
+        if (!columnNames.includes('vhtUuid')) {
+            await this.db.execAsync(`ALTER TABLE patients ADD COLUMN vhtUuid TEXT;`);
+            console.log('✅ Migrated: added vhtUuid column to patients table');
+        }
+
+        if (!columnNames.includes('isSentToEchis')) {
+            await this.db.execAsync(`ALTER TABLE patients ADD COLUMN isSentToEchis INTEGER DEFAULT 0;`);
+            console.log('✅ Migrated: added isSentToEchis column to patients table');
+        }
     }
-}
 
     // ========== PATIENT OPERATIONS ==========
 
@@ -240,9 +246,9 @@ async init(): Promise<void> {
         console.log(`✅ Patient ${patientId} submitted by ${userId}`);
     }
 
-     /**
-     * convert patietn from active to discharged and complete the workflow - mark completed with date argument or now
-     */
+    /**
+    * convert patietn from active to discharged and complete the workflow - mark completed with date argument or now
+    */
     async dischargePatient(patientId: string, userId: string, date?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
@@ -253,7 +259,7 @@ async init(): Promise<void> {
             UPDATE patients 
             SET isDischarged = 1, dischargedAt = ?, updatedAt = ?, dischargedBy = ?
             WHERE patientId = ?
-        `, [date || now, date || now, userId,patientId]);
+        `, [date || now, date || now, userId, patientId]);
 
         await this.logChanges(patientId, 'DISCHARGED', null, null, null, userId);
         console.log(`✅ Patient ${patientId} discharged`);
@@ -268,24 +274,24 @@ async init(): Promise<void> {
         `, [patientId]);
 
         if (!patientRow) return null;
-        
+
         const conditions = await this.getMedicalConditions(patientId)
         const clinicalData = await this.getClinicalData(patientId)
 
         return this.buildPatientData(patientRow, conditions, clinicalData)
     }
-  
+
     /**
      * use in edit screens - updates all changed fields  in one go
      */
     async updatePatient(
-        patientId: string, 
-        updates: Partial<PatientData>, 
+        patientId: string,
+        updates: Partial<PatientData>,
         date?: string,
-        useTransaction: boolean = true,  
+        useTransaction: boolean = true,
     ): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
-        
+
         const now = new Date().toISOString();
 
         const doUpdate = async () => {
@@ -326,7 +332,7 @@ async init(): Promise<void> {
             await this.logBulkUpdates(patientId, userId, updates, previousValues, now);
             await this.updatePatient(patientId, updates, now, false);
         });
-        
+
         console.log(`✅ Patient ${patientId} bulk update complete. Changes logged.`);
     }
 
@@ -359,7 +365,7 @@ async init(): Promise<void> {
                     dob, birthYear, birthMonth, approxAgeInYears, ageInMonths, isDOBUnknown, isYearMonthUnknown, isUnderSixMonths, isNeonate,
                     village, subvillage, vhtName, vhtTelephone, vhtUuid,
                     caregiverName, caregiverTel, confirmTel, sendReminders, isCaregiversPhone, phoneOwner,
-                    admissionStartedAt, updatedAt, isDraftAdmission
+                    admissionStartedAt, updatedAt, isDraftAdmission, isSentToEchis
                 ) 
                 VALUES (
                     ?, ?, ?, ?, ?,              -- name/sex
@@ -368,35 +374,35 @@ async init(): Promise<void> {
                     ?, ?, ?                     -- metadata
                 )
             `, [
-                patientId, 
-                data.surname, 
-                data.firstName, 
-                data.otherName || null, 
-                data.sex, 
-                data.dob ? data.dob.toISOString() : null, 
-                data.birthYear || null, 
-                data.birthMonth || null, 
-                data.approxAgeInYears || null, 
+                patientId,
+                data.surname,
+                data.firstName,
+                data.otherName || null,
+                data.sex,
+                data.dob ? data.dob.toISOString() : null,
+                data.birthYear || null,
+                data.birthMonth || null,
+                data.approxAgeInYears || null,
                 data.ageInMonths || null,
                 data.isDOBUnknown ? 1 : 0,
-                data.isYearMonthUnknown ? 1: 0,
-                data.isUnderSixMonths ? 1 : 0, 
+                data.isYearMonthUnknown ? 1 : 0,
+                data.isUnderSixMonths ? 1 : 0,
                 data.isNeonate !== null ? (data.isNeonate ? 1 : 0) : null,
                 data.village || null,
-                data.subvillage || null, 
-                data.vhtName || null, 
-                data.vhtTelephone || null, 
+                data.subvillage || null,
+                data.vhtName || null,
+                data.vhtTelephone || null,
                 data.vhtUuid || null,
-                data.caregiverName || null, 
-                data.caregiverTel || null, 
-                data.confirmTel|| null, 
-                data.sendReminders ? 1 : 0, 
-                data.isCaregiversPhone  !== null ? (data.isCaregiversPhone ? 1 : 0) : null,
+                data.caregiverName || null,
+                data.caregiverTel || null,
+                data.confirmTel || null,
+                data.sendReminders ? 1 : 0,
+                data.isCaregiversPhone !== null ? (data.isCaregiversPhone ? 1 : 0) : null,
                 data.phoneOwner || null,
-                data.admissionStartedAt || timestamp, 
-                timestamp, 
+                data.admissionStartedAt || timestamp,
+                timestamp,
                 isDraft ? 1 : 0
-             ]);
+            ]);
 
             // Insert medical conditions
             await this.db!.runAsync(`
@@ -430,7 +436,7 @@ async init(): Promise<void> {
 
     async saveDraft(data: PatientData, patientId: string, userId: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
-        
+
         const now = new Date().toISOString();
 
         // Check if draft exists
@@ -449,10 +455,10 @@ async init(): Promise<void> {
         }
     }
 
-  /**
-   * 
-   * get specific draft admission by id
-   */
+    /**
+     * 
+     * get specific draft admission by id
+     */
     async getDraft(patientId: string): Promise<PatientData | null> {
         if (!this.db) throw new Error('Database not initialized');
 
@@ -507,7 +513,7 @@ async init(): Promise<void> {
 
         await this.db.runAsync('DELETE FROM patients WHERE isDraftAdmission = 1')
         console.log('✅ All drafts deleted');
-    } 
+    }
 
 
     // ========== LIST OPERATIONS ==========
@@ -554,7 +560,7 @@ async init(): Promise<void> {
             ORDER BY admissionCompletedAt DESC`
         );
 
-       return await this.fetchPatientList(rows)
+        return await this.fetchPatientList(rows)
     }
 
 
@@ -565,7 +571,7 @@ async init(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const now = new Date().toISOString();
-        
+
         // Get current patient context
         const patient = await this.getPatient(patientId);
         if (!patient) throw new Error(`Patient ${patientId} not found`);
@@ -609,7 +615,7 @@ async init(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const conditionsMap = await this.getMedicalConditions(patientId);
-        
+
         const { positive, suspected } = this.parseConditions(conditionsMap);
 
         // Prioritize conditions for display (most severe/important first)
@@ -625,7 +631,7 @@ async init(): Promise<void> {
     private prioritizeConditions(conditions: string[]): string[] {
         // TODO Define priority order (higher index = higher priority)
         // for now, I've given sick young infant, severe anaemaia, and severe malnutrion hightest priortiy
-        const priorityMap: {[key: string]: number} = {
+        const priorityMap: { [key: string]: number } = {
             'Sick Young Infant': 10,
             'Severe Anaemia': 10,
             'Severe Acute Malnutrition (SAM)': 10,
@@ -649,12 +655,12 @@ async init(): Promise<void> {
         });
     }
 
-    private parseConditions(conditions: {[key: string]: any }): { positive: string[]; suspected: string[] } {
+    private parseConditions(conditions: { [key: string]: any }): { positive: string[]; suspected: string[] } {
         const positive: string[] = [];
         const suspected: string[] = [];
 
         // Map database field names to display names
-        const displayNameMap: {[key: string]: string} = {
+        const displayNameMap: { [key: string]: string } = {
             'pneumonia': 'Pneumonia',
             'severeAnaemia': 'Severe Anaemia',
             'diarrhea': 'Diarrhea',
@@ -712,7 +718,7 @@ async init(): Promise<void> {
                 } else if (value === 'moderate') {
                     positive.push('Moderate Acute Malnutrition (MAM)');
                 }
-                
+
             }
         }
 
@@ -731,7 +737,7 @@ async init(): Promise<void> {
                     hasNoneOrUnsure = true;
                     continue;
                 }
-                
+
                 // Skip "other" - we'll get the actual conditions from otherChronicIllness field
                 if (normalized === "other") {
                     continue;
@@ -1084,7 +1090,7 @@ async init(): Promise<void> {
         );
 
         if (!row) throw new Error(`No medical conditions found for patient ${patientId}`);
-  
+
         // TODO safely parse chronic illnesses JSON array
         const chronicIllnesses = (() => {
             try {
@@ -1110,7 +1116,7 @@ async init(): Promise<void> {
         };
 
         return conditions;
-    }   
+    }
 
 
     /**
@@ -1124,10 +1130,10 @@ async init(): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
 
         const query = usageTime
-        ? `SELECT variableName, variableValue, variableType
+            ? `SELECT variableName, variableValue, variableType
             FROM clinical_variables 
             WHERE patientId = ? AND usageTime = ?`
-        : `SELECT variableName, variableValue, variableType 
+            : `SELECT variableName, variableValue, variableType 
             FROM clinical_variables 
             WHERE patientId = ?`;
 
@@ -1140,7 +1146,7 @@ async init(): Promise<void> {
 
         for (const row of rows) {
             const value = this.parseVariableValue(row.variableValue, row.variableType);
-            
+
             // Databse variable names should already match PatientData field names
             variables[row.variableName] = value;
         }
@@ -1176,7 +1182,7 @@ async init(): Promise<void> {
         previousValues: Record<string, any>,
         now: string
     ): Promise<void> {
-        if (!this.db) throw new Error ('Databse not initialized');
+        if (!this.db) throw new Error('Databse not initialized');
 
         const changeEntries: any[] = [];
 
@@ -1208,8 +1214,8 @@ async init(): Promise<void> {
         try {
             // build bulk insert params
             const placeholders = changeEntries
-            .map(() => "(?, ?, ?, ?, ?, ?, ?)")
-            .join(", ");
+                .map(() => "(?, ?, ?, ?, ?, ?, ?)")
+                .join(", ");
 
             const flattened = changeEntries.flatMap(c => [
                 c.patientId,
@@ -1237,10 +1243,11 @@ async init(): Promise<void> {
             action: string;
             fieldChanged: string | null;
             oldValue: string | null;
-            newValue: string | null;}[],
+            newValue: string | null;
+        }[],
         userId: string
     ): Promise<void> {
-        if (!this.db) throw new Error ('Database not initialized');
+        if (!this.db) throw new Error('Database not initialized');
 
         try {
             // Build placeholders: (?,?,?,?,?,?) for each change
@@ -1300,10 +1307,11 @@ async init(): Promise<void> {
             sendReminders: patientRow.sendReminders,
             isCaregiversPhone: patientRow.isCaregiversPhone,
             phoneOwner: patientRow.phoneOwner,
-            
+
             isDraftAdmission: patientRow.isDraftAdmission,
             isDischarged: patientRow.isDischarged,
             isArchived: patientRow.isArchived,
+            isSentToEchis: patientRow.isSentToEchis,
 
             ...conditions,
             ...clinicalData
@@ -1349,19 +1357,20 @@ async init(): Promise<void> {
             phoneOwner: 'phoneOwner',
             isDischarged: 'isDischarged',
             isArchived: 'isArchived',
-            isDraftAdmission: 'isDraftAdmission'
+            isDraftAdmission: 'isDraftAdmission',
+            isSentToEchis: 'isSentToEchis'
         };
 
         for (const [key, dbColumn] of Object.entries(fieldMap)) {
             if (key in updates) {
                 const value = (updates as any)[key];
-                
+
                 if (key === 'dob' && value instanceof Date) {
                     patientFields[dbColumn] = value.toISOString();
                 } else if (typeof value === 'boolean') {
                     patientFields[dbColumn] = value ? 1 : 0;
                 } else if (value === null) {
-                    patientFields[dbColumn] = null; 
+                    patientFields[dbColumn] = null;
                 } else {
                     patientFields[dbColumn] = value;
                 }
@@ -1389,7 +1398,7 @@ async init(): Promise<void> {
         for (const key of conditionKeys) {
             if (key in updates) {
                 const value = (updates as any)[key];
-                
+
                 if (key === 'sickYoungInfant') {
                     conditionFields[key] = value ? 1 : 0;
                 } else if (key === 'chronicIllnesses') {
@@ -1442,7 +1451,7 @@ async init(): Promise<void> {
 
     private convertToString(value: any, variableType: string): string | null {
         if (value === null || value === undefined || value === '') return null;
-        
+
         if (variableType === 'json') {
             return JSON.stringify(value);
         } else if (variableType === 'boolean') {
@@ -1455,19 +1464,19 @@ async init(): Promise<void> {
     /**
    * Parse variable value from string to appropriate type
    */
-  private parseVariableValue(value: string | null, type: string): any {
-    if (value === null) return null;
+    private parseVariableValue(value: string | null, type: string): any {
+        if (value === null) return null;
 
-    switch (type) {
-      case 'numeric':
-        return parseFloat(value);
-      case 'boolean':
-        return value === '1' || value === 'true';
-      case 'json':
-        return JSON.parse(value);
-      case 'text':
-      default:
-        return value;
+        switch (type) {
+            case 'numeric':
+                return parseFloat(value);
+            case 'boolean':
+                return value === '1' || value === 'true';
+            case 'json':
+                return JSON.parse(value);
+            case 'text':
+            default:
+                return value;
+        }
     }
-  }
 }

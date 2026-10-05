@@ -1,3 +1,10 @@
 [
-  { "label": "Test", "value": "test" }
+  {
+    "label": "Test",
+    "value": "test"
+  },
+  {
+    "label": "usabilityTest",
+    "value": "usabilityTest"
+  }
 ]
