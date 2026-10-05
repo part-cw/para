@@ -285,5 +285,5 @@ export function buildPatientBundle(
     });
   }
 
-  return { resourceType: 'Bundle', type: 'transaction', entry: entries };
+  return { resourceType: 'Bundle', type: 'transaction', meta: { source: 'ParaApp' }, entry: entries };
 }

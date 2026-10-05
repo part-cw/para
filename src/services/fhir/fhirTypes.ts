@@ -23,6 +23,10 @@ export interface Identifier {
   value?: string;
 }
 
+export interface Meta {
+  source?: string;
+}
+
 export interface HumanName {
   family?: string;
   given?: string[];
@@ -107,5 +111,6 @@ export interface BundleEntry {
 export interface Bundle {
   resourceType: 'Bundle';
   type: 'transaction';
+  meta: Meta;
   entry: BundleEntry[];
 }
