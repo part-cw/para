@@ -228,7 +228,7 @@ export class SQLiteStorage implements IStorageService {
     // ========== PATIENT OPERATIONS ==========
 
     /**
-     * convert patietn from draft to active and comlpetes admission worflow - mark completed with date argument or now
+     * convert patient from draft to active and comlpetes admission worflow - mark completed with date argument or now
      */
     async submitPatient(patientId: string, userId: string, date?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
@@ -247,7 +247,7 @@ export class SQLiteStorage implements IStorageService {
     }
 
     /**
-    * convert patietn from active to discharged and complete the workflow - mark completed with date argument or now
+    * convert patient from active to discharged and complete the workflow - mark completed with date argument or now
     */
     async dischargePatient(patientId: string, userId: string, date?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
@@ -371,7 +371,7 @@ export class SQLiteStorage implements IStorageService {
                     ?, ?, ?, ?, ?,              -- name/sex
                     ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- age demographics
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  -- vht + caregiver info
-                    ?, ?, ?                     -- metadata
+                    ?, ?, ?, ?                     -- metadata
                 )
             `, [
                 patientId,
@@ -401,7 +401,8 @@ export class SQLiteStorage implements IStorageService {
                 data.phoneOwner || null,
                 data.admissionStartedAt || timestamp,
                 timestamp,
-                isDraft ? 1 : 0
+                isDraft ? 1 : 0,
+                data.isSentToEchis ? 1 : 0
             ]);
 
             // Insert medical conditions

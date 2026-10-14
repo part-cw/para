@@ -1,6 +1,4 @@
-
 import testData from '@/src/data/vht_list/test.json';
-import usabilityTest from '@/src/data/vht_list/usability_vht.json';
 import { VhtDataObject } from './vhtDataProcessor';
 
 /**
@@ -8,8 +6,7 @@ import { VhtDataObject } from './vhtDataProcessor';
  * Keys should match config.activeSite (case-insensitive)
  */
 const vhtDataMap: Record<string, VhtDataObject[]> = {
-  test: testData,
-  usabilitytest: usabilityTest
+  test: testData
 };
 
 /**

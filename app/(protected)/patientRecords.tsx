@@ -161,14 +161,16 @@ export default function PatientRecords() {
     try {
       const { sent, message } = await sendToEchis(id, storage, config);
 
-      await storage.archivePatient(id);
-      await loadAllRecords();
+      if (sent) {
+        await storage.archivePatient(id);
+        await loadAllRecords();
+      }
 
       Alert.alert(
         'Archived',
         sent
           ? 'Record archived. Patient data sent to eCHIS.'
-          : `Record archived. ${message}.`
+          : `Record cannot be archived. ${message}.`
       );
     } catch (error) {
       console.error('Error archiving patient:', error);
