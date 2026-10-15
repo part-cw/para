@@ -170,7 +170,7 @@ export default function PatientRecords() {
       Alert.alert(
         'Archive Status',
         sent
-          ? 'Record archived. Patient data sent to eCHIS.'
+          ? 'Record archived. Patient data has been sent to eCHIS.'
           : `Record cannot be archived. ${message}.`
       );
     } catch (error) {

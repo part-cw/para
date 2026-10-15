@@ -620,7 +620,7 @@ export default function DischargeDataScreen() {
 
         Alert.alert(
             'Confirm Discharge',
-            `Are you sure you want to discharge patient ${patientName}? This action cannot be undone.`,
+            `Are you sure you want to discharge patient ${patientName} and send data to eCHIS? This action cannot be undone.`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 { text: 'Discharge', onPress: confirmDischarge }
