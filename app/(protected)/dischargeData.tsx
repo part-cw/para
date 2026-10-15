@@ -514,7 +514,7 @@ export default function DischargeDataScreen() {
             if (!sent) {
                 Alert.alert(
                     'Not Sent to eCHIS',
-                    `${message ?? 'Could not send data.'} The patient is discharged, and the data will be sent again when the record is archived.`
+                    `${message ?? 'Could not send data.'} The patient is discharged, and the data will be resent when the record is archived.`
                 );
             } else {
                 Alert.alert('Success', 'Patient data sent to eCHIS successfully.');

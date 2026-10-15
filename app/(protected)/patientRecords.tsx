@@ -149,7 +149,7 @@ export default function PatientRecords() {
   const handleArchive = async (id: string) => {
     Alert.alert(
       'Archive Record',
-      'This will send the patient\'s data to eCHIS and then archive the record. Continue?',
+      'This will send the patient\'s data to eCHIS (if not already sent) and then archive the record. Continue?',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Send & Archive', style: 'destructive', onPress: () => archivePatient(id) },
@@ -161,13 +161,14 @@ export default function PatientRecords() {
     try {
       const { sent, message } = await sendToEchis(id, storage, config);
 
+      // archive if record was sent previously at discharge or if it was just sent now
       if (sent) {
         await storage.archivePatient(id);
         await loadAllRecords();
       }
 
       Alert.alert(
-        'Archived',
+        'Archive Status',
         sent
           ? 'Record archived. Patient data sent to eCHIS.'
           : `Record cannot be archived. ${message}.`

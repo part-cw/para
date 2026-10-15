@@ -19,6 +19,7 @@ export interface SendResult {
   dryRun: boolean;
   status?: number;
   error?: string;
+  body?: { error?: string } | string;
 }
 
 export class FHIRService {
@@ -46,6 +47,20 @@ export class FHIRService {
         body: JSON.stringify(bundle),
       });
 
+      // Read the body once, as text, regardless of success or failure
+      const rawBody = await response.text().catch(() => '');
+
+      // eCHIS returns JSON like { error: "..." }; fall back to raw text if it isn't JSON
+      let parsedBody: { error?: string } | string | undefined = rawBody || undefined;
+      try {
+        if (rawBody) parsedBody = JSON.parse(rawBody) as { error?: string };
+      } catch {
+        // not JSON, keep the raw text
+      }
+
+      console.log('[FHIR] Response status:', response.status, response.statusText);
+      console.log('[FHIR] Response body:', JSON.stringify(parsedBody, null, 2));
+
       if (!response.ok) {
         const body = await response.text().catch(() => '');
         return {
@@ -53,15 +68,16 @@ export class FHIRService {
           dryRun: false,
           status: response.status,
           error: `eCHIS responded ${response.status} ${response.statusText}${body ? `: ${body}` : ''}`,
+          body: parsedBody
         };
       }
 
-      return { ok: true, dryRun: false, status: response.status };
+      return { ok: true, dryRun: false, status: response.status, body: parsedBody };
     } catch (error) {
       return {
         ok: false,
         dryRun: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: error instanceof Error ? error.message : String(error)
       };
     }
   }
