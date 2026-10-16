@@ -58,16 +58,15 @@ export class FHIRService {
         // not JSON, keep the raw text
       }
 
-      console.log('[FHIR] Response status:', response.status, response.statusText);
-      console.log('[FHIR] Response body:', JSON.stringify(parsedBody, null, 2));
+      // return body if it's a string, or JSON if it's an object
+      const detail = typeof parsedBody === 'string' ? parsedBody : parsedBody?.error;
 
       if (!response.ok) {
-        const body = await response.text().catch(() => '');
         return {
           ok: false,
           dryRun: false,
           status: response.status,
-          error: `eCHIS responded ${response.status} ${response.statusText}${body ? `: ${body}` : ''}`,
+          error: `eCHIS responded ${response.status} ${response.statusText}${detail ? `: ${detail}` : ''}`,
           body: parsedBody
         };
       }
