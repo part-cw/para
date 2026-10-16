@@ -5,7 +5,7 @@ export interface PatientData {
   patientId?: string;
   admissionStartedAt: string | null;
   admissionCompletedAt: string | null;
-  
+
   // Patient Information (for all ages)
   surname: string;
   firstName: string;
@@ -21,13 +21,13 @@ export interface PatientData {
   approxAgeInYears: string;
   ageInMonths: number | null;
 
-  
+
   // Admission Clinical Data (all ages)
   weight?: string;
   waz?: number | null;
   muac?: string;
   spo2_admission?: string;
- 
+
   // Admission Clinical Data (6-60 months only)
   hivStatus?: string;
   temperature?: string;
@@ -59,14 +59,14 @@ export interface PatientData {
   malnutritionStatus?: string;
   edematousMalnutrition?: boolean;
   sickYoungInfant?: boolean;
-  
+
   // vhtReferral info
   village: string;
   subvillage: string;
   vhtName: string;
   vhtTelephone: string;
   vhtUuid: string;
-  
+
   // caregiverContact
   caregiverName: string;
   caregiverTel: string;
@@ -83,6 +83,7 @@ export interface PatientData {
   // status flags
   isDraftAdmission?: boolean,
   isDischarged?: boolean,
+  isSentToEchis?: boolean,
   isArchived?: boolean,
 }
 
@@ -103,7 +104,7 @@ export const initialPatientData: PatientData = {
   approxAgeInYears: '',
   ageInMonths: null,
   isNeonate: null,
-  
+
   // medical conditions
   severeAnaemia: '',
   pneumonia: '',
@@ -136,7 +137,7 @@ export const initialPatientData: PatientData = {
   waz: null,
   muac: '',
   spo2_admission: '',
-  
+
   // 6-60 months
   hivStatus: '',
   temperature: '',
@@ -149,15 +150,16 @@ export const initialPatientData: PatientData = {
   bcsScore: null,
   abnormalBCS: null,
   levelOfConsciousness: '',
-  
+
   // 0-6 months
   illnessDuration: '',
   neonatalJaundice: '',
   bulgingFontanelle: '',
   feedingWell: '',
-  
+
   // discharge fields
   spo2_discharge: '',
   dischargeStatus: '',
+  isSentToEchis: false,
   feedingStatus_discharge: '',
 };
