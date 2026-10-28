@@ -679,6 +679,10 @@ export default function DischargeDataScreen() {
         />
     );
 
+    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
+    const toLocalDateString = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
     const getAccordionDescription = (sectionId: string) => {
         const isReviewed = reviewedSections.has(sectionId);
         const validation = sectionValidations[sectionId];
@@ -932,7 +936,7 @@ export default function DischargeDataScreen() {
                                                                     label="Date of Birth (YYYY-MM-DD)"
                                                                     placeholder='Select date'
                                                                     mode="outlined"
-                                                                    value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
+                                                                    value={editedDOB ? toLocalDateString(editedDOB) : ""}
                                                                     style={[Styles.textInput, { marginTop: 10 }]}
                                                                     editable={false}
                                                                     pointerEvents="none"

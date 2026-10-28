@@ -25,6 +25,7 @@ export interface SendResult {
 export class FHIRService {
   async sendBundle(bundle: Bundle, opts: SendOptions = {}): Promise<SendResult> {
     const serverUrl = opts.serverUrl?.trim();
+    console.log(JSON.stringify(bundle, null, 2));
 
     // Dry-run: no endpoint configured yet.
     if (!serverUrl) {

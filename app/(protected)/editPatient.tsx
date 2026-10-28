@@ -30,13 +30,13 @@ export default function EditPatientRecord() {
     const { colors } = useTheme()
     const { config } = useConfig();
     const { storage } = useStorage();
-    const {currentUser} = useAuth();
-    const { 
-        patientData, 
-        riskAssessment, 
+    const { currentUser } = useAuth();
+    const {
+        patientData,
+        riskAssessment,
         admissionLastCalculated,
-        loadPatient, 
-        calculateAdmissionRiskWithData, 
+        loadPatient,
+        calculateAdmissionRiskWithData,
         clearPatientData,
         updatePatientData
     } = usePatientData();
@@ -46,12 +46,12 @@ export default function EditPatientRecord() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [recalculating, setRecalculating] = useState(false);
     const [expanded, setExpanded] = useState<string>('');
-    
+
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [editedDOB, setEditedDob] = useState<Date | null>(null);
     const [pendingDobUpdates, setPendingDobUpdates] = useState<Partial<PatientData> | null>(null);
     const [editedHivStatus, setEditedHivStatus] = useState<string | undefined>('');
-    
+
     const [showNeonatalJaundiceModal, setShowNeonatalJaundiceModal] = useState(false);
     const [neonatalJaundiceValue, setNeonatalJaundiceValue] = useState<string>('');
 
@@ -99,7 +99,7 @@ export default function EditPatientRecord() {
         const admissionDate = new Date(patientData.admissionStartedAt as string);
         const newAgeInMonths = AgeCalculator.calculateAgeInMonthsAtAdmission(editedDOB as Date, admissionDate);
         const newAgeInDays = editedDOB && AgeCalculator.getAgeInDaysAtAdmission(editedDOB, admissionDate);
-        
+
         const newIsUnderSixMonths = newAgeInMonths < 6
         const newIsNeonate = (typeof newAgeInDays === 'number') && (newAgeInDays < 30);
         const newIsSickYoungInfant = (typeof newAgeInDays === 'number') && (newAgeInDays < 28);
@@ -127,9 +127,9 @@ export default function EditPatientRecord() {
                 Alert.alert(
                     '⚠️ UPDATE FAILED',
                     'Are you sure the date of birth you entered is correct? This DOB change affects the AI models used for risk scoring.\n\nClick cancel, or re-admit patient if the DOB needs to be corrected.',
-                    [ 
-                        {text: 'Cancel', style: 'cancel'},
-                        {text: 'Readmit', style: 'destructive', onPress: () => {console.log('TODO - redirect to add-workflow & perserve basic info')}}
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Readmit', style: 'destructive', onPress: () => { console.log('TODO - redirect to add-workflow & perserve basic info') } }
                     ]
                 )
                 setEditedDob(null)
@@ -139,30 +139,30 @@ export default function EditPatientRecord() {
             Alert.alert(
                 'WARNING',
                 'Updating DOB will trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
-                [ 
-                    {text: 'Cancel', style: 'cancel'},
-                    {text: 'OK', onPress: () => confirmDobUpdate(previous, newAgeInMonths, newIsNeonate, newIsSickYoungInfant, newWAZ)}]
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'OK', onPress: () => confirmDobUpdate(previous, newAgeInMonths, newIsNeonate, newIsSickYoungInfant, newWAZ) }]
             )
         } else {
             // TODO -  add alert for web 
             return;
-        } 
+        }
     }
 
     const confirmDobUpdate = async (previous: any, newAgeInMonths: number, newIsNeonate: boolean, newIsSickYoungInfant: boolean, newWaz: number) => {
         // only update values if they have changed - don't include isUnderSixMonths (this should never change)
         let updates = {
-            ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && {dob: editedDOB}),
-            ...(previous.birthYear && previous.birthYear !== '' && {birthYear: ''}),
-            ...(previous.birthMonth && previous.birthMonth !== '' &&  {birthMonth: ''}),
-            ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && {approxAgeInYears: ''}),
-            ...(previous.ageInMonths !== newAgeInMonths && {ageInMonths: newAgeInMonths}),
-            ...(previous.waz !== newWaz && {waz: newWaz}),
-            ...(normalizeBoolean(previous.isDOBUnknown) !== false && {isDOBUnknown: false} ),
-            ...(normalizeBoolean(previous.isYearMonthUnknown) !== false && {isYearMonthUnknown: false}),
-            ...(previous.isNeonate !== newIsNeonate && {isNeonate: newIsNeonate}),
-            ...(!newIsNeonate && previous.neonatalJaundice !== undefined && {neonatalJaundice: undefined}), // if new isNeonate false, set previous jaundice to null or undefined
-            ...(previous.sickYoungInfant !== newIsSickYoungInfant && {sickYoungInfant: newIsSickYoungInfant})
+            ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && { dob: editedDOB }),
+            ...(previous.birthYear && previous.birthYear !== '' && { birthYear: '' }),
+            ...(previous.birthMonth && previous.birthMonth !== '' && { birthMonth: '' }),
+            ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && { approxAgeInYears: '' }),
+            ...(previous.ageInMonths !== newAgeInMonths && { ageInMonths: newAgeInMonths }),
+            ...(previous.waz !== newWaz && { waz: newWaz }),
+            ...(normalizeBoolean(previous.isDOBUnknown) !== false && { isDOBUnknown: false }),
+            ...(normalizeBoolean(previous.isYearMonthUnknown) !== false && { isYearMonthUnknown: false }),
+            ...(previous.isNeonate !== newIsNeonate && { isNeonate: newIsNeonate }),
+            ...(!newIsNeonate && previous.neonatalJaundice !== undefined && { neonatalJaundice: undefined }), // if new isNeonate false, set previous jaundice to null or undefined
+            ...(previous.sickYoungInfant !== newIsSickYoungInfant && { sickYoungInfant: newIsSickYoungInfant })
         };
 
         setIsUpdating(true);
@@ -176,7 +176,7 @@ export default function EditPatientRecord() {
             setNeonatalJaundiceValue('') // clear any prevous value
             setShowNeonatalJaundiceModal(true);
             return;
-        } 
+        }
 
         // if no changes to neonate status, proceed with risk calculations
         await proceedWithRiskRecalculation(updates);
@@ -204,10 +204,10 @@ export default function EditPatientRecord() {
 
             // Merge neonatal jaundice with pending DOB updates (if any)
             const allUpdates = {
-                ...pendingDobUpdates, 
-                ...jaundiceUpdate 
+                ...pendingDobUpdates,
+                ...jaundiceUpdate
             };
-            
+
             // Now proceed with risk recalculation
             await proceedWithRiskRecalculation(allUpdates);
             await onRefresh();
@@ -221,7 +221,7 @@ export default function EditPatientRecord() {
     const handleUpdateHivStatus = () => {
         const confirmUpdate = async () => {
             const prev = patientData?.hivStatus
-            const updates = {hivStatus: editedHivStatus}
+            const updates = { hivStatus: editedHivStatus }
 
             setIsUpdating(true);
 
@@ -239,23 +239,27 @@ export default function EditPatientRecord() {
             Alert.alert(
                 '⚠️ WARNING',
                 'Updating HIV status may trigger a risk recalculation. This update cannot be undone.\n\nContinue anyway?',
-                [ 
-                    {text: 'Cancel', style: 'cancel'},
-                    {text: 'OK', onPress: () => confirmUpdate()}]
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'OK', onPress: () => confirmUpdate() }]
             )
         } else {
             // TODO -  add alert for web 
             return;
-        } 
+        }
     }
+
+    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
+    const toLocalDateString = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
     // recalculate risk 
     const proceedWithRiskRecalculation = async (updates?: Partial<PatientData>) => {
         setRecalculating(true);
 
         try {
-            const dataForCalculation = 
-                updates ? { ...patientData, ...updates }: patientData;
+            const dataForCalculation =
+                updates ? { ...patientData, ...updates } : patientData;
 
             const admissionRisk = calculateAdmissionRiskWithData(dataForCalculation);
             admissionRisk && await storage.saveRiskPrediction(patientId, admissionRisk, 'admission');
@@ -263,8 +267,8 @@ export default function EditPatientRecord() {
             console.error('Error recalculating risk:', error);
             Alert.alert('Error', 'Failed to recalculate risk');
         } finally {
-            setRecalculating(false); 
-            await onRefresh();   
+            setRecalculating(false);
+            await onRefresh();
         }
     }
 
@@ -284,10 +288,10 @@ export default function EditPatientRecord() {
     // retrurns a loading screen with spinner
     if (loading) {
         return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={{ marginTop: 16 }}>Loading patient record...</Text>
-        </SafeAreaView>
+            <SafeAreaView style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={{ marginTop: 16 }}>Loading patient record...</Text>
+            </SafeAreaView>
         );
     }
 
@@ -309,54 +313,54 @@ export default function EditPatientRecord() {
         const currRiskLevel = currPrediction?.calculatedLevel;
         const riskLevelText = currRiskLevel
             ? `Approximate risk of post-discharge mortality`
-              + `${currPrediction?.isManuallyElevated ? ` at ${currRiskLevel.label.toUpperCase()}` : ''}`
-              + ` = ${currRiskLevel.mortalityRisk}%`
+            + `${currPrediction?.isManuallyElevated ? ` at ${currRiskLevel.label.toUpperCase()}` : ''}`
+            + ` = ${currRiskLevel.mortalityRisk}%`
             : '';
-        
+
         const predictionDescription =
-            disPrediction ?  'Prediction calculated at discharge'
-                          :  isAdmissionRiskUpdated ?  `Risk last updated ${new Date(admissionLastCalculated).toDateString()}` 
-                                                    : 'Prediction calculated at admission';
-                                                
+            disPrediction ? 'Prediction calculated at discharge'
+                : isAdmissionRiskUpdated ? `Risk last updated ${new Date(admissionLastCalculated).toDateString()}`
+                    : 'Prediction calculated at admission';
+
         return (
-            <SafeAreaView style={{flex: 1, backgroundColor: colors.background}}>
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
                 {/* Neonatal jaundice modal */}
-                <NeonatalJaundiceModal 
-                    showModal={showNeonatalJaundiceModal} 
+                <NeonatalJaundiceModal
+                    showModal={showNeonatalJaundiceModal}
                     onRequestClose={() => null} // TODO figure out what to do here
-                    selected={neonatalJaundiceValue} 
-                    onSelect={setNeonatalJaundiceValue} 
+                    selected={neonatalJaundiceValue}
+                    onSelect={setNeonatalJaundiceValue}
                     onSave={handleSaveNeonatalJaundice}
                     isSaving={isUpdating}
                     saveDisabled={!neonatalJaundiceValue || isUpdating}
                 />
 
-                <ScrollView 
-                    contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20}}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/> }
+                <ScrollView
+                    contentContainerStyle={{ paddingTop: 0, paddingHorizontal: 0, paddingBottom: 20 }}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 >
                     {/* Header */}
-                    <View style={[Styles.pageHeaderContainer, {alignItems: 'center', justifyContent: 'center' }]}>
-                        <View 
+                    <View style={[Styles.pageHeaderContainer, { alignItems: 'center', justifyContent: 'center' }]}>
+                        <View
                             style={{
                                 flexDirection: 'column',
                                 flexWrap: 'wrap',
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 maxWidth: '90%'
-                            }}  
+                            }}
                         >
-                            <Text style={[Styles.pageHeaderTitle, {flex: 0, color: colors.primary}]}>
+                            <Text style={[Styles.pageHeaderTitle, { flex: 0, color: colors.primary }]}>
                                 {formatName(patientData.firstName, patientData.surname, patientData.otherName).toUpperCase()}
                             </Text>
-                            <Text style={[Styles.pageHeaderTitle, { flex: 0} ]}>
+                            <Text style={[Styles.pageHeaderTitle, { flex: 0 }]}>
                                 {isDischarged ? 'View Profile' : 'View/Edit Profile'}
                             </Text>
-                            
+
                         </View>
                     </View>
-                    
-                    <View style={{margin: 15}}>
+
+                    <View style={{ margin: 15 }}>
                         {/* Risk Prediction Card */}
                         <View style={Styles.accordionListWrapper}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
@@ -368,11 +372,11 @@ export default function EditPatientRecord() {
                                     title={currRiskCategory?.toUpperCase()}
                                     variant={currRiskCategory?.toLowerCase()}
                                     content={riskLevelText}
-                                    containerStyle={{alignItems: 'center'}}
+                                    containerStyle={{ alignItems: 'center' }}
                                     expandable={false}
                                 />
-                                <Text style={[Styles.modalText, {paddingHorizontal: 20, fontStyle: 'italic'}]}> 
-                                    {predictionDescription} 
+                                <Text style={[Styles.modalText, { paddingHorizontal: 20, fontStyle: 'italic' }]}>
+                                    {predictionDescription}
                                 </Text>
                             </View>
                         </View>
@@ -382,7 +386,7 @@ export default function EditPatientRecord() {
                             <List.Accordion
                                 title="Patient Information"
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="account"/>}
+                                left={props => <List.Icon {...props} icon="account" />}
                                 description={ageIsEditable ? '' : 'Read-only'}
                                 expanded={expanded === 'patientInfo'}
                                 onPress={() => setExpanded(expanded === 'patientInfo' ? '' : 'patientInfo')}
@@ -390,22 +394,22 @@ export default function EditPatientRecord() {
                                 <View style={Styles.accordionContentWrapper}>
                                     <InfoRow label="Full Name" value={formatName(patientData.firstName, patientData.surname, patientData.otherName)} />
                                     <InfoRow label="Sex" value={patientData.sex} />
-                                    
+
                                     {/* Age information */}
-                                    <EditGroup 
-                                        fieldLabel={"DOB"} 
-                                        fieldValue={displayDob(patientData.dob?.toISOString(), patientData.birthYear, patientData.birthMonth)}
-                                        editLabel="Enter new DOB if known" 
+                                    <EditGroup
+                                        fieldLabel={"DOB"}
+                                        fieldValue={displayDob(patientData.dob ? toLocalDateString(patientData.dob) : "", patientData.birthYear, patientData.birthMonth)}
+                                        editLabel="Enter new DOB if known"
                                         canEdit={normalizeBoolean(ageIsEditable)}
                                     >
                                         <>
                                             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                                                <TextInput 
-                                                    label="Date of Birth (YYYY-MM-DD)" 
-                                                    placeholder='Select date' 
-                                                    mode="outlined" 
-                                                    value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
-                                                    style={[Styles.textInput, {marginTop: 10}]}
+                                                <TextInput
+                                                    label="Date of Birth (YYYY-MM-DD)"
+                                                    placeholder='Select date'
+                                                    mode="outlined"
+                                                    value={editedDOB ? toLocalDateString(editedDOB) : ""}
+                                                    style={[Styles.textInput, { marginTop: 10 }]}
                                                     editable={false}
                                                     pointerEvents="none"
                                                 />
@@ -420,7 +424,7 @@ export default function EditPatientRecord() {
                                                     maximumDate={new Date()}
                                                 />
                                             )}
-                                            
+
                                             <Button
                                                 style={{ alignSelf: 'center' }}
                                                 icon='content-save-check'
@@ -436,7 +440,7 @@ export default function EditPatientRecord() {
 
                                         </>
                                     </EditGroup>
-                                    
+
                                     <InfoRow label="Est. Age" value={`${AgeCalculator.formatAge(patientData.ageInMonths)} old`} />
                                     <InfoRow label="Under 6 months" value={patientData.isUnderSixMonths ? 'Yes' : 'No'} />
                                 </View>
@@ -448,90 +452,90 @@ export default function EditPatientRecord() {
                             <List.Accordion
                                 title="Admission Clinical Data"
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="heart-pulse"/>}
+                                left={props => <List.Icon {...props} icon="heart-pulse" />}
                                 description={hivIsEditable ? '' : 'Read-only'}
                                 expanded={expanded === 'admissionClinicalData'}
                                 onPress={() => setExpanded(expanded === 'admissionClinicalData' ? '' : 'admissionClinicalData')}
                             >
                                 {
                                     patientData.isUnderSixMonths
-                                    ?
-                                    <View style={Styles.accordionContentWrapper}>
-                                        <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
-                                        <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
-                                        {normalizedIsNeonate === true && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} />}
-                                        <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
-                                        <InfoRow label="Feeding well" value={patientData.feedingWell ? 'Yes' : 'No'} />
-                                        <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
-                                        <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                                        <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
-                                        <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
-                                    </View>
-                                    :
-                                    <View style={Styles.accordionContentWrapper}>
-                                        <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
-                                        <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
-                                        
-                                        {/* HIV status info/edit */}
-                                        <EditGroup 
-                                            fieldLabel={"HIV Status"} 
-                                            fieldValue={patientData.hivStatus?.toUpperCase() as string}
-                                            editLabel="Edit HIV Status:" 
-                                            canEdit={hivIsEditable} 
-                                        >
-                                            <RadioButtonGroup
-                                                options={[
-                                                    { label: 'Positive', value: 'positive' },
-                                                    { label: 'Negative', value: 'negative' },
-                                                ]}
-                                                selected={editedHivStatus as string}
-                                                onSelect={setEditedHivStatus}
-                                            />
-                                            <Button
-                                                style={{ alignSelf: 'center' }}
-                                                icon='content-save-check'
-                                                buttonColor={colors.primary}
-                                                textColor={colors.onPrimary}
-                                                mode='elevated'
-                                                onPress={() => handleUpdateHivStatus()}
-                                                loading={isUpdating}
+                                        ?
+                                        <View style={Styles.accordionContentWrapper}>
+                                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Health History & Observations</Text>
+                                            <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
+                                            {normalizedIsNeonate === true && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} />}
+                                            <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
+                                            <InfoRow label="Feeding well" value={patientData.feedingWell ? 'Yes' : 'No'} />
+                                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Body Measurements & Vitals</Text>
+                                            <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg` : 'Not provided'} />
+                                            <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
+                                            <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
+                                        </View>
+                                        :
+                                        <View style={Styles.accordionContentWrapper}>
+                                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Health History</Text>
+                                            <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
+
+                                            {/* HIV status info/edit */}
+                                            <EditGroup
+                                                fieldLabel={"HIV Status"}
+                                                fieldValue={patientData.hivStatus?.toUpperCase() as string}
+                                                editLabel="Edit HIV Status:"
+                                                canEdit={hivIsEditable}
                                             >
-                                                Update
-                                            </Button>
-                                        </EditGroup>
-                                        
-                                        <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
-                                        <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                                        <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
-                                        <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
-                                        <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
-                                        <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
-                                        
-                                        <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Level of Consciousness</Text>
-                                        <InfoRow label="Level of Consciousness" value={patientData.levelOfConsciousness || 'Not provided'} />
-                                    </View>
+                                                <RadioButtonGroup
+                                                    options={[
+                                                        { label: 'Positive', value: 'positive' },
+                                                        { label: 'Negative', value: 'negative' },
+                                                    ]}
+                                                    selected={editedHivStatus as string}
+                                                    onSelect={setEditedHivStatus}
+                                                />
+                                                <Button
+                                                    style={{ alignSelf: 'center' }}
+                                                    icon='content-save-check'
+                                                    buttonColor={colors.primary}
+                                                    textColor={colors.onPrimary}
+                                                    mode='elevated'
+                                                    onPress={() => handleUpdateHivStatus()}
+                                                    loading={isUpdating}
+                                                >
+                                                    Update
+                                                </Button>
+                                            </EditGroup>
+
+                                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Body Measurements & Vitals</Text>
+                                            <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg` : 'Not provided'} />
+                                            <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
+                                            <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
+                                            <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
+                                            <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
+
+                                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Level of Consciousness</Text>
+                                            <InfoRow label="Level of Consciousness" value={patientData.levelOfConsciousness || 'Not provided'} />
+                                        </View>
                                 }
                             </List.Accordion>
                         </View>
 
                         {/* Discharge Data Accordion */}
-                        {isDischarged && 
-                        <View style={Styles.accordionListWrapper}>
-                            <List.Accordion
-                                title="Discharge Data"
-                                titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="transit-transfer"/>}
-                                description={'Read-only'}
-                                expanded={expanded === 'dischargeData'}
-                                onPress={() => setExpanded(expanded === 'dischargeData' ? '' : 'dischargeData')}
-                            >
-                                <View style={Styles.accordionContentWrapper}>
-                                    <InfoRow label="Feeding Status" value={patientData.feedingStatus_discharge ? patientData.feedingStatus_discharge : 'Not provided'} />
-                                    <InfoRow label="SpO₂ at Discharge" value={patientData.spo2_discharge ? `${patientData.spo2_discharge} %` : 'Not provided'} />
-                                    <InfoRow label="Discharge Reason" value={patientData.dischargeStatus ? `${patientData.dischargeStatus}`: 'Not provided'} />
-                                </View>
-                            </List.Accordion>
-                        </View>
+                        {isDischarged &&
+                            <View style={Styles.accordionListWrapper}>
+                                <List.Accordion
+                                    title="Discharge Data"
+                                    titleStyle={Styles.accordionListTitle}
+                                    left={props => <List.Icon {...props} icon="transit-transfer" />}
+                                    description={'Read-only'}
+                                    expanded={expanded === 'dischargeData'}
+                                    onPress={() => setExpanded(expanded === 'dischargeData' ? '' : 'dischargeData')}
+                                >
+                                    <View style={Styles.accordionContentWrapper}>
+                                        <InfoRow label="Feeding Status" value={patientData.feedingStatus_discharge ? patientData.feedingStatus_discharge : 'Not provided'} />
+                                        <InfoRow label="SpO₂ at Discharge" value={patientData.spo2_discharge ? `${patientData.spo2_discharge} %` : 'Not provided'} />
+                                        <InfoRow label="Discharge Reason" value={patientData.dischargeStatus ? `${patientData.dischargeStatus}` : 'Not provided'} />
+                                    </View>
+                                </List.Accordion>
+                            </View>
                         }
 
                         {/* Medical Conditions Accordion */}
@@ -539,19 +543,19 @@ export default function EditPatientRecord() {
                             <List.Accordion
                                 title="Targeted Medical Conditions"
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="medical-bag"/>}
+                                left={props => <List.Icon {...props} icon="medical-bag" />}
                                 description={patientData.isDischarged ? 'Read-only' : ''}
                                 expanded={expanded === 'medicalConditions'}
                                 onPress={() => setExpanded(expanded === 'medicalConditions' ? '' : 'medicalConditions')}
                             >
                                 <View style={Styles.accordionContentWrapper}>
-                                    <MedicalConditionsSection 
+                                    <MedicalConditionsSection
                                         userId={userId}
-                                        patientId={patientId} 
-                                        patientData={patientData} 
-                                        storage={storage} 
-                                        onRefresh={onRefresh} 
-                                        colors={colors}   
+                                        patientId={patientId}
+                                        patientData={patientData}
+                                        storage={storage}
+                                        onRefresh={onRefresh}
+                                        colors={colors}
                                     />
                                 </View>
                             </List.Accordion>
@@ -562,7 +566,7 @@ export default function EditPatientRecord() {
                             <List.Accordion
                                 title="CHW Referral"
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="doctor"/>}
+                                left={props => <List.Icon {...props} icon="doctor" />}
                                 description={isDischarged ? 'Read-only' : ''}
                                 expanded={expanded === 'chwReferral'}
                                 onPress={() => setExpanded(expanded === 'chwReferral' ? '' : 'chwReferral')}
@@ -583,11 +587,11 @@ export default function EditPatientRecord() {
                                         />
                                         :
                                         <>
-                                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Patient Address</Text>
+                                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Patient Address</Text>
                                             <InfoRow label="Village" value={patientData.village || 'Not provided'} />
                                             <InfoRow label="Subvillage" value={patientData.subvillage || 'Not provided'} />
-                                            
-                                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>CHW Contact Information</Text>
+
+                                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>CHW Contact Information</Text>
                                             <InfoRow label="Name" value={patientData.vhtName || 'Not provided'} />
                                             <InfoRow label="Telephone" value={patientData.vhtTelephone || 'Not provided'} />
                                         </>
@@ -601,7 +605,7 @@ export default function EditPatientRecord() {
                             <List.Accordion
                                 title="Caregiver Contact Information"
                                 titleStyle={Styles.accordionListTitle}
-                                left={props => <List.Icon {...props} icon="account-child"/>}
+                                left={props => <List.Icon {...props} icon="account-child" />}
                                 description={isDischarged ? 'Read-only' : ''}
                                 expanded={expanded === 'caregiverContact'}
                                 onPress={() => setExpanded(expanded === 'caregiverContact' ? '' : 'caregiverContact')}
@@ -640,16 +644,16 @@ export default function EditPatientRecord() {
                     </View>
 
                     {/* Pagination controls */}
-                    <Button 
-                        style={[{ alignSelf: 'center'}]}
-                        buttonColor={colors.primary} 
-                        textColor={colors.onPrimary} 
-                        icon= 'account-group'
-                        mode="elevated" 
+                    <Button
+                        style={[{ alignSelf: 'center' }]}
+                        buttonColor={colors.primary}
+                        textColor={colors.onPrimary}
+                        icon='account-group'
+                        mode="elevated"
                         onPress={() => {
                             clearPatientData();
                             router.back();
-                        }} 
+                        }}
                     >
                         Patient Records
                     </Button>
