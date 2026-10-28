@@ -983,7 +983,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? toLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
@@ -1074,7 +1074,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? toLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
