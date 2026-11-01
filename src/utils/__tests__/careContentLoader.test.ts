@@ -8,12 +8,13 @@ const mc = (positive: string[] = [], suspected: string[] = []): CategorizedMedic
 
 // The generic (non-age specific) videos, in the order authored in careContent.json.
 const GENERIC_VIDEO_IDS = [
+  'introduction-english',
   'hygiene-english',
   'immunizations-english',
   'medication-english',
   'mosquito-net-english',
   'nutrition-english',
-  'seeking-care-english',
+  'seeking-care-english'
 ];
 
 describe('careContentLoader', () => {
@@ -94,7 +95,7 @@ describe('careContentLoader', () => {
     it('always includes age-less steps regardless of age', () => {
       for (const age of [null, 1, 12, 60]) {
         const plan = getCarePlanForConditions(mc(['Sickle cell anaemia']), age);
-        expect(plan[0]. steps[0]).toMatch('WHO guidelines recommend that children receive deworming every 6 months.');
+        expect(plan[0].steps[0]).toMatch('WHO guidelines recommend that children receive deworming every 6 months.');
       }
     });
 

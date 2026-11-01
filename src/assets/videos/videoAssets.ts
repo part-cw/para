@@ -7,6 +7,7 @@ import type { VideoSource } from '@/src/utils/careContentLoader';
  * These rows are commented out so that the public repo ships without the .mp4 files.
  */
 export const videoAssets: Record<string, VideoSource> = {
+  // 'introduction-english': require('@/src/assets/videos/introduction-english.mp4'),
   // 'sick-young-infant-english': require('@/src/assets/videos/sick-young-infant-english.mp4'),
   // 'breastfeeding-english': require('@/src/assets/videos/breastfeeding-english.mp4'),
   // 'hygiene-english': require('@/src/assets/videos/hygiene-english.mp4'),

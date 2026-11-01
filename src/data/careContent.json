@@ -2,7 +2,11 @@
   "Sick Young Infant": {
     "carePlan": [],
     "videos": [
-      { "id": "sick-young-infant-english", "title": "Sick Infant Care", "description": "How to care for your infant at home." }
+      {
+        "id": "sick-young-infant-english",
+        "title": "Sick Infant Care",
+        "description": "How to care for your infant at home."
+      }
     ]
   },
   "Severe Anaemia": {
@@ -11,7 +15,11 @@
       "WHO guidelines recommend the prescription of Post Discharge Malaria Chemoprevention for children with severe anaemia. (Hb <7 g/dL)"
     ],
     "videos": [
-      { "id": "anaemia-english", "title": "Anaemia", "description": "Anaemia definition and nutrition" }
+      {
+        "id": "anaemia-english",
+        "title": "Anaemia",
+        "description": "Anaemia definition and nutrition"
+      }
     ]
   },
   "Severe Acute Malnutrition (SAM)": {
@@ -20,7 +28,11 @@
       "2023 WHO wasting/nutritional oedema guideline says children 6–59 months with SAM should get the daily recommended intake of vitamin A (5,000 IU/day) as part of their therapeutic food or multiple micronutrient formulation."
     ],
     "videos": [
-      { "id": "feeding-english", "title": "Feeding Your Child", "description": "Feeding and measuring MUAC." }
+      {
+        "id": "feeding-english",
+        "title": "Feeding Your Child",
+        "description": "Feeding and measuring MUAC."
+      }
     ]
   },
   "Moderate Acute Malnutrition (MAM)": {
@@ -28,51 +40,101 @@
       "It is recommended to link the caregiver to nutritional programmes."
     ],
     "videos": [
-      { "id": "feeding-english", "title": "Feeding Your Child", "description": "Feeding and measuring MUAC." }
+      {
+        "id": "feeding-english",
+        "title": "Feeding Your Child",
+        "description": "Feeding and measuring MUAC."
+      }
     ]
   },
   "Pneumonia": {
     "carePlan": [],
     "videos": [
-      { "id": "pneumonia-english", "title": "Pneumonia", "description": "Recognizing pneumonia." }
+      {
+        "id": "pneumonia-english",
+        "title": "Pneumonia",
+        "description": "Recognizing pneumonia."
+      }
     ]
   },
   "Malaria": {
     "carePlan": [],
     "videos": [
-      { "id": "malaria-english", "title": "Malaria", "description": "Preventing and recognizing malaria." }
+      {
+        "id": "malaria-english",
+        "title": "Malaria",
+        "description": "Preventing and recognizing malaria."
+      }
     ]
   },
   "Diarrhea (Acute)": {
     "carePlan": [
       "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home.",
-      { "text": "Zinc: give 10 mg/day for 10-14 days for children 2 to 6 months of age.", "age": { "gte": 2, "lte": 6 } },
-      { "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.", "age": { "gt": 6 } }
+      {
+        "text": "Zinc: give 10 mg/day for 10-14 days for children 2 to 6 months of age.",
+        "age": {
+          "gte": 2,
+          "lte": 6
+        }
+      },
+      {
+        "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.",
+        "age": {
+          "gt": 6
+        }
+      }
     ],
     "videos": [
-      { "id": "diarrhea-english", "title": "Diarrhea", "description": "Treating diarrhea at home." }
+      {
+        "id": "diarrhea-english",
+        "title": "Diarrhea",
+        "description": "Treating diarrhea at home."
+      }
     ]
   },
   "Diarrhea (Persistent)": {
     "carePlan": [
       "WHO guidelines recommend providing caregivers with 2-4 packets of Oral Rehydration Salts (ORS) for children with diarrhea to take home.",
-      { "text": "Zinc: give 10 mg/day for 10-14 days for children 2 to 6 months of age.", "age": { "gte": 2, "lte": 6 } },
-      { "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.", "age": { "gt": 6 } }
+      {
+        "text": "Zinc: give 10 mg/day for 10-14 days for children 2 to 6 months of age.",
+        "age": {
+          "gte": 2,
+          "lte": 6
+        }
+      },
+      {
+        "text": "Zinc: give 20 mg/day for 10-14 days for children over 6 months of age.",
+        "age": {
+          "gt": 6
+        }
+      }
     ],
     "videos": [
-      { "id": "diarrhea-english", "title": "Diarrhea", "description": "Treating diarrhea at home." }
+      {
+        "id": "diarrhea-english",
+        "title": "Diarrhea",
+        "description": "Treating diarrhea at home."
+      }
     ]
   },
   "HIV": {
     "carePlan": [],
     "videos": [
-      { "id": "chronic-diseases-english", "title": "Chronic Diseases", "description": "Keeping your child healthy." }
+      {
+        "id": "chronic-diseases-english",
+        "title": "Chronic Diseases",
+        "description": "Keeping your child healthy."
+      }
     ]
   },
   "Tuberculosis": {
     "carePlan": [],
     "videos": [
-      { "id": "chronic-diseases-english", "title": "Chronic Diseases", "description": "Keeping your child healthy." }
+      {
+        "id": "chronic-diseases-english",
+        "title": "Chronic Diseases",
+        "description": "Keeping your child healthy."
+      }
     ]
   },
   "Sickle cell anaemia": {
@@ -80,23 +142,74 @@
       "The WHO and national ministries of health recommend folic acid, penicillin/Erythromycin, Hydroxyurea, and sulfadoxine and pyrimethamine as essential medications for the standard components for the preventive care and management of sickle cell disease (SCD)"
     ],
     "videos": [
-      { "id": "chronic-diseases-english", "title": "Chronic Diseases", "description": "Keeping your child healthy." }
+      {
+        "id": "chronic-diseases-english",
+        "title": "Chronic Diseases",
+        "description": "Keeping your child healthy."
+      }
     ]
   },
   "generic": {
     "carePlan": [
       "WHO guidelines recommend that children receive deworming every 6 months.",
-      { "text": "It is recommended that children aged 1-2 years receive 200mg Albendazole or 500mg Mebendazole.", "age": { "gte": 12, "lte": 24 } },
-      { "text": "It is recommended that children over 2 years old receive 400mg Albendazole or 500mg Mebendazole.", "age": { "gt": 24 } }
+      {
+        "text": "It is recommended that children aged 1-2 years receive 200mg Albendazole or 500mg Mebendazole.",
+        "age": {
+          "gte": 12,
+          "lte": 24
+        }
+      },
+      {
+        "text": "It is recommended that children over 2 years old receive 400mg Albendazole or 500mg Mebendazole.",
+        "age": {
+          "gt": 24
+        }
+      }
     ],
     "videos": [
-      { "id": "breastfeeding-english", "title": "Breastfeeding", "description": "Feeding of a young infant", "age": { "lt": 18 } },
-      { "id": "hygiene-english", "title": "Hygiene", "description": "Hygiene advice for at home" },
-      { "id": "immunizations-english", "title": "Immunizations", "description": "The importance of immunizations" },
-      { "id": "medication-english", "title": "Medication", "description": "Proper use of medications" },
-      { "id": "mosquito-net-english", "title": "Mosquito Net Use", "description": "How to use mosquito nets effectively" },
-      { "id": "nutrition-english", "title": "Nutrition", "description": "Nutritional needs for children" },
-      { "id": "seeking-care-english", "title": "Seeking Care", "description": "When and how to seek medical care" }
+      {
+        "id": "introduction-english",
+        "title": "Introduction to REConneCteD",
+        "description": "An introduction to the REConneCteD program"
+      },
+      {
+        "id": "breastfeeding-english",
+        "title": "Breastfeeding",
+        "description": "Feeding of a young infant",
+        "age": {
+          "lt": 18
+        }
+      },
+      {
+        "id": "hygiene-english",
+        "title": "Hygiene",
+        "description": "Hygiene advice for at home"
+      },
+      {
+        "id": "immunizations-english",
+        "title": "Immunizations",
+        "description": "The importance of immunizations"
+      },
+      {
+        "id": "medication-english",
+        "title": "Medication",
+        "description": "Proper use of medications"
+      },
+      {
+        "id": "mosquito-net-english",
+        "title": "Mosquito Net Use",
+        "description": "How to use mosquito nets effectively"
+      },
+      {
+        "id": "nutrition-english",
+        "title": "Nutrition",
+        "description": "Nutritional needs for children"
+      },
+      {
+        "id": "seeking-care-english",
+        "title": "Seeking Care",
+        "description": "When and how to seek medical care"
+      }
     ]
   }
 }
