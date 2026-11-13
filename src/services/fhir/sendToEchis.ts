@@ -19,8 +19,7 @@ export async function sendToEchis(
 
     const result = await getFHIRInstance().sendBundle(bundle, {
         serverUrl: process.env.EXPO_PUBLIC_ECHIS_SERVER_URL,
-        authToken: config.echisAuthToken,
-        apiKey: process.env.EXPO_PUBLIC_ECHIS_API_KEY,
+        authToken: config.echisAuthToken
     });
 
     console.log('[FHIR] sendBundle result:', JSON.stringify(result, null, 2));

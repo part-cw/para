@@ -38,8 +38,7 @@ export class FHIRService {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       };
-      // if (opts.authToken) headers.Authorization = `Bearer ${opts.authToken}`; * Endpoint uses an API key instead *
-      if (opts.apiKey) headers['X-API-Key'] = opts.apiKey;
+      if (opts.authToken) headers.Authorization = `Basic ${opts.authToken}`;
 
       const response = await fetch(serverUrl, {
         method: 'POST',
