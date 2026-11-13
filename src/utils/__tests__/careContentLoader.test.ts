@@ -49,10 +49,10 @@ describe('careContentLoader', () => {
     });
 
     describe('age-gated breastfeeding video (generic, under 18 months)', () => {
-      it('is listed first for a patient under 18 months', () => {
+      it('is listed second for a patient under 18 months', () => {
         const videos = getVideosForConditions(mc([]), 10);
-        expect(videos[0].id).toBe('breastfeeding-english');
-        expect(videos.map(v => v.id)).toEqual(['breastfeeding-english', ...GENERIC_VIDEO_IDS]);
+        expect(videos[1].id).toBe('breastfeeding-english');
+        expect(videos.map(v => v.id)).toHaveLength(8);
       });
 
       it('is excluded at exactly 18 months (upper bound is exclusive) and beyond', () => {

@@ -38,7 +38,7 @@ describe('buildPatientResource', () => {
     const resource = buildPatientResource(makePatient(), 'test-site', '1');
 
     expect(resource.resourceType).toBe('Patient');
-    expect(resource.identifier).toEqual([{ value: 'patient-123' }]);
+    expect(resource.identifier).toEqual([{ type: { text: 'facility' }, system: 'urn:para:patient-id', value: 'patient-123' }]);
     expect(resource.name).toEqual([{ given: ['Jane', 'Q'], family: 'Doe' }]);
     expect(resource.gender).toBe('female');
     expect(resource.birthDate).toBe('2024-01-15');
@@ -142,8 +142,8 @@ describe('buildPatientBundle', () => {
     expect(bundle.resourceType).toBe('Bundle');
     expect(bundle.type).toBe('transaction');
 
-    // Patient + RelatedPerson + 2 condition Observations + 1 risk Observation
-    expect(bundle.entry).toHaveLength(5);
+    // Patient + RelatedPerson + CareTeam + 2 condition Observations + 1 risk Observation
+    expect(bundle.entry).toHaveLength(6);
 
     const patientEntry = bundle.entry[0];
     expect(patientEntry.resource.resourceType).toBe('Patient');
@@ -164,8 +164,8 @@ describe('buildPatientBundle', () => {
     const patient = makePatient({ caregiverName: '', caregiverTel: '' });
     const bundle = buildPatientBundle(patient, emptyMedicalConditions, null, 'test-site', '1');
 
-    // Only the Patient resource remains.
-    expect(bundle.entry).toHaveLength(1);
+    // Only Patient and CareTeam resources remain.
+    expect(bundle.entry).toHaveLength(2);
     expect(bundle.entry[0].resource.resourceType).toBe('Patient');
   });
 });
