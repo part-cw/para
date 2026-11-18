@@ -28,6 +28,7 @@ const DEFAULT_CONFIG: AppConfig = {
   maxPatientAge: 5.1,
   rrateIntegrationEnabled: false,
   echisServerUrl: process.env.EXPO_PUBLIC_ECHIS_SERVER_URL || '',
+  echisAuthToken: process.env.EXPO_PUBLIC_ECHIS_AUTH_TOKEN || '',
   muacUnit: 'cm'
 };
 

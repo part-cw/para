@@ -7,6 +7,7 @@ import type { VideoSource } from '@/src/utils/careContentLoader';
  * These rows are commented out so that the public repo ships without the .mp4 files.
  */
 export const videoAssets: Record<string, VideoSource> = {
+<<<<<<< HEAD
   'sick-young-infant-english': require('@/src/assets/videos/sick-young-infant-english.mp4'),
   'breastfeeding-english': require('@/src/assets/videos/breastfeeding-english.mp4'),
   'hygiene-english': require('@/src/assets/videos/hygiene-english.mp4'),
@@ -21,6 +22,23 @@ export const videoAssets: Record<string, VideoSource> = {
   'malaria-english': require('@/src/assets/videos/malaria-english.mp4'),
   'diarrhea-english': require('@/src/assets/videos/diarrhea-english.mp4'),
   'chronic-diseases-english': require('@/src/assets/videos/chronic-diseases-english.mp4')
+=======
+  // 'introduction-english': require('@/src/assets/videos/introduction-english.mp4'),
+  // 'sick-young-infant-english': require('@/src/assets/videos/sick-young-infant-english.mp4'),
+  // 'breastfeeding-english': require('@/src/assets/videos/breastfeeding-english.mp4'),
+  // 'hygiene-english': require('@/src/assets/videos/hygiene-english.mp4'),
+  // 'immunizations-english': require('@/src/assets/videos/immunizations-english.mp4'),
+  // 'medication-english': require('@/src/assets/videos/medication-english.mp4'),
+  // 'mosquito-net-english': require('@/src/assets/videos/mosquito-net-english.mp4'),
+  // 'nutrition-english': require('@/src/assets/videos/nutrition-english.mp4'),
+  // 'seeking-care-english': require('@/src/assets/videos/seeking-care-english.mp4'),
+  // 'anaemia-english': require('@/src/assets/videos/anaemia-english.mp4'),
+  // 'feeding-english': require('@/src/assets/videos/feeding-english.mp4'),
+  // 'pneumonia-english': require('@/src/assets/videos/pneumonia-english.mp4'),
+  // 'malaria-english': require('@/src/assets/videos/malaria-english.mp4'),
+  // 'diarrhea-english': require('@/src/assets/videos/diarrhea-english.mp4'),
+  // 'chronic-diseases-english': require('@/src/assets/videos/chronic-diseases-english.mp4')
+>>>>>>> e35780ec7060e9a7d59da4027043aa05217c25e1
 };
 
 /**
