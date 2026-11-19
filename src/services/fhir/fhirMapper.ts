@@ -53,8 +53,8 @@ function normalizeGender(sex: string): AdministrativeGender | undefined {
 function toBirthDate(patient: PatientData): string | undefined {
   if (patient.isDOBUnknown || !patient.dob) return undefined;
   const date = new Date(patient.dob);
-  if (isNaN(date.getTime())) return undefined;
-  return date.toISOString().slice(0, 10); // YYYY-MM-DD
+  if (isNaN(date.getTime())) return undefined; //ie. new Date is invalid
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;; // YYYY-MM-DD
 }
 
 function buildAddress(patient: PatientData): Address | null {

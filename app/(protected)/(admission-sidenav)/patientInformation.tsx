@@ -145,18 +145,16 @@ export default function PatientInformationScreen() {
         return errors;
     }
 
-    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
+    // Helper function to display a Date object as a local date string in YYYY-MM-DD format
     const toLocalDateString = (d: Date) =>
         `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
-            // Date-only string, built from local getters (e.g. "2026-08-17")
-            console.log('Selected date (UTC):', selectedDate);
-            const dobString = toLocalDateString(selectedDate);
-            console.log('Selected date (local):', dobString);
+            // Note: DateTimePicker selects the local time at midnight but it is converted to UTC to be stored in the variable selectedDate.
 
-            // Date object anchored at local noon so UTC conversion can't change the day
+            // New Date object, using local getters to convert back to local time. Time is set to noon as default since time is not relevant for DOB. 
+            // This ensures that when the date is serialized to UTC for storage, it will be correct for UTC-12 - UTC+12 timezones. 
             const dobDate = new Date(
                 selectedDate.getFullYear(),
                 selectedDate.getMonth(),

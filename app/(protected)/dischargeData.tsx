@@ -303,7 +303,16 @@ export default function DischargeDataScreen() {
 
     const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
-            setEditedDob(selectedDate)
+            // New Date object, using local getters to convert back to local time. Time is set to noon as default since time is not relevant for DOB. 
+            // This ensures that when the date is serialized to UTC for storage, it will be correct for UTC-12 - UTC+12 timezones. 
+            const dobDate = new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                selectedDate.getDate(),
+                12, 0, 0, 0
+            );
+
+            setEditedDob(dobDate);
         }
 
         if (Platform.OS === "android") {
