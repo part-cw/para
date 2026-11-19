@@ -19,26 +19,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export const InfoCard = () => (
     <Card style={[Styles.cardWrapper, { marginBottom: 16, padding: 8 }]}>
         <Card.Content>
-        <Text variant='bodyLarge' style={{ fontWeight: 'bold', marginBottom: 8 }}>
-            Expand each section to review information:
-        </Text>
+            <Text variant='bodyLarge' style={{ fontWeight: 'bold', marginBottom: 8 }}>
+                Expand each section to review information:
+            </Text>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-            <MaterialIcons name="error-outline" size={18} color="orange" style={{ marginRight: 6 }} />
-            <Text>Alert marks incomplete or unreviewed sections</Text>
-        </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <MaterialIcons name="error-outline" size={18} color="orange" style={{ marginRight: 6 }} />
+                <Text>Alert marks incomplete or unreviewed sections</Text>
+            </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <MaterialIcons name="check-circle-outline" size={18} color="green" style={{ marginRight: 6 }} />
-            <Text>Check marks completed & reviewed sections</Text>
-        </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <MaterialIcons name="check-circle-outline" size={18} color="green" style={{ marginRight: 6 }} />
+                <Text>Check marks completed & reviewed sections</Text>
+            </View>
 
-        <Text style={{ marginBottom: 4 }}>
-            If any data is incorrect or missing, navigate to that section and fix it.
-        </Text>
-        <Text>
-            If all information is correct, click <Text style={{ fontWeight: 'bold' }}>{'"Submit"'}</Text>
-        </Text>
+            <Text style={{ marginBottom: 4 }}>
+                If any data is incorrect or missing, navigate to that section and fix it.
+            </Text>
+            <Text>
+                If all information is correct, click <Text style={{ fontWeight: 'bold' }}>{'"Submit"'}</Text>
+            </Text>
         </Card.Content>
     </Card>
 );
@@ -48,7 +48,7 @@ export const isEmptyField = (value: any): boolean => {
         return true;
     }
 
-    if (typeof(value) === 'string') {
+    if (typeof (value) === 'string') {
         return value.trim() === ''
     }
 
@@ -57,13 +57,13 @@ export const isEmptyField = (value: any): boolean => {
     return false
 }
 
-export const formatMissingFieldsMessage = (missingSectionFields: {[key: string]: string[]}) => {
+export const formatMissingFieldsMessage = (missingSectionFields: { [key: string]: string[] }) => {
     let message = 'The following information is missing:\n\n'
-    
+
     for (const [sectionTitle, fields] of Object.entries(missingSectionFields)) {
         message += `${sectionTitle.toUpperCase()}: ${fields.join(', ')}\n\n`
     }
-    
+
     return message.trim()
 }
 
@@ -73,11 +73,11 @@ export default function ReviewScreen() {
     const { config } = useConfig();
     const { patientData, savePatientData } = usePatientData();
 
-    const [ expandedAccordion, setExpandedAccordion] = useState<string>('');
+    const [expandedAccordion, setExpandedAccordion] = useState<string>('');
     const [reviewedSections, setReviewedSections] = useState<Set<string>>(new Set());
     const [completedSections, setCompletedSections] = useState<Set<string>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     const allSections = new Set<string>([
         'patientInformation',
         'admissionClinicalData',
@@ -122,7 +122,7 @@ export default function ReviewScreen() {
             // check optional and 'oneof' fields
             if (section.oneOf) {
                 let hasValidOption = false;
- 
+
                 for (const option of section.oneOf) {
                     // check if all fields in this option are filled
                     const allFieldsFilled = option.every(fieldName => {
@@ -137,7 +137,7 @@ export default function ReviewScreen() {
                     }
                 }
 
-                if (!hasValidOption){
+                if (!hasValidOption) {
                     // TODO - hardcode message for now - only age info has 'oneof'. In the future we may want to create a more dynamic message
                     missingFields.push('Age information')
                 }
@@ -149,11 +149,11 @@ export default function ReviewScreen() {
                     // add missing required clinical data fields for 0-6 mo patients
                     if (patientData.isUnderSixMonths) {
                         const underSixMonthsFields = section.conditionalRequired.underSixMonths || []
-                        
+
                         for (const fieldName of underSixMonthsFields) {
                             const fieldValue = patientData[fieldName as keyof typeof patientData]
                             if (isEmptyField(fieldValue)) {
-                                 missingFields.push(displayNames[fieldName] || fieldName);
+                                missingFields.push(displayNames[fieldName] || fieldName);
                             }
                         }
                     } else if (patientData.isNeonate) {
@@ -162,17 +162,17 @@ export default function ReviewScreen() {
                         for (const fieldName of neonateFields) {
                             const fieldValue = patientData[fieldName as keyof typeof patientData]
                             if (isEmptyField(fieldValue)) {
-                                 missingFields.push(displayNames[fieldName] || fieldName);
+                                missingFields.push(displayNames[fieldName] || fieldName);
                             }
                         }
                     } else {
-                         // add missing required clinical data fields for 6-60 mo patients
+                        // add missing required clinical data fields for 6-60 mo patients
                         const overSixMonthsFields = section.conditionalRequired.sixMonthsAndOver || []
-                        
+
                         for (const fieldName of overSixMonthsFields) {
                             const fieldValue = patientData[fieldName as keyof typeof patientData]
                             if (isEmptyField(fieldValue)) {
-                                 missingFields.push(displayNames[fieldName] || fieldName);
+                                missingFields.push(displayNames[fieldName] || fieldName);
                             }
                         }
                     }
@@ -182,7 +182,7 @@ export default function ReviewScreen() {
                     // Check if telephone is provided, then confirmTelephone is required
                     if (patientData.caregiverTel && patientData.caregiverTel.trim() !== '') {
                         const hasTelephoneFields = section.conditionalRequired.hasTelephone || [];
-                        
+
                         for (const fieldName of hasTelephoneFields) {
                             const fieldValue = patientData[fieldName as keyof typeof patientData];
                             if (isEmptyField(fieldValue)) {
@@ -204,7 +204,7 @@ export default function ReviewScreen() {
             }
         }
 
-        return {requiredMissing, nonRequiredMissing};
+        return { requiredMissing, nonRequiredMissing };
     }
 
 
@@ -214,7 +214,7 @@ export default function ReviewScreen() {
 
     const handleSubmit = async () => {
         const { requiredMissing, nonRequiredMissing } = validateFields();
- 
+
         function isSubset<T>(a: Set<T>, b: Set<T>): boolean {
             for (const item of a) {
                 if (!b.has(item)) return false;
@@ -247,7 +247,7 @@ export default function ReviewScreen() {
         // check if non-required sections have missing data - show confirmation
         if (Object.keys(nonRequiredMissing).length > 0) {
             const message = `${formatMissingFieldsMessage(nonRequiredMissing)}\n\n⚠️This information will be required at discharge. You can submit now and add it to the patient record later.\n\nSubmit anyway?`;
-            
+
             if (Platform.OS === 'web') {
                 if (confirm(`Missing Information\n\n${message}`)) {
                     await proceedWithSubmit()
@@ -257,8 +257,8 @@ export default function ReviewScreen() {
                     'Missing Information',
                     `${message}`,
                     [
-                        {text: 'Cancel', style: 'cancel'},
-                        {text: 'Submit', onPress: proceedWithSubmit}
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Submit', onPress: proceedWithSubmit }
                     ]
                 )
             }
@@ -278,21 +278,21 @@ export default function ReviewScreen() {
 
             if (Platform.OS !== 'web') {
                 Alert.alert(
-                    'Success', 
+                    'Success',
                     `Patient data has been saved successfully!\nPatient ID: ${patientId}`,
                     [
                         {
                             text: 'OK',
                             onPress: () => router.push({
-                                            pathname: '/riskDisplay',
-                                            params: {
-                                                patientId: patientId,
-                                                patientName: patientName,
-                                                riskAssessment: JSON.stringify(riskAssessment),
-                                                medicalConditions: JSON.stringify(medicalConditions),
-                                                ageInMonths: String(patientData.ageInMonths ?? '')
-                                            }
-                                        })
+                                pathname: '/riskDisplay',
+                                params: {
+                                    patientId: patientId,
+                                    patientName: patientName,
+                                    riskAssessment: JSON.stringify(riskAssessment),
+                                    medicalConditions: JSON.stringify(medicalConditions),
+                                    ageInMonths: String(patientData.ageInMonths ?? '')
+                                }
+                            })
                         }
                     ]
                 );
@@ -318,9 +318,13 @@ export default function ReviewScreen() {
         }
     }
 
+    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
+    const toLocalDateString = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
     const formatDate = (date: Date | null): string => {
         if (!date) return 'Not provided';
-        return date.toISOString().split('T')[0];
+        return toLocalDateString(date);
     };
 
     const formatAge = () => {
@@ -334,7 +338,7 @@ export default function ReviewScreen() {
         return 'Not provided';
     };
 
-    
+
 
     const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
@@ -344,9 +348,9 @@ export default function ReviewScreen() {
     );
 
     const CustomAccordionIcon = ({ sectionId }: { sectionId: string }) => (
-        <MaterialIcons 
+        <MaterialIcons
             name={getAccordionIcon(sectionId) as any}
-            size={24} 
+            size={24}
             color={getAccordionIconColor(sectionId)}
             style={{ marginLeft: 16, marginTop: 5 }}
         />
@@ -367,20 +371,21 @@ export default function ReviewScreen() {
     const otherChronicIllnessSelected = patientData.chronicIllnesses?.includes('other')
 
     return (
-        <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
             <ScrollView contentContainerStyle={{ padding: 20 }}>
-                <InfoCard/>
+                <InfoCard />
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="Patient Information"
-                      titleStyle={Styles.accordionListTitle}
-                      left={props => <CustomAccordionIcon sectionId="patientInformation" />}
-                      expanded={expandedAccordion === 'patientInformation'}
-                      onPress={() => {
-                        setExpandedAccordion(expandedAccordion === 'patientInformation' ? '' : 'patientInformation')
-                        handleAccordionPress('patientInformation')}
-                      }
+                        title="Patient Information"
+                        titleStyle={Styles.accordionListTitle}
+                        left={props => <CustomAccordionIcon sectionId="patientInformation" />}
+                        expanded={expandedAccordion === 'patientInformation'}
+                        onPress={() => {
+                            setExpandedAccordion(expandedAccordion === 'patientInformation' ? '' : 'patientInformation')
+                            handleAccordionPress('patientInformation')
+                        }
+                        }
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Full Name" value={`${patientData.firstName} ${patientData.otherName} ${patientData.surname}`.trim()} />
@@ -393,72 +398,74 @@ export default function ReviewScreen() {
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="Admission Clinical Data"
-                      titleStyle={Styles.accordionListTitle}
-                      left={props => <CustomAccordionIcon sectionId="admissionClinicalData" />}
-                      expanded={expandedAccordion === 'admissionClinicalData'}
-                      onPress={() => {
-                        setExpandedAccordion(expandedAccordion === 'admissionClinicalData' ? '' : 'admissionClinicalData')
-                        handleAccordionPress('admissionClinicalData')}
-                      }
+                        title="Admission Clinical Data"
+                        titleStyle={Styles.accordionListTitle}
+                        left={props => <CustomAccordionIcon sectionId="admissionClinicalData" />}
+                        expanded={expandedAccordion === 'admissionClinicalData'}
+                        onPress={() => {
+                            setExpandedAccordion(expandedAccordion === 'admissionClinicalData' ? '' : 'admissionClinicalData')
+                            handleAccordionPress('admissionClinicalData')
+                        }
+                        }
                     >
                         {
                             normalizeBoolean(patientData.isUnderSixMonths) === true
-                            ?
-                             <View style={Styles.accordionContentWrapper}>
-                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History & Observations</Text>
-                                <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
-                                {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} /> } 
-                                <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
-                                <InfoRow label="Feeding well?" value={patientData.feedingWell ? 'Yes' : 'No'} />
-                                
-                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
-                                <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                              <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
-                                <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
-                            </View>
-                            :
-                            <View style={Styles.accordionContentWrapper}>
-                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Health History</Text>
-                                <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
-                                <InfoRow label="HIV Status" value={patientData.hivStatus as string} />
-                                
-                                <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Body Measurements & Vitals</Text>
-                                <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg`: 'Not provided'} />
-                                <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
-                                <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
-                                <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
-                                <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
-                                
-                              <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Level of Consciousness</Text>
-                                <InfoRow label="Level of Consciousness" value={patientData.levelOfConsciousness || 'Not provided'} />
-                            </View>
+                                ?
+                                <View style={Styles.accordionContentWrapper}>
+                                    <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Health History & Observations</Text>
+                                    <InfoRow label={displayNames['illnessDuration']} value={patientData.illnessDuration || 'Not provided'} />
+                                    {patientData.isNeonate && <InfoRow label="Neonatal Jaundice" value={patientData.neonatalJaundice ? 'Yes' : 'No'} />}
+                                    <InfoRow label="Bugling fontanelle" value={patientData.bulgingFontanelle ? 'Yes' : 'No'} />
+                                    <InfoRow label="Feeding well?" value={patientData.feedingWell ? 'Yes' : 'No'} />
+
+                                    <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Body Measurements & Vitals</Text>
+                                    <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg` : 'Not provided'} />
+                                    <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
+                                    <InfoRow label="SpO₂" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
+                                </View>
+                                :
+                                <View style={Styles.accordionContentWrapper}>
+                                    <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Health History</Text>
+                                    <InfoRow label="Last Hopitalized" value={patientData.lastHospitalized || 'Not provided'} />
+                                    <InfoRow label="HIV Status" value={patientData.hivStatus as string} />
+
+                                    <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Body Measurements & Vitals</Text>
+                                    <InfoRow label="Weight" value={patientData.weight ? `${patientData.weight} kg` : 'Not provided'} />
+                                    <InfoRow label="MUAC" value={patientData.muac ? ((config.muacUnit || 'cm') === 'cm' ? `${parseFloat(patientData.muac).toFixed(1)} cm` : `${patientData.muac} mm`) : 'Not provided'} />
+                                    <InfoRow label="Temperature" value={patientData.temperature ? `${patientData.temperature} °C` : 'Not provided'} />
+                                    <InfoRow label="Respiratory Rate" value={patientData.rrate ? `${patientData.rrate} breaths per min` : 'Not provided'} />
+                                    <InfoRow label="SpO2" value={patientData.spo2_admission ? `${patientData.spo2_admission} %` : 'Not provided'} />
+
+                                    <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Level of Consciousness</Text>
+                                    <InfoRow label="Level of Consciousness" value={patientData.levelOfConsciousness || 'Not provided'} />
+                                </View>
                         }
                     </List.Accordion>
                 </View>
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="Targeted Medical Conditions"
-                      titleStyle={Styles.accordionListTitle}
-                      left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
-                      expanded={expandedAccordion === 'medicalConditions'}
-                      onPress={() => {
-                        setExpandedAccordion(expandedAccordion === 'medicalConditions' ? '' : 'medicalConditions')
-                        handleAccordionPress('medicalConditions')}
-                      }
+                        title="Targeted Medical Conditions"
+                        titleStyle={Styles.accordionListTitle}
+                        left={props => <CustomAccordionIcon sectionId="medicalConditions" />}
+                        expanded={expandedAccordion === 'medicalConditions'}
+                        onPress={() => {
+                            setExpandedAccordion(expandedAccordion === 'medicalConditions' ? '' : 'medicalConditions')
+                            handleAccordionPress('medicalConditions')
+                        }
+                        }
                     >
                         <View style={Styles.accordionContentWrapper}>
-                       <InfoRow label={normalizeBoolean(patientData.isUnderSixMonths) ? "Growth Status" : "Nutritional Status"} value={patientData.malnutritionStatus === 'moderate' ? 'Moderate Acute Malnourished' : patientData.malnutritionStatus === 'severe' ? 'Severe Acute Malnourished' : capitalizeFirstLetter(patientData.malnutritionStatus as string) || 'Not provided'} />
+                            <InfoRow label={normalizeBoolean(patientData.isUnderSixMonths) ? "Growth Status" : "Nutritional Status"} value={patientData.malnutritionStatus === 'moderate' ? 'Moderate Acute Malnourished' : patientData.malnutritionStatus === 'severe' ? 'Severe Acute Malnourished' : capitalizeFirstLetter(patientData.malnutritionStatus as string) || 'Not provided'} />
                             <InfoRow label="Sick Young Infant" value={patientData.sickYoungInfant ? 'Yes' : 'No'} />
                             <InfoRow label="Pneumonia" value={patientData.pneumonia || 'Not provided'} />
                             <InfoRow label="Severe anaemia" value={patientData.severeAnaemia || 'Not provided'} />
                             <InfoRow label="Diarrhea" value={patientData.diarrhea || 'Not provided'} />
                             <InfoRow label="Malaria" value={toDisplayConditionValue(patientData.malaria) || 'Not provided'} />
-                            <InfoRow label="Sepsis" value={patientData.sepsis|| 'Not provided'} />
+                            <InfoRow label="Sepsis" value={patientData.sepsis || 'Not provided'} />
                             <InfoRow label="Meningitis/ Encephalitis" value={toDisplayConditionValue(patientData.meningitis_encephalitis) || 'Not provided'} />
                             <InfoRow label="Chronic Conditions" value={formatChronicIllness(patientData.chronicIllnesses) || 'Not provided'} />
-                            {otherChronicIllnessSelected && 
+                            {otherChronicIllnessSelected &&
                                 <InfoRow label="Other chronic illness" value={patientData.otherChronicIllness || 'Not provided'} />
                             }
                         </View>
@@ -467,47 +474,49 @@ export default function ReviewScreen() {
 
                 <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="CHW Referral"
-                      titleStyle={Styles.accordionListTitle}
-                      left={props => <CustomAccordionIcon sectionId="vhtReferral" />}
-                      expanded={expandedAccordion === 'vhtReferral'}
-                      onPress={() => {
-                        setExpandedAccordion(expandedAccordion === 'vhtReferral' ? '' : 'vhtReferral')
-                        handleAccordionPress('vhtReferral')}
-                      }
+                        title="CHW Referral"
+                        titleStyle={Styles.accordionListTitle}
+                        left={props => <CustomAccordionIcon sectionId="vhtReferral" />}
+                        expanded={expandedAccordion === 'vhtReferral'}
+                        onPress={() => {
+                            setExpandedAccordion(expandedAccordion === 'vhtReferral' ? '' : 'vhtReferral')
+                            handleAccordionPress('vhtReferral')
+                        }
+                        }
                     >
                         <View style={Styles.accordionContentWrapper}>
-                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>Patient Address</Text>
+                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>Patient Address</Text>
                             <InfoRow label="Village" value={patientData.village || 'Not provided'} />
                             <InfoRow label="Subvillage" value={patientData.subvillage || 'Not provided'} />
-                            
-                            <Text variant="bodyLarge" style={{fontWeight: 'bold', color: colors.primary, marginTop: 5}}>CHW Contact Information</Text>
+
+                            <Text variant="bodyLarge" style={{ fontWeight: 'bold', color: colors.primary, marginTop: 5 }}>CHW Contact Information</Text>
                             <InfoRow label="Name" value={patientData.vhtName || 'Not provided'} />
                             <InfoRow label="Telephone" value={patientData.vhtTelephone || 'Not provided'} />
                         </View>
                     </List.Accordion>
                 </View>
 
-                 <View style={Styles.accordionListWrapper}>
+                <View style={Styles.accordionListWrapper}>
                     <List.Accordion
-                      title="Caregiver Contact Information"
-                      titleStyle={Styles.accordionListTitle}
-                      left={props => <CustomAccordionIcon sectionId="caregiverContact" />}
-                      expanded={expandedAccordion === 'caregiverContact'}
-                      onPress={() => {
-                        setExpandedAccordion(expandedAccordion === 'caregiverContact' ? '' : 'caregiverContact')
-                        handleAccordionPress('caregiverContact')}
-                      }
+                        title="Caregiver Contact Information"
+                        titleStyle={Styles.accordionListTitle}
+                        left={props => <CustomAccordionIcon sectionId="caregiverContact" />}
+                        expanded={expandedAccordion === 'caregiverContact'}
+                        onPress={() => {
+                            setExpandedAccordion(expandedAccordion === 'caregiverContact' ? '' : 'caregiverContact')
+                            handleAccordionPress('caregiverContact')
+                        }
+                        }
                     >
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Head of Household" value={patientData.caregiverName || 'Not provided'} />
                             <InfoRow label="Telephone" value={patientData.caregiverTel || 'Not provided'} />
                             {(patientData.caregiverTel !== '') &&
-                            <>
-                                <InfoRow label="Telephone belongs to caregiver" value={patientData.isCaregiversPhone ? 'Yes' : 'No'} />
-                                <InfoRow label="Phone owner" value={getPhoneOwnerValue(patientData.phoneOwner)} />
-                                <InfoRow label="Receive reminders" value={patientData.sendReminders ? 'Yes' : 'No'} />
-                            </>
+                                <>
+                                    <InfoRow label="Telephone belongs to caregiver" value={patientData.isCaregiversPhone ? 'Yes' : 'No'} />
+                                    <InfoRow label="Phone owner" value={getPhoneOwnerValue(patientData.phoneOwner)} />
+                                    <InfoRow label="Receive reminders" value={patientData.sendReminders ? 'Yes' : 'No'} />
+                                </>
                             }
                         </View>
                     </List.Accordion>

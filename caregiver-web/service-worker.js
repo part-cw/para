@@ -10,7 +10,7 @@
  * already-provisioned tablets refresh their cache on their next online visit.
  */
 
-const CACHE_VERSION = 'ad6bf1ac';
+const CACHE_VERSION = '6fa917eb';
 const CACHE_NAME = `caregiver-videos-${CACHE_VERSION}`;
 
 const APP_SHELL = [

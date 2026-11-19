@@ -15,7 +15,7 @@ export interface PatientData {
   isNeonate: boolean | null;
   isDOBUnknown: boolean;
   isYearMonthUnknown: boolean;
-  dob: Date | null;
+  dob: Date | null; // Stored as local date at noon, but serialized as UTC for storage. Always convert to local time for display. 
   birthYear: string;
   birthMonth: string;
   approxAgeInYears: string;

@@ -303,7 +303,16 @@ export default function DischargeDataScreen() {
 
     const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
-            setEditedDob(selectedDate)
+            // New Date object, using local getters to convert back to local time. Time is set to noon as default since time is not relevant for DOB. 
+            // This ensures that when the date is serialized to UTC for storage, it will be correct for UTC-12 - UTC+12 timezones. 
+            const dobDate = new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                selectedDate.getDate(),
+                12, 0, 0, 0
+            );
+
+            setEditedDob(dobDate);
         }
 
         if (Platform.OS === "android") {
@@ -679,6 +688,10 @@ export default function DischargeDataScreen() {
         />
     );
 
+    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
+    const toLocalDateString = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
     const getAccordionDescription = (sectionId: string) => {
         const isReviewed = reviewedSections.has(sectionId);
         const validation = sectionValidations[sectionId];
@@ -932,7 +945,7 @@ export default function DischargeDataScreen() {
                                                                     label="Date of Birth (YYYY-MM-DD)"
                                                                     placeholder='Select date'
                                                                     mode="outlined"
-                                                                    value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
+                                                                    value={editedDOB ? toLocalDateString(editedDOB) : ""}
                                                                     style={[Styles.textInput, { marginTop: 10 }]}
                                                                     editable={false}
                                                                     pointerEvents="none"
@@ -979,7 +992,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? toLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
@@ -1070,7 +1083,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? toLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
