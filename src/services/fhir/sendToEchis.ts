@@ -30,7 +30,8 @@ export async function sendToEchis(
     // If body includes 'error' field, use that as the message; otherwise, use the raw body text if it's just a string
     if (!result.ok) message = typeof result.body === 'string' ? result.body : result.body?.error;
     else if (result.dryRun) message = 'No eCHIS server is configured.';
-    console.log(`sendToEchis: sent=${sent}, message=${message ?? 'Successful send'}`);
+    else if (!sent) message = 'Failed to send data to eCHIS.';
+    console.log(`sendToEchis: sent=${sent}, message=${message ?? result.body?.message}`);
 
     if (sent) await storage.updatePatient(id, { isSentToEchis: true }); // only flip the flag on success
 

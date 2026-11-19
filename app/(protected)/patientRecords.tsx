@@ -154,7 +154,7 @@ export default function PatientRecords() {
   const handleArchive = async (id: string) => {
     let archiveMessage = '';
     if (!patientData.isSentToEchis) {
-      archiveMessage = 'Patient data has not been sent to eCHIS. The system will attempt to resend the data when the record is archived. Are you sure you want to archive this record?';
+      archiveMessage = 'This record has not been sent to eCHIS. Archiving will attempt to resend the data.\n \nAre you sure you want to archive this record?';
     } else {
       archiveMessage = 'Are you sure you want to archive this record?';
     }
@@ -179,7 +179,7 @@ export default function PatientRecords() {
           await storage.archivePatient(id);
           await loadAllRecords();
         }
-        archiveMessage = sent ? 'Record archived and patient data sent to eCHIS.' : `Record cannot be archived. ${message}.`;
+        archiveMessage = sent ? 'Record archived and patient data sent to eCHIS.' : `Record cannot be archived. Error sending to eCHIS.`;
       } else {
         await storage.archivePatient(id);
         await loadAllRecords();
