@@ -44,7 +44,8 @@ export default function DischargeDataScreen() {
     const {
         dischargeStatus,
         feedingStatus_discharge,
-        spo2_discharge
+        spo2_discharge,
+        isSentToEchis
     } = patientData
 
     const [loading, setLoading] = useState(true);
@@ -294,7 +295,9 @@ export default function DischargeDataScreen() {
         setLoading(true);
 
         await completeDischarge();
+
         await attemptSendToEchis(patientId);
+
         // TODO reopen modal on storage error?
 
         setLoading(false)
@@ -506,7 +509,7 @@ export default function DischargeDataScreen() {
     };
 
     // Tries to send the record to eCHIS after discharge has been saved.
-    // A failed send never blocks the discharge; retry sending patient data to eCHIS when the record is archived.
+    // A failed send never blocks the discharge; attempt to send patient data again when the record is archived.
     const attemptSendToEchis = async (id: string) => {
         try {
             const { sent, message } = await sendToEchis(id, storage, config);
@@ -514,14 +517,14 @@ export default function DischargeDataScreen() {
             if (!sent) {
                 Alert.alert(
                     'Not Sent to eCHIS',
-                    `${message ?? 'Could not send data.'} The patient is discharged, and the data will be resent when the record is archived.`
+                    `${message ?? 'Could not send data.'} The patient is discharged, and the system will attempt to send the data to eCHIS when the record is archived.`
                 );
             } else {
                 Alert.alert('Success', 'Patient data sent to eCHIS successfully.');
             }
         } catch (error) {
             console.error('Error sending to eCHIS:', error);
-            Alert.alert('Not Sent to eCHIS', 'The patient is discharged. Sending will be retried when the record is archived.');
+            Alert.alert('Not Sent to eCHIS', 'The patient is discharged. The system will attempt to send the data to eCHIS when the record is archived.');
         }
     };
 
@@ -620,7 +623,7 @@ export default function DischargeDataScreen() {
 
         Alert.alert(
             'Confirm Discharge',
-            `Are you sure you want to discharge patient ${patientName} and send data to eCHIS? This action cannot be undone.`,
+            `Are you sure you want to discharge patient ${patientName} and send patient data to eCHIS? This action cannot be undone.`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 { text: 'Discharge', onPress: confirmDischarge }
