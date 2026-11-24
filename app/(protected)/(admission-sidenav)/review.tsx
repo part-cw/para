@@ -383,7 +383,13 @@ export default function ReviewScreen() {
                       }
                     >
                         <View style={Styles.accordionContentWrapper}>
-                            <InfoRow label="Full Name" value={`${patientData.firstName} ${patientData.otherName} ${patientData.surname}`.trim()} />
+                            <InfoRow
+                                label="Full Name"
+                                value={[patientData.firstName, patientData.otherName, patientData.surname]
+                                .map((s) => s?.trim())
+                                .filter(Boolean)
+                                .join(" ")}
+                            />
                             <InfoRow label="Sex" value={patientData.sex} />
                             <InfoRow label="DOB/Age" value={formatAge()} />
                             <InfoRow label="Under 6 months" value={patientData.isUnderSixMonths ? 'Yes' : 'No'} />
