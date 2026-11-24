@@ -4,7 +4,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { capitalizeFirstLetter, formatAsLocalDateString, formatChronicIllness } from '@/src/utils/formatUtils';
+import { capitalizeFirstLetter, displayDob, formatAsLocalDateString, formatChronicIllness } from '@/src/utils/formatUtils';
 import { toDisplayConditionValue } from '@/src/utils/medicalConditionDisplay';
 import { normalizeBoolean } from '@/src/utils/normalizer';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -318,20 +318,6 @@ export default function ReviewScreen() {
         }
     }
 
-
-    const formatAge = () => {
-        if (patientData.dob) {
-            return formatAsLocalDateString(patientData.dob);
-        } else if (patientData.birthYear && patientData.birthMonth) {
-            return `${patientData.birthMonth} ${patientData.birthYear}`;
-        } else if (patientData.approxAgeInYears) {
-            return `${patientData.approxAgeInYears} years old`;
-        }
-        return 'Not provided';
-    };
-
-
-
     const InfoRow = ({ label, value }: { label: string; value: string | string[] }) => (
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             <Text style={{ fontWeight: 'bold', flex: 1, minWidth: 130 }}>{label}:</Text>
@@ -382,7 +368,7 @@ export default function ReviewScreen() {
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow label="Full Name" value={`${patientData.firstName} ${patientData.otherName} ${patientData.surname}`.trim()} />
                             <InfoRow label="Sex" value={patientData.sex} />
-                            <InfoRow label="DOB/Age" value={formatAge()} />
+                            <InfoRow label="DOB/Age" value={displayDob(patientData.dob ?? undefined, patientData.birthYear, patientData.birthMonth, patientData.approxAgeInYears)} />
                             <InfoRow label="Under 6 months" value={patientData.isUnderSixMonths ? 'Yes' : 'No'} />
                         </View>
                     </List.Accordion>

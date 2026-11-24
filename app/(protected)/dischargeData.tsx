@@ -15,7 +15,7 @@ import { spo2DischargeInfo } from "@/src/forms/infoText";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ, validateOxygenSaturationRange } from "@/src/utils/clinicalVariableCalculator";
-import { formatDateString, formatName, formatAsLocalDateString } from "@/src/utils/formatUtils";
+import { formatName, formatAsLocalDateString } from "@/src/utils/formatUtils";
 import { normalizeBoolean } from "@/src/utils/normalizer";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -336,7 +336,7 @@ export default function DischargeDataScreen() {
 
         // Store previous age info
         const previous = {
-            dob: (patientData?.dob && patientData?.dob.toISOString()) || null,
+            dob: patientData?.dob || null,
             birthYear: patientData?.birthYear,
             birthMonth: patientData?.birthMonth,
             approxAgeInYears: patientData?.approxAgeInYears,
@@ -382,7 +382,7 @@ export default function DischargeDataScreen() {
 
             // Build updates object
             let updates = {
-                ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && { dob: editedDOB }),
+                ...((!previous.dob || (previous.dob && editedDOB && formatAsLocalDateString(previous.dob) !== formatAsLocalDateString(editedDOB))) && { dob: editedDOB }),
                 ...(previous.birthYear && previous.birthYear !== '' && { birthYear: '' }),
                 ...(previous.birthMonth && previous.birthMonth !== '' && { birthMonth: '' }),
                 ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && { approxAgeInYears: '' }),

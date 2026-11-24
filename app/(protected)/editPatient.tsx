@@ -14,7 +14,7 @@ import { displayNames } from "@/src/forms/displayNames";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ } from "@/src/utils/clinicalVariableCalculator";
-import { displayDob, formatAsLocalDateString, formatDateString, formatName } from "@/src/utils/formatUtils";
+import { displayDob, formatAsLocalDateString, formatName } from "@/src/utils/formatUtils";
 import { normalizeBoolean } from "@/src/utils/normalizer";
 import { computeAdmissionRiskUpdated } from "@/src/utils/riskHelpers";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -107,7 +107,7 @@ export default function EditPatientRecord() {
 
         // store previous age info (before dob change)
         const previous = {
-            dob: (patientData?.dob && patientData?.dob.toISOString()) || null,
+            dob: patientData?.dob || null,
             birthYear: patientData?.birthYear,
             birthMonth: patientData?.birthMonth,
             approxAgeInYears: patientData?.approxAgeInYears,
@@ -152,7 +152,7 @@ export default function EditPatientRecord() {
     const confirmDobUpdate = async (previous: any, newAgeInMonths: number, newIsNeonate: boolean, newIsSickYoungInfant: boolean, newWaz: number) => {
         // only update values if they have changed - don't include isUnderSixMonths (this should never change)
         let updates = {
-            ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && { dob: editedDOB }),
+            ...((!previous.dob || (previous.dob && editedDOB && formatAsLocalDateString(previous.dob) !== formatAsLocalDateString(editedDOB))) && { dob: editedDOB }),
             ...(previous.birthYear && previous.birthYear !== '' && { birthYear: '' }),
             ...(previous.birthMonth && previous.birthMonth !== '' && { birthMonth: '' }),
             ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && { approxAgeInYears: '' }),
@@ -394,7 +394,7 @@ export default function EditPatientRecord() {
                                     {/* Age information */}
                                     <EditGroup
                                         fieldLabel={"DOB"}
-                                        fieldValue={displayDob(patientData.dob ? formatAsLocalDateString(patientData.dob) : "", patientData.birthYear, patientData.birthMonth)}
+                                        fieldValue={displayDob(patientData.dob ?? undefined, patientData.birthYear, patientData.birthMonth, patientData.approxAgeInYears)}
                                         editLabel="Enter new DOB if known"
                                         canEdit={normalizeBoolean(ageIsEditable)}
                                     >
