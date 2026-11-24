@@ -4,7 +4,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { capitalizeFirstLetter, formatChronicIllness } from '@/src/utils/formatUtils';
+import { capitalizeFirstLetter, formatAsLocalDateString, formatChronicIllness } from '@/src/utils/formatUtils';
 import { toDisplayConditionValue } from '@/src/utils/medicalConditionDisplay';
 import { normalizeBoolean } from '@/src/utils/normalizer';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -318,18 +318,10 @@ export default function ReviewScreen() {
         }
     }
 
-    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
-    const toLocalDateString = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-    const formatDate = (date: Date | null): string => {
-        if (!date) return 'Not provided';
-        return toLocalDateString(date);
-    };
 
     const formatAge = () => {
         if (patientData.dob) {
-            return formatDate(patientData.dob);
+            return formatAsLocalDateString(patientData.dob);
         } else if (patientData.birthYear && patientData.birthMonth) {
             return `${patientData.birthMonth} ${patientData.birthYear}`;
         } else if (patientData.approxAgeInYears) {

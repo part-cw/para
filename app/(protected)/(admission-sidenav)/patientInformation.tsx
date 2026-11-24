@@ -9,6 +9,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { useValidation } from '@/src/contexts/ValidationContext';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from '@/src/utils/ageCalculator';
+import { formatAsLocalDateString } from '@/src/utils/formatUtils';
 import { formatNumericInput, isValidTextFormat, isValidYearInput, textErrorMessage, validateApproxAge, yearErrorMessage } from '@/src/utils/inputValidator';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -145,23 +146,17 @@ export default function PatientInformationScreen() {
         return errors;
     }
 
-    // Helper function to display a Date object as a local date string in YYYY-MM-DD format
-    const toLocalDateString = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
             // Note: DateTimePicker selects the local time at midnight but it is converted to UTC to be stored in the variable selectedDate.
 
-            // New Date object, using local getters to convert back to local time. Time is set to noon as default since time is not relevant for DOB. 
-            // This ensures that when the date is serialized to UTC for storage, it will be correct for UTC-12 - UTC+12 timezones. 
+            // New Date object, using local getters to convert back to local time. Time is set to midnight as default.
             const dobDate = new Date(
                 selectedDate.getFullYear(),
                 selectedDate.getMonth(),
-                selectedDate.getDate(),
-                12, 0, 0, 0
+                selectedDate.getDate()
             );
-
+ 
             const ageInDays = AgeCalculator.getAgeInDaysFromDob(dobDate);
             const isYoungInfant = ageInDays < 28; // true if < 28 days
             updatePatientData({
@@ -358,7 +353,7 @@ export default function PatientInformationScreen() {
                                         label="Date of Birth (YYYY-MM-DD)"
                                         placeholder='Select date'
                                         mode="flat"
-                                        value={dob ? toLocalDateString(dob) : ""}
+                                        value={dob ? formatAsLocalDateString(dob) : ""}
                                         style={[Styles.textInput, { marginTop: 10 }]}
                                         editable={false}
                                         pointerEvents="none"

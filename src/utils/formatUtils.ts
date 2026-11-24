@@ -66,3 +66,7 @@ export const capitalizeFirstLetter = (input: string) => {
   }
   return input.charAt(0).toUpperCase() + input.slice(1);
 }
+
+ // Helper function to display a Date object as a local date string in YYYY-MM-DD format
+export const formatAsLocalDateString = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

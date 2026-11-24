@@ -14,7 +14,7 @@ import { displayNames } from "@/src/forms/displayNames";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ } from "@/src/utils/clinicalVariableCalculator";
-import { displayDob, formatDateString, formatName } from "@/src/utils/formatUtils";
+import { displayDob, formatAsLocalDateString, formatDateString, formatName } from "@/src/utils/formatUtils";
 import { normalizeBoolean } from "@/src/utils/normalizer";
 import { computeAdmissionRiskUpdated } from "@/src/utils/riskHelpers";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -249,10 +249,6 @@ export default function EditPatientRecord() {
         }
     }
 
-    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
-    const toLocalDateString = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
     // recalculate risk 
     const proceedWithRiskRecalculation = async (updates?: Partial<PatientData>) => {
         setRecalculating(true);
@@ -398,7 +394,7 @@ export default function EditPatientRecord() {
                                     {/* Age information */}
                                     <EditGroup
                                         fieldLabel={"DOB"}
-                                        fieldValue={displayDob(patientData.dob ? toLocalDateString(patientData.dob) : "", patientData.birthYear, patientData.birthMonth)}
+                                        fieldValue={displayDob(patientData.dob ? formatAsLocalDateString(patientData.dob) : "", patientData.birthYear, patientData.birthMonth)}
                                         editLabel="Enter new DOB if known"
                                         canEdit={normalizeBoolean(ageIsEditable)}
                                     >
@@ -408,7 +404,7 @@ export default function EditPatientRecord() {
                                                     label="Date of Birth (YYYY-MM-DD)"
                                                     placeholder='Select date'
                                                     mode="outlined"
-                                                    value={editedDOB ? toLocalDateString(editedDOB) : ""}
+                                                    value={editedDOB ? formatAsLocalDateString(editedDOB) : ""}
                                                     style={[Styles.textInput, { marginTop: 10 }]}
                                                     editable={false}
                                                     pointerEvents="none"

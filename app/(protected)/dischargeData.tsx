@@ -15,7 +15,7 @@ import { spo2DischargeInfo } from "@/src/forms/infoText";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ, validateOxygenSaturationRange } from "@/src/utils/clinicalVariableCalculator";
-import { formatDateString, formatName } from "@/src/utils/formatUtils";
+import { formatDateString, formatName, formatAsLocalDateString } from "@/src/utils/formatUtils";
 import { normalizeBoolean } from "@/src/utils/normalizer";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -303,13 +303,11 @@ export default function DischargeDataScreen() {
 
     const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
-            // New Date object, using local getters to convert back to local time. Time is set to noon as default since time is not relevant for DOB. 
-            // This ensures that when the date is serialized to UTC for storage, it will be correct for UTC-12 - UTC+12 timezones. 
+            // New Date object, using local getters to convert back to local time. Time is set to midnight as default.
             const dobDate = new Date(
                 selectedDate.getFullYear(),
                 selectedDate.getMonth(),
-                selectedDate.getDate(),
-                12, 0, 0, 0
+                selectedDate.getDate()
             );
 
             setEditedDob(dobDate);
@@ -688,9 +686,6 @@ export default function DischargeDataScreen() {
         />
     );
 
-    // Helper function to convert a Date object to a local date string in YYYY-MM-DD format
-    const toLocalDateString = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
     const getAccordionDescription = (sectionId: string) => {
         const isReviewed = reviewedSections.has(sectionId);
@@ -945,7 +940,7 @@ export default function DischargeDataScreen() {
                                                                     label="Date of Birth (YYYY-MM-DD)"
                                                                     placeholder='Select date'
                                                                     mode="outlined"
-                                                                    value={editedDOB ? toLocalDateString(editedDOB) : ""}
+                                                                    value={editedDOB ? formatAsLocalDateString(editedDOB) : ""}
                                                                     style={[Styles.textInput, { marginTop: 10 }]}
                                                                     editable={false}
                                                                     pointerEvents="none"
@@ -992,7 +987,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? toLocalDateString(new Date(patientData.dob))
+                                                                        ? formatAsLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
@@ -1083,7 +1078,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? toLocalDateString(new Date(patientData.dob))
+                                                                        ? formatAsLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
