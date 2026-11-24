@@ -4,7 +4,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { capitalizeFirstLetter, formatChronicIllness } from '@/src/utils/formatUtils';
+import { capitalizeFirstLetter, formatChronicIllness, formatName } from '@/src/utils/formatUtils';
 import { toDisplayConditionValue } from '@/src/utils/medicalConditionDisplay';
 import { normalizeBoolean } from '@/src/utils/normalizer';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -385,10 +385,7 @@ export default function ReviewScreen() {
                         <View style={Styles.accordionContentWrapper}>
                             <InfoRow
                                 label="Full Name"
-                                value={[patientData.firstName, patientData.otherName, patientData.surname]
-                                .map((s) => s?.trim())
-                                .filter(Boolean)
-                                .join(" ")}
+                                value={formatName(patientData.firstName, patientData.surname, patientData.otherName)}
                             />
                             <InfoRow label="Sex" value={patientData.sex} />
                             <InfoRow label="DOB/Age" value={formatAge()} />
