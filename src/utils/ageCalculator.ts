@@ -33,7 +33,14 @@ export class AgeCalculator {
      * @returns admission age in months, unrounded
      */
     static calculateAgeInMonthsAtAdmission(dob: Date, admission: Date): number {
-        const diffDays = this.getAgeInDaysAtAdmission(dob, admission);
+        // Reset admission time to midnight to avoid rounding errors based on admission start time
+        const updatedAdmission = new Date(
+            admission.getFullYear(),
+            admission.getMonth(),
+            admission.getDate()
+        );
+ 
+        const diffDays = this.getAgeInDaysAtAdmission(dob, updatedAdmission);
         const diffYears = diffDays / this.daysPerYear
         const months = 12 * diffYears
         
@@ -46,7 +53,14 @@ export class AgeCalculator {
      * @returns admission age in days, unrounded
      */
     static getAgeInDaysAtAdmission(dob: Date, admission: Date): number {
-        const diffTime = admission.getTime() - dob.getTime(); // get time is ms
+        // Reset admission time to midnight to avoid rounding errors based on admission start time
+        const updatedAdmission = new Date(
+            admission.getFullYear(),
+            admission.getMonth(),
+            admission.getDate()
+        );
+ 
+        const diffTime = updatedAdmission.getTime() - dob.getTime(); // get time is ms
         const diffDays = diffTime / this.msPerDay;
         
         return diffDays;
@@ -131,12 +145,18 @@ export class AgeCalculator {
      * 
      * @param birthYear entered manually - assume valid input
      * @param birthMonth entered manually - assume valid input
-     * @returns creates DOB in Date formate. Assumes birth date is 15th of birth year
+     * @param approximateAge entered manually - assume valid input
+     * @returns creates DOB in Date format given approximations. Assumes birth date is 15th of birth year
      */
-    static createDob(birthYear: string, birthMonth: string): Date {
-        const birthMonthIndex = this.monthToIndex(birthMonth)
-        const dob = new Date(Number(birthYear), birthMonthIndex, 15)
-        return dob
+    static createDob(birthYear?: string, birthMonth?: string, approximateAge?: string): Date {
+        if (birthYear && birthMonth) {
+            const birthMonthIndex = this.monthToIndex(birthMonth)
+            return new Date(Number(birthYear), birthMonthIndex, 15);
+        } else if (approximateAge) {
+            const now = new Date();
+            return new Date(now.getFullYear() - Number(approximateAge), now.getMonth(), 15);
+        }
+        throw new Error("Invalid input for creating DOB.");
     }
 
     /**

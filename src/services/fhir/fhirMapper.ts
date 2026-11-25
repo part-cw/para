@@ -5,7 +5,9 @@
  * and one Observation per positive/suspected condition plus one for the risk category.
  */
 
+import { formatAsLocalDateString } from '@/src/utils/formatUtils';
 import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
+import { AgeCalculator } from '../../utils/ageCalculator';
 import { PatientData } from '../../contexts/PatientData';
 import { RiskAssessment } from '../../models/types';
 import {
@@ -50,11 +52,16 @@ function normalizeGender(sex: string): AdministrativeGender | undefined {
 }
 
 /** PARA stores dob as a Date, but it may come back from SQLite as an ISO string. */
+/** If exact DOB is unknown, use approximate date if provided. */
 function toBirthDate(patient: PatientData): string | undefined {
-  if (patient.isDOBUnknown || !patient.dob) return undefined;
-  const date = new Date(patient.dob);
-  if (isNaN(date.getTime())) return undefined;
-  return date.toISOString().slice(0, 10); // YYYY-MM-DD
+  // If DOB is unknown and age is > 6 months, create a DOB from birthYear and birthMonth (or approximate age in years)
+  // < 6 months old uses DateTimePicker to enter approximate DOB
+  if ((patient.isDOBUnknown && patient.ageInMonths && patient.ageInMonths > 6) || !patient.dob)  {
+      const dob = AgeCalculator.createDob(patient.birthYear, patient.birthMonth, patient.approxAgeInYears);
+      return formatAsLocalDateString(dob);
+  }
+  if (isNaN(patient.dob.getTime())) return undefined; //ie. new Date is invalid
+  return formatAsLocalDateString(patient.dob);
 }
 
 function buildAddress(patient: PatientData): Address | null {

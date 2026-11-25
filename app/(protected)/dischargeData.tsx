@@ -15,7 +15,7 @@ import { spo2DischargeInfo } from "@/src/forms/infoText";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ, validateOxygenSaturationRange } from "@/src/utils/clinicalVariableCalculator";
-import { formatDateString, formatName } from "@/src/utils/formatUtils";
+import { formatName, formatAsLocalDateString } from "@/src/utils/formatUtils";
 import { normalizeBoolean } from "@/src/utils/normalizer";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -44,7 +44,8 @@ export default function DischargeDataScreen() {
     const {
         dischargeStatus,
         feedingStatus_discharge,
-        spo2_discharge
+        spo2_discharge, 
+        isSentToEchis
     } = patientData
 
     const [loading, setLoading] = useState(true);
@@ -303,7 +304,14 @@ export default function DischargeDataScreen() {
 
     const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
-            setEditedDob(selectedDate)
+            // New Date object, using local getters to convert back to local time. Time is set to midnight as default.
+            const dobDate = new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                selectedDate.getDate()
+            );
+
+            setEditedDob(dobDate);
         }
 
         if (Platform.OS === "android") {
@@ -329,7 +337,7 @@ export default function DischargeDataScreen() {
 
         // Store previous age info
         const previous = {
-            dob: (patientData?.dob && patientData?.dob.toISOString()) || null,
+            dob: patientData?.dob || null,
             birthYear: patientData?.birthYear,
             birthMonth: patientData?.birthMonth,
             approxAgeInYears: patientData?.approxAgeInYears,
@@ -375,7 +383,7 @@ export default function DischargeDataScreen() {
 
             // Build updates object
             let updates = {
-                ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && { dob: editedDOB }),
+                ...((!previous.dob || (previous.dob && editedDOB && formatAsLocalDateString(previous.dob) !== formatAsLocalDateString(editedDOB))) && { dob: editedDOB }),
                 ...(previous.birthYear && previous.birthYear !== '' && { birthYear: '' }),
                 ...(previous.birthMonth && previous.birthMonth !== '' && { birthMonth: '' }),
                 ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && { approxAgeInYears: '' }),
@@ -505,23 +513,22 @@ export default function DischargeDataScreen() {
         setReviewedSections(prev => new Set([...prev, sectionId]));
     };
 
-    // Tries to send the record to eCHIS after discharge has been saved.
-    // A failed send never blocks the discharge; retry sending patient data to eCHIS when the record is archived.
+    // Attempt to send patient data to eCHIS when the patient is discharged. If send fails, patient is discharged and data will be resent when the record is archived.
     const attemptSendToEchis = async (id: string) => {
         try {
-            const { sent, message } = await sendToEchis(id, storage, config);
+            const { sent } = await sendToEchis(id, storage, config);
 
             if (!sent) {
                 Alert.alert(
                     'Not Sent to eCHIS',
-                    `${message ?? 'Could not send data.'} The patient is discharged, and the data will be resent when the record is archived.`
+                    `The patient is discharged, and the system will attempt to send the data to eCHIS when the record is archived.`
                 );
             } else {
                 Alert.alert('Success', 'Patient data sent to eCHIS successfully.');
             }
         } catch (error) {
             console.error('Error sending to eCHIS:', error);
-            Alert.alert('Not Sent to eCHIS', 'The patient is discharged. Sending will be retried when the record is archived.');
+            Alert.alert('Not Sent to eCHIS', 'The patient is discharged. The system will attempt to send the data to eCHIS when the record is archived.');
         }
     };
 
@@ -620,7 +627,7 @@ export default function DischargeDataScreen() {
 
         Alert.alert(
             'Confirm Discharge',
-            `Are you sure you want to discharge patient ${patientName} and send data to eCHIS? This action cannot be undone.`,
+            `Are you sure you want to discharge ${patientName} and send patient's data to eCHIS? This action cannot be undone.`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 { text: 'Discharge', onPress: confirmDischarge }
@@ -678,6 +685,7 @@ export default function DischargeDataScreen() {
             style={{ marginLeft: 16, marginTop: 5 }}
         />
     );
+
 
     const getAccordionDescription = (sectionId: string) => {
         const isReviewed = reviewedSections.has(sectionId);
@@ -932,7 +940,7 @@ export default function DischargeDataScreen() {
                                                                     label="Date of Birth (YYYY-MM-DD)"
                                                                     placeholder='Select date'
                                                                     mode="outlined"
-                                                                    value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
+                                                                    value={editedDOB ? formatAsLocalDateString(editedDOB) : ""}
                                                                     style={[Styles.textInput, { marginTop: 10 }]}
                                                                     editable={false}
                                                                     pointerEvents="none"
@@ -979,7 +987,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? formatAsLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
@@ -1070,7 +1078,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? formatAsLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">

@@ -16,6 +16,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Button, SegmentedButtons, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { sendToEchis } from '@/src/services/fhir/sendToEchis';
+import { usePatientData } from '@/src/contexts/PatientDataContext';
 
 type FilterType = 'all' | 'active' | 'discharged';
 
@@ -31,6 +32,8 @@ export default function PatientRecords() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
   const [videoModalVideos, setVideoModalVideos] = useState<CaregiverVideo[] | null>(null);
+
+  const { patientData } = usePatientData();
 
   // Reload records when screen comes into focus (worms on mount or if navigate back to this page)
   useFocusEffect(
@@ -145,11 +148,18 @@ export default function PatientRecords() {
     });
   }
 
-  // Send the patient's data to eCHIS as FHIR resources, then soft-archive on success.
+  // Send the patient's data to eCHIS as a FHIR-formatted bundle, then archive on success.
   const handleArchive = async (id: string) => {
+    let archiveMessage = '';
+    if (!patientData.isSentToEchis) {
+      archiveMessage = 'This record has not been sent to eCHIS. Archiving the patient will resend the data.\n \nAre you sure you want to archive this record?';
+    } else {
+      archiveMessage = 'Are you sure you want to archive this record?';
+    }
+
     Alert.alert(
       'Archive Record',
-      'This will send the patient\'s data to eCHIS (if not already sent) and then archive the record. Continue?',
+      archiveMessage,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Send & Archive', style: 'destructive', onPress: () => archivePatient(id) },
@@ -159,19 +169,24 @@ export default function PatientRecords() {
 
   const archivePatient = async (id: string) => {
     try {
-      const { sent, message } = await sendToEchis(id, storage, config);
-
-      // archive if record was sent previously at discharge or if it was just sent now
-      if (sent) {
+      let archiveMessage = '';
+      if (!patientData.isSentToEchis) {
+        const { sent } = await sendToEchis(id, storage, config);
+        // archive if patient data has been successfully sent to eCHIS (either at discharge or archive time).
+        if (sent) {
+          await storage.archivePatient(id);
+          await loadAllRecords();
+        }
+        archiveMessage = sent ? 'Record archived and patient data sent to eCHIS.' : `Record cannot be archived. Error sending to eCHIS.`;
+      } else { // patient data has already been sent to eCHIS, so just archive the record.
         await storage.archivePatient(id);
         await loadAllRecords();
+        archiveMessage = 'Record archived.';
       }
 
       Alert.alert(
         'Archive Status',
-        sent
-          ? 'Record archived. Patient data has been sent to eCHIS.'
-          : `Record cannot be archived. ${message}.`
+         archiveMessage
       );
     } catch (error) {
       console.error('Error archiving patient:', error);
