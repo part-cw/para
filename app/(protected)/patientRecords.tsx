@@ -152,7 +152,7 @@ export default function PatientRecords() {
   const handleArchive = async (id: string) => {
     let archiveMessage = '';
     if (!patientData.isSentToEchis) {
-      archiveMessage = 'This record has not been sent to eCHIS. Archiving will attempt to resend the data.\n \nAre you sure you want to archive this record?';
+      archiveMessage = 'This record has not been sent to eCHIS. Archiving the patient will resend the data.\n \nAre you sure you want to archive this record?';
     } else {
       archiveMessage = 'Are you sure you want to archive this record?';
     }

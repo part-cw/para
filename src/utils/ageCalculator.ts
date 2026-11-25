@@ -154,7 +154,7 @@ export class AgeCalculator {
             return new Date(Number(birthYear), birthMonthIndex, 15);
         } else if (approximateAge) {
             const now = new Date();
-            return new Date(now.getFullYear() - Number(approximateAge), 0, 15);
+            return new Date(now.getFullYear() - Number(approximateAge), now.getMonth(), 15);
         }
         throw new Error("Invalid input for creating DOB.");
     }

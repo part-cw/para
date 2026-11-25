@@ -54,7 +54,9 @@ function normalizeGender(sex: string): AdministrativeGender | undefined {
 /** PARA stores dob as a Date, but it may come back from SQLite as an ISO string. */
 /** If exact DOB is unknown, use approximate date if provided. */
 function toBirthDate(patient: PatientData): string | undefined {
-  if (patient.isDOBUnknown || !patient.dob) {
+  // If DOB is unknown and age is > 6 months, create a DOB from birthYear and birthMonth (or approximate age in years)
+  // < 6 months old uses DateTimePicker to enter approximate DOB
+  if ((patient.isDOBUnknown && patient.ageInMonths && patient.ageInMonths > 6) || !patient.dob)  {
       const dob = AgeCalculator.createDob(patient.birthYear, patient.birthMonth, patient.approxAgeInYears);
       return formatAsLocalDateString(dob);
   }
