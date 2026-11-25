@@ -145,12 +145,18 @@ export class AgeCalculator {
      * 
      * @param birthYear entered manually - assume valid input
      * @param birthMonth entered manually - assume valid input
-     * @returns creates DOB in Date formate. Assumes birth date is 15th of birth year
+     * @param approximateAge entered manually - assume valid input
+     * @returns creates DOB in Date format given approximations. Assumes birth date is 15th of birth year
      */
-    static createDob(birthYear: string, birthMonth: string): Date {
-        const birthMonthIndex = this.monthToIndex(birthMonth)
-        const dob = new Date(Number(birthYear), birthMonthIndex, 15)
-        return dob
+    static createDob(birthYear?: string, birthMonth?: string, approximateAge?: string): Date {
+        if (birthYear && birthMonth) {
+            const birthMonthIndex = this.monthToIndex(birthMonth)
+            return new Date(Number(birthYear), birthMonthIndex, 15);
+        } else if (approximateAge) {
+            const now = new Date();
+            return new Date(now.getFullYear() - Number(approximateAge), 0, 15);
+        }
+        throw new Error("Invalid input for creating DOB.");
     }
 
     /**

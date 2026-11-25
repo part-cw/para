@@ -7,6 +7,7 @@
 
 import { formatAsLocalDateString } from '@/src/utils/formatUtils';
 import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
+import { AgeCalculator } from '../../utils/ageCalculator';
 import { PatientData } from '../../contexts/PatientData';
 import { RiskAssessment } from '../../models/types';
 import {
@@ -51,8 +52,12 @@ function normalizeGender(sex: string): AdministrativeGender | undefined {
 }
 
 /** PARA stores dob as a Date, but it may come back from SQLite as an ISO string. */
+/** If exact DOB is unknown, use approximate date if provided. */
 function toBirthDate(patient: PatientData): string | undefined {
-  if (patient.isDOBUnknown || !patient.dob) return undefined;
+  if (patient.isDOBUnknown || !patient.dob) {
+      const dob = AgeCalculator.createDob(patient.birthYear, patient.birthMonth, patient.approxAgeInYears);
+      return formatAsLocalDateString(dob);
+  }
   if (isNaN(patient.dob.getTime())) return undefined; //ie. new Date is invalid
   return formatAsLocalDateString(patient.dob);
 }
