@@ -4,7 +4,7 @@ import { usePatientData } from '@/src/contexts/PatientDataContext';
 import { displayNames } from '@/src/forms/displayNames';
 import { patientFormSchema } from '@/src/forms/patientFormSchema';
 import { GlobalStyles as Styles } from '@/src/themes/styles';
-import { capitalizeFirstLetter, displayDob, formatAsLocalDateString, formatChronicIllness } from '@/src/utils/formatUtils';
+import { capitalizeFirstLetter, displayDob, formatChronicIllness } from '@/src/utils/formatUtils';
 import { toDisplayConditionValue } from '@/src/utils/medicalConditionDisplay';
 import { normalizeBoolean } from '@/src/utils/normalizer';
 import { MaterialIcons } from '@expo/vector-icons';

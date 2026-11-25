@@ -5,6 +5,7 @@
  * and one Observation per positive/suspected condition plus one for the risk category.
  */
 
+import { formatAsLocalDateString } from '@/src/utils/formatUtils';
 import { CategorizedMedicalConditions } from '../../contexts/CategorizedMedicalConditions';
 import { PatientData } from '../../contexts/PatientData';
 import { RiskAssessment } from '../../models/types';
@@ -52,9 +53,8 @@ function normalizeGender(sex: string): AdministrativeGender | undefined {
 /** PARA stores dob as a Date, but it may come back from SQLite as an ISO string. */
 function toBirthDate(patient: PatientData): string | undefined {
   if (patient.isDOBUnknown || !patient.dob) return undefined;
-  const date = new Date(patient.dob);
-  if (isNaN(date.getTime())) return undefined; //ie. new Date is invalid
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;; // YYYY-MM-DD
+  if (isNaN(patient.dob.getTime())) return undefined; //ie. new Date is invalid
+  return formatAsLocalDateString(patient.dob);
 }
 
 function buildAddress(patient: PatientData): Address | null {
