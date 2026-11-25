@@ -149,7 +149,7 @@ export default function PatientInformationScreen() {
     const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
 
-            // New Date object, using local getters to convert to local time. Time is set to midnight as default.
+            // New Date object, using local getters. Time is set to midnight as default.
             const dobDate = new Date(
                 selectedDate.getFullYear(),
                 selectedDate.getMonth(),

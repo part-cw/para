@@ -199,12 +199,12 @@ describe('AgeCalculator', () => {
     });
 
     test("calculates fractional months correctly", () => {
-      const dob = new Date(2020, 4, 1);
-      const admission = new Date(2020, 7, 15); // ~3.5 months
+      const dob = new Date(2020, 0, 1);
+      const admission = new Date(2020, 3, 15); // ~3.5 months
 
       const months = AgeCalculator.calculateAgeInMonthsAtAdmission(dob, admission);
 
-      expect(months).toBeCloseTo(3.482570038, 4);
+      expect(months).toBeCloseTo(3.449715603802901, 4);
     });
 
     test("returns 0 when dob and admission are same day", () => {
