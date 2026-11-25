@@ -15,7 +15,7 @@ import { spo2DischargeInfo } from "@/src/forms/infoText";
 import { GlobalStyles as Styles } from '@/src/themes/styles';
 import { AgeCalculator } from "@/src/utils/ageCalculator";
 import { calculateWAZ, validateOxygenSaturationRange } from "@/src/utils/clinicalVariableCalculator";
-import { formatDateString, formatName } from "@/src/utils/formatUtils";
+import { formatName, formatAsLocalDateString } from "@/src/utils/formatUtils";
 import { normalizeBoolean } from "@/src/utils/normalizer";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -303,7 +303,14 @@ export default function DischargeDataScreen() {
 
     const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         if (event.type === "set" && selectedDate) {
-            setEditedDob(selectedDate)
+            // New Date object, using local getters to convert back to local time. Time is set to midnight as default.
+            const dobDate = new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                selectedDate.getDate()
+            );
+
+            setEditedDob(dobDate);
         }
 
         if (Platform.OS === "android") {
@@ -329,7 +336,7 @@ export default function DischargeDataScreen() {
 
         // Store previous age info
         const previous = {
-            dob: (patientData?.dob && patientData?.dob.toISOString()) || null,
+            dob: patientData?.dob || null,
             birthYear: patientData?.birthYear,
             birthMonth: patientData?.birthMonth,
             approxAgeInYears: patientData?.approxAgeInYears,
@@ -375,7 +382,7 @@ export default function DischargeDataScreen() {
 
             // Build updates object
             let updates = {
-                ...((!previous.dob || (previous.dob && editedDOB && formatDateString(previous.dob) !== formatDateString(editedDOB.toISOString()))) && { dob: editedDOB }),
+                ...((!previous.dob || (previous.dob && editedDOB && formatAsLocalDateString(previous.dob) !== formatAsLocalDateString(editedDOB))) && { dob: editedDOB }),
                 ...(previous.birthYear && previous.birthYear !== '' && { birthYear: '' }),
                 ...(previous.birthMonth && previous.birthMonth !== '' && { birthMonth: '' }),
                 ...(previous.approxAgeInYears && previous.approxAgeInYears !== '' && { approxAgeInYears: '' }),
@@ -679,6 +686,7 @@ export default function DischargeDataScreen() {
         />
     );
 
+
     const getAccordionDescription = (sectionId: string) => {
         const isReviewed = reviewedSections.has(sectionId);
         const validation = sectionValidations[sectionId];
@@ -932,7 +940,7 @@ export default function DischargeDataScreen() {
                                                                     label="Date of Birth (YYYY-MM-DD)"
                                                                     placeholder='Select date'
                                                                     mode="outlined"
-                                                                    value={editedDOB ? editedDOB.toISOString().split("T")[0] : ""}
+                                                                    value={editedDOB ? formatAsLocalDateString(editedDOB) : ""}
                                                                     style={[Styles.textInput, { marginTop: 10 }]}
                                                                     editable={false}
                                                                     pointerEvents="none"
@@ -979,7 +987,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? formatAsLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">
@@ -1070,7 +1078,7 @@ export default function DischargeDataScreen() {
                                                                 <Text variant="bodyMedium" style={{ marginBottom: 4 }}>
                                                                     <Text style={{ fontWeight: 'bold' }}>New DOB: </Text>
                                                                     {patientData.dob
-                                                                        ? new Date(patientData.dob).toLocaleDateString('en-CA')
+                                                                        ? formatAsLocalDateString(new Date(patientData.dob))
                                                                         : 'Not available'}
                                                                 </Text>
                                                                 <Text variant="bodyMedium">

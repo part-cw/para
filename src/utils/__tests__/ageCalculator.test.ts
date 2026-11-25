@@ -190,8 +190,8 @@ describe('AgeCalculator', () => {
 
   describe("calculateAgeInMonthsAtAdmission", () => {
     test("calculates correct age in months for exact year difference", () => {
-      const dob = new Date("2020-01-01");
-      const admission = new Date("2021-01-01");
+      const dob = new Date(2020, 1,1);
+      const admission = new Date(2021, 1, 1);
 
       const months = AgeCalculator.calculateAgeInMonthsAtAdmission(dob, admission);
 
@@ -199,17 +199,17 @@ describe('AgeCalculator', () => {
     });
 
     test("calculates fractional months correctly", () => {
-      const dob = new Date("2020-01-01");
-      const admission = new Date("2020-04-15"); // ~3.5 months
+      const dob = new Date(2020, 0, 1);
+      const admission = new Date(2020, 3, 15); // ~3.5 months
 
       const months = AgeCalculator.calculateAgeInMonthsAtAdmission(dob, admission);
 
-      expect(months).toBeCloseTo(3.4497, 4);
+      expect(months).toBeCloseTo(3.449715603802901, 4);
     });
 
     test("returns 0 when dob and admission are same day", () => {
-      const dob = new Date("2024-06-10");
-      const admission = new Date("2024-06-10");
+      const dob = new Date(2024, 6, 10);
+      const admission = new Date(2024, 6, 10);
 
       const months = AgeCalculator.calculateAgeInMonthsAtAdmission(dob, admission);
 
@@ -217,19 +217,19 @@ describe('AgeCalculator', () => {
     });
 
     test("handles leap years correctly", () => {
-      const dob = new Date("2020-02-29");
-      const admission = new Date("2021-02-28");
+      const dob = new Date(2020, 1, 29);
+      const admission = new Date(2021, 1, 28);
 
       const months = AgeCalculator.calculateAgeInMonthsAtAdmission(dob, admission);
 
-      expect(months).toBeCloseTo(11.9919, 4);
+      expect(months).toBeCloseTo(11.9918685, 4);
     });
   });
 
   describe("getAgeInDaysAtAdmission", () => {
     test("calculates correct number of days", () => {
-      const dob = new Date("2024-01-01");
-      const admission = new Date("2024-01-11");
+      const dob = new Date(2024, 1, 1);
+      const admission = new Date(2024, 1, 11);
 
       const days = AgeCalculator.getAgeInDaysAtAdmission(dob, admission);
 
@@ -237,8 +237,8 @@ describe('AgeCalculator', () => {
     });
 
     test("handles large differences", () => {
-      const dob = new Date("2010-01-01");
-      const admission = new Date("2020-01-01");
+      const dob = new Date(2010, 1, 1);
+      const admission = new Date(2020, 1, 1);
 
       const days = AgeCalculator.getAgeInDaysAtAdmission(dob, admission);
 
@@ -246,8 +246,8 @@ describe('AgeCalculator', () => {
     });
 
     test("returns 0 for same date", () => {
-      const dob = new Date("2023-05-05");
-      const admission = new Date("2023-05-05");
+      const dob = new Date(2023, 5, 5);
+      const admission = new Date(2023, 5, 5);
 
       const days = AgeCalculator.getAgeInDaysAtAdmission(dob, admission);
 

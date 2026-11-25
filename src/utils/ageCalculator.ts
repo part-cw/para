@@ -33,7 +33,14 @@ export class AgeCalculator {
      * @returns admission age in months, unrounded
      */
     static calculateAgeInMonthsAtAdmission(dob: Date, admission: Date): number {
-        const diffDays = this.getAgeInDaysAtAdmission(dob, admission);
+        // Reset admission time to midnight to avoid rounding errors based on admission start time
+        const updatedAdmission = new Date(
+            admission.getFullYear(),
+            admission.getMonth(),
+            admission.getDate()
+        );
+ 
+        const diffDays = this.getAgeInDaysAtAdmission(dob, updatedAdmission);
         const diffYears = diffDays / this.daysPerYear
         const months = 12 * diffYears
         
@@ -46,7 +53,14 @@ export class AgeCalculator {
      * @returns admission age in days, unrounded
      */
     static getAgeInDaysAtAdmission(dob: Date, admission: Date): number {
-        const diffTime = admission.getTime() - dob.getTime(); // get time is ms
+        // Reset admission time to midnight to avoid rounding errors based on admission start time
+        const updatedAdmission = new Date(
+            admission.getFullYear(),
+            admission.getMonth(),
+            admission.getDate()
+        );
+ 
+        const diffTime = updatedAdmission.getTime() - dob.getTime(); // get time is ms
         const diffDays = diffTime / this.msPerDay;
         
         return diffDays;

@@ -6,6 +6,7 @@ import { getModelSelectorInstance } from '../models/modelSelectorInstance';
 import { RiskAssessment, RiskPrediction, TopPredictor } from '../models/types';
 import { normalizeBoolean } from "../utils/normalizer";
 import { IStorageService } from "./StorageService";
+import { formatAsLocalDateString } from '../utils/formatUtils';
 
 type MedicalConditionsRow = {
     patientId: string;
@@ -228,7 +229,7 @@ export class SQLiteStorage implements IStorageService {
     // ========== PATIENT OPERATIONS ==========
 
     /**
-     * convert patient from draft to active and comlpetes admission worflow - mark completed with date argument or now
+     * convert patient from draft to active and completes admission worflow - mark completed with date argument or now
      */
     async submitPatient(patientId: string, userId: string, date?: string): Promise<void> {
         if (!this.db) throw new Error('Database not initialized');
@@ -379,7 +380,7 @@ export class SQLiteStorage implements IStorageService {
                 data.firstName,
                 data.otherName || null,
                 data.sex,
-                data.dob ? data.dob.toISOString() : null,
+                data.dob ? formatAsLocalDateString(data.dob) : null,
                 data.birthYear || null,
                 data.birthMonth || null,
                 data.approxAgeInYears || null,
