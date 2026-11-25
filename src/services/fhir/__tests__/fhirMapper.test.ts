@@ -45,15 +45,28 @@ describe('buildPatientResource', () => {
     expect(resource.address).toEqual([{ line: ['Westside', 'Greenville'] }]);
   });
 
-  it('omits birthDate when DOB is unknown', () => {
-    const resource = buildPatientResource(makePatient({ isDOBUnknown: true }), 'test-site', '1');
-    expect(resource.birthDate).toBeUndefined();
+  it('sends birthDate when DOB is unknown and approximate month/year is provided (> 6 months)', () => {
+    const resource = buildPatientResource(makePatient({ isDOBUnknown: true, birthYear: '2024', birthMonth: 'Jan' }), 'test-site', '1');
+    expect(resource.birthDate).toBe('2024-01-15');
   });
 
-  it('omits birthDate when dob is null', () => {
-    const resource = buildPatientResource(makePatient({ dob: null }), 'test-site', '1');
-    expect(resource.birthDate).toBeUndefined();
+  it('sends birthDate when DOB is unknown and approximate year is provided (> 6 months)', () => {
+    const resource = buildPatientResource(makePatient({ isDOBUnknown: true, approxAgeInYears: '4', ageInMonths: 48 }), 'test-site', '1');
+    const month = String(new Date().getMonth() + 1).padStart(2, '0');
+    const year = String(new Date().getFullYear() - 4);
+    expect(resource.birthDate).toBe(`${year}-${month}-15`);
   });
+
+  it('sends birthDate when DOB is unknown and approximate dob is provided (< 6 months)', () => {
+    const resource = buildPatientResource(makePatient({ isDOBUnknown: true, dob: new Date(2024, 2, 15) }), 'test-site', '1');
+    expect(resource.birthDate).toBe('2024-03-15');
+  });
+
+  it('throws when dob is null', () => {
+  expect(() =>
+    buildPatientResource(makePatient({ dob: null }), 'test-site', '1')
+  ).toThrow();
+});
 
   it('omits gender when sex is not male/female', () => {
     const resource = buildPatientResource(makePatient({ sex: '' }), 'test-site', '1');
