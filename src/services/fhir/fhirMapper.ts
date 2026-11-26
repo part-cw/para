@@ -119,7 +119,7 @@ export function buildPatientResource(patient: PatientData, activeSite: string, d
   }
 
   if (activeSite && deviceIdKey) {
-    resource.managingOrganization = { reference: activeSite + '-' + deviceIdKey };
+    resource.managingOrganization = { reference: activeSite };
   }
 
   return resource;
