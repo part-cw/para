@@ -12,7 +12,7 @@ import {
   telephoneErrorMessage,
   textErrorMessage,
 } from '@/src/utils/inputValidator';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StyleProp, Text, View, ViewStyle } from 'react-native';
 import { TextInput, TextInputProps } from 'react-native-paper';
 
@@ -24,8 +24,10 @@ const INPUT_TYPES = {
 };
 
 type InputType = typeof INPUT_TYPES[keyof typeof INPUT_TYPES];
+// How long the user must pause before the text is saved to the patient context after each keystroke
+const SAVE_DELAY_MS = 300;
 
-interface ValidatedInputProps extends Omit<TextInputProps, 'value' | 'onChangeText' | 'error'> {
+interface ValidatedInputProps extends Omit<TextInputProps, 'value' | 'onChangeText' | 'error' | 'onBlur'> {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -37,12 +39,12 @@ interface ValidatedInputProps extends Omit<TextInputProps, 'value' | 'onChangeTe
   minValue?: number | null;
   maxValue?: number | null;
   showErrorOnTyping?: boolean;
-  onBlurExternal?: () => void;
+  onBlurExternal?: (value: string) => void;
 }
 
 const ValidatedTextInput: React.FC<ValidatedInputProps> = ({ 
   label, 
-  value, 
+  value: savedValue, 
   onChangeText, 
   isRequired = false,
   inputType = INPUT_TYPES.TEXT,
@@ -57,6 +59,16 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
   ...props 
 }) => {
   const [hasBlurred, setHasBlurred] = useState(false);
+
+// draft holds the text while the user is editing; null means "not editing"
+const [draft, setDraft] = useState<string | null>(null);
+const value = draft ?? savedValue ?? ''; // refer to the most recent draft change over the savedValue to avoid lagging issues
+
+const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined); //pause before saving to patient context to prevent lags in typing
+
+// Call the newest onChangeText function with the most recent typed value (saved as a local copy in 'draft')
+const latestOnChange = useRef(onChangeText);
+latestOnChange.current = onChangeText;
 
   // Get the appropriate validator and formatter based on input type
   const getValidatorAndFormatter = () => {
@@ -157,25 +169,29 @@ const ValidatedTextInput: React.FC<ValidatedInputProps> = ({
 
   const handleBlur = () => {
     setHasBlurred(true);
-    if (onChangeText && value) {
-      onChangeText(formatter(value));
-    }
+    clearTimeout(timer.current); // cancel the delayed save
 
-    if (onBlurExternal) {
-        onBlurExternal();
+    // Save immediately, then pass this new value into onBlur to save to patient context
+    const finalValue = value ? formatter(value) : value;
+    if (draft !== null || finalValue !== value) {
+      latestOnChange.current(finalValue);
     }
+    setDraft(null);
+
+    onBlurExternal?.(finalValue); // save the final value to the patient context 
   };
 
   const handleChange = (text: string) => {
-    if (onChangeText) {
-      // For numeric inputs, filter input in real-time
-      if (inputType === INPUT_TYPES.NUMERIC) {
-        const numericText = text.replace(/[^0-9.-]/g, '');
-        onChangeText(numericText);
-      } else {
-        onChangeText(text);
-      }
-    }
+     // For numeric inputs, filter input in real-time
+    const nextValue = inputType === INPUT_TYPES.NUMERIC
+      ? text.replace(/[^0-9.-]/g, '')
+      : text;
+
+    setDraft(nextValue); // updates the value right away
+
+    // Restart the countdown on every keystroke
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => latestOnChange.current(nextValue), SAVE_DELAY_MS);
   };
 
   // Get appropriate keyboard type

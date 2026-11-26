@@ -420,7 +420,7 @@ export default function PatientInformationScreen() {
                                             right={<TextInput.Affix text="years old" />}
                                             customValidator={(input) => validateApproxAge(input, config)}
                                             showErrorOnTyping={true}
-                                            onBlur={() => {
+                                            onBlurExternal={(approxAge) => {
                                                 // Only format if the value is valid
                                                 if (validateApproxAge(approxAge, config)) {
                                                     handleApproxAgeChange(formatNumericInput(approxAge));
