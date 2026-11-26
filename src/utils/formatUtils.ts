@@ -23,8 +23,14 @@ export function displayDob(dob?: Date, yob?: string, mob?: string, approxAgeInYe
 export const formatChronicIllness = (items: string[] = []): string => {
         if (!items || items.length === 0) return 'Not provided';
 
+        // Make sure 'None' and 'Unsure' aren't included in the list if HIV is present; this occurs for patients > 6 months 
+        // when a positive HIV status is recorded on Clinical Data page but "None" or "Unsure" is selected for other chronic conditions.
+        const filtered_items = items.includes('HIV')
+            ? items.filter(item => item !== 'unsure' && item !== 'none')
+            : items;
+
         // Capitalize the first letter of each illness and normalize spacing
-        const formatted = items.map(item => {
+        const formatted = filtered_items.map(item => {
             const trimmed = item.trim();
             if (!trimmed) return null;
 

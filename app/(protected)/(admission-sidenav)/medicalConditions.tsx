@@ -36,7 +36,8 @@ export default function MedicalConditionsScreen() {
         malnutritionStatus,
         sickYoungInfant,
      otherChronicIllness,
-        isUnderSixMonths
+        isUnderSixMonths, 
+        hivStatus
     } = patientData
     // Standard options for most conditions, exceptions use the others below
     const conditionOptions = [
@@ -73,7 +74,7 @@ export default function MedicalConditionsScreen() {
         if (!malaria) errors.push('Malaria is missing a selection');
         if (!sepsis) errors.push('Sepsis is missing a selection');
         if (!meningitis) errors.push('Meningitis/encaphalitis is missing a selection');
-        if (chronicIllness?.length === 0) errors.push('Chronic illnesses is missing a selection. Select all that apply.');
+        if (!chronicIllness?.some(item => isUnderSixMonths || item !== 'HIV')) errors.push('Chronic illnesses is missing a selection. Select all that apply.');
 
         return errors;
     }
@@ -84,13 +85,6 @@ export default function MedicalConditionsScreen() {
         setValidationErrors('medicalConditions', errorMessages)
     }, [anaemia, pneumonia, chronicIllness, diarrhea, malaria, sepsis, meningitis])
 
-    // autoselect 'hiv' if hivStatus is positive when page first renders 
-    // TODO - make sure this is accurately reflectd in storage
-    useEffect(() => {
-        if (patientData.hivStatus === 'positive') {
-            updatePatientData({chronicIllnesses: ['HIV']})
-        }
-    }, [])
 
     const handleChronicIllnessChange = (selected: string[]) => {
         const isOtherSelected = selected.some(item => item.startsWith('other'))
@@ -117,7 +111,7 @@ export default function MedicalConditionsScreen() {
             updatePatientData({otherChronicIllness: ''})
         } 
  
-        updatePatientData({chronicIllnesses: selected})
+        updatePatientData({chronicIllnesses: selected});
     };
 
     const isNoneSelected = chronicIllness?.includes('none') || false;

@@ -76,6 +76,7 @@ export default function AdmissionClinicalDataScreen() {
         isNeonate,
         edematousMalnutrition,
         levelOfConsciousness,
+        chronicIllnesses    
     } = patientData
 
     const validateAllFields = () => {
@@ -643,7 +644,12 @@ export default function AdmissionClinicalDataScreen() {
                                                 }
                                             }
 
-                                            updatePatientData({ hivStatus: value })
+                                            const others = (chronicIllnesses || []).filter(item => item !== 'HIV'); 
+
+                                            updatePatientData({
+                                                hivStatus: value,
+                                                chronicIllnesses: value === 'positive' ? [...others, 'HIV'] : others
+                                            });
                                         }}
                                     />
                                 </View>
